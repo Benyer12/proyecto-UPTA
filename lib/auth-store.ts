@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { verificarCredenciales, registrarUsuario } from './auth-service';
-import type { LoginData, RegisterData } from '../shared/types';
+import type { User, UserRole, LoginData, RegisterData } from '../shared/types';
 // En tu componente de registro
 
 
@@ -77,3 +77,31 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+const MOCK_USERS: User[] = [
+  {
+    id: 1,
+    name: 'Administrador',
+    email: 'admin@universo.com',
+    username: 'admin',
+    role: 'admin',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 2,
+    name: 'Prof. María López',
+    email: 'maria@universo.com',
+    username: 'maria',
+    role: 'tutor',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 3,
+    name: 'Carlos Pérez',
+    email: 'carlos@universo.com',
+    username: 'carlos',
+    role: 'student',
+    createdAt: new Date().toISOString(),
+  },
+];
+
