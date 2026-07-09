@@ -62,7 +62,7 @@ const handleLogin = async () => {
     if (ok) {
       setIsOpen(false);
       resetLoginForm();
-      router.push(getRedirect()); // Te lleva automáticamente a la ruta correcta
+      router.push(getRedirect() as any); // Te lleva automáticamente a la ruta correcta
     } else {
       setLoginError('Usuario o contraseña incorrectos.');
     }

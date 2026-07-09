@@ -1,8 +1,10 @@
 
-import { PowerSyncDatabase, Schema, Table, column } from '@powersync/web';
 
-// 1. Definimos la tabla con la sintaxis moderna de objetos
-// PowerSync gestiona el 'id' automáticamente, no necesitas declararlo aquí
+import { PowerSyncDatabase, Schema, Table, column, WASQLiteOpenFactory } from '@powersync/web';
+import { AppSyncConnector } from './powersync-connector';
+
+// 1. Definimos la tabla sin declarar el 'id'
+// PowerSync lo inyecta y gestiona de forma 100% invisible y automática
 const usuarios = new Table({
   nombre: column.text,
   correo: column.text,
@@ -27,9 +29,19 @@ export const db = new PowerSyncDatabase({
 // 4. Función de inicialización
 export const inicializarBaseDatos = async () => {
   try {
+    // 1. Inicializa la base de datos local
     await db.init();
-    console.log('🌌 Base de datos local inicializada correctamente.');
+    console.log('🌌 Base de datos local inicializada.');
+
+    // 2. Crea la instancia de tu conector
+    const connector = new AppSyncConnector(db);
+
+    // 3. Conecta PowerSync a la nube
+    await db.connect(connector);
+    console.log('🔗 PowerSync conectado y listo para sincronizar.');
+
   } catch (error) {
     console.error('Error al inicializar PowerSync:', error);
   }
 };
+

@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@powersync/react": "^1.10.0",
-    "@powersync/web": "^1.38.5",
+    "@powersync/web": "^1.38.6",
+    "@supabase/supabase-js": "^2.110.0",
     "@vercel/postgres": "^0.10.0",
     "bcrypt": "^6.0.0",
     "clsx": "^2.1.1",
@@ -19,8 +20,6 @@
     "next": "^16.2.9",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^6.0.1",
     "tailwind-merge": "^3.6.0",
     "zustand": "^5.0.14"
   },
