@@ -1,0 +1,79 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { verificarCredenciales, registrarUsuario } from './auth-service';
+import type { LoginData, RegisterData } from '../shared/types';
+// En tu componente de registro
+
+
+interface AuthState {
+  user: { id: string; name: string; usuario: string; role: string; correo: string } | null;
+  token: string | null;
+  login: (data: LoginData) => Promise<boolean>;
+  register: (data: RegisterData) => Promise<boolean>;
+  logout: () => void;
+  getRedirect: () => string;
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      token: null,
+
+      // 1. LOGIN GLOBAL CON RASTREADORES
+      login: async (data: LoginData) => {
+        console.log('===> 1. ¡El Store recibió el intento de Login!', data);
+        
+        // Llamamos a la base de datos SQLite
+        const resultado = await verificarCredenciales(data.username, data.password);
+        console.log('===> 2. Resultado retornado por la BD al Store:', resultado);
+        
+        if (resultado.success && resultado.usuario) {
+          console.log('===> 3. Login Exitoso. Guardando usuario en el estado global.');
+          set({
+            user: {
+              id: resultado.usuario.id,
+              name: resultado.usuario.nombre,
+              usuario: resultado.usuario.usuario,
+              role: resultado.usuario.role || 'student',
+              correo: resultado.usuario.correo
+            },
+            token: 'token-local-simulado'
+          });
+          return true;
+        }
+        
+        console.log('===> 3. Login Fallido. Las credenciales no coincidieron en la BD.');
+        return false;
+      },
+
+      // 2. REGISTRO GLOBAL
+      register: async (data: RegisterData) => {
+        console.log('===> Intentando registrar usuario desde el Store:', data);
+        const resultado = await registrarUsuario({
+          nombre: data.name,
+          correo: data.email,
+          usuario: data.username,
+          contrasena: data.password,
+          role: 'student'
+        });
+        return resultado.success;
+      },
+
+      logout: () => {
+        set({ user: null, token: null });
+      },
+
+      getRedirect: () => {
+        const usuarioActual = get().user;
+        if (!usuarioActual) return '/';
+        if (usuarioActual.role === 'admin') return '/admin';
+        if (usuarioActual.role === 'tutor') return '/maestro';
+        return '/dashboard';
+      }
+    }),
+    {
+      name: 'universo-auth-storage'
+    }
+  )
+);

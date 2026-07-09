@@ -1,100 +1,163 @@
+'use client';
 
-import LikeButton from './like-button';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import Planeta from './components/Planeta';
+
+const CosmicBackground = dynamic(() => import('./FondoCosmico'), { ssr: false });
+
+const PLANETAS_PREVIEW = [
+  {
+    nombre: 'Numérix',
+    materia: 'Matemáticas',
+    descripcion: 'Domina números, operaciones y geometría en un mundo de asteroides y cometas.',
+    gradient: 'radial-gradient(circle at 35% 30%, #00f5ff 0%, #0080ff 40%, #0030b0 65%, #000d40 100%)',
+    glow: '#00f5ff',
+    glowColor: '#00e4ff',
+    cursos: [
+      { name: 'Cinturón de Asteroides', description: 'Sumas y restas básicas', levels: [{ name: 'Sumas básicas', description: '' }, { name: 'Restas básicas', description: '' }, { name: 'Reto del Cinturón', description: '' }] },
+      { name: 'Campo de Cometas', description: 'Multiplicación y división', levels: [{ name: 'Tablas de multiplicar', description: '' }, { name: 'Multiplicación', description: '' }, { name: 'Reto del Cometa', description: '' }] },
+    ],
+  },
+  {
+    nombre: 'Letralia',
+    materia: 'Lenguas',
+    descripcion: 'Conquista las palabras, la gramática y la lectura en una galaxia literaria.',
+    gradient: 'radial-gradient(circle at 35% 30%, #df80ff 0%, #9b30ff 35%, #5a00b0 65%, #1a0040 100%)',
+    glow: '#bf40ff',
+    glowColor: '#c840ff',
+    cursos: [
+      { name: 'Tormenta de Sílabas', description: 'Separación silábica y acentuación', levels: [{ name: 'Separación silábica', description: '' }, { name: 'Acentuación', description: '' }, { name: 'Reto de la Tormenta', description: '' }] },
+    ],
+  },
+  {
+    nombre: 'Naturae',
+    materia: 'Ciencias',
+    descripcion: 'Descubre los secretos de la naturaleza, los ecosistemas y el universo.',
+    gradient: 'radial-gradient(circle at 35% 30%, #80ffb4 0%, #00e070 35%, #008040 65%, #001a14 100%)',
+    glow: '#00ff88',
+    glowColor: '#00f080',
+    cursos: [
+      { name: 'Bosque Cósmico', description: 'Seres vivos y reinos de la naturaleza', levels: [{ name: 'Seres vivos', description: '' }, { name: 'Reinos naturales', description: '' }, { name: 'Reto del Bosque', description: '' }] },
+    ],
+  },
+];
 
 
-//holaaaaaa
 
-type HeaderProps = {
-  title?: string;
-};
-
-function Header({ title }: HeaderProps) {
-  return <h1 className="text-4xl font-semibold">{title ?? 'Inicio de sesión'}</h1>;
-}
-
-import CosmicBackground from './fondo-cosmico.js';
-
-export default function LoginPage() {
+export default function LandingPage() {
   return (
-    <main className="relative min-h-screen w-full flex items-center justify-start p-8 md:p-20 overflow-hidden">
-      
-      {/* CAPA DE FONDO: Canvas con estrellas y constelación */}
+    <div className="relative min-h-screen">
       <CosmicBackground />
-      
-      {/* CAPA DE CONTENIDO: Tu interfaz de usuario (Z-10 para quedar al frente) */}
-      <div className="relative z-10 w-full max-w-md space-y-6 select-none align-center mx-auto">
-        
-        {/* Textos Informativos */}
-        <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-white drop-shadow-md text-center">
-            Inicio de sesión
-          </h1>
-        </div>
 
-        {/*FORMULARIO DE LOGIN */}
-        <div className="pt-4">
-          <div className="w-full h-60 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl p-4 flex flex-col justify-center text-xs text-slate-400 border-dashed">
-            <label className="text-sm font-medium text-slate-300" htmlFor="username">
-              Usuario
-            </label>
-
-            <input
-              type="text"
-              id="username"
-              className="bg-w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-colors border border-white/20 placeholder:text-slate-500 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ingrese su usuario"
-            />
-            <br />
-            <label className="text-sm font-medium text-slate-300" htmlFor="password">
-              
-              Contraseña
-              <br />
-            </label>
-            <input
-              type="password"
-              id="password"
-              className="bg-w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-colors border border-white/20 placeholder:text-slate-500 flex flex-col text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ingrese su contraseña"
-            />
-            <br />
-            {/* Botones de acción (Iniciar sesión / Registrarse) */}
-            <div className="mt-4 flex space-x-4">
-              <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors duration-200">
-                Iniciar sesión
-              </button>
-              <button className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded transition-colors duration-200">
-                Registrarse
-              </button>
-
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* LOGO DE NEXT.JS (Esquina inferior izquierda) */}
-      <div className="absolute bottom-8 left-8 z-10 bg-black/40 border border-white/10 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm">
-        <span className="font-black text-sm text-white select-none">▲</span>
-      </div>
-
-      {/* ICONO DE ESTRELLA DE DESTELLOS (Esquina inferior derecha) */}
-      <div className="absolute bottom-10 right-10 z-10 text-white/40 animate-pulse">
-        <svg
-          className="w-12 h-12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+      <section className="relative z-10 flex flex-col items-center pt-16 min-h-[80vh] px-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="max-w-4xl mx-auto"
         >
-          <path d="M12 2v20"></path>
-          <path d="M2 12h20"></path>
-          <path d="m19 19-7-7 7-7"></path>
-          <path d="m5 19 7-7-7-7"></path>
-        </svg>
-      </div>
+          <h1
+            className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-none mb-6 cosmic-title"
+          >
+            UNIVERSO DEL CONOCIMIENTO
+          </h1>
 
-    </main>
+          <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-4">
+            Una plataforma educativa gamificada que convierte el aprendizaje
+            en un viaje espacial para niños de 10 a 12 años.
+          </p>
+
+          <p className="text-base md:text-lg text-cyan-300/70 font-semibold tracking-wider mb-10">
+            ✦ Explora. Aprende. Brilla como una estrella. ✦
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-4">
+            <button
+              onClick={() => {
+                const header = document.querySelector('header button');
+                if (header) (header as HTMLButtonElement).click();
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3.5 rounded-xl transition-all text-sm tracking-wider shadow-lg shadow-blue-600/30"
+            >
+              COMENZAR VIAJE
+            </button>
+            <Link
+              href="/about"
+              className="border border-white/20 hover:border-white/40 text-white font-semibold px-8 py-3.5 rounded-xl transition-all text-sm tracking-wider"
+            >
+              MÁS INFORMACIÓN
+            </Link>
+          </div>
+        </motion.div>
+      </section>
+
+      <section className="relative z-10 px-6 pb-24">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="max-w-6xl mx-auto"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-4">
+            Explora los mundos del conocimiento
+          </h2>
+          <p className="text-slate-400 text-center max-w-xl mx-auto mb-12 text-sm">
+            Cada planeta contiene cursos y niveles adaptados al ritmo de aprendizaje del estudiante.
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {PLANETAS_PREVIEW.map((p, i) => (
+              <motion.div
+                key={p.nombre}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15, duration: 0.5 }}
+                className="relative group"
+              >
+                <div
+                  className="rounded-2xl p-6 text-center border border-white/10 bg-white/5 backdrop-blur-sm
+                    hover:border-white/30 transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className="flex justify-center mb-4">
+                    <Planeta
+                      nombre={p.nombre}
+                      materia={p.materia}
+                      gradient={p.gradient}
+                      glow={p.glow}
+                      glowColor={p.glowColor}
+                      delay={i * 0.5}
+                      cursos={p.cursos}
+                    />
+                  </div>
+                  <p className="text-sm text-slate-300 leading-relaxed mt-2">{p.descripcion}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+
+
+      <style>{`
+        .cosmic-title {
+          background: linear-gradient(135deg, #ffffff 0%, #80f0ff 30%, #c080ff 60%, #80ffcc 100%);
+          background-size: 200% 200%;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          filter: drop-shadow(0 0 30px rgba(0,200,255,0.4)) drop-shadow(0 0 60px rgba(150,0,255,0.2));
+          animation: shimmer 4s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+      `}</style>
+    </div>
   );
 }
