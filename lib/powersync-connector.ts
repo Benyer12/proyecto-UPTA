@@ -43,7 +43,6 @@ export class AppSyncConnector implements PowerSyncBackendConnector {
         if (op.opData.role !== undefined) dataToSync.role = op.opData.role;
 
         if (op.op === 'PUT') {
-          // CORRECCIÓN CLAVE: Usar 'id' en vez de 'uuid'
           const { error } = await supabase.from(tabla).insert({
             id: op.id, 
             ...dataToSync
