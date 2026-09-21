@@ -48,24 +48,31 @@ export const registrarUsuario = async (datos: {
 // 2. Le asignamos el tipo : Promise<LoginResult> a la función de verificación
 export const verificarCredenciales = async (usuario: string, contrasena: string): Promise<LoginResult> => {
   try {
-    if (!db) return { success: false, message: 'Base de datos no disponible.' };
-    // 1. Buscar en la BD local primero para obtener el correo del usuario
-    const resultado = await db.get(
-      'SELECT * FROM usuarios WHERE usuario = ? AND contrasena = ?',
-      [usuario, contrasena]
-    );
+    // 1. Buscamos al usuario directamente en la NUBE (Supabase), NO en PowerSync (db.get)
+    const { data: usuarioNube, error: errorBusqueda } = await supabase
+      .from('usuarios')
+      .select('*')
+      .ilike('usuario', usuario) // ilike evita fallos por mayúsculas/minúsculas
+      .single();
 
-    if (resultado) {
-      // PASO NUEVO: 2. Iniciar sesión silenciosamente en Supabase Auth usando el correo obtenido
-      await supabase.auth.signInWithPassword({
-        email: (resultado as any).correo, // <--- Aquí está el truco
-        password: contrasena,
-      });
-
-      return { success: true, usuario: resultado };
-    } else {
-      return { success: false, message: 'Usuario o contraseña incorrectos.' };
+    if (errorBusqueda || !usuarioNube) {
+      return { success: false, message: 'Usuario no encontrado en la nube.' };
     }
+
+    // 2. Autenticamos en Supabase Auth con el correo recuperado de la nube
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: usuarioNube.correo,
+      password: contrasena,
+    });
+
+    if (authError) {
+      return { success: false, message: 'Contraseña incorrecta.' };
+    }
+
+    // 3. Al autenticar con éxito, Supabase genera el token.
+    // PowerSync lo detectará automáticamente e iniciará la sincronización local.
+    return { success: true, usuario: usuarioNube };
+
   } catch (error: any) {
     return { success: false, message: error.message };
   }
