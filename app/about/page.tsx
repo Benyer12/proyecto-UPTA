@@ -48,7 +48,7 @@ export default function AboutPage() {
                 hacer del aprendizaje una experiencia atractiva y significativa.
               </p>
               <p>
-                La meta es ofrecer una herramienta <strong className="text-cyan-300">offline, gratuita y sin castigos</strong>
+                La meta es ofrecer una herramienta <strong className="text-cyan-300">offline, gratuita y sin castigos </strong>
                 que ayude a niños de educación primaria a reforzar sus conocimientos en
                 Matemática, Lengua y Ciencias Naturales, usando juegos que motivan el aprendizaje.
               </p>

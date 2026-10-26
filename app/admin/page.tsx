@@ -8,8 +8,11 @@ import type { UserRole } from '../../shared/types';
 export default function AdminPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const users: any[] = useAuthStore((s: any) => s.users ?? []);
-  const assignRole = useAuthStore((s: any) => s.assignRole ?? (() => {}));
+  
+  // Selectores estables (sin crear referencias nuevas en cada render para evitar bucles)
+  const users = useAuthStore((s: any) => s.users) || [];
+  const assignRole = useAuthStore((s: any) => s.assignRole);
+  
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -27,8 +30,8 @@ export default function AdminPage() {
 
   if (!mounted || !user || user.role !== 'admin') return null;
 
-  const pendingUsers = users.filter((u) => u.role === 'pending');
-  const assignedUsers = users.filter((u) => u.role !== 'pending');
+  const pendingUsers = users.filter((u: any) => u.role === 'pending');
+  const assignedUsers = users.filter((u: any) => u.role !== 'pending');
 
   return (
     <div className="min-h-screen bg-[#00000a] px-6 py-12">
@@ -50,7 +53,7 @@ export default function AdminPage() {
             </p>
           ) : (
             <div className="space-y-3">
-              {pendingUsers.map((u) => (
+              {pendingUsers.map((u: any) => (
                 <div
                   key={u.id}
                   className="flex items-center justify-between p-4 rounded-xl border border-white/10 bg-white/5"
@@ -85,7 +88,7 @@ export default function AdminPage() {
           </h2>
 
           <div className="space-y-2">
-            {assignedUsers.map((u) => (
+            {assignedUsers.map((u: any) => (
               <div
                 key={u.id}
                 className="flex items-center justify-between p-3 rounded-lg border border-white/5 bg-white/3"
@@ -93,7 +96,7 @@ export default function AdminPage() {
                 <div className="flex items-center gap-3">
                   <span className={`w-2 h-2 rounded-full ${
                     u.role === 'admin' ? 'bg-red-400' :
-                    u.role === 'tutor' ? 'bg-blue-400' : 'bg-green-400'
+                    u.role === 'tutor' || u.role === 'docente' ? 'bg-blue-400' : 'bg-green-400'
                   }`} />
                   <span className="text-sm text-white">{u.name}</span>
                   <span className="text-[10px] uppercase text-slate-500">{u.role}</span>

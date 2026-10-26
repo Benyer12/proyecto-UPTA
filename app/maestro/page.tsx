@@ -34,7 +34,9 @@ const PLANET_DATA = [
 export default function MaestroPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const users: any[] = useAuthStore((s: any) => s.users ?? []);
+  
+  // Selector estable para evitar bucles de renderizado en Zustand
+  const users = useAuthStore((s: any) => s.users) || [];
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -45,14 +47,14 @@ export default function MaestroPage() {
     if (!mounted) return;
     if (!user) {
       router.push('/');
-    } else if (user.role !== 'tutor') {
+    } else if (user.role !== 'tutor' && user.role !== 'docente') {
       router.push(user.role === 'admin' ? '/admin' : '/dashboard');
     }
   }, [user, router, mounted]);
 
-  if (!mounted || !user || user.role !== 'tutor') return null;
+  if (!mounted || !user || (user.role !== 'tutor' && user.role !== 'docente')) return null;
 
-  const students = users.filter((u) => u.role === 'student');
+  const students = users.filter((u: any) => u.role === 'student');
 
   return (
     <div className="min-h-screen bg-[#00000a] px-6 py-12">
@@ -120,7 +122,7 @@ export default function MaestroPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {students.map((s) => (
+              {students.map((s: any) => (
                 <div
                   key={s.id}
                   className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"

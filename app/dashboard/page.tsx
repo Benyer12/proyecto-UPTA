@@ -128,87 +128,16 @@ function StudentView({ planets, progress, user }: { planets: Planet[]; progress:
                             </span>
                           );
                         })}
-                      </div>
                     </div>
+                  </div>
                   ))}
-                </div>
+              </div>
               )}
             </motion.div>
           );
         })}
       </div>
-    </div>
-  );
-}
-
-function TutorView({ planets }: { planets: Planet[] }) {
-  const users = useAuthStore((s: any) => s.users ?? []);
-  const myStudents = users.filter((u: { role: string }) => u.role === 'student');
-
-  return (
-    <div className="space-y-8">
-      <h1 className="text-3xl md:text-4xl font-black tracking-wide text-center" style={{
-        background: 'linear-gradient(135deg, #fff, #80f0ff, #c080ff)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-      }}>
-        PUENTE DE MANDO
-      </h1>
-      <p className="text-center text-slate-400 text-sm">Visualiza el progreso de tus astronautas</p>
-
-      <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-white">Planetas</h2>
-          {planets.map((planet) => (
-            <details key={planet.id} className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">
-              <summary className="p-4 cursor-pointer hover:bg-white/5 transition-colors">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{planet.icon}</span>
-                  <div>
-                    <span className="text-white font-semibold">{planet.name}</span>
-                    <span className="text-xs text-slate-400 ml-2 uppercase">{planet.shortDescription}</span>
-                  </div>
-                </div>
-              </summary>
-              <div className="px-4 pb-4 space-y-3">
-                {planet.courses.map((course) => (
-                  <div key={course.id} className="pl-4 border-l border-white/10">
-                    <h3 className="text-sm font-medium text-white">{course.name}</h3>
-                    <p className="text-xs text-slate-400 mt-1">{course.tutorDescription}</p>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {course.levels.map((l) => (
-                        <span key={l.id} className="text-[10px] px-2 py-0.5 rounded-full border border-white/10 text-slate-400">
-                          {l.name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </details>
-          ))}
-        </div>
-
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-white">Mis estudiantes ({myStudents.length})</h2>
-          {myStudents.length === 0 ? (
-            <p className="text-sm text-slate-500">No hay estudiantes asignados todavía.</p>
-          ) : (
-            <div className="space-y-2">
-              {myStudents.map((s: { id: string; name: string; username: string }) => (
-                <div key={s.id} className="p-4 rounded-xl border border-white/10 bg-white/5 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm text-white font-medium">{s.name}</div>
-                    <div className="text-xs text-slate-400">@{s.username}</div>
-                  </div>
-                  <span className="text-xs text-slate-500">Progreso: —</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+  </div>
   );
 }
 
@@ -221,9 +150,14 @@ export default function Dashboard() {
     setMounted(true);
   }, []);
 
+  // Redirección automática al detectar rol admin o tutor/docente
   useEffect(() => {
-    if (mounted && user?.role === 'admin') {
-      router.push('/admin');
+    if (mounted && user?.role) {
+      if (user.role === 'admin') {
+        router.push('/admin');
+      } else if (user.role === 'tutor' || user.role === 'docente') {
+        router.push('/docente');
+      }
     }
   }, [mounted, user, router]);
 
@@ -251,16 +185,13 @@ export default function Dashboard() {
     );
   }
 
-  if (user.role === 'admin') return null;
+  if (user.role === 'admin' || user.role === 'tutor' || user.role === 'docente') return null;
 
   return (
     <div className="relative min-h-screen" style={{ background: '#00000a' }}>
       <div className="relative z-10 px-6 py-12">
         {user.role === 'student' && (
           <StudentView planets={MOCK_PLANETS} progress={MOCK_PROGRESS} user={user} />
-        )}
-        {user.role === 'tutor' && (
-          <TutorView planets={MOCK_PLANETS} />
         )}
       </div>
     </div>
