@@ -54,26 +54,23 @@ export default function Header() {
     setRegSuccess(false);
   };
 
-
-const handleLogin = async () => {
+  const handleLogin = async () => {
     setLoginError('');
     setLoading(true);
     
-    // Llamamos al login del store que ahora consulta SQLite de forma interna
     const ok = await login({ username: loginUser, password: loginPass } as LoginData);
     
     setLoading(false);
     if (ok) {
       setIsOpen(false);
       resetLoginForm();
-      router.push(getRedirect() as any); // Te lleva automáticamente a la ruta correcta
+      router.push(getRedirect() as any);
     } else {
       setLoginError('Usuario o contraseña incorrectos.');
     }
   };
 
-
-const handleRegister = async () => { 
+  const handleRegister = async () => { 
     if (!regName || !regEmail || !regUser || !regPass) {
       setRegError('Todos los campos son obligatorios.');
       return;
@@ -98,7 +95,6 @@ const handleRegister = async () => {
       setRegError('Error al crear la cuenta. Intenta con otro usuario.');
     }
   };
-
 
   const handleLogout = () => {
     logout();
@@ -132,47 +128,45 @@ const handleRegister = async () => {
                   Panel Admin
                 </Link>
               )}
-              {user.role === 'tutor' && (
-                <>
-                  <Link href="/maestro" className="text-base font-medium text-gray-200 hover:text-cyan-400 transition-colors px-2 py-1">
-                    Mis Estudiantes
-                  </Link>
-                  <Link href="/dashboard" className="text-base font-medium text-gray-200 hover:text-cyan-400 transition-colors px-2 py-1">
-                    Dashboard
-                  </Link>
-                </>
+              
+              {/* Ajustado: El tutor/docente ahora solo ve Mis Estudiantes (/maestro) sin rastro del dashboard */}
+              {(user.role === 'tutor' || user.role === 'docente') && (
+                <Link href="/maestro" className="text-base font-medium text-gray-200 hover:text-cyan-400 transition-colors px-2 py-1">
+                  Mis Estudiantes
+                </Link>
               )}
+
               {user.role === 'student' && (
                 <Link href="/dashboard" className="text-base font-medium text-gray-200 hover:text-cyan-400 transition-colors px-2 py-1">
                   Dashboard
                 </Link>
               )}
 
-            <div className="flex items-center gap-3 pl-4 border-l border-white/10">
-              <div className="text-right">
-                <div className="text-sm text-white font-medium">{user.name}</div>
-                <div className="text-xs text-slate-400 capitalize">{user.role}</div>
+              <div className="flex items-center gap-3 pl-4 border-l border-white/10">
+                <div className="text-right">
+                  <div className="text-sm text-white font-medium">{user.name}</div>
+                  <div className="text-xs text-slate-400 capitalize">{user.role}</div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded transition-colors"
+                >
+                  Salir
+                </button>
               </div>
-              <button
-                onClick={handleLogout}
-                className="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded transition-colors"
-              >
-                Salir
-              </button>
-            </div>
-          </nav>
-        ) : (
-          <button
-            onClick={() => {
-              setIsOpen(!isOpen);
-              resetLoginForm();
-              resetRegForm();
-            }}
-            className="relative bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
-          >
-            Iniciar sesión
-          </button>
-        )}
+            </nav>
+          ) : (
+            <button
+              onClick={() => {
+                setIsOpen(!isOpen);
+                resetLoginForm();
+                resetRegForm();
+              }}
+              className="relative bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
+            >
+              Iniciar sesión
+            </button>
+          )}
 
           {/* Botón menú móvil */}
           <button

@@ -10,7 +10,7 @@ const PLANETAS_PREVIEW = [
     id: 1,
     nombre: 'Numérix',
     materia: 'Matemáticas',
-    descripcion: 'Domina números, operaciones y geometría en un mundo de asteroides y cometas.',
+    descripcion: 'Domina números y operaciones en un mundo de asteroides y cometas.',
     gradient: 'radial-gradient(circle at 35% 30%, #00f5ff 0%, #0080ff 40%, #0030b0 65%, #000d40 100%)',
     glow: '#00f5ff',
     glowColor: '#00e4ff',
