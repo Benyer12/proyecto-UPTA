@@ -50,9 +50,8 @@ const CHISPAS = [
 
 const ROTACIONES_TABLILLA = [-6, 4, -2, 5, -5, 3];
 
-/** Pluma estelar decorativa de los costados del marco (fiel a la imagen de referencia 2). */
+/** Pluma estelar decorativa de los costados del marco */
 function PlumaEstelar({ lado }: { lado: 'izq' | 'der' }) {
-  const espejo = lado === 'der' ? 'scale(-1, 1)' : undefined;
   return (
     <svg width="76" height="150" viewBox="0 0 76 150" className="overflow-visible select-none pointer-events-none">
       <defs>
@@ -69,7 +68,7 @@ function PlumaEstelar({ lado }: { lado: 'izq' | 'der' }) {
           </feMerge>
         </filter>
       </defs>
-      <g transform={ lado === 'der' ? 'translate(76, 0) scale(-1, 1)' : undefined } filter={`url(#plumaGlow-${lado})`}>
+      <g transform={lado === 'der' ? 'translate(76, 0) scale(-1, 1)' : undefined} filter={`url(#plumaGlow-${lado})`}>
         <path
           d="M12 12 C28 16 52 38 60 76 C52 72 44 68 38 64 C47 76 55 90 61 108 C45 103 33 93 26 82 C33 96 42 110 55 122 C35 116 20 98 14 72 C10 52 9 30 12 12 Z"
           fill={`url(#plumaGrad-${lado})`}
@@ -88,11 +87,12 @@ function PlumaEstelar({ lado }: { lado: 'izq' | 'der' }) {
   );
 }
 
-/** Tablilla de pergamino crema con bisel 3D cálido y muescas ornamentales. */
+/** Tablilla de pergamino crema con bisel 3D cálido y propiedades de borde separadas (React 19 safe). */
 function TablillaPergamino({
   texto,
   inclinacion = 0,
   seleccionada = false,
+  usadaEnPuente = false,
   estado = 'normal',
   compacta = false,
   onClick,
@@ -101,6 +101,7 @@ function TablillaPergamino({
   texto: string;
   inclinacion?: number;
   seleccionada?: boolean;
+  usadaEnPuente?: boolean;
   estado?: 'normal' | 'intruso' | 'correcta' | 'error';
   compacta?: boolean;
   onClick?: () => void;
@@ -108,11 +109,15 @@ function TablillaPergamino({
 }) {
   const estilosEstado = {
     normal: {
-      bg: 'linear-gradient(180deg, #FFFDF7 0%, #FDF6E3 68%, #F2E3C6 100%)',
-      border: '#D5BE97',
-      bevel: '#B3986E',
+      bg: seleccionada
+        ? 'linear-gradient(180deg, #FEF9C3 0%, #FDE68A 68%, #FCD34D 100%)'
+        : 'linear-gradient(180deg, #FFFDF7 0%, #FDF6E3 68%, #F2E3C6 100%)',
+      border: seleccionada ? '#F59E0B' : '#D5BE97',
+      bevel: seleccionada ? '#B45309' : '#B3986E',
       text: '#1E1B4B',
-      glow: '0 6px 16px rgba(15, 23, 42, 0.38)',
+      glow: seleccionada
+        ? '0 0 22px rgba(251, 191, 36, 0.75), 0 6px 16px rgba(15, 23, 42, 0.4)'
+        : '0 6px 16px rgba(15, 23, 42, 0.38)',
     },
     intruso: {
       bg: 'linear-gradient(180deg, #FFF1F2 0%, #FFE4E6 70%, #FECDD3 100%)',
@@ -145,20 +150,28 @@ function TablillaPergamino({
       whileTap={disabled ? undefined : { scale: 0.95 }}
       initial={{ opacity: 0, scale: 0.85 }}
       animate={{
-        opacity: seleccionada ? 0.35 : 1,
-        scale: 1,
+        opacity: usadaEnPuente ? 0.32 : 1,
+        scale: seleccionada && !usadaEnPuente ? 1.05 : 1,
         rotate: inclinacion,
       }}
       transition={{ type: 'spring', stiffness: 320, damping: 22 }}
       onClick={onClick}
       disabled={disabled}
       className={`relative group select-none rounded-xl transition-shadow ${
-        compacta ? 'px-3.5 py-2 text-sm sm:text-base' : 'px-5 py-2.5 sm:px-6 sm:py-3 text-base sm:text-xl'
+        compacta
+          ? 'px-3.5 py-2 text-sm sm:text-base'
+          : 'px-5 py-2.5 sm:px-6 sm:py-3 text-base sm:text-xl'
       } font-extrabold tracking-tight ${disabled ? 'cursor-default' : 'cursor-pointer'}`}
       style={{
         background: estilosEstado.bg,
-        border: `2px solid ${estilosEstado.border}`,
+        borderTopWidth: '2px',
+        borderRightWidth: '2px',
+        borderLeftWidth: '2px',
         borderBottomWidth: '6px',
+        borderStyle: 'solid',
+        borderTopColor: estilosEstado.border,
+        borderRightColor: estilosEstado.border,
+        borderLeftColor: estilosEstado.border,
         borderBottomColor: estilosEstado.bevel,
         color: estilosEstado.text,
         boxShadow: estilosEstado.glow,
@@ -166,14 +179,16 @@ function TablillaPergamino({
     >
       {/* Muescas decorativas tipo tablilla antigua */}
       <span
-        className="absolute top-0 left-3 w-2 h-1 rounded-b-sm opacity-50"
+        className="pointer-events-none absolute top-0 left-3 w-2 h-1 rounded-b-sm opacity-50"
         style={{ background: estilosEstado.bevel }}
       />
       <span
-        className="absolute bottom-0 right-4 w-2 h-1 rounded-t-sm opacity-50"
+        className="pointer-events-none absolute bottom-0 right-4 w-2 h-1 rounded-t-sm opacity-50"
         style={{ background: estilosEstado.bevel }}
       />
-      <span className="relative z-10 drop-shadow-[0_1px_0_rgba(255,255,255,0.8)]">{texto}</span>
+      <span className="relative z-10 drop-shadow-[0_1px_0_rgba(255,255,255,0.8)]">
+        {texto}
+      </span>
     </motion.button>
   );
 }
@@ -197,24 +212,34 @@ function RanuraAltar({
   etiquetaVacia?: string;
 }) {
   const esMenta = indice < Math.ceil(total / 2);
-  const colorBase = estado === 'error' || estado === 'intruso'
-    ? '#FDA4AF'
-    : estado === 'correcta'
-      ? '#6EE7B7'
-      : esMenta
+  const colorBase =
+    estado === 'error' || estado === 'intruso'
+      ? '#FDA4AF'
+      : estado === 'correcta'
         ? '#6EE7B7'
-        : '#7DD3FC';
-  const colorFondo = estado === 'error' || estado === 'intruso'
-    ? 'linear-gradient(180deg, #FFE4E6 0%, #FDA4AF 100%)'
-    : esMenta
-      ? 'linear-gradient(180deg, #D1FAE5 0%, #6EE7B7 100%)'
-      : 'linear-gradient(180deg, #E0F2FE 0%, #7DD3FC 100%)';
+        : esMenta
+          ? '#6EE7B7'
+          : '#7DD3FC';
 
-  // Ligera curvatura del arco del puente
+  const colorFondo =
+    estado === 'error' || estado === 'intruso'
+      ? 'linear-gradient(180deg, #FFE4E6 0%, #FDA4AF 100%)'
+      : esMenta
+        ? 'linear-gradient(180deg, #D1FAE5 0%, #6EE7B7 100%)'
+        : 'linear-gradient(180deg, #E0F2FE 0%, #7DD3FC 100%)';
+
   const centro = (total - 1) / 2;
   const dist = indice - centro;
   const rotacion = dist * 2.5;
   const elevacion = Math.abs(dist) * 4;
+
+  const colorBordeInterior = contenido
+    ? estado === 'correcta'
+      ? '#34D399'
+      : estado === 'intruso' || estado === 'error'
+        ? '#FB7185'
+        : '#D5BE97'
+    : '#FFFFFF';
 
   return (
     <div
@@ -242,7 +267,12 @@ function RanuraAltar({
         }`}
         style={{
           background: '#B69F82',
-          border: `2px solid ${resaltada ? '#FEF08A' : '#8A7256'}`,
+          borderTopWidth: '2px',
+          borderRightWidth: '2px',
+          borderBottomWidth: '2px',
+          borderLeftWidth: '2px',
+          borderStyle: 'solid',
+          borderColor: resaltada ? '#FEF08A' : '#8A7256',
           boxShadow: `0 4px 0 #6E583F, 0 0 20px ${colorBase}55`,
         }}
       >
@@ -257,7 +287,12 @@ function RanuraAltar({
                   ? 'linear-gradient(180deg, #ECFDF5 0%, #A7F3D0 100%)'
                   : 'linear-gradient(180deg, #FFFDF7 0%, #FDF6E3 75%, #EAD7B7 100%)'
               : colorFondo,
-            border: `2px solid ${contenido ? (estado === 'correcta' ? '#34D399' : estado === 'intruso' ? '#FB7185' : '#D5BE97') : '#FFFFFF'}`,
+            borderTopWidth: '2px',
+            borderRightWidth: '2px',
+            borderBottomWidth: '2px',
+            borderLeftWidth: '2px',
+            borderStyle: 'solid',
+            borderColor: colorBordeInterior,
             boxShadow: `inset 0 0 12px ${colorBase}88, 0 0 12px ${colorBase}66`,
           }}
         >
@@ -265,7 +300,12 @@ function RanuraAltar({
             <span
               className="font-extrabold text-xs sm:text-sm md:text-base tracking-tight truncate max-w-[130px]"
               style={{
-                color: estado === 'intruso' || estado === 'error' ? '#9F1239' : estado === 'correcta' ? '#065F46' : '#1E1B4B',
+                color:
+                  estado === 'intruso' || estado === 'error'
+                    ? '#9F1239'
+                    : estado === 'correcta'
+                      ? '#065F46'
+                      : '#1E1B4B',
               }}
             >
               {contenido}
@@ -290,7 +330,7 @@ export default function AltarDecodificacion({
   const [mostrarPista, setMostrarPista] = useState(false);
   const [explicacionActiva, setExplicacionActiva] = useState<string | null>(null);
   const [mensajeApoyo, setMensajeApoyo] = useState<string | null>(null);
-  const [resueltoExito, setResueltoExito] = useState< boolean | null >(null);
+  const [resueltoExito, setResueltoExito] = useState<boolean | null>(null);
 
   /* ── Estado Mecánica 1: Caza del Intruso ── */
   const [intrusoDetectado, setIntrusoDetectado] = useState(false);
@@ -313,7 +353,7 @@ export default function AltarDecodificacion({
     return mezcladas;
   }, [modal]);
 
-  const [ranurasPuente, setRanurasPuente] = useState<( { id: string; texto: string } | null )[]>([]);
+  const [ranurasPuente, setRanurasPuente] = useState<({ id: string; texto: string } | null)[]>([]);
 
   useEffect(() => {
     if (modal.tipo === 'puente') {
@@ -388,7 +428,6 @@ export default function AltarDecodificacion({
 
   /* ── Manejadores de interacción ── */
 
-  // Mecánica 1: Tocar palabra de la oración
   const handleTocarPalabraOracion = (idx: number) => {
     if (modal.tipo !== 'intruso' || resueltoExito !== null) return;
     setIndiceTocado(idx);
@@ -400,7 +439,6 @@ export default function AltarDecodificacion({
     }
   };
 
-  // Mecánica 2: Colocar o devolver tablilla en el Puente Sintáctico
   const handleColocarFichaPuente = (ficha: { id: string; texto: string }) => {
     if (resueltoExito !== null) return;
     setMensajeApoyo(null);
@@ -427,7 +465,6 @@ export default function AltarDecodificacion({
     setRanurasPuente(copia);
   };
 
-  // Mecánica 3: Seleccionar tablilla en la Tormenta Acústica
   const handleTogglePalabraTormenta = (palabra: string) => {
     if (resueltoExito !== null) return;
     setMensajeApoyo(null);
@@ -438,9 +475,7 @@ export default function AltarDecodificacion({
     });
   };
 
-  // Botón principal COMPROBAR / CONTINUAR
   const handleComprobarOContinuar = useCallback(() => {
-    // Si ya se resolvió el reto, cerrar y notificar al tablero
     if (resueltoExito !== null) {
       if (modal.tipo === 'intruso') {
         onCompletar({
@@ -459,7 +494,6 @@ export default function AltarDecodificacion({
         });
       } else if (modal.tipo === 'boss') {
         if (faseBoss < 2) {
-          // Avanzar al siguiente sello del Guardián
           setFaseBoss((f) => (f + 1) as 0 | 1 | 2);
           setOpcionBossActual(null);
           setResueltoExito(null);
@@ -475,7 +509,6 @@ export default function AltarDecodificacion({
       return;
     }
 
-    // Validación según la mecánica activa
     if (modal.tipo === 'intruso') {
       if (!intrusoDetectado) {
         setMensajeApoyo('Primero toca la tablilla de la oración que tiene un error ortográfico o de tilde.');
@@ -557,7 +590,6 @@ export default function AltarDecodificacion({
     onCompletar,
   ]);
 
-  // Renderizado del relato del Guardián con las 3 ranuras {0}, {1}, {2}
   const renderRelatoGuardian = () => {
     if (modal.tipo !== 'boss') return null;
     const partes = modal.reto.relato.split(/(\{\d\})/g);
@@ -599,10 +631,10 @@ export default function AltarDecodificacion({
     );
   };
 
-  // Segmentos de energía superiores
-  const segmentosEnergia = modal.tipo === 'tormenta'
-    ? Math.max(0, Math.ceil((segundosRestantes / modal.reto.segundos) * 4))
-    : 4;
+  const segmentosEnergia =
+    modal.tipo === 'tormenta'
+      ? Math.max(0, Math.ceil((segundosRestantes / modal.reto.segundos) * 4))
+      : 4;
 
   const textoBotonPrincipal = useMemo(() => {
     if (resueltoExito === null) return 'COMPROBAR';
@@ -643,7 +675,7 @@ export default function AltarDecodificacion({
         ))}
       </div>
 
-      {/* ── Ornamentos de las 4 esquinas exteriores (como en la Imagen 2) ── */}
+      {/* ── Ornamentos de las 4 esquinas exteriores ── */}
       <div className="pointer-events-none hidden md:flex fixed top-3 left-3 items-center gap-2">
         <div className="w-11 h-11 rounded-full bg-[#6D82C4]/40 border-2 border-[#A5B4FC] flex items-center justify-center text-indigo-100 shadow-lg">
           ✦
@@ -688,10 +720,15 @@ export default function AltarDecodificacion({
           className="relative w-full max-w-[850px] rounded-[26px] p-[18px] sm:p-[24px] shadow-[0_24px_80px_rgba(10,16,34,0.85)]"
           style={{
             background: 'linear-gradient(180deg, #B8C4F0 0%, #98A7E2 50%, #8696D8 100%)',
-            border: '3px solid #D9E2FF',
+            borderTopWidth: '3px',
+            borderRightWidth: '3px',
+            borderBottomWidth: '3px',
+            borderLeftWidth: '3px',
+            borderStyle: 'solid',
+            borderColor: '#D9E2FF',
           }}
         >
-          {/* ── Inscripciones rúnicas del marco (Arriba, Abajo, Izquierda, Derecha) ── */}
+          {/* ── Inscripciones rúnicas del marco ── */}
           <div className="pointer-events-none absolute top-1 left-8 right-8 h-4 flex items-center justify-between text-[10px] font-mono font-bold tracking-[0.35em] text-[#3F4C85] overflow-hidden opacity-85">
             <span>{RUNAS_HORIZONTALES}</span>
             <span>{RUNAS_HORIZONTALES}</span>
@@ -743,10 +780,14 @@ export default function AltarDecodificacion({
               className="relative px-6 py-2.5 sm:py-3 rounded-2xl flex items-center justify-center shadow-[0_8px_24px_rgba(15,23,42,0.5)]"
               style={{
                 background: 'linear-gradient(180deg, #FDE68A 0%, #F59E0B 50%, #D97706 100%)',
-                border: '2px solid #FEF9C3',
+                borderTopWidth: '2px',
+                borderRightWidth: '2px',
+                borderBottomWidth: '2px',
+                borderLeftWidth: '2px',
+                borderStyle: 'solid',
+                borderColor: '#FEF9C3',
               }}
             >
-              {/* Gemas laterales del cartel */}
               <div className="hidden sm:flex absolute -left-3 w-7 h-7 rotate-45 rounded-xs bg-[#FDE68A] border-2 border-[#B45309] items-center justify-center shadow">
                 <div className="w-3.5 h-3.5 bg-[#7DD3FC] border border-white" />
               </div>
@@ -758,7 +799,12 @@ export default function AltarDecodificacion({
                 className="w-full py-1.5 px-4 rounded-xl text-center"
                 style={{
                   background: 'linear-gradient(180deg, #EEF2FF 0%, #DDD6FE 60%, #C4B5FD 100%)',
-                  border: '1.5px solid #A78BFA',
+                  borderTopWidth: '1.5px',
+                  borderRightWidth: '1.5px',
+                  borderBottomWidth: '1.5px',
+                  borderLeftWidth: '1.5px',
+                  borderStyle: 'solid',
+                  borderColor: '#A78BFA',
                 }}
               >
                 <h2 className="text-base sm:text-xl md:text-2xl font-black tracking-wider text-[#1E1B4B] drop-shadow-[0_1px_0_rgba(255,255,255,0.9)]">
@@ -774,13 +820,17 @@ export default function AltarDecodificacion({
             style={{
               background:
                 'radial-gradient(ellipse at 50% 62%, #3B5284 0%, #283556 58%, #1E293B 100%)',
-              border: '2px solid #64748B',
+              borderTopWidth: '2px',
+              borderRightWidth: '2px',
+              borderBottomWidth: '2px',
+              borderLeftWidth: '2px',
+              borderStyle: 'solid',
+              borderColor: '#64748B',
               boxShadow: 'inset 0 0 60px rgba(15, 23, 42, 0.7)',
             }}
           >
-            {/* ── Barra de estado interna (Energía/Tiempo a la izq, Estrellas/Sílabas a la der) ── */}
+            {/* ── Barra de estado interna ── */}
             <div className="relative z-20 flex items-center justify-between gap-2 mb-3">
-              {/* Píldora izquierda: Energía o Temporizador de Tormenta */}
               <div className="flex items-center gap-2 bg-[#334168]/90 border border-[#818CF8]/50 rounded-full px-3 py-1 shadow-md">
                 <span className="w-6 h-6 rounded-full bg-amber-400/25 border border-amber-300 flex items-center justify-center text-amber-300 text-xs font-bold">
                   ⚡
@@ -808,7 +858,6 @@ export default function AltarDecodificacion({
                 )}
               </div>
 
-              {/* Botón móvil de Ayuda + Píldora derecha de Sílabas/Estrellas */}
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -817,8 +866,14 @@ export default function AltarDecodificacion({
                 >
                   🪶 AYUDA
                 </button>
+                {estrellasActuales > 0 && (
+                  <div className="hidden sm:flex items-center gap-1 bg-[#334168]/90 border border-amber-300/50 rounded-full px-3 py-1 shadow-md">
+                    <span className="text-amber-300 text-xs">⭐</span>
+                    <span className="text-xs font-black text-amber-200">{estrellasActuales}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-1.5 bg-[#334168]/90 border border-[#818CF8]/50 rounded-full px-3.5 py-1 shadow-md">
-                  <span className="text-amber-300 text-sm">★</span>
+                  <span className="text-sky-300 text-sm">💎</span>
                   <span className="text-xs sm:text-sm font-black text-white tracking-wide">
                     {silabasRecolectadas}/4
                   </span>
@@ -896,7 +951,6 @@ export default function AltarDecodificacion({
 
             {/* ── Zona Central: Tablillas Flotantes (Arriba) ── */}
             <div className="relative z-20 flex-1 flex flex-col items-center justify-center my-1">
-              {/* Mecánica 1: Opciones de reemplazo cuando ya se detectó el intruso */}
               {modal.tipo === 'intruso' && (
                 <div className="min-h-[82px] flex flex-wrap items-center justify-center gap-4 px-2">
                   {!intrusoDetectado ? (
@@ -909,11 +963,12 @@ export default function AltarDecodificacion({
                         key={op}
                         texto={op}
                         inclinacion={ROTACIONES_TABLILLA[i % ROTACIONES_TABLILLA.length]}
+                        seleccionada={reemplazoElegido === op}
                         estado={
                           reemplazoElegido === op
                             ? resueltoExito
                               ? 'correcta'
-                              : 'intruso'
+                              : 'normal'
                             : 'normal'
                         }
                         onClick={() => {
@@ -927,7 +982,6 @@ export default function AltarDecodificacion({
                 </div>
               )}
 
-              {/* Mecánica 2: Tablillas desordenadas flotando sobre el puente */}
               {modal.tipo === 'puente' && (
                 <div className="min-h-[96px] flex flex-wrap items-center justify-center gap-3 sm:gap-4 px-2 max-w-2xl">
                   {fichasInicialesPuente.map((ficha, i) => {
@@ -937,7 +991,7 @@ export default function AltarDecodificacion({
                         key={ficha.id}
                         texto={ficha.texto}
                         inclinacion={ROTACIONES_TABLILLA[i % ROTACIONES_TABLILLA.length]}
-                        seleccionada={usada}
+                        usadaEnPuente={usada}
                         onClick={() => handleColocarFichaPuente(ficha)}
                       />
                     );
@@ -945,7 +999,6 @@ export default function AltarDecodificacion({
                 </div>
               )}
 
-              {/* Mecánica 3: 6 Meteoritos de pergamino flotando suavemente */}
               {modal.tipo === 'tormenta' && (
                 <div className="min-h-[104px] flex flex-wrap items-center justify-center gap-3 sm:gap-4 px-2 max-w-2xl">
                   {fichasTormenta.map((palabra, i) => {
@@ -960,6 +1013,7 @@ export default function AltarDecodificacion({
                           texto={palabra}
                           inclinacion={ROTACIONES_TABLILLA[i % ROTACIONES_TABLILLA.length]}
                           seleccionada={elegida}
+                          usadaEnPuente={elegida}
                           onClick={() => handleTogglePalabraTormenta(palabra)}
                         />
                       </motion.div>
@@ -968,7 +1022,6 @@ export default function AltarDecodificacion({
                 </div>
               )}
 
-              {/* Mecánica 4: Relato del Guardián + Opciones de la fase actual */}
               {modal.tipo === 'boss' && (
                 <div className="w-full flex flex-col items-center">
                   {renderRelatoGuardian()}
@@ -979,6 +1032,7 @@ export default function AltarDecodificacion({
                         texto={op}
                         compacta={op.length > 22}
                         inclinacion={ROTACIONES_TABLILLA[i % ROTACIONES_TABLILLA.length]}
+                        seleccionada={opcionBossActual === op}
                         estado={
                           opcionBossActual === op
                             ? resueltoExito
@@ -998,11 +1052,9 @@ export default function AltarDecodificacion({
               )}
             </div>
 
-            {/* ── PUENTE ARQUEADO DEL ALTAR Y RANURAS LUMINOSAS (Fiel a Imagen 2) ── */}
+            {/* ── PUENTE ARQUEADO DEL ALTAR Y RANURAS LUMINOSAS ── */}
             <div className="relative z-20 mt-4 pt-3 pb-1 flex flex-col items-center">
-              {/* Base arquitectónica del puente curvado */}
               <div className="relative w-full max-w-[740px] px-3 py-3 rounded-[28px] bg-gradient-to-b from-[#D5C1A3] via-[#B89F7D] to-[#8F7657] border-2 border-[#EDE0CA] shadow-[0_10px_0_#5E4B35,0_16px_30px_rgba(0,0,0,0.5)]">
-                {/* Grabados laterales del puente */}
                 <span className="hidden sm:flex absolute left-2.5 top-1/2 -translate-y-1/2 w-5 h-8 rounded bg-[#9E8565] border border-[#6E583F] items-center justify-center text-xs font-bold text-[#4A3A28]">
                   ϟ
                 </span>
@@ -1010,7 +1062,6 @@ export default function AltarDecodificacion({
                   ϟ
                 </span>
 
-                {/* Ranuras según la mecánica */}
                 <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 px-2 sm:px-6">
                   {modal.tipo === 'intruso' &&
                     modal.reto.palabras.map((pal, idx) => {
@@ -1098,9 +1149,8 @@ export default function AltarDecodificacion({
                 </div>
               </div>
 
-              {/* ── Pedestal Circular "Altar" con Círculo Mágico Luminoso (Imagen 2) ── */}
+              {/* ── Pedestal Circular "Altar" con Círculo Mágico Luminoso ── */}
               <div className="relative -mt-1 flex flex-col items-center">
-                {/* Cono de luz proyectado hacia el puente */}
                 <div
                   className="pointer-events-none absolute -top-10 w-52 h-14 opacity-60"
                   style={{
@@ -1112,7 +1162,12 @@ export default function AltarDecodificacion({
                   className="relative w-44 sm:w-52 h-12 rounded-full flex items-center justify-center shadow-[0_6px_20px_rgba(0,0,0,0.5)]"
                   style={{
                     background: 'linear-gradient(180deg, #B4A696 0%, #7C6E63 100%)',
-                    border: '2px solid #D6C7B2',
+                    borderTopWidth: '2px',
+                    borderRightWidth: '2px',
+                    borderBottomWidth: '2px',
+                    borderLeftWidth: '2px',
+                    borderStyle: 'solid',
+                    borderColor: '#D6C7B2',
                   }}
                 >
                   <div
@@ -1172,7 +1227,7 @@ export default function AltarDecodificacion({
             </AnimatePresence>
           </div>
 
-          {/* ── Botón Inferior Central "COMPROBAR" (Hexagonal Ámbar como en Imagen 2) ── */}
+          {/* ── Botón Inferior Central "COMPROBAR" ── */}
           <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 z-30">
             <motion.button
               type="button"
@@ -1185,7 +1240,12 @@ export default function AltarDecodificacion({
                   resueltoExito !== null
                     ? 'linear-gradient(180deg, #A7F3D0 0%, #34D399 55%, #059669 100%)'
                     : 'linear-gradient(180deg, #FDE68A 0%, #FBBF24 45%, #D97706 100%)',
-                border: '3px solid #E0F2FE',
+                borderTopWidth: '3px',
+                borderRightWidth: '3px',
+                borderBottomWidth: '3px',
+                borderLeftWidth: '3px',
+                borderStyle: 'solid',
+                borderColor: '#E0F2FE',
                 boxShadow:
                   resueltoExito !== null
                     ? '0 5px 0 #065F46, 0 10px 24px rgba(16,185,129,0.5)'
@@ -1197,7 +1257,7 @@ export default function AltarDecodificacion({
           </div>
         </motion.div>
 
-        {/* ── Botón Exterior Derecho "AYUDA" con Pluma Estelar (Fiel a Imagen 2) ── */}
+        {/* ── Botón Exterior Derecho "AYUDA" con Pluma Estelar ── */}
         <div className="hidden lg:flex flex-col items-center ml-5 z-30">
           <motion.button
             type="button"
@@ -1207,7 +1267,12 @@ export default function AltarDecodificacion({
             className="w-16 h-16 rounded-full flex items-center justify-center cursor-pointer transition-all shadow-[0_0_25px_rgba(167,139,250,0.45)]"
             style={{
               background: 'radial-gradient(circle, #43538A 0%, #283556 100%)',
-              border: '2px solid #A5B4FC',
+              borderTopWidth: '2px',
+              borderRightWidth: '2px',
+              borderBottomWidth: '2px',
+              borderLeftWidth: '2px',
+              borderStyle: 'solid',
+              borderColor: '#A5B4FC',
             }}
             title="Mostrar pista pedagógica"
           >
@@ -1229,4 +1294,3 @@ export default function AltarDecodificacion({
     </motion.div>
   );
 }
-

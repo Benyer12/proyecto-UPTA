@@ -1,8 +1,12 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createBrowserClient } from '@supabase/ssr';
+import { useAuthStore } from '../../lib/auth-store';
+import { getPlanetById } from '../../lib/mock-data';
+import { actualizarProgresoUsuario } from '../actions/progress';
 import Dado3D from './Dado3D';
 import MapaAstral from './letralia/MapaAstral';
 import AltarDecodificacion, {
@@ -35,6 +39,8 @@ interface TableroLetraliaProps {
   onPositionChange?: (pos: number) => void;
 }
 
+const BONUS_JEFE_FINAL = 4;
+
 const COLORES_CRISTAL = [
   { nombre: 'Celeste', top: '#7DD3FC', mid: '#38BDF8', dark: '#0284C7', bg: '#E0F2FE' },
   { nombre: 'Coral-Ámbar', top: '#FDBA74', mid: '#FB923C', dark: '#C2410C', bg: '#FFEDD5' },
@@ -42,7 +48,16 @@ const COLORES_CRISTAL = [
   { nombre: 'Menta', top: '#6EE7B7', mid: '#34D399', dark: '#047857', bg: '#D1FAE5' },
 ];
 
-/** Icono SVG de cristal facetado para las 4 ranuras de Sílabas Clave (fiel a Imagen 1). */
+/** Calcula las estrellas regulares (1, 2 o 3) según el porcentaje de aciertos */
+function calcularEstrellasPorPorcentaje(aciertos: number, totalPreguntas: number): number {
+  if (totalPreguntas <= 0) return 3;
+  const porcentaje = (aciertos / totalPreguntas) * 100;
+  if (porcentaje >= 90) return 3;
+  if (porcentaje >= 70) return 2;
+  return 1;
+}
+
+/** Icono SVG de cristal facetado para las 4 ranuras de Sílabas Clave */
 function IconoCristal({
   indice,
   activo,
@@ -54,9 +69,7 @@ function IconoCristal({
   return (
     <svg width="36" height="38" viewBox="0 0 36 38" className="overflow-visible select-none">
       <g opacity={activo ? 1 : 0.28}>
-        {/* Sombra base */}
         <ellipse cx="18" cy="34" rx="10" ry="2.8" fill="#1E1B4B" opacity="0.22" />
-        {/* Cristal principal */}
         <polygon
           points="18,3 27,13 23,31 13,31 9,13"
           fill={c.mid}
@@ -64,10 +77,8 @@ function IconoCristal({
           strokeWidth="1.4"
           strokeLinejoin="round"
         />
-        {/* Faceta luminosa izquierda */}
         <polygon points="18,3 27,13 18,17 9,13" fill={c.top} />
         <polygon points="18,3 18,17 9,13" fill="#FFFFFF" opacity="0.55" />
-        {/* Cristal secundario pequeño a la derecha */}
         <polygon
           points="28,15 33,21 30,31 24,31 25,21"
           fill={c.top}
@@ -75,7 +86,6 @@ function IconoCristal({
           strokeWidth="1"
           strokeLinejoin="round"
         />
-        {/* Cristal secundario pequeño a la izquierda */}
         <polygon
           points="8,17 12,22 11,31 6,31 5,22"
           fill={c.dark}
@@ -91,6 +101,22 @@ function IconoCristal({
 
 export default function TableroLetralia({ onPositionChange }: TableroLetraliaProps) {
   const router = useRouter();
+  const params = useParams<{ planetId?: string; levelId?: string }>();
+  const { user } = useAuthStore();
+
+  // Resolvemos el ID real del nivel en mock-data (ej. en Letralia Nivel 1 tiene id: 7, order: 1)
+  const resolvedLevelId = useMemo(() => {
+    const rawPlanetId = params?.planetId ? parseInt(params.planetId, 10) : 2;
+    const rawLevelId = params?.levelId ? parseInt(params.levelId, 10) : 7;
+    const planet = getPlanetById(rawPlanetId);
+    if (planet) {
+      for (const c of planet.courses) {
+        const found = c.levels.find((l) => l.id === rawLevelId || l.order === rawLevelId);
+        if (found) return found.id; // Devuelve 7, 8 o 9 para coincidir con el Dashboard
+      }
+    }
+    return rawLevelId || 7;
+  }, [params]);
 
   /* ── Palabra Llave de 4 sílabas para esta partida ── */
   const [indicePalabraLlave, setIndicePalabraLlave] = useState(0);
@@ -116,7 +142,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
   const [eligiendoRama, setEligiendoRama] = useState(false);
   const [pasosRestantesTrasRama, setPasosRestantesTrasRama] = useState(0);
 
-  /* ── Inventario de 4 Sílabas Clave y progreso ── */
+  /* ── Inventario de 4 Sílabas Clave y contadores de desempeño ── */
   const [silabasObtenidas, setSilabasObtenidas] = useState<[boolean, boolean, boolean, boolean]>([
     false,
     false,
@@ -124,6 +150,11 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
     false,
   ]);
   const [aciertosTotales, setAciertosTotales] = useState(0);
+  const [totalPreguntas, setTotalPreguntas] = useState(0);
+  const [estrellasRegularesFinal, setEstrellasRegularesFinal] = useState(3);
+  const [estrellasTotalesFinal, setEstrellasTotalesFinal] = useState(7);
+  const [guardandoBD, setGuardandoBD] = useState(false);
+
   const [avisoFlotante, setAvisoFlotante] = useState<string | null>(
     '¡Lanza el dado astral para comenzar tu viaje por Letralia!',
   );
@@ -142,7 +173,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
   // Ruta activa según la rama elegida
   const rutaActiva = useMemo(() => construirRuta(ramaElegida), [ramaElegida]);
 
-  // Índice efectivo (0..16, donde 0 = antes de start_1, 1..5 = start_1..5, 6..15 = rama_1..10, 16 = boss_36)
+  // Índice efectivo (0..16)
   const indiceEfectivo = useMemo(() => {
     if (!casillaActual) return 0;
     const idx = rutaActiva.findIndex((c) => c.id === casillaActual.id);
@@ -159,6 +190,83 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
   );
   const santuarioAbierto = cantidadSilabas === 4;
   const progresoPct = Math.min(100, Math.round((indiceEfectivo / TOTAL_RECORRIDO) * 100));
+
+  /**
+   * Guarda en Supabase la suma: (Estrellas Regulares por %) + (4 Estrellas Fijas del Guardián Final)
+   */
+  const guardarProgresoLetralia = useCallback(
+    async (aciertosActuales: number, totalActuales: number) => {
+      const estrellasRegulares = calcularEstrellasPorPorcentaje(aciertosActuales, totalActuales);
+      const estrellasTotales = estrellasRegulares + BONUS_JEFE_FINAL;
+
+      setEstrellasRegularesFinal(estrellasRegulares);
+      setEstrellasTotalesFinal(estrellasTotales);
+
+      const userId = (user as any)?.id;
+      if (!userId || typeof userId !== 'string') {
+        console.error('❌ No se puede guardar en Supabase: Usuario sin ID válido.');
+        return estrellasTotales;
+      }
+
+      setGuardandoBD(true);
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        );
+        const fechaActual = new Date().toISOString();
+
+        // 1. Verificamos si ya existe registro para (usuario_id, resolvedLevelId)
+        const { data: existente, error: errSelect } = await supabase
+          .from('progreso_usuario')
+          .select('id')
+          .eq('usuario_id', userId)
+          .eq('nivel_id', resolvedLevelId)
+          .maybeSingle();
+
+        if (errSelect) {
+          console.error('Error consultando progreso de Letralia:', errSelect.message);
+        }
+
+        if (existente?.id) {
+          const { error: errUpdate } = await supabase
+            .from('progreso_usuario')
+            .update({
+              completado: true,
+              estrellas: estrellasTotales,
+              ultima_sesion: fechaActual,
+            })
+            .eq('id', existente.id);
+
+          if (errUpdate) console.error('Error actualizando progreso de Letralia:', errUpdate.message);
+        } else {
+          const { error: errInsert } = await supabase.from('progreso_usuario').insert({
+            usuario_id: userId,
+            nivel_id: resolvedLevelId,
+            completado: true,
+            estrellas: estrellasTotales,
+            ultima_sesion: fechaActual,
+          });
+
+          if (errInsert) console.error('Error insertando progreso de Letralia:', errInsert.message);
+        }
+
+        // 2. Respaldo y revalidación de caché en servidor
+        await actualizarProgresoUsuario(userId, resolvedLevelId, true, estrellasTotales);
+
+        console.log(
+          `✅ ¡Letralia guardado en Supabase! Nivel ID ${resolvedLevelId}: ${estrellasRegulares} (regulares) + ${BONUS_JEFE_FINAL} (jefe) = ${estrellasTotales} ⭐`,
+        );
+      } catch (error) {
+        console.error('❌ Error al guardar progreso en Letralia:', error);
+      } finally {
+        setGuardandoBD(false);
+      }
+
+      return estrellasTotales;
+    },
+    [user, resolvedLevelId],
+  );
 
   /* ── Determinar qué Sílaba Clave corresponde otorgar según el tramo ── */
   const determinarSilabaPendiente = useCallback(
@@ -197,7 +305,6 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
       }
 
       if (casilla.tipo === 'boss') {
-        // Si por alguna razón aún falta una sílaba al tocar el Santuario, abrir primero un puente de rescate
         const faltaIdx = estadoSilabasActual.findIndex((s) => !s);
         if (faltaIdx !== -1) {
           const retoPuente = elegirSinRepetir(RETOS_PUENTE, usadosPuente.current);
@@ -216,7 +323,6 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
       }
 
       if (casilla.mecanica === 'tormenta') {
-        // Filtrar tormenta según rama si aplica
         const filtro =
           ramaElegida === 'left'
             ? (r: (typeof RETOS_TORMENTA)[number]) =>
@@ -240,7 +346,6 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         return;
       }
 
-      // Por defecto: Mecánica 1 (Caza del Intruso)
       const retoIntruso = elegirSinRepetir(RETOS_INTRUSO, usadosIntruso.current);
       setModalActivo({
         tipo: 'intruso',
@@ -299,7 +404,6 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
   /* ── Lanzar el Dado ── */
   const handleLanzarDado = useCallback(() => {
     if (rodandoDado || caminando || eligiendoRama || modalActivo !== null || victoriaFinal) return;
-    // Si ya está en la Encrucijada sin haber elegido rama, mostrar selector
     if (casillaActual?.id === 'start_5' && !ramaElegida) {
       setEligiendoRama(true);
       return;
@@ -315,22 +419,18 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
     setRodandoDado(false);
     setTurno((t) => t + 1);
 
-    // Calcular casillas a recorrer desde la posición actual
     if (!ramaElegida) {
-      // Estamos en el Tramo Inicial (start_1 .. start_5)
       const idxActual = casillaActual
         ? CASILLAS_START.findIndex((c) => c.id === casillaActual.id)
         : -1;
       const idxDestino = idxActual + resultadoDado;
 
       if (idxDestino >= 4) {
-        // Llega o pasa por `start_5` (índice 4): se detiene en `start_5` y guarda pasos restantes
         const pasosHastaEncrucijada = CASILLAS_START.slice(idxActual + 1, 5);
         const sobrantes = Math.max(0, idxDestino - 4);
         setPasosRestantesTrasRama(sobrantes);
 
         caminarSecuencia(pasosHastaEncrucijada, () => {
-          // Si aún no obtuvo la Sílaba 1 del tramo inicial, se otorga al llegar a la encrucijada o al elegir rama
           setEligiendoRama(true);
           setAvisoFlotante(
             sobrantes > 0
@@ -347,12 +447,10 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
       return;
     }
 
-    // Ya tiene rama elegida
     const ruta = construirRuta(ramaElegida);
     const idxActual = casillaActual ? ruta.findIndex((c) => c.id === casillaActual.id) : 4;
     let idxDestino = Math.min(ruta.length - 1, idxActual + resultadoDado);
 
-    // Si pasa por el Portal de Convergencia (índice 14 = rama_10) y aún no tiene la 4.ª sílaba, se detiene en el Portal
     if (idxActual < 14 && idxDestino > 14 && !silabasObtenidas[3]) {
       idxDestino = 14;
     }
@@ -382,7 +480,6 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
       setEligiendoRama(false);
       const info = INFO_RAMA[rama];
 
-      // Si había pasos restantes del dado al detenerse en `start_5`, continuarlos ahora por la rama elegida
       if (pasosRestantesTrasRama > 0) {
         const cant = Math.min(10, pasosRestantesTrasRama);
         const pasosRama = CASILLAS_RAMA[rama].slice(0, cant);
@@ -400,22 +497,32 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
 
   /* ── Procesar resultado al cerrar el modal "Altar de Decodificación" ── */
   const handleCompletarReto = useCallback(
-    (res: ResultadoAltar) => {
+    async (res: ResultadoAltar) => {
       setModalActivo(null);
 
-      if (res.exito) {
-        setAciertosTotales((a) => a + 1);
-        if (casillaActual) {
-          setCompletadas((prev) => {
-            const nuevo = new Set(prev);
-            nuevo.add(casillaActual.id);
-            return nuevo;
-          });
+      // Si NO es el jefe final, contabilizamos la pregunta regular para el porcentaje
+      let nuevosAciertos = aciertosTotales;
+      let nuevoTotal = totalPreguntas;
+
+      if (!res.esBossFinal) {
+        nuevoTotal = totalPreguntas + 1;
+        setTotalPreguntas(nuevoTotal);
+        if (res.exito) {
+          nuevosAciertos = aciertosTotales + 1;
+          setAciertosTotales(nuevosAciertos);
         }
       }
 
+      if (res.exito && casillaActual) {
+        setCompletadas((prev) => {
+          const nuevo = new Set(prev);
+          nuevo.add(casillaActual.id);
+          return nuevo;
+        });
+      }
+
       // Actualizar Sílabas Clave si obtuvo una
-      let nuevasSilabas = [...silabasObtenidas] as [boolean, boolean, boolean, boolean];
+      const nuevasSilabas = [...silabasObtenidas] as [boolean, boolean, boolean, boolean];
       if (res.exito && res.silabaObtenida) {
         const idxSilaba = palabraActual.silabas.findIndex(
           (s, i) => s === res.silabaObtenida && !nuevasSilabas[i],
@@ -431,8 +538,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         }
       }
 
-      // Si completó el duelo del Guardián Final
+      // Si completó el duelo del Guardián Final -> Calculamos estrellas y guardamos en Supabase
       if (res.esBossFinal && res.exito) {
+        await guardarProgresoLetralia(nuevosAciertos, nuevoTotal);
         setVictoriaFinal(true);
         setAvisoFlotante('¡Has restaurado el Archivo Astral de Letralia!');
         return;
@@ -461,7 +569,6 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
           );
           setTimeout(() => {
             caminarSecuencia([destinoExtra], (ult) => {
-              // Si el impulso lleva al Portal (rama_10) y falta la 4.ª sílaba, activar el portal
               if (ult.tipo === 'portal' && !nuevasSilabas[3]) {
                 activarRetoCasilla(ult, nuevasSilabas);
               }
@@ -470,8 +577,25 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         }
       }
     },
-    [casillaActual, silabasObtenidas, palabraActual, ramaElegida, caminarSecuencia, activarRetoCasilla],
+    [
+      aciertosTotales,
+      totalPreguntas,
+      casillaActual,
+      silabasObtenidas,
+      palabraActual,
+      ramaElegida,
+      caminarSecuencia,
+      activarRetoCasilla,
+      guardarProgresoLetralia,
+    ],
   );
+
+  /* ── Guardar y redirigir al Dashboard ── */
+  const handleIrAlDashboard = useCallback(async () => {
+    await guardarProgresoLetralia(aciertosTotales, totalPreguntas);
+    router.refresh();
+    router.push('/dashboard');
+  }, [guardarProgresoLetralia, aciertosTotales, totalPreguntas, router]);
 
   /* ── Reiniciar partida con nueva palabra llave ── */
   const handleNuevaPartida = useCallback(() => {
@@ -487,6 +611,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
     setPasosRestantesTrasRama(0);
     setTurno(1);
     setAciertosTotales(0);
+    setTotalPreguntas(0);
     setVictoriaFinal(false);
     setModalActivo(null);
     setAvisoFlotante('¡Nueva expedición iniciada! Lanza el dado astral.');
@@ -497,6 +622,16 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
     if (casillaActual.tramo === 'boss') return 'Santuario del Guardián';
     return INFO_RAMA[casillaActual.tramo].corto;
   }, [casillaActual]);
+
+  const estrellasVistaPrevia = useMemo(
+    () =>
+       victoriaFinal
+        ? estrellasTotalesFinal
+        : totalPreguntas > 0
+          ? calcularEstrellasPorPorcentaje(aciertosTotales, totalPreguntas)
+          : 0,
+    [victoriaFinal, estrellasTotalesFinal, totalPreguntas, aciertosTotales],
+  );
 
   return (
     <div
@@ -513,7 +648,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
             type="button"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => router.push('/planeta/2')}
+            onClick={() => router.push('/dashboard')}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-full font-extrabold text-xs sm:text-sm text-[#1E1B4B] shadow-md cursor-pointer"
             style={{
               background: 'linear-gradient(180deg, #FDF6E3 0%, #EAD7B7 100%)',
@@ -526,10 +661,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
           </motion.button>
         </div>
 
-        {/* ── Cartel Central Superior "TURN / TURNO ↻" con alas lavanda y 4 puntos (Fiel a Imagen 1) ── */}
+        {/* ── Cartel Central Superior "TURNO ↻" ── */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none">
           <div className="flex items-start">
-            {/* Ala izquierda lavanda */}
             <div
               className="hidden sm:flex h-8 w-10 items-center justify-center rounded-bl-xl border-b-2 border-l-2 border-[#8B7CC0]"
               style={{
@@ -542,7 +676,6 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               </span>
             </div>
 
-            {/* Placa central pergamino */}
             <div
               className="px-6 sm:px-8 py-1.5 rounded-b-2xl border-x-2 border-b-2 border-[#9A7B56] shadow-lg flex items-center gap-2"
               style={{
@@ -557,7 +690,6 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               </span>
             </div>
 
-            {/* Ala derecha lavanda */}
             <div
               className="hidden sm:flex h-8 w-10 items-center justify-center rounded-br-xl border-b-2 border-r-2 border-[#8B7CC0]"
               style={{
@@ -571,7 +703,6 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
             </div>
           </div>
 
-          {/* 4 puntos indicadores debajo de TURN */}
           <div className="flex items-center gap-1.5 mt-1.5">
             {[0, 1, 2, 3].map((i) => {
               const activo = (turno - 1) % 4 === i;
@@ -625,7 +756,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         </AnimatePresence>
       </div>
 
-      {/* ════════════════════ HUD ESPACIAL LATERAL DERECHO (FIEL A IMAGEN 1) ════════════════════ */}
+      {/* ════════════════════ HUD ESPACIAL LATERAL DERECHO ════════════════════ */}
       <aside className="relative z-30 w-full lg:w-[330px] xl:w-[350px] lg:h-full p-2 sm:p-3 flex flex-col justify-center shrink-0">
         <div
           className="relative w-full h-full max-h-[820px] rounded-[28px] p-3.5 sm:p-4 flex flex-col justify-between shadow-[0_16px_50px_rgba(15,23,42,0.6)] overflow-y-auto"
@@ -635,7 +766,6 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
             boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.75), 0 16px 40px rgba(15,23,42,0.55)',
           }}
         >
-          {/* Pequeña pestaña triangular izquierda en la mitad del panel (como en Imagen 1) */}
           <div className="hidden lg:flex absolute left-1.5 top-1/2 -translate-y-1/2 text-[#7C6BC9] text-xs font-black select-none">
             ◀
           </div>
@@ -671,7 +801,6 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               boxShadow: 'inset 0 4px 14px rgba(30, 41, 59, 0.35)',
             }}
           >
-            {/* Estrellitas decorativas dentro del cuenco del dado */}
             <span className="pointer-events-none absolute top-2 left-3 text-white/70 text-xs">✦</span>
             <span className="pointer-events-none absolute bottom-2 right-3 text-white/70 text-xs">★</span>
             <div
@@ -703,11 +832,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               border: '2px solid #D2BA93',
             }}
           >
-            {/* Muescas laterales estilo pergamino antiguo (Imagen 1) */}
             <span className="hidden sm:block absolute -left-1.5 top-8 w-3 h-3 rotate-45 bg-[#E2DCFA] border-r-2 border-t-2 border-[#D2BA93]" />
             <span className="hidden sm:block absolute -right-1.5 top-16 w-3 h-3 rotate-45 bg-[#E2DCFA] border-l-2 border-b-2 border-[#D2BA93]" />
 
-            {/* Barra de Progreso (0% a 100% sobre 16 casillas) */}
             <div className="mb-3">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-black tracking-wider text-[#2E2546] uppercase">
@@ -721,14 +848,13 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                 <motion.div
                   className="h-full rounded-full"
                   initial={{ width: '0%' }}
-                  animate={{ width: `${ Math.max(6, progresoPct) }%` }}
+                  animate={{ width: `${Math.max(6, progresoPct)}%` }}
                   transition={{ duration: 0.4, ease: 'easeOut' }}
                   style={{
                     background:
                       'linear-gradient(90deg, #C4B5FD 0%, #F9A8D4 55%, #FDE68A 100%)',
                   }}
                 />
-                {/* Estrellas de hito en la barra (como en Imagen 1) */}
                 {[31, 68, 96].map((posPct, idx) => {
                   const alcanzada = progresoPct >= posPct;
                   return (
@@ -749,7 +875,6 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               </div>
             </div>
 
-            {/* Inventario de Sílabas Clave (4 Ranuras de Cristal) */}
             <div className="mt-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-black tracking-wider text-[#2E2546] uppercase">
@@ -793,7 +918,6 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                 })}
               </div>
 
-              {/* Llave hacia el Guardián al reunir las 4 sílabas */}
               <div
                 className="mt-2.5 rounded-xl px-3 py-2 flex items-center justify-between border-2 transition-all"
                 style={{
@@ -817,16 +941,16 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                     </p>
                   </div>
                 </div>
-                {santuarioAbierto && (
-                  <span className="text-xs font-black text-emerald-800 bg-emerald-200 px-2 py-0.5 rounded-full">
-                    LISTA
+                {estrellasVistaPrevia > 0 && (
+                  <span className="text-xs font-black text-amber-900 bg-amber-200 border border-amber-400 px-2 py-0.5 rounded-full">
+                    ⭐ {estrellasVistaPrevia}
                   </span>
                 )}
               </div>
             </div>
           </div>
 
-          {/* ── 4. BOTONES DE ACCIÓN INFERIORES (ESTILO SPIN/ROLL & LETTERS DE IMAGEN 1) ── */}
+          {/* ── 4. BOTONES DE ACCIÓN INFERIORES ── */}
           <div className="flex flex-col gap-2.5 mt-2">
             <motion.button
               type="button"
@@ -874,12 +998,12 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         </div>
       </aside>
 
-      {/* ════════════════════ MODAL "ALTAR DE DECODIFICACIÓN" (4 MECÁNICAS) ════════════════════ */}
+      {/* ════════════════════ MODAL "ALTAR DE DECODIFICACIÓN" ════════════════════ */}
       <AnimatePresence>
         {modalActivo && (
           <AltarDecodificacion
             modal={modalActivo}
-            estrellasActuales={aciertosTotales}
+            estrellasActuales={estrellasVistaPrevia}
             silabasRecolectadas={cantidadSilabas}
             onCompletar={handleCompletarReto}
           />
@@ -975,7 +1099,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         )}
       </AnimatePresence>
 
-      {/* ════════════════════ PANTALLA DE VICTORIA CON ESTRELLAS ════════════════════ */}
+      {/* ════════════════════ PANTALLA DE VICTORIA CON DESGLOSE DE ESTRELLAS ════════════════════ */}
       <AnimatePresence>
         {victoriaFinal && (
           <motion.div
@@ -1015,7 +1139,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                 Clave del códice:
               </p>
 
-              <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#EDE9FE] border-2 border-[#A78BFA] mb-6">
+              <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#EDE9FE] border-2 border-[#A78BFA] mb-4">
                 {palabraActual.silabas.map((sil, i) => (
                   <span
                     key={i}
@@ -1024,6 +1148,28 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                     {sil}
                   </span>
                 ))}
+              </div>
+
+              {/* Desglose de Estrellas según reglas de negocio */}
+              <div className="bg-[#F4E6C8] border-2 border-[#D5BE97] rounded-2xl p-3.5 mb-6 text-xs sm:text-sm space-y-1 text-[#1E1B4B]">
+                <div className="flex justify-between font-semibold">
+                  <span>
+                    Preguntas Regulares (
+                    {totalPreguntas > 0
+                      ? Math.round((aciertosTotales / totalPreguntas) * 100)
+                      : 100}
+                    % aciertos):
+                  </span>
+                  <span className="font-black text-amber-800">+{estrellasRegularesFinal} ⭐</span>
+                </div>
+                <div className="flex justify-between font-semibold">
+                  <span>Bonificación Guardián Final:</span>
+                  <span className="font-black text-indigo-900">+{BONUS_JEFE_FINAL} ⭐</span>
+                </div>
+                <div className="border-t border-[#D5BE97] pt-1.5 mt-1.5 flex justify-between text-base font-black text-[#4C1D95]">
+                  <span>Estrellas Totales del Nivel:</span>
+                  <span>⭐ {estrellasTotalesFinal}</span>
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -1036,10 +1182,11 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                 </button>
                 <button
                   type="button"
-                  onClick={() => router.push('/planeta/2')}
-                  className="px-6 py-3 rounded-2xl font-black text-sm uppercase tracking-wider bg-gradient-to-b from-[#DDD6FE] to-[#A78BFA] border-2 border-[#4C1D95] text-[#1E1B4B] shadow-[0_4px_0_#4C1D95] cursor-pointer"
+                  disabled={guardandoBD}
+                  onClick={handleIrAlDashboard}
+                  className="px-6 py-3 rounded-2xl font-black text-sm uppercase tracking-wider bg-gradient-to-b from-[#DDD6FE] to-[#A78BFA] border-2 border-[#4C1D95] text-[#1E1B4B] shadow-[0_4px_0_#4C1D95] cursor-pointer disabled:opacity-50"
                 >
-                  ← Volver a Letralia
+                  {guardandoBD ? 'Guardando...' : '🚀 Ir al Dashboard'}
                 </button>
               </div>
             </motion.div>

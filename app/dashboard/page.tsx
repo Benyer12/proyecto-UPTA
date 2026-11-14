@@ -6,10 +6,42 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import PlanetVisual from '../components/PlanetVisual';
 import { useAuthStore } from '../../lib/auth-store';
-import { MOCK_PLANETS, MOCK_PROGRESS } from '../../lib/mock-data';
+import { MOCK_PLANETS } from '../../lib/mock-data';
 import type { Planet, StudentProgress } from '../../shared/types';
+import { createBrowserClient } from '@supabase/ssr';
 
-function StudentView({ planets, progress, user }: { planets: Planet[]; progress: Record<number, StudentProgress>; user?: any }) {
+async function obtenerProgresoDelEstudiante(userId: string) {
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  const { data, error } = await supabase
+    .from('progreso_usuario')
+    .select('*')
+    .eq('usuario_id', userId);
+
+  if (error) {
+    console.error('Error al obtener progreso:', error);
+    return { progressMap: {}, totalStars: 0 };
+  }
+
+  const progressMap: Record<number, any> = {};
+  let totalStars = 0;
+  
+  data.forEach((row) => {
+    progressMap[row.nivel_id] = {
+      status: row.completado ? 'completed' : 'unlocked',
+      stars: row.estrellas,
+      completed: row.completado
+    };
+    totalStars += row.estrellas || 0;
+  });
+
+  return { progressMap, totalStars };
+}
+
+function StudentView({ planets, progress, user, totalStars }: { planets: Planet[]; progress: Record<number, StudentProgress>; user?: any; totalStars: number }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState<number | null>(null);
 
@@ -37,7 +69,7 @@ function StudentView({ planets, progress, user }: { planets: Planet[]; progress:
           <span className="text-2xl filter drop-shadow-[0_0_5px_rgba(255,215,0,0.8)]">⭐</span>
           <div>
             <div className="text-xs text-slate-400 uppercase tracking-wider font-bold">Estrellas</div>
-            <div className="text-xl font-black text-white">0</div>
+            <div className="text-xl font-black text-white">{totalStars}</div>
           </div>
         </div>
       </div>
@@ -128,16 +160,16 @@ function StudentView({ planets, progress, user }: { planets: Planet[]; progress:
                             </span>
                           );
                         })}
+                      </div>
                     </div>
-                  </div>
                   ))}
-              </div>
+                </div>
               )}
             </motion.div>
           );
         })}
       </div>
-  </div>
+    </div>
   );
 }
 
@@ -145,10 +177,24 @@ export default function Dashboard() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const [mounted, setMounted] = useState(false);
+  const [progress, setProgress] = useState<Record<number, StudentProgress>>({});
+  const [totalStars, setTotalStars] = useState(0);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Cargar el progreso real de Supabase al montar y tener el usuario autenticado
+// Cargar el progreso real de Supabase al montar y tener el usuario autenticado
+  useEffect(() => {
+    const userId = (user as any)?.id;
+    if (mounted && userId) {
+      obtenerProgresoDelEstudiante(userId).then(({ progressMap, totalStars }) => {
+        setProgress(progressMap);
+        setTotalStars(totalStars);
+      });
+    }
+  }, [mounted, user]);
 
   // Redirección automática al detectar rol admin o tutor/docente
   useEffect(() => {
@@ -191,42 +237,10 @@ export default function Dashboard() {
     <div className="relative min-h-screen" style={{ background: '#00000a' }}>
       <div className="relative z-10 px-6 py-12">
         {user.role === 'student' && (
-          <StudentView planets={MOCK_PLANETS} progress={MOCK_PROGRESS} user={user} />
+          <StudentView planets={MOCK_PLANETS} progress={progress} user={user} totalStars={totalStars} />
         )}
       </div>
     </div>
   );
 }
 
-import { createBrowserClient } from '@supabase/ssr';
-
-async function obtenerProgresoDelEstudiante(userId: string) {
-  // Crear el cliente para el navegador usando @supabase/ssr
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
-  const { data, error } = await supabase
-    .from('progreso_usuario')
-    .select('*')
-    .eq('usuario_id', userId);
-
-  if (error) {
-    console.error('Error al obtener progreso:', error);
-    return {};
-  }
-
-  // Transformar el array de Supabase en un objeto tipo Record<number, StudentProgress>
-  const progressMap: Record<number, any> = {};
-  
-  data.forEach((row) => {
-    progressMap[row.nivel_id] = {
-      status: row.completado ? 'completed' : 'unlocked',
-      stars: row.estrellas,
-      completed: row.completado
-    };
-  });
-
-  return progressMap;
-}

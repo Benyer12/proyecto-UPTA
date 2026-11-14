@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createBrowserClient } from '@supabase/ssr';
+import { useAuthStore } from '../../lib/auth-store';
+import { actualizarProgresoUsuario } from '../actions/progress';
 import Dado3D from './Dado3D';
 import MapaMontañaCuantica, {
   ESPECIALES_IDX,
@@ -29,6 +32,7 @@ interface Props {
 }
 
 const TOTAL = 20;
+const BONUS_JEFE_FINAL = 4;
 
 const OPERADORES_NUCLEO: { op: '+' | '−' | '×' | '÷'; nombre: string; color: string; glow: string }[] = [
   { op: '+', nombre: 'Adición', color: '#FBBF24', glow: 'rgba(251, 191, 36, 0.7)' },
@@ -44,8 +48,8 @@ const CONDICIONES_TRAMPA: {
   {
     etiqueta: 'PAR',
     generar: () => {
-      const par = (Math.floor(Math.random() * 40) + 6) * 2; // ej. 68
-      const imp1 = (Math.floor(Math.random() * 40) + 5) * 2 + 1; // ej. 29
+      const par = (Math.floor(Math.random() * 40) + 6) * 2;
+      const imp1 = (Math.floor(Math.random() * 40) + 5) * 2 + 1;
       let imp2 = (Math.floor(Math.random() * 40) + 5) * 2 + 1;
       if (imp2 === imp1) imp2 += 2;
       const asteroides = [par, imp1, imp2].sort(() => Math.random() - 0.5);
@@ -81,8 +85,8 @@ const CONDICIONES_TRAMPA: {
     etiqueta: 'MÚLTIPLO DE 5',
     generar: () => {
       const mult5 = (Math.floor(Math.random() * 16) + 3) * 5;
-      let n1 = mult5 + 2;
-      let n2 = mult5 + 3;
+      const n1 = mult5 + 2;
+      const n2 = mult5 + 3;
       const asteroides = [mult5, n1, n2].sort(() => Math.random() - 0.5);
       return {
         asteroides,
@@ -96,7 +100,16 @@ const CONDICIONES_TRAMPA: {
   },
 ];
 
-/** Cápsula Tecnológica Vertical para los 4 Núcleos Cuánticos (+, −, ×, ÷) del HUD (fiel a Imagen 1). */
+/** Calcula las estrellas regulares (1, 2 o 3) según el porcentaje de aciertos */
+function calcularEstrellasPorPorcentaje(aciertos: number, totalPreguntas: number): number {
+  if (totalPreguntas <= 0) return 3; // Si llegó al final sin caer en preguntas regulares
+  const porcentaje = (aciertos / totalPreguntas) * 100;
+  if (porcentaje >= 90) return 3;
+  if (porcentaje >= 70) return 2;
+  return 1;
+}
+
+/** Cápsula Tecnológica Vertical para los 4 Núcleos Cuánticos (+, −, ×, ÷) del HUD */
 function CapsulaNucleo({
   operador,
   activo,
@@ -120,7 +133,6 @@ function CapsulaNucleo({
         boxShadow: activo ? `0 0 16px ${glow}, inset 0 0 10px ${glow}` : 'inset 0 2px 6px rgba(0,0,0,0.6)',
       }}
     >
-      {/* Tapa metálica superior */}
       <div
         className="w-7 h-2.5 rounded-t-full border-b"
         style={{
@@ -130,7 +142,6 @@ function CapsulaNucleo({
         }}
       />
 
-      {/* Ventana central con el operador en cubo isométrico */}
       <div
         className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-lg transition-all"
         style={{
@@ -145,7 +156,6 @@ function CapsulaNucleo({
         {activo ? operador : '?'}
       </div>
 
-      {/* Tapa metálica inferior */}
       <div
         className="w-7 h-2.5 rounded-b-full border-t"
         style={{
@@ -160,13 +170,22 @@ function CapsulaNucleo({
 
 export default function TableroIsometrico({ onPositionChange }: Props) {
   const router = useRouter();
+  const params = useParams<{ planetId?: string; levelId?: string }>();
+  const { user } = useAuthStore();
+  const levelId = params?.levelId ? parseInt(params.levelId, 10) : 1;
 
   /* ── Posición en el recorrido lineal de 20 cubos (0..19 = Casilla 01..20) ── */
   const [pos, setPos] = useState(0);
   const [caminando, setCaminando] = useState(false);
   const [rolling, setRolling] = useState(false);
   const [diceResult, setDiceResult] = useState(1);
+
+  /* ── Contadores para el Cálculo de Estrellas por Porcentaje + Jefe Final ── */
+  const [aciertos, setAciertos] = useState(0);
+  const [totalPreguntas, setTotalPreguntas] = useState(0);
   const [stars, setStars] = useState(0);
+  const [estrellasRegularesFinal, setEstrellasRegularesFinal] = useState(3);
+  const [guardandoBD, setGuardandoBD] = useState(false);
 
   /* ── 4 Núcleos Cuánticos (+, −, ×, ÷) ── */
   const [collectedCores, setCollectedCores] = useState<[boolean, boolean, boolean, boolean]>([
@@ -228,11 +247,102 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     bossBattleActive ||
     showWin;
 
+  /**
+   * Función asíncrona que calcula (Estrellas Regulares por %) + (4 Estrellas Jefe Final)
+   * y actualiza/inserta el registro en la tabla `progreso_usuario` de Supabase.
+   */
+  const guardarProgresoEnSupabase = useCallback(
+    async (aciertosActuales: number, totalActuales: number) => {
+      const estrellasRegulares = calcularEstrellasPorPorcentaje(aciertosActuales, totalActuales);
+      const estrellasTotales = estrellasRegulares + BONUS_JEFE_FINAL;
+
+      setEstrellasRegularesFinal(estrellasRegulares);
+      setStars(estrellasTotales);
+
+      const userId = (user as any)?.id;
+      if (!userId || typeof userId !== 'string') {
+        console.error('❌ No se puede guardar en Supabase: Usuario sin ID válido.');
+        return estrellasTotales;
+      }
+
+      setGuardandoBD(true);
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        );
+        const fechaActual = new Date().toISOString();
+
+        // 1. Verificamos si ya existe la fila para este usuario y nivel (ej. id 54)
+        const { data: existente, error: errSelect } = await supabase
+          .from('progreso_usuario')
+          .select('id')
+          .eq('usuario_id', userId)
+          .eq('nivel_id', levelId)
+          .maybeSingle();
+
+        if (errSelect) {
+          console.error('Error consultando progreso_usuario:', errSelect.message);
+        }
+
+        if (existente?.id) {
+          // 2A. Actualizamos la fila existente
+          const { error: errUpdate } = await supabase
+            .from('progreso_usuario')
+            .update({
+              completado: true,
+              estrellas: estrellasTotales,
+              ultima_sesion: fechaActual,
+            })
+            .eq('id', existente.id);
+
+          if (errUpdate) console.error('Error en update cliente:', errUpdate.message);
+        } else {
+          // 2B. Insertamos nuevo registro si no existía
+          const { error: errInsert } = await supabase.from('progreso_usuario').insert({
+            usuario_id: userId,
+            nivel_id: levelId,
+            completado: true,
+            estrellas: estrellasTotales,
+            ultima_sesion: fechaActual,
+          });
+
+          if (errInsert) console.error('Error en insert cliente:', errInsert.message);
+        }
+
+        // 3. Ejecutamos también el Server Action para revalidar caché de Next.js
+        await actualizarProgresoUsuario(userId, levelId, true, estrellasTotales);
+
+        console.log(
+          `✅ Guardado exitoso en Supabase -> Nivel ${levelId}: ${estrellasRegulares} (regulares) + ${BONUS_JEFE_FINAL} (jefe) = ${estrellasTotales} ⭐`,
+        );
+      } catch (error) {
+        console.error('❌ Error guardando el progreso en Supabase:', error);
+      } finally {
+        setGuardandoBD(false);
+      }
+
+      return estrellasTotales;
+    },
+    [user, levelId],
+  );
+
+  /* ── Registrar respuesta regular y actualizar vista previa de estrellas (1 a 3) ── */
+  const registrarDesempenoRegular = useCallback(
+    (esCorrecta: boolean) => {
+      const nuevosAciertos = esCorrecta ? aciertos + 1 : aciertos;
+      const nuevoTotal = totalPreguntas + 1;
+      setAciertos(nuevosAciertos);
+      setTotalPreguntas(nuevoTotal);
+      setStars(calcularEstrellasPorPorcentaje(nuevosAciertos, nuevoTotal));
+    },
+    [aciertos, totalPreguntas],
+  );
+
   /* ── Otorgar Núcleo Cuántico correspondiente según el avance ── */
   const desbloquearNucleoPorPosicion = useCallback((indiceCasilla: number) => {
     setCollectedCores((prev) => {
       const nuevo: [boolean, boolean, boolean, boolean] = [...prev];
-      // Hitos en casillas 4 (idx 3), 8 (idx 7), 12 (idx 11), 16 (idx 15)
       if (indiceCasilla >= 3 && !nuevo[0]) nuevo[0] = true;
       else if (indiceCasilla >= 7 && !nuevo[1]) nuevo[1] = true;
       else if (indiceCasilla >= 11 && !nuevo[2]) nuevo[2] = true;
@@ -267,7 +377,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
 
   /* ── Iniciar Minijuego A: Reactor de Propulsión Cuántica (Secuencia) ── */
   const startSpecialMinigame = useCallback(() => {
-    // Generar una serie clara de 4 números de 2 cifras (p. ej. múltiplos de 12, 15, 11 o decenas)
     const pasosPosibles = [6, 8, 9, 11, 12, 14, 15];
     const paso = pasosPosibles[Math.floor(Math.random() * pasosPosibles.length)];
     const base = Math.floor(Math.random() * 3 + 1) * paso;
@@ -388,9 +497,10 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
 
     const ordenada = [...specialSequence].sort((a, b) => a - b);
     const esCorrecta = specialSelection.every((val, i) => val === ordenada[i]);
+    registrarDesempenoRegular(esCorrecta);
+
     if (esCorrecta) {
       setSpecialStatus('correct');
-      setStars((s) => s + 2);
       desbloquearNucleoPorPosicion(pos);
     } else {
       setSpecialStatus('incorrect');
@@ -403,6 +513,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     moverPasoAPaso,
     desbloquearNucleoPorPosicion,
     startBossBattle,
+    registrarDesempenoRegular,
   ]);
 
   /* ── Interacción en Tarjeta 1 (Modo Pregunta Matemática) ── */
@@ -416,16 +527,18 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     }
     if (selectedOpt === null) return;
 
-    if (selectedOpt === question.indiceRespuestaCorrecta) {
+    const esCorrecta = selectedOpt === question.indiceRespuestaCorrecta;
+    registrarDesempenoRegular(esCorrecta);
+
+    if (esCorrecta) {
       setQStatus('correct');
-      setStars((s) => s + 1);
       desbloquearNucleoPorPosicion(pos);
-      setAvisoFlotante('¡Cálculo verificado! Ganaste +1 Estrella Cuántica.');
+      setAvisoFlotante('¡Cálculo verificado! Precisión cuántica actualizada.');
     } else {
       setQStatus('incorrect');
       setAvisoFlotante('Revisa la explicación del reactor y prepárate para el próximo salto.');
     }
-  }, [question, qStatus, selectedOpt, pos, desbloquearNucleoPorPosicion]);
+  }, [question, qStatus, selectedOpt, pos, desbloquearNucleoPorPosicion, registrarDesempenoRegular]);
 
   /* ── Interacción en Tarjeta 2 (Alerta de Impacto — Escudo Antimateria) ── */
   const handleDispararAsteroide = useCallback(
@@ -433,15 +546,17 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
       if (trapStatus !== 'idle' || !trapCondition) return;
       setTrapSelected(idx);
       const numero = trapAsteroids[idx];
-      if (trapCondition.cumple(numero)) {
+      const esCorrecta = trapCondition.cumple(numero);
+      registrarDesempenoRegular(esCorrecta);
+
+      if (esCorrecta) {
         setTrapStatus('correct');
-        setStars((s) => s + 1);
         desbloquearNucleoPorPosicion(pos);
       } else {
         setTrapStatus('incorrect');
       }
     },
-    [trapStatus, trapCondition, trapAsteroids, pos, desbloquearNucleoPorPosicion],
+    [trapStatus, trapCondition, trapAsteroids, pos, desbloquearNucleoPorPosicion, registrarDesempenoRegular],
   );
 
   const handleCerrarAlertaImpacto = useCallback(() => {
@@ -461,7 +576,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
   }, [trapStatus, pos, moverPasoAPaso]);
 
   /* ── Interacción en Tarjeta 3 (Guardián del Nivel — Núcleo Armilar) ── */
-  const handleAlinearAnillo = useCallback(() => {
+  const handleAlinearAnillo = useCallback(async () => {
     if (bossStatus === 'correct') {
       if (bossPhase < 3) {
         const siguienteReto = getRandomRetoBoss(usadosBossRef.current);
@@ -471,8 +586,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         setBossSelectedOpt(null);
         setBossStatus('idle');
       } else {
+        // ¡Jefe Final Superado! Calculamos (Regulares por % + 4 del Jefe) y guardamos en Supabase
         setBossBattleActive(false);
-        setStars((s) => s + 3);
+        await guardarProgresoEnSupabase(aciertos, totalPreguntas);
         setShowWin(true);
         setAvisoFlotante('¡Núcleo Armilar de Numérix restaurado al 100%!');
       }
@@ -480,7 +596,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     }
 
     if (bossStatus === 'incorrect') {
-      // Si el jugador se equivoca en el desafío final, cambiamos la pregunta por otra nueva y barajada
       const nuevoReto = getRandomRetoBoss(usadosBossRef.current);
       usadosBossRef.current.add(nuevoReto.id);
       setBossReto(nuevoReto);
@@ -495,11 +610,28 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     } else {
       setBossStatus('incorrect');
     }
-  }, [bossStatus, bossPhase, bossSelectedOpt, bossReto]);
+  }, [
+    bossStatus,
+    bossPhase,
+    bossSelectedOpt,
+    bossReto,
+    guardarProgresoEnSupabase,
+    aciertos,
+    totalPreguntas,
+  ]);
+
+  /* ── Finalizar y redirigir al Dashboard ── */
+  const handleIrAlDashboard = useCallback(async () => {
+    await guardarProgresoEnSupabase(aciertos, totalPreguntas);
+    router.refresh();
+    router.push('/dashboard');
+  }, [guardarProgresoEnSupabase, aciertos, totalPreguntas, router]);
 
   /* ── Reiniciar partida ── */
   const handleRestart = useCallback(() => {
     setPos(0);
+    setAciertos(0);
+    setTotalPreguntas(0);
     setStars(0);
     setCollectedCores([false, false, false, false]);
     setQuestion(null);
@@ -527,7 +659,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             type="button"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => router.push('/planeta/1')}
+            onClick={() => router.push('/dashboard')}
             className="flex items-center gap-1.5 px-4 py-2 rounded-full font-extrabold text-xs sm:text-sm text-[#E0F2FE] shadow-lg cursor-pointer"
             style={{
               background: 'linear-gradient(180deg, #123258 0%, #0A1E38 100%)',
@@ -540,9 +672,8 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
           </motion.button>
         </div>
 
-        {/* ── Arriba al Centro: Banderín Trapezoidal "◀ SALTO CUÁNTICO ▶" (Fiel a Imagen 1) ── */}
+        {/* ── Arriba al Centro: Banderín Trapezoidal "◀ SALTO CUÁNTICO ▶" ── */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 flex items-start pointer-events-none">
-          {/* Ala tecnológica izquierda */}
           <div
             className="hidden sm:flex h-9 w-11 items-center justify-center rounded-bl-xl border-b-2 border-l-2 border-[#00F0FF]"
             style={{
@@ -555,7 +686,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             </span>
           </div>
 
-          {/* Placa central dorada/ámbar biselada */}
           <div
             className="px-6 sm:px-9 py-1.5 rounded-b-2xl border-x-2 border-b-2 border-[#FEF08A] shadow-[0_6px_24px_rgba(245,158,11,0.45)] flex items-center gap-2"
             style={{
@@ -570,7 +700,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             </span>
           </div>
 
-          {/* Ala tecnológica derecha */}
           <div
             className="hidden sm:flex h-9 w-11 items-center justify-center rounded-br-xl border-b-2 border-r-2 border-[#00F0FF]"
             style={{
@@ -593,7 +722,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
           />
         </div>
 
-        {/* ── Abajo al Centro: Píldora Flotante de Instrucciones (Fiel a Imagen 1) ── */}
+        {/* ── Abajo al Centro: Píldora Flotante de Instrucciones ── */}
         <AnimatePresence mode="wait">
           <motion.div
             key={avisoFlotante}
@@ -608,7 +737,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         </AnimatePresence>
       </div>
 
-      {/* ════════════════════ HUD LATERAL DERECHO (MISMO TAMAÑO Y MÓDULOS QUE LETRALIA, FIEL A IMAGEN 1) ════════════════════ */}
+      {/* ════════════════════ HUD LATERAL DERECHO ════════════════════ */}
       <aside className="relative z-30 w-full lg:w-[330px] xl:w-[350px] lg:h-full p-2 sm:p-3 flex flex-col justify-center shrink-0">
         <div
           className="relative w-full h-full max-h-[820px] rounded-[28px] p-3.5 sm:p-4 flex flex-col justify-between overflow-y-auto"
@@ -647,11 +776,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               boxShadow: 'inset 0 0 30px rgba(0, 240, 255, 0.25)',
             }}
           >
-            {/* Destellos en las esquinas de la cámara del dado */}
             <span className="pointer-events-none absolute top-2 left-3 text-[#00F0FF] text-sm">✦</span>
             <span className="pointer-events-none absolute bottom-2 right-3 text-[#00F0FF] text-sm">✦</span>
 
-            {/* Plataforma energética bajo el dado */}
             <div
               className="pointer-events-none absolute bottom-2 w-28 h-5 rounded-full opacity-65"
               style={{
@@ -688,7 +815,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               border: '1.5px solid rgba(0, 229, 255, 0.45)',
             }}
           >
-            {/* Barra de Progreso (0% a 100% — Casilla X/20) */}
             <div className="mb-3.5">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs font-black tracking-wider text-[#BAE6FD] uppercase">
@@ -710,7 +836,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                     boxShadow: '0 0 12px #00F0FF',
                   }}
                 />
-                {/* 3 Hitos de estrellas a lo largo de la barra */}
                 {[32, 66, 95].map((pct, idx) => {
                   const alcanzada = progresoPct >= pct;
                   return (
@@ -732,7 +857,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               </div>
             </div>
 
-            {/* Núcleos Cuánticos (0/4 Cristales — 4 Cápsulas Verticales +, −, ×, ÷) */}
             <div className="mt-3">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-black tracking-wider text-[#BAE6FD] uppercase">
@@ -755,7 +879,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 ))}
               </div>
 
-              {/* Recuadro de Estado: LLAVE DEL GUARDIÁN */}
               <div
                 className="mt-3 rounded-xl px-3 py-2.5 flex items-center justify-between border transition-all"
                 style={{
@@ -788,7 +911,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             </div>
           </div>
 
-          {/* ── 4. DOS BOTONES GRANDES INFERIORES (INICIAR SALTO y FÓRMULAS Y GUÍA) ── */}
+          {/* ── 4. DOS BOTONES GRANDES INFERIORES ── */}
           <div className="flex flex-col gap-2.5 mt-2">
             <motion.button
               type="button"
@@ -836,7 +959,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
 
       {/* ════════════════════ MODALES DE LAS MECÁNICAS DE NUMÉRIX ════════════════════ */}
 
-      {/* Tarjeta 1A: Reactor de Propulsión Cuántica (Secuencia en Casillas Especiales) */}
       <AnimatePresence>
         {specialSequence.length > 0 && (
           <ModalReactorCuantico
@@ -852,7 +974,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         )}
       </AnimatePresence>
 
-      {/* Tarjeta 1B: Cámara de Cálculo Cuántico (Pregunta Matemática en Casillas Normales) */}
       <AnimatePresence>
         {question && !bossBattleActive && (
           <ModalReactorCuantico
@@ -868,7 +989,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         )}
       </AnimatePresence>
 
-      {/* Tarjeta 2: Alerta de Impacto — Escudo Antimateria (Casillas Trampa) */}
       <AnimatePresence>
         {trapAsteroids.length > 0 && trapCondition && (
           <ModalAlertaImpacto
@@ -882,7 +1002,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         )}
       </AnimatePresence>
 
-      {/* Tarjeta 3: Guardián del Nivel — Núcleo Armilar (Duelo Final en Casilla 20) */}
       <AnimatePresence>
         {bossBattleActive && (
           <ModalGuardianArmilar
@@ -898,7 +1017,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         )}
       </AnimatePresence>
 
-      {/* Modal de Fórmulas y Guía Cuántica */}
       <AnimatePresence>
         {mostrarGuia && (
           <motion.div
@@ -963,7 +1081,8 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                     🌐 Cima Casilla 20 (Guardián del Nivel — Núcleo Armilar):
                   </p>
                   <p className="text-slate-200">
-                    Resuelve las 3 fases para alinear los 3 anillos de la Esfera Armilar Dorada.
+                    Resuelve las 3 fases para alinear los 3 anillos de la Esfera Armilar Dorada y
+                    obtener la bonificación fija de <strong>+4 estrellas</strong>.
                   </p>
                 </div>
               </div>
@@ -1020,10 +1139,29 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               >
                 ¡VICTORIA EN NUMÉRIX!
               </h2>
-              <p className="text-sm sm:text-base text-cyan-100/85 mb-5">
+              <p className="text-sm sm:text-base text-cyan-100/85 mb-4">
                 Alineaste los 3 anillos de la Esfera Armilar Dorada y activaste los 4 Núcleos
-                Cuánticos de la montaña. Estrellas acumuladas: <strong>⭐ {stars}</strong>.
+                Cuánticos de la montaña.
               </p>
+
+              {/* Desglose de Estrellas según reglas de negocio */}
+              <div className="bg-[#071629] border border-cyan-400/40 rounded-2xl p-3.5 mb-5 text-xs sm:text-sm space-y-1">
+                <div className="flex justify-between text-cyan-100">
+                  <span>
+                    Preguntas Regulares (
+                    {totalPreguntas > 0 ? Math.round((aciertos / totalPreguntas) * 100) : 100}% aciertos):
+                  </span>
+                  <span className="font-black text-amber-300">+{estrellasRegularesFinal} ⭐</span>
+                </div>
+                <div className="flex justify-between text-cyan-100">
+                  <span>Bonificación Jefe Final:</span>
+                  <span className="font-black text-cyan-300">+{BONUS_JEFE_FINAL} ⭐</span>
+                </div>
+                <div className="border-t border-cyan-500/30 pt-1.5 mt-1.5 flex justify-between text-base font-black text-[#FEF08A]">
+                  <span>Estrellas Totales del Nivel:</span>
+                  <span>⭐ {stars}</span>
+                </div>
+              </div>
 
               <div className="flex justify-center gap-3 mb-6">
                 {OPERADORES_NUCLEO.map((n) => (
@@ -1046,10 +1184,11 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => router.push('/planeta/1')}
-                  className="px-6 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-b from-[#12365E] to-[#091E38] border-2 border-[#00F0FF] text-[#E0F2FE] shadow-lg cursor-pointer"
+                  disabled={guardandoBD}
+                  onClick={handleIrAlDashboard}
+                  className="px-6 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-b from-[#12365E] to-[#091E38] border-2 border-[#00F0FF] text-[#E0F2FE] shadow-lg cursor-pointer disabled:opacity-50"
                 >
-                  ← Volver a Numérix
+                  {guardandoBD ? 'Guardando...' : '🚀 Ir al Dashboard'}
                 </button>
               </div>
             </motion.div>

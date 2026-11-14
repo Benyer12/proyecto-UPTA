@@ -4,9 +4,10 @@ import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo, useState, useCallback } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
 import { getPlanetById } from '../../../../lib/mock-data';
 import { useAuthStore } from '../../../../lib/auth-store';
-import { actualizarProgresoUsuario } from '@/app/actions/progress'; // Importación del Server Action de progreso
+import { actualizarProgresoUsuario } from '../../../actions/progress';
 import Dado3D from '../../../components/Dado3D';
 import TableroIsometrico from '../../../components/TableroIsometrico';
 import TableroLetralia from '../../../components/TableroLetralia';
@@ -224,28 +225,121 @@ export default function JuegoPage() {
   const [lastRoll, setLastRoll] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [currentPos, setCurrentPos] = useState(0);
-  const [nivelGuardado, setNivelGuardado] = useState(false); // 👈 Estado para evitar múltiples llamadas al llegar a la meta
+  const [nivelGuardado, setNivelGuardado] = useState(false);
+  const [aciertos, setAciertos] = useState(0);
+  const [totalPreguntas, setTotalPreguntas] = useState(0);
+  const [mostrarJefeFinal, setMostrarJefeFinal] = useState(false);
+  const [guardandoProgreso, setGuardandoProgreso] = useState(false);
 
-  // ── FUNCIÓN PARA MANEJAR EL PROGRESO AL LLEGAR A LA CASILLA 20 ──
-  const handlePositionChange = useCallback(async (pos: number) => {
-    setCurrentPos(pos);
+  /**
+   * Función principal de cálculo de estrellas y persistencia directa en Supabase.
+   * Guarda tanto por cliente autenticado (para pasar RLS) como por Server Action.
+   */
+  const handleCompletarJefeFinal = useCallback(
+    async (
+      aciertosFinales: number = aciertos,
+      totalFinales: number = totalPreguntas,
+      redirigir: boolean = true
+    ) => {
+      const userId = (user as any)?.id;
 
-    // Si la casilla actual (pos + 1) llega o supera la meta (20) y aún no se ha guardado
-    if (pos + 1 >= 20 && !nivelGuardado) {
-      setNivelGuardado(true);
-      try {
-        await actualizarProgresoUsuario(levelId, true, 3); // 👈 Guarda completado = true y 3 estrellas
-        console.log('¡Nivel Numérix completado y guardado en la base de datos!');
-
-        // Redirigir al dashboard después de 2 segundos para que el usuario vea su logro
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 2000);
-      } catch (error) {
-        console.error('Error al guardar el progreso del nivel:', error);
+      if (!userId || typeof userId !== 'string') {
+        console.error('❌ Error de validación: El usuario no tiene un ID válido en la sesión.');
+        return;
       }
-    }
-  }, [levelId, nivelGuardado, router]);
+
+      if (guardandoProgreso) return;
+      setGuardandoProgreso(true);
+
+      try {
+        // --- 1. Cálculo de Estrellas Regulares por Porcentaje ---
+        let estrellasRegulares = 3;
+        if (totalFinales > 0) {
+          const porcentaje = (aciertosFinales / totalFinales) * 100;
+          if (porcentaje >= 90) {
+            estrellasRegulares = 3;
+          } else if (porcentaje >= 70 && porcentaje < 90) {
+            estrellasRegulares = 2;
+          } else {
+            estrellasRegulares = 1;
+          }
+        }
+
+        // --- 2. Bonificación Fija del Jefe Final (Reactor de Propulsión Cuántica) ---
+        const bonificacionJefeFinal = 4;
+
+        // --- 3. Sumatoria Total (Regulares + 4 del Jefe) ---
+        const estrellasTotalesNivel = estrellasRegulares + bonificacionJefeFinal;
+        const fechaActual = new Date().toISOString();
+
+        // --- 4A. Persistencia directa desde el navegador (con token de sesión para RLS) ---
+        const supabaseBrowser = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+
+        const { data: filaExistente } = await supabaseBrowser
+          .from('progreso_usuario')
+          .select('id')
+          .eq('usuario_id', userId)
+          .eq('nivel_id', levelId)
+          .maybeSingle();
+
+        if (filaExistente?.id) {
+          await supabaseBrowser
+            .from('progreso_usuario')
+            .update({
+              completado: true,
+              estrellas: estrellasTotalesNivel,
+              ultima_sesion: fechaActual,
+            })
+            .eq('id', filaExistente.id);
+        } else {
+          await supabaseBrowser.from('progreso_usuario').insert({
+            usuario_id: userId,
+            nivel_id: levelId,
+            completado: true,
+            estrellas: estrellasTotalesNivel,
+            ultima_sesion: fechaActual,
+          });
+        }
+
+        // --- 4B. Respaldo y revalidación de caché en servidor ---
+        await actualizarProgresoUsuario(userId, levelId, true, estrellasTotalesNivel);
+
+        console.log(
+          `✅ ¡Progreso actualizado en BD! Nivel ${levelId} -> ${estrellasTotalesNivel} estrellas (${estrellasRegulares} regulares + ${bonificacionJefeFinal} jefe)`
+        );
+
+        if (redirigir) {
+          router.refresh();
+          router.push('/dashboard');
+        }
+      } catch (error) {
+        console.error('❌ Error crítico al guardar el progreso del nivel:', error);
+        setNivelGuardado(false);
+      } finally {
+        setGuardandoProgreso(false);
+      }
+    },
+    [aciertos, totalPreguntas, user, guardandoProgreso, levelId, router]
+  );
+
+  // Al llegar a la casilla 20, guarda automáticamente el progreso en BD en segundo plano
+  const handlePositionChange = useCallback(
+    (pos: number) => {
+      setCurrentPos(pos);
+
+      if (pos + 1 >= 20 && !nivelGuardado) {
+        setNivelGuardado(true);
+        setMostrarJefeFinal(true);
+        // Guardamos automáticamente en Supabase sin forzar redirección inmediata
+        // para que cuando el modal interno de TableroIsometrico aparezca, la BD ya esté actualizada
+        handleCompletarJefeFinal(aciertos, totalPreguntas, false);
+      }
+    },
+    [nivelGuardado, handleCompletarJefeFinal, aciertos, totalPreguntas]
+  );
 
   const handleRoll = useCallback(() => {
     if (diceRolling) return;
@@ -279,7 +373,6 @@ export default function JuegoPage() {
     );
   }
 
-  const course = planet.courses.find((c) => c.levels.some((l) => l.id === levelId || l.order === levelId));
   const pc = hexToRgb(planet.color);
 
   if (isLetralia) {
@@ -298,16 +391,6 @@ export default function JuegoPage() {
           planetGlow={planet.glow}
           onPositionChange={handlePositionChange}
         />
-        {/* Banner flotante de victoria si llega a la meta */}
-        {nivelGuardado && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="text-center p-8 rounded-2xl bg-slate-900 border border-cyan-500 shadow-[0_0_30px_rgba(0,245,255,0.3)]">
-              <div className="text-5xl mb-3">⭐ ⭐ ⭐</div>
-              <h2 className="text-2xl font-black text-white mb-2">¡MISIÓN CUMPLIDA!</h2>
-              <p className="text-cyan-300 text-sm">Has conquistado la casilla 20 de Numérix.</p>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
@@ -329,10 +412,10 @@ export default function JuegoPage() {
             <button
               onClick={() => router.push('/dashboard')}
               className="flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-full transition-all shadow-md"
-              style={{ 
-                color: '#fff', 
+              style={{
+                color: '#fff',
                 background: `linear-gradient(135deg, ${planet.color}40, ${planet.color}20)`,
-                border: `1px solid ${planet.color}80`
+                border: `1px solid ${planet.color}80`,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = `linear-gradient(135deg, ${planet.color}60, ${planet.color}30)`;

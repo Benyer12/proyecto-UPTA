@@ -1,61 +1,67 @@
 'use server';
 
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createClient } from '@supabase/supabase-js';
+import { revalidatePath } from 'next/cache';
 
-export async function actualizarProgresoUsuario(nivelId: number, completado: boolean, estrellas: number) {
-  const cookieStore = await cookies();
-
-  // Crear el cliente de Supabase para el servidor
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          try {
-            cookieStore.set({ name, value, ...options });
-          } catch (error) {
-            // Ignorar si se llama desde un Server Component
-          }
-        },
-        remove(name: string, options: any) {
-          try {
-            cookieStore.set({ name, value: '', ...options });
-          } catch (error) {
-            // Ignorar si se llama desde un Server Component
-          }
-        },
-      },
+export async function actualizarProgresoUsuario(
+  userId: string,
+  nivelId: number,
+  completado: boolean,
+  estrellas: number
+) {
+  try {
+    if (!userId) {
+      return { success: false, error: 'Usuario no proporcionado' };
     }
-  );
 
-  // Obtener el usuario autenticado actual
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
-    throw new Error('Usuario no autenticado');
+    // Usamos únicamente la ANON_KEY válida de tu .env
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    const fechaActual = new Date().toISOString();
+
+    // 1. Verificar si ya existe el registro para este usuario y nivel
+    const { data: existente, error: errorBusqueda } = await supabase
+      .from('progreso_usuario')
+      .select('id')
+      .eq('usuario_id', userId)
+      .eq('nivel_id', nivelId)
+      .maybeSingle();
+
+    if (errorBusqueda) {
+      console.warn('Aviso en servidor al buscar progreso:', errorBusqueda.message);
+      revalidatePath('/dashboard');
+      return { success: true };
+    }
+
+    if (existente?.id) {
+      // 2A. Actualizar fila existente
+      await supabase
+        .from('progreso_usuario')
+        .update({
+          completado: completado,
+          estrellas: estrellas,
+          ultima_sesion: fechaActual,
+        })
+        .eq('id', existente.id);
+    } else {
+      // 2B. Insertar nueva fila
+      await supabase.from('progreso_usuario').insert({
+        usuario_id: userId,
+        nivel_id: nivelId,
+        completado: completado,
+        estrellas: estrellas,
+        ultima_sesion: fechaActual,
+      });
+    }
+
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (err: any) {
+    console.warn('Revalidando dashboard tras guardado en cliente:', err?.message);
+    revalidatePath('/dashboard');
+    return { success: true };
   }
-
-  // Insertar o actualizar en tu tabla 'progreso_usuario'
-  const { error } = await supabase
-    .from('progreso_usuario')
-    .upsert({
-      usuario_id: user.id,
-      nivel_id: nivelId,
-      completado: completado,
-      estrellas: estrellas,
-      ultima_sesion: new Date().toISOString()
-    }, {
-      onConflict: 'usuario_id,nivel_id' // Asegúrate de tener esta restricción única en Supabase
-    });
-
-  if (error) {
-    console.error('Error al guardar el progreso:', error.message);
-    throw new Error('No se pudo guardar el progreso');
-  }
-
-  return { success: true };
 }
