@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo, useState, useCallback } from 'react';
 import { getPlanetById } from '../../../../lib/mock-data';
 import { useAuthStore } from '../../../../lib/auth-store';
+import { actualizarProgresoUsuario } from '@/app/actions/progress'; // Importación del Server Action de progreso
 import Dado3D from '../../../components/Dado3D';
 import TableroIsometrico from '../../../components/TableroIsometrico';
 import TableroLetralia from '../../../components/TableroLetralia';
@@ -223,6 +224,28 @@ export default function JuegoPage() {
   const [lastRoll, setLastRoll] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [currentPos, setCurrentPos] = useState(0);
+  const [nivelGuardado, setNivelGuardado] = useState(false); // 👈 Estado para evitar múltiples llamadas al llegar a la meta
+
+  // ── FUNCIÓN PARA MANEJAR EL PROGRESO AL LLEGAR A LA CASILLA 20 ──
+  const handlePositionChange = useCallback(async (pos: number) => {
+    setCurrentPos(pos);
+
+    // Si la casilla actual (pos + 1) llega o supera la meta (20) y aún no se ha guardado
+    if (pos + 1 >= 20 && !nivelGuardado) {
+      setNivelGuardado(true);
+      try {
+        await actualizarProgresoUsuario(levelId, true, 3); // 👈 Guarda completado = true y 3 estrellas
+        console.log('¡Nivel Numérix completado y guardado en la base de datos!');
+
+        // Redirigir al dashboard después de 2 segundos para que el usuario vea su logro
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 2000);
+      } catch (error) {
+        console.error('Error al guardar el progreso del nivel:', error);
+      }
+    }
+  }, [levelId, nivelGuardado, router]);
 
   const handleRoll = useCallback(() => {
     if (diceRolling) return;
@@ -262,7 +285,7 @@ export default function JuegoPage() {
   if (isLetralia) {
     return (
       <div className="fixed inset-0 z-[100] h-screen w-screen overflow-hidden bg-[#1E293B]">
-        <TableroLetralia onPositionChange={setCurrentPos} />
+        <TableroLetralia onPositionChange={handlePositionChange} />
       </div>
     );
   }
@@ -273,8 +296,18 @@ export default function JuegoPage() {
         <TableroIsometrico
           planetColor={planet.color}
           planetGlow={planet.glow}
-          onPositionChange={setCurrentPos}
+          onPositionChange={handlePositionChange}
         />
+        {/* Banner flotante de victoria si llega a la meta */}
+        {nivelGuardado && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="text-center p-8 rounded-2xl bg-slate-900 border border-cyan-500 shadow-[0_0_30px_rgba(0,245,255,0.3)]">
+              <div className="text-5xl mb-3">⭐ ⭐ ⭐</div>
+              <h2 className="text-2xl font-black text-white mb-2">¡MISIÓN CUMPLIDA!</h2>
+              <p className="text-cyan-300 text-sm">Has conquistado la casilla 20 de Numérix.</p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -345,7 +378,7 @@ export default function JuegoPage() {
           </div>
           <div style={{ fontSize: '.6rem', letterSpacing: '.2em', color: `rgba(${pc},.4)` }}>
             {user ? `JUGADOR: ${user.name.toUpperCase()}` : 'SIN SESIÓN'}
-            &nbsp;|&nbsp; CASILLA {currentPos + 1}
+            &nbsp;|&nbsp; CASILLA {currentPos + 1} / 20
           </div>
         </div>
       </header>

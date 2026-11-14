@@ -11,6 +11,7 @@
   "dependencies": {
     "@powersync/react": "^1.10.0",
     "@powersync/web": "^1.38.6",
+    "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.110.0",
     "@vercel/postgres": "^0.10.0",
     "bcrypt": "^6.0.0",
@@ -35,6 +36,10 @@
     "typescript": "^5"
   },
   "allowScripts": {
-    "@journeyapps/wa-sqlite@1.7.0": true
+    "@journeyapps/wa-sqlite@1.7.0": true,
+    "bcrypt@6.0.0": true,
+    "bufferutil@4.1.0": true,
+    "sharp@0.34.5": true,
+    "unrs-resolver@1.12.2": true
   }
 }

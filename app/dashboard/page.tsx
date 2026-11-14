@@ -197,3 +197,36 @@ export default function Dashboard() {
     </div>
   );
 }
+
+import { createBrowserClient } from '@supabase/ssr';
+
+async function obtenerProgresoDelEstudiante(userId: string) {
+  // Crear el cliente para el navegador usando @supabase/ssr
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  const { data, error } = await supabase
+    .from('progreso_usuario')
+    .select('*')
+    .eq('usuario_id', userId);
+
+  if (error) {
+    console.error('Error al obtener progreso:', error);
+    return {};
+  }
+
+  // Transformar el array de Supabase en un objeto tipo Record<number, StudentProgress>
+  const progressMap: Record<number, any> = {};
+  
+  data.forEach((row) => {
+    progressMap[row.nivel_id] = {
+      status: row.completado ? 'completed' : 'unlocked',
+      stars: row.estrellas,
+      completed: row.completado
+    };
+  });
+
+  return progressMap;
+}
