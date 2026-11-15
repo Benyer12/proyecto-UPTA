@@ -1,44 +1,22 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { verificarCredenciales, registrarUsuario } from './auth-service';
-import type { User, UserRole, LoginData, RegisterData } from '../shared/types';
-
-const MOCK_USERS: User[] = [
-  {
-    id: 1,
-    name: 'Administrador',
-    email: 'admin@universo.com',
-    username: 'admin',
-    role: 'admin',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    name: 'Prof. María López',
-    email: 'maria@universo.com',
-    username: 'maria',
-    role: 'tutor',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 3,
-    name: 'Carlos Pérez',
-    email: 'carlos@universo.com',
-    username: 'carlos',
-    role: 'student',
-    createdAt: new Date().toISOString(),
-  },
-];
+import type { LoginData, RegisterData } from '../shared/types';
 
 interface AuthState {
-  user: { id: string | number; name: string; usuario: string; role: string; correo?: string } | null;
+  user: {
+    id: string | number;
+    name: string;
+    usuario: string;
+    role: string;
+    correo?: string;
+  } | null;
   token: string | null;
-  users: User[];
   login: (data: LoginData) => Promise<boolean>;
   register: (data: RegisterData) => Promise<boolean>;
   logout: () => void;
   getRedirect: () => string;
-  assignRole: (userId: string | number, newRole: string) => void; // <--- Acción añadida
+  assignRole: (userId: string | number, newRole: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -46,12 +24,11 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       token: null,
-      users: MOCK_USERS,
 
-      // 1. LOGIN GLOBAL
+      // 1. LOGIN GLOBAL (Conectado a Supabase vía auth-service)
       login: async (data: LoginData) => {
         const resultado = await verificarCredenciales(data.username, data.password);
-        
+
         if (resultado.success && resultado.usuario) {
           set({
             user: {
@@ -59,24 +36,24 @@ export const useAuthStore = create<AuthState>()(
               name: resultado.usuario.nombre,
               usuario: resultado.usuario.usuario,
               role: resultado.usuario.role || 'student',
-              correo: resultado.usuario.correo
+              correo: resultado.usuario.correo,
             },
-            token: 'token-local-simulado'
+            token: 'token-local-simulado',
           });
           return true;
         }
-        
+
         return false;
       },
 
-      // 2. REGISTRO GLOBAL
+      // 2. REGISTRO GLOBAL (Conectado a Supabase vía auth-service)
       register: async (data: RegisterData) => {
         const resultado = await registrarUsuario({
           nombre: data.name,
           correo: data.email,
           usuario: data.username,
           contrasena: data.password,
-          role: 'student'
+          role: 'student',
         });
         return resultado.success;
       },
@@ -85,12 +62,12 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null, token: null });
       },
 
+      // Si el usuario modificado tiene sesión activa en este navegador, actualiza su rol
       assignRole: (userId: string | number, newRole: string) => {
-        set((state) => ({
-          users: state.users.map((u) => 
-            u.id === userId ? { ...u, role: newRole as any } : u
-          )
-        }));
+        const currentUser = get().user;
+        if (currentUser && currentUser.id === userId) {
+          set({ user: { ...currentUser, role: newRole } });
+        }
       },
 
       getRedirect: () => {
@@ -99,10 +76,12 @@ export const useAuthStore = create<AuthState>()(
         if (usuarioActual.role === 'admin') return '/admin';
         if (usuarioActual.role === 'tutor' || usuarioActual.role === 'docente') return '/maestro';
         return '/dashboard';
-      }
+      },
     }),
     {
-      name: 'universo-auth-storage'
+      name: 'universo-auth-storage',
+      // Solo persistimos la sesión del usuario actual para no guardar datos basura en caché
+      partialize: (state) => ({ user: state.user, token: state.token }),
     }
   )
 );

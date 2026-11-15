@@ -1278,7 +1278,7 @@ export default function AltarDecodificacion({
           >
             <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
               <path
-                d="M28 6 C18 8 11 15 8 26 L6 30 L10 28 C18 25 25 18 28 6 Z"
+                d="M28 6 C18 8 11 15 8 26 L6zzzzzzzzzzzz 30 L10 28 C18 25 25 18 28 6 Z"
                 fill="#C4B5FD"
                 stroke="#E0F2FE"
                 strokeWidth="1.5"
