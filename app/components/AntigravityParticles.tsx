@@ -45,6 +45,7 @@ const ALLOWED_ROUTES = [
   '/tutor',
   '/admin',
   '/asignaciones',
+  '/planeta',
 ];
 
 function isRouteAllowed(pathname: string | null): boolean {
@@ -52,6 +53,7 @@ function isRouteAllowed(pathname: string | null): boolean {
   const clean = pathname === '/' ? '/' : pathname.replace(/\/+$/, '');
   if (ALLOWED_ROUTES.includes(clean)) return true;
   return (
+    clean.startsWith('/planeta/') ||
     clean.startsWith('/maestro/') ||
     clean.startsWith('/docente/') ||
     clean.startsWith('/tutor/') ||
