@@ -45,30 +45,23 @@
 
 /* ============================================================================
    LIQUID GLASS SYSTEM — Inspirado en Apple / Figma Glass
-   Light: 174° dinámico | Refraction: 80 | Depth: 65 | Dispersion: 50
-   Frost calibrado por tipo de panel | Sin desplazamiento físico del contenedor
+   Bisel especular limpio de doble reflejo (Light: 174° dinámico)
+   Superficie de cristal limpia (sin mancha de luz interna)
+   Frost calibrado por tipo de panel
    ============================================================================ */
 
-/* Base óptica compartida: bisel especular giratorio + fluidez líquida interna */
 .liquid-glass,
 .liquid-glass-pill,
 .liquid-glass-btn,
 .liquid-glass-modal {
   position: relative;
-  --lx: 50%;
-  --ly: 50%;
-  --tx1: 54%;
-  --ty1: 47%;
-  --tx2: 46%;
-  --ty2: 53%;
   --light-angle: 174deg;
-  --glass-rim-opacity: 0.68;
-  --glass-sheen-opacity: 0.06;
+  --glass-rim-opacity: 0.72;
   transform: none;
   transition: border-color 0.35s ease, box-shadow 0.35s ease;
 }
 
-/* Capa 1 (::before) — Bisel especular de doble reflejo con dispersión cromática (estilo Focus pill) */
+/* Bisel especular perimetral de doble reflejo (solo en el borde, interior 100% limpio) */
 .liquid-glass::before,
 .liquid-glass-pill::before,
 .liquid-glass-btn::before,
@@ -80,112 +73,54 @@
   padding: 1.5px;
   background: conic-gradient(
     from var(--light-angle, 174deg) at 50% 50%,
-    rgba(255, 255, 255, 0.78) 0deg,
-    rgba(130, 238, 255, 0.42) 26deg,
-    rgba(255, 255, 255, 0.08) 72deg,
-    rgba(255, 255, 255, 0.03) 128deg,
-    rgba(210, 155, 255, 0.36) 162deg,
-    rgba(255, 255, 255, 0.52) 186deg,
-    rgba(255, 255, 255, 0.1) 225deg,
-    rgba(255, 255, 255, 0.03) 295deg,
-    rgba(160, 240, 255, 0.32) 334deg,
-    rgba(255, 255, 255, 0.78) 360deg
+    rgba(255, 255, 255, 0.82) 0deg,
+    rgba(130, 238, 255, 0.44) 24deg,
+    rgba(255, 255, 255, 0.08) 68deg,
+    rgba(255, 255, 255, 0.03) 130deg,
+    rgba(210, 155, 255, 0.36) 164deg,
+    rgba(255, 255, 255, 0.56) 186deg,
+    rgba(255, 255, 255, 0.09) 225deg,
+    rgba(255, 255, 255, 0.03) 298deg,
+    rgba(160, 240, 255, 0.34) 336deg,
+    rgba(255, 255, 255, 0.82) 360deg
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
   z-index: 2;
-  opacity: var(--glass-rim-opacity, 0.68);
+  opacity: var(--glass-rim-opacity, 0.72);
   transition: opacity 0.3s ease;
-}
-
-/* Capa 2 (::after) — Cáustica líquida + estela de dispersión óptica siguiendo el cursor con inercia */
-.liquid-glass::after,
-.liquid-glass-pill::after,
-.liquid-glass-btn::after,
-.liquid-glass-modal::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 1;
-  mix-blend-mode: screen;
-  background:
-    radial-gradient(
-      260px circle at var(--lx, 50%) var(--ly, 50%),
-      rgba(255, 255, 255, 0.22) 0%,
-      rgba(255, 255, 255, 0.07) 36%,
-      transparent 70%
-    ),
-    radial-gradient(
-      220px circle at var(--tx1, 54%) var(--ty1, 47%),
-      rgba(90, 235, 255, 0.16) 0%,
-      rgba(90, 235, 255, 0.04) 42%,
-      transparent 68%
-    ),
-    radial-gradient(
-      210px circle at var(--tx2, 46%) var(--ty2, 53%),
-      rgba(216, 140, 255, 0.14) 0%,
-      rgba(255, 195, 140, 0.04) 45%,
-      transparent 70%
-    );
-  opacity: var(--glass-sheen-opacity, 0.06);
-  transition: opacity 0.28s ease;
 }
 
 /* ── NIVEL 1: FROST BAJO (11px) — Píldoras, Badges, Botones (estilo Focus pill Frost: 13) ── */
 .liquid-glass-pill {
   --glass-blur: 11px;
-  --glass-bright: 1.03;
   background: linear-gradient(
     165deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(24, 28, 44, 0.36) 42%,
-    rgba(10, 12, 22, 0.46) 100%
+    rgba(255, 255, 255, 0.11) 0%,
+    rgba(22, 26, 42, 0.38) 45%,
+    rgba(10, 12, 22, 0.48) 100%
   );
-  backdrop-filter: blur(var(--glass-blur, 11px)) saturate(210%) brightness(var(--glass-bright, 1.03));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 11px)) saturate(210%) brightness(var(--glass-bright, 1.03));
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(var(--glass-blur, 11px)) saturate(200%);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 11px)) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow:
     0 10px 26px -6px rgba(0, 0, 0, 0.55),
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.34),
-    inset 0 -2px 5px rgba(0, 0, 0, 0.42),
-    inset 0 0 14px rgba(255, 255, 255, 0.05);
-}
-
-.liquid-glass-pill::after {
-  background:
-    radial-gradient(
-      140px circle at var(--lx, 50%) var(--ly, 50%),
-      rgba(255, 255, 255, 0.32) 0%,
-      rgba(255, 255, 255, 0.09) 42%,
-      transparent 72%
-    ),
-    radial-gradient(
-      125px circle at var(--tx1, 54%) var(--ty1, 47%),
-      rgba(100, 240, 255, 0.22) 0%,
-      transparent 68%
-    ),
-    radial-gradient(
-      125px circle at var(--tx2, 46%) var(--ty2, 53%),
-      rgba(220, 150, 255, 0.18) 0%,
-      transparent 68%
-    );
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.32),
+    inset 0 -2px 5px rgba(0, 0, 0, 0.42);
 }
 
 .liquid-glass-btn {
   --glass-blur: 12px;
-  --glass-bright: 1.04;
   background: linear-gradient(
     155deg,
     rgba(72, 165, 255, 0.36) 0%,
     rgba(14, 145, 195, 0.26) 52%,
     rgba(10, 24, 54, 0.45) 100%
   );
-  backdrop-filter: blur(var(--glass-blur, 12px)) saturate(215%) brightness(var(--glass-bright, 1.04));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)) saturate(215%) brightness(var(--glass-bright, 1.04));
+  backdrop-filter: blur(var(--glass-blur, 12px)) saturate(210%);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)) saturate(210%);
   border: 1px solid rgba(155, 238, 255, 0.34);
   box-shadow:
     0 12px 28px -6px rgba(0, 160, 220, 0.32),
@@ -204,47 +139,42 @@
 /* ── NIVEL 2: FROST MEDIO (18px) — Tarjetas de planetas, métricas, filas, reglas ── */
 .liquid-glass {
   --glass-blur: 18px;
-  --glass-bright: 1.01;
   background: linear-gradient(
     160deg,
-    rgba(255, 255, 255, 0.085) 0%,
-    rgba(16, 20, 36, 0.42) 45%,
-    rgba(8, 10, 22, 0.54) 100%
+    rgba(255, 255, 255, 0.075) 0%,
+    rgba(16, 20, 36, 0.44) 45%,
+    rgba(8, 10, 22, 0.56) 100%
   );
-  backdrop-filter: blur(var(--glass-blur, 18px)) saturate(195%) brightness(var(--glass-bright, 1.01));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 18px)) saturate(195%) brightness(var(--glass-bright, 1.01));
+  backdrop-filter: blur(var(--glass-blur, 18px)) saturate(190%);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 18px)) saturate(190%);
   border: 1px solid rgba(255, 255, 255, 0.13);
   box-shadow:
     0 18px 42px -10px rgba(0, 0, 0, 0.65),
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.28),
-    inset 0 -3px 8px rgba(0, 0, 0, 0.45),
-    inset 0 0 22px rgba(255, 255, 255, 0.03);
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.26),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.45);
 }
 
 .liquid-glass:hover,
 .liquid-glass-interactive:hover {
-  /* SIN desplazamiento físico: solo profundiza el brillo óptico y la refracción líquida */
-  border-color: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.22);
   box-shadow:
     0 20px 48px -10px rgba(0, 0, 0, 0.72),
-    0 0 32px -6px rgba(100, 235, 255, 0.16),
-    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.4),
-    inset 0 -3px 8px rgba(0, 0, 0, 0.42),
-    inset 0 0 26px rgba(255, 255, 255, 0.06);
+    0 0 28px -8px rgba(100, 235, 255, 0.14),
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.36),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.42);
 }
 
 /* ── NIVEL 3: FROST MEDIO-ALTO (26px) — Banners de encabezado y paneles de lectura larga ── */
 .liquid-glass-panel {
   --glass-blur: 26px;
-  --glass-bright: 1.01;
   background: linear-gradient(
     165deg,
-    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.07) 0%,
     rgba(12, 16, 30, 0.62) 48%,
     rgba(6, 9, 20, 0.72) 100%
   );
-  backdrop-filter: blur(var(--glass-blur, 26px)) saturate(185%) brightness(var(--glass-bright, 1.01));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 26px)) saturate(185%) brightness(var(--glass-bright, 1.01));
+  backdrop-filter: blur(var(--glass-blur, 26px)) saturate(185%);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 26px)) saturate(185%);
 }
 
 .liquid-glass-header {
@@ -264,12 +194,7 @@
 /* ── NIVEL 4: FROST ALTO (38px, 88%–92% opacidad) — Panel Login/Registro, Menú Móvil y Modales ── */
 .liquid-glass-dropdown {
   position: relative;
-  --lx: 50%;
-  --ly: 50%;
-  --tx1: 54%;
-  --ty1: 47%;
   --glass-blur: 38px;
-  --glass-sheen-opacity: 0.1;
   background: linear-gradient(
     180deg,
     rgba(5, 8, 20, 0.89) 0%,
@@ -284,38 +209,15 @@
     inset 0 -1.5px 1px rgba(255, 255, 255, 0.2);
 }
 
-.liquid-glass-dropdown::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  mix-blend-mode: screen;
-  background:
-    radial-gradient(
-      340px circle at var(--lx, 50%) var(--ly, 50%),
-      rgba(255, 255, 255, 0.08) 0%,
-      transparent 68%
-    ),
-    radial-gradient(
-      280px circle at var(--tx1, 54%) var(--ty1, 47%),
-      rgba(80, 230, 255, 0.065) 0%,
-      transparent 65%
-    );
-  opacity: var(--glass-sheen-opacity, 0.1);
-  transition: opacity 0.3s ease;
-}
-
 .liquid-glass-modal {
   --glass-blur: 36px;
-  --glass-bright: 1.0;
   background: linear-gradient(
     160deg,
     rgba(12, 16, 36, 0.88) 0%,
     rgba(5, 8, 20, 0.92) 100%
   );
-  backdrop-filter: blur(var(--glass-blur, 36px)) saturate(185%) brightness(var(--glass-bright, 1));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 36px)) saturate(185%) brightness(var(--glass-bright, 1));
+  backdrop-filter: blur(var(--glass-blur, 36px)) saturate(185%);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 36px)) saturate(185%);
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
     0 28px 68px rgba(0, 0, 0, 0.82),

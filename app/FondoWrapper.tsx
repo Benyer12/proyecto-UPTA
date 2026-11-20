@@ -10,27 +10,16 @@ const GLASS_SELECTOR =
   '.liquid-glass, .liquid-glass-pill, .liquid-glass-btn, .liquid-glass-dropdown, .liquid-glass-modal';
 
 interface GlassState {
-  // Posición primaria de luz líquida (%)
-  lx: number;
-  ly: number;
-  // Posición secundaria con inercia (estela de dispersión cromática %)
-  tx: number;
-  ty: number;
-  // Objetivo del mouse (%)
-  targetX: number;
-  targetY: number;
-  // Ángulo de luz especular en grados (174° en reposo, estilo Figma Glass)
+  // Ángulo de luz especular en el borde (174° en reposo, estilo Figma Glass)
   angle: number;
   targetAngle: number;
-  // Intensidad de fluidez activa (0..1)
+  // Intensidad activa (0..1)
   active: number;
   targetActive: number;
-  // Velocidad del arrastre líquido para simular distorsión/desenfoque dinámico
+  // Variación suave del desenfoque (frost) al mover el cursor sobre el panel
   stretch: number;
   targetStretch: number;
-  // Frost y brillo base según el tipo de panel
   baseFrost: number;
-  baseBright: number;
 }
 
 const DEFAULT_ANGLE = 174;
@@ -41,14 +30,14 @@ function normalizeAngleDelta(target: number, current: number): number {
   return diff;
 }
 
-function getPanelBaseOptics(el: HTMLElement): { baseFrost: number; baseBright: number } {
+function getPanelBaseFrost(el: HTMLElement): number {
   const cl = el.classList;
-  if (cl.contains('liquid-glass-dropdown')) return { baseFrost: 38, baseBright: 1.0 };
-  if (cl.contains('liquid-glass-modal')) return { baseFrost: 36, baseBright: 1.0 };
-  if (cl.contains('liquid-glass-panel')) return { baseFrost: 26, baseBright: 1.01 };
-  if (cl.contains('liquid-glass-btn')) return { baseFrost: 12, baseBright: 1.04 };
-  if (cl.contains('liquid-glass-pill')) return { baseFrost: 11, baseBright: 1.03 };
-  return { baseFrost: 18, baseBright: 1.01 };
+  if (cl.contains('liquid-glass-dropdown')) return 38;
+  if (cl.contains('liquid-glass-modal')) return 36;
+  if (cl.contains('liquid-glass-panel')) return 26;
+  if (cl.contains('liquid-glass-btn')) return 12;
+  if (cl.contains('liquid-glass-pill')) return 11;
+  return 18;
 }
 
 export default function FondoWrapper() {
@@ -63,22 +52,14 @@ export default function FondoWrapper() {
     const getOrCreateState = (el: HTMLElement): GlassState => {
       let st = states.get(el);
       if (!st) {
-        const { baseFrost, baseBright } = getPanelBaseOptics(el);
         st = {
-          lx: 50,
-          ly: 50,
-          tx: 50,
-          ty: 50,
-          targetX: 50,
-          targetY: 50,
           angle: DEFAULT_ANGLE,
           targetAngle: DEFAULT_ANGLE,
           active: 0,
           targetActive: 0,
           stretch: 0,
           targetStretch: 0,
-          baseFrost,
-          baseBright,
+          baseFrost: getPanelBaseFrost(el),
         };
         states.set(el, st);
       }
@@ -95,12 +76,6 @@ export default function FondoWrapper() {
           return;
         }
 
-        // Interpolación viscosa tipo líquido (dos capas con diferente inercia)
-        st.lx += (st.targetX - st.lx) * 0.11;
-        st.ly += (st.targetY - st.ly) * 0.11;
-        st.tx += (st.targetX - st.tx) * 0.055;
-        st.ty += (st.targetY - st.ty) * 0.055;
-
         const angleDelta = normalizeAngleDelta(st.targetAngle, st.angle);
         st.angle += angleDelta * 0.09;
 
@@ -109,27 +84,13 @@ export default function FondoWrapper() {
         st.targetStretch *= 0.88;
 
         const currentBlur = st.baseFrost + st.stretch * 4.5;
-        const currentBright = st.baseBright + st.active * 0.06;
-        const rimOpacity = 0.68 + st.active * 0.32;
-        const sheenOpacity = 0.06 + st.active * 0.94;
+        const rimOpacity = 0.72 + st.active * 0.28;
 
-        el.style.setProperty('--lx', `${st.lx.toFixed(2)}%`);
-        el.style.setProperty('--ly', `${st.ly.toFixed(2)}%`);
-        el.style.setProperty('--tx1', `${(st.tx + 4).toFixed(2)}%`);
-        el.style.setProperty('--ty1', `${(st.ty - 3).toFixed(2)}%`);
-        el.style.setProperty('--tx2', `${(st.tx - 4).toFixed(2)}%`);
-        el.style.setProperty('--ty2', `${(st.ty + 3).toFixed(2)}%`);
         el.style.setProperty('--light-angle', `${st.angle.toFixed(2)}deg`);
         el.style.setProperty('--glass-blur', `${currentBlur.toFixed(2)}px`);
-        el.style.setProperty('--glass-bright', currentBright.toFixed(3));
         el.style.setProperty('--glass-rim-opacity', rimOpacity.toFixed(3));
-        el.style.setProperty('--glass-sheen-opacity', sheenOpacity.toFixed(3));
 
         const settled =
-          Math.abs(st.targetX - st.lx) < 0.08 &&
-          Math.abs(st.targetY - st.ly) < 0.08 &&
-          Math.abs(st.targetX - st.tx) < 0.08 &&
-          Math.abs(st.targetY - st.ty) < 0.08 &&
           Math.abs(angleDelta) < 0.15 &&
           Math.abs(st.targetActive - st.active) < 0.005 &&
           st.stretch < 0.01;
@@ -163,7 +124,7 @@ export default function FondoWrapper() {
       prevPointerY = pointerY;
 
       const elements = document.querySelectorAll<HTMLElement>(GLASS_SELECTOR);
-      const proximityMargin = 90;
+      const proximityMargin = 80;
 
       elements.forEach((el) => {
         const rect = el.getBoundingClientRect();
@@ -183,17 +144,12 @@ export default function FondoWrapper() {
           const st = getOrCreateState(el);
           const relX = pointerX - rect.left;
           const relY = pointerY - rect.top;
-          const pctX = Math.max(-10, Math.min(110, (relX / Math.max(1, rect.width)) * 100));
-          const pctY = Math.max(-10, Math.min(110, (relY / Math.max(1, rect.height)) * 100));
-
           const cx = rect.width / 2;
           const cy = rect.height / 2;
           const angleDeg = Math.atan2(relY - cy, relX - cx) * (180 / Math.PI) + 90;
 
-          st.targetX = pctX;
-          st.targetY = pctY;
           st.targetAngle = angleDeg;
-          st.targetActive = inside ? 1 : 0.42;
+          st.targetActive = inside ? 1 : 0.4;
           if (inside) {
             st.targetStretch = Math.max(st.targetStretch, pointerSpeed);
           }
@@ -202,8 +158,6 @@ export default function FondoWrapper() {
           const st = states.get(el)!;
           st.targetActive = 0;
           st.targetAngle = DEFAULT_ANGLE;
-          st.targetX = 50;
-          st.targetY = 50;
           scheduleTick();
         }
       });
@@ -215,8 +169,6 @@ export default function FondoWrapper() {
       states.forEach((st) => {
         st.targetActive = 0;
         st.targetAngle = DEFAULT_ANGLE;
-        st.targetX = 50;
-        st.targetY = 50;
       });
       if (states.size > 0) scheduleTick();
     };
