@@ -64,53 +64,69 @@ export default function Planeta({
         className="flex flex-col items-center gap-6 select-none"
         style={{ fontFamily: "'Segoe UI', system-ui, sans-serif" }}
       >
-        <div className="relative flex items-center justify-center" style={{ width: 260, height: 260 }}>
+        <div className="relative flex items-center justify-center" style={{ width: 250, height: 245 }}>
+          {/* Anillo orbital exterior limpio con marcadores cardinales */}
           <div
-            className="absolute rounded-full"
+            className="absolute rounded-full pointer-events-none"
             style={{
-              width: 265, height: 265,
-              border: `1px solid ${glowColor}55`,
-              background: `radial-gradient(circle, transparent 55%, ${glowColor}18 100%)`,
-              animation: 'ping-slow 3.5s ease-in-out infinite',
+              width: 240,
+              height: 240,
+              border: `1px solid ${glowColor}35`,
+              background: `radial-gradient(circle, transparent 62%, ${glowColor}10 100%)`,
+              boxShadow: `inset 0 0 24px ${glowColor}12`,
             }}
           />
           <div
-            className="absolute rounded-full"
+            className="absolute rounded-full pointer-events-none"
             style={{
-              width: 315, height: 315,
-              filter: 'blur(42px)',
-              background: `radial-gradient(circle, ${glowColor}55 0%, transparent 70%)`,
-              opacity: hovered ? 0.9 : 0.65,
+              width: 270,
+              height: 270,
+              filter: 'blur(38px)',
+              background: `radial-gradient(circle, ${glowColor}40 0%, transparent 68%)`,
+              opacity: hovered ? 0.95 : 0.65,
               transition: 'opacity 0.4s ease',
             }}
           />
           <div
-            className="absolute rounded-full"
+            className="absolute rounded-full pointer-events-none"
             style={{
-              width: 235, height: 235,
-              border: `1px solid ${glowColor}30`,
-              background: `radial-gradient(circle, transparent 40%, ${glowColor}10 100%)`,
-              animation: 'ping-slow 4s ease-in-out infinite 0.5s',
+              width: 212,
+              height: 212,
+              border: `1px dashed ${glowColor}28`,
             }}
           />
 
-          {theme.icons.slice(0, 4).map((icon, i) => (
-            <div
-              key={`${icon}-${i}`}
-              className="absolute pointer-events-none"
-              style={{
-                animation: `theme-float-${i} ${5 + i * 0.8}s ease-in-out infinite`,
-                fontSize: i === 0 ? '1.1rem' : `${0.8 + i * 0.1}rem`,
-                opacity: 0.35 + i * 0.05,
-                filter: `blur(${i === 0 ? 0 : 0.3}px)`,
-                color: glowColor,
-                textShadow: `0 0 8px ${glowColor}55`,
-                fontWeight: isNaN(Number(icon)) && icon.length === 1 ? 700 : 400,
-              }}
-            >
-              {icon}
-            </div>
-          ))}
+          {/* Puntos estelares orbitales limpios en lugar de texto/emojis flotantes */}
+          <div
+            className="absolute w-2 h-2 rounded-full pointer-events-none"
+            style={{
+              top: '14%',
+              left: '16%',
+              background: '#ffffff',
+              boxShadow: `0 0 10px ${glowColor}, 0 0 4px #ffffff`,
+              opacity: 0.85,
+            }}
+          />
+          <div
+            className="absolute w-1.5 h-1.5 rounded-full pointer-events-none"
+            style={{
+              bottom: '22%',
+              right: '14%',
+              background: glowColor,
+              boxShadow: `0 0 8px ${glowColor}`,
+              opacity: 0.8,
+            }}
+          />
+          <div
+            className="absolute w-1.5 h-1.5 rounded-full pointer-events-none"
+            style={{
+              top: '24%',
+              right: '18%',
+              background: '#fef08a',
+              boxShadow: '0 0 8px #fef08a',
+              opacity: 0.75,
+            }}
+          />
 
           <div
             style={{

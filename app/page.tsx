@@ -116,26 +116,29 @@ export default function LandingPage() {
                 className="relative group flex"
               >
                 <div
-                  className="liquid-glass liquid-glass-interactive rounded-3xl p-7 text-center flex flex-col justify-between w-full"
+                  className="liquid-glass rounded-3xl p-4 text-center flex flex-col justify-between w-full"
                   style={{
-                    boxShadow: `0 16px 40px -10px rgba(0,0,0,0.6), 0 0 28px -8px ${p.glow}25, inset 0 1px 1px rgba(255,255,255,0.25)`,
+                    borderColor: `${p.glow}38`,
+                    boxShadow: `0 18px 42px -10px rgba(0,0,0,0.65), 0 0 28px -8px ${p.glow}22, inset 0 1.5px 1px rgba(255,255,255,0.28)`,
                   }}
                 >
-                  <div className="flex justify-center mb-3">
-                    <Planeta
-                      planetId={p.id}
-                      nombre={p.nombre}
-                      materia={p.materia}
-                      gradient={p.gradient}
-                      glow={p.glow}
-                      glowColor={p.glowColor}
-                      delay={i * 0.5}
-                      cursos={p.cursos}
-                    />
+                  <div className="liquid-glass-pill rounded-2xl p-6 flex flex-col justify-between h-full">
+                    <div className="flex justify-center mb-3">
+                      <Planeta
+                        planetId={p.id}
+                        nombre={p.nombre}
+                        materia={p.materia}
+                        gradient={p.gradient}
+                        glow={p.glow}
+                        glowColor={p.glowColor}
+                        delay={i * 0.5}
+                        cursos={p.cursos}
+                      />
+                    </div>
+                    <p className="text-sm md:text-base text-slate-200/90 leading-relaxed mt-3 font-medium">
+                      {p.descripcion}
+                    </p>
                   </div>
-                  <p className="text-sm md:text-base text-slate-200/90 leading-relaxed mt-3 font-medium">
-                    {p.descripcion}
-                  </p>
                 </div>
               </motion.div>
             ))}
