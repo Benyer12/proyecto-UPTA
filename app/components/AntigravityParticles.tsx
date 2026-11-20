@@ -23,7 +23,7 @@ interface Particle {
   orbitOffset: number;
 }
 
-// Paleta espacial sincronizada con el tema del proyecto (Numérix Cyan, Letralia Púrpura, Naturae Esmeralda, Estelar Dorado/Azul)
+// Paleta espacial sincronizada con el panel de Iniciar Sesión (Numérix Cyan, Letralia Púrpura, Naturae Esmeralda, Estelar Dorado/Azul)
 const PALETTE = [
   '0, 245, 255',   // Cyan Numérix (#00f5ff)
   '56, 189, 248',  // Azul celeste cósmico (#38bdf8)
@@ -99,15 +99,15 @@ export default function AntigravityParticles() {
 
     const createParticles = (w: number, h: number): Particle[] => {
       const list: Particle[] = [];
-      // Menos partículas: espaciado amplio para un aspecto limpio, sutil y elegante
-      const spacing = w < 768 ? 95 : 80;
+      // Misma densidad y visibilidad viva que el panel desplegable de Iniciar Sesión
+      const spacing = w < 768 ? 68 : 54;
       const cols = Math.ceil(w / spacing);
       const rows = Math.ceil(h / spacing);
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          const ox = (c + 0.5) * spacing + (Math.random() - 0.5) * spacing * 0.85;
-          const oy = (r + 0.5) * spacing + (Math.random() - 0.5) * spacing * 0.85;
+          const ox = (c + 0.5) * spacing + (Math.random() - 0.5) * spacing * 0.82;
+          const oy = (r + 0.5) * spacing + (Math.random() - 0.5) * spacing * 0.82;
           const initialAngle = Math.random() * Math.PI * 2;
 
           list.push({
@@ -117,17 +117,17 @@ export default function AntigravityParticles() {
             originY: oy,
             vx: 0,
             vy: 0,
-            size: 1.2 + Math.random() * 1.1,
-            length: 3.5 + Math.random() * 4.5,
+            size: 1.25 + Math.random() * 1.15,
+            length: 3.8 + Math.random() * 4.6,
             angle: initialAngle,
             targetAngle: initialAngle,
             color: getColorForPosition(ox, oy, w, h),
-            // Mucho más transparentes y delicadas en reposo
-            baseAlpha: 0.08 + Math.random() * 0.14,
-            alpha: 0.1,
+            // Opacidad igualada a la del panel de Iniciar Sesión (mucho más visibles y nítidas)
+            baseAlpha: 0.24 + Math.random() * 0.28,
+            alpha: 0.32,
             phase: Math.random() * Math.PI * 2,
-            speed: 0.4 + Math.random() * 0.5,
-            orbitRadius: 70 + Math.random() * 140,
+            speed: 0.45 + Math.random() * 0.55,
+            orbitRadius: 55 + Math.random() * 130,
             orbitOffset: Math.random() * Math.PI * 2,
           });
         }
@@ -191,36 +191,34 @@ export default function AntigravityParticles() {
       if (mouse.active) {
         const prevX = mouse.x;
         const prevY = mouse.y;
-        mouse.x += (mouse.targetX - mouse.x) * 0.12;
-        mouse.y += (mouse.targetY - mouse.y) * 0.12;
+        mouse.x += (mouse.targetX - mouse.x) * 0.13;
+        mouse.y += (mouse.targetY - mouse.y) * 0.13;
         mouse.vx = mouse.x - prevX;
         mouse.vy = mouse.y - prevY;
       } else {
-        mouse.vx *= 0.92;
-        mouse.vy *= 0.92;
+        mouse.vx *= 0.9;
+        mouse.vy *= 0.9;
       }
 
-      const attractRadius = 380;
+      const attractRadius = 350;
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
         // Flotación ambiental suave alrededor de su origen
-        const floatX = Math.cos(time * p.speed + p.phase) * 6;
-        const floatY = Math.sin(time * p.speed * 0.85 + p.phase) * 6;
+        const floatX = Math.cos(time * p.speed + p.phase) * 5.5;
+        const floatY = Math.sin(time * p.speed * 0.85 + p.phase) * 5.5;
         const homeX = p.originX + floatX;
         const homeY = p.originY + floatY;
 
-        let targetAlpha = p.baseAlpha * (0.75 + 0.25 * Math.sin(time * 1.2 + p.phase));
+        let targetAlpha = p.baseAlpha * (0.78 + 0.22 * Math.sin(time * 1.4 + p.phase));
         let stretch = 1;
 
         if (mouse.active) {
-          // Las partículas cercanas siguen al cursor formando una nube/enjambre orbital suave
           const dxMouse = mouse.x - p.x;
           const dyMouse = mouse.y - p.y;
           const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
 
-          // También chequeamos distancia desde su origen para capturar partículas en el camino del mouse
           const dxOrigin = mouse.x - p.originX;
           const dyOrigin = mouse.y - p.originY;
           const distOrigin = Math.sqrt(dxOrigin * dxOrigin + dyOrigin * dyOrigin);
@@ -231,44 +229,37 @@ export default function AntigravityParticles() {
             const influence = 1 - effectiveDist / attractRadius;
             const smoothInfluence = influence * influence;
 
-            // Punto objetivo que orbita y sigue al cursor (como en la pantalla de autenticación de Antigravity)
-            const orbitAngle = p.orbitOffset + time * 0.35;
+            const orbitAngle = p.orbitOffset + time * 0.4;
             const desiredX = mouse.x + Math.cos(orbitAngle) * p.orbitRadius;
             const desiredY = mouse.y + Math.sin(orbitAngle) * p.orbitRadius;
 
-            // Fuerza de atracción suave hacia el punto orbital que sigue al mouse
-            p.vx += (desiredX - p.x) * 0.022 * smoothInfluence;
-            p.vy += (desiredY - p.y) * 0.022 * smoothInfluence;
+            p.vx += (desiredX - p.x) * 0.025 * smoothInfluence;
+            p.vy += (desiredY - p.y) * 0.025 * smoothInfluence;
 
-            // Arrastre sutil en la dirección en que se mueve el mouse (para que lo sigan con fluidez)
             p.vx += mouse.vx * 0.045 * smoothInfluence;
             p.vy += mouse.vy * 0.045 * smoothInfluence;
 
-            // Si se acercan demasiado al centro exacto del puntero (< 45px), mantener un pequeño espacio limpio
-            if (distMouse < 45 && distMouse > 0.1) {
-              const push = ((45 - distMouse) / 45) * 0.35;
+            if (distMouse < 40 && distMouse > 0.1) {
+              const push = ((40 - distMouse) / 40) * 0.35;
               p.vx -= (dxMouse / distMouse) * push;
               p.vy -= (dyMouse / distMouse) * push;
             }
 
-            // Opacidad sutil y transparente incluso cuando están activas (máximo ~0.48)
-            targetAlpha = Math.min(0.48, p.baseAlpha + smoothInfluence * 0.28);
+            // Misma intensidad luminosa al acercarse al cursor que en el panel de Iniciar Sesión
+            targetAlpha = Math.min(0.88, p.baseAlpha + smoothInfluence * 0.48);
             stretch = 1 + smoothInfluence * 0.85;
           }
         }
 
-        // Retorno elástico muy suave a su posición original cuando el mouse se aleja
-        p.vx += (homeX - p.x) * 0.012;
-        p.vy += (homeY - p.y) * 0.012;
+        p.vx += (homeX - p.x) * 0.015;
+        p.vy += (homeY - p.y) * 0.015;
 
-        // Amortiguación fluida
         p.vx *= 0.88;
         p.vy *= 0.88;
 
         p.x += p.vx;
         p.y += p.vy;
 
-        // Orientar la cápsula hacia la dirección en la que viaja / sigue al mouse
         const speedSq = p.vx * p.vx + p.vy * p.vy;
         if (speedSq > 0.04) {
           p.targetAngle = Math.atan2(p.vy, p.vx);
@@ -281,12 +272,11 @@ export default function AntigravityParticles() {
         let angleDiff = p.targetAngle - p.angle;
         while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
         while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-        p.angle += angleDiff * 0.12;
+        p.angle += angleDiff * 0.13;
 
-        p.alpha += (targetAlpha - p.alpha) * 0.12;
+        p.alpha += (targetAlpha - p.alpha) * 0.14;
 
-        // Dibujar cápsula sutil y redondeada
-        const currentLen = (p.length + Math.min(6, Math.sqrt(speedSq) * 1.5)) * stretch;
+        const currentLen = (p.length + Math.min(6, Math.sqrt(speedSq) * 1.45)) * stretch;
         const halfLen = currentLen * 0.5;
         const cos = Math.cos(p.angle);
         const sin = Math.sin(p.angle);
@@ -295,7 +285,7 @@ export default function AntigravityParticles() {
         ctx.moveTo(p.x - cos * halfLen, p.y - sin * halfLen);
         ctx.lineTo(p.x + cos * halfLen, p.y + sin * halfLen);
         ctx.strokeStyle = `rgba(${p.color}, ${p.alpha.toFixed(3)})`;
-        ctx.lineWidth = p.size * 1.45;
+        ctx.lineWidth = p.size * 1.5;
         ctx.lineCap = 'round';
         ctx.stroke();
       }

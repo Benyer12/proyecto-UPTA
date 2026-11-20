@@ -244,7 +244,7 @@ function CoursePortalSection({
   planetId: number;
 }) {
   return (
-    <div className="mb-12 last:mb-0 rounded-3xl liquid-glass liquid-glass-panel p-5 sm:p-7">
+    <div className="mb-12 last:mb-0 rounded-3xl liquid-glass p-5 sm:p-7">
       {/* Cabecera del Curso con estética Retro-Arcade en Liquid Glass */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-7 pb-4 border-b border-white/10">
         <div className="flex items-center gap-3">
@@ -423,12 +423,12 @@ export default function PlanetaPage() {
         </button>
 
         {/* Encabezado del Planeta con el Planeta 3D Real + Doble Encapsulado Liquid Glass */}
-        <div className="mb-10 rounded-3xl liquid-glass liquid-glass-panel p-4 sm:p-5">
+        <div className="mb-10 rounded-3xl liquid-glass p-4 sm:p-5">
           <div
             className="rounded-2xl liquid-glass p-6 sm:p-8 text-center relative overflow-hidden"
             style={{
               borderColor: `${planet.color}40`,
-              background: `linear-gradient(160deg, ${planet.color}12 0%, rgba(10, 14, 28, 0.55) 55%, rgba(6, 8, 18, 0.72) 100%)`,
+              background: `linear-gradient(160deg, ${planet.color}14 0%, rgba(10, 14, 28, 0.38) 55%, rgba(6, 8, 18, 0.48) 100%)`,
             }}
           >
             {/* Ilustración 3D real del planeta en lugar del cuadrado con símbolo */}
