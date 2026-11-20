@@ -57,11 +57,13 @@
   position: relative;
   --lx: 50%;
   --ly: 50%;
-  --tx: 50%;
-  --ty: 50%;
+  --tx1: 54%;
+  --ty1: 47%;
+  --tx2: 46%;
+  --ty2: 53%;
   --light-angle: 174deg;
-  --glass-active: 0;
-  --glass-flow: 0px;
+  --glass-rim-opacity: 0.68;
+  --glass-sheen-opacity: 0.06;
   transform: none;
   transition: border-color 0.35s ease, box-shadow 0.35s ease;
 }
@@ -94,7 +96,7 @@
   mask-composite: exclude;
   pointer-events: none;
   z-index: 2;
-  opacity: calc(0.68 + var(--glass-active, 0) * 0.32);
+  opacity: var(--glass-rim-opacity, 0.68);
   transition: opacity 0.3s ease;
 }
 
@@ -111,42 +113,40 @@
   z-index: 1;
   mix-blend-mode: screen;
   background:
-    /* Lóbulo especular líquido principal */
     radial-gradient(
       260px circle at var(--lx, 50%) var(--ly, 50%),
       rgba(255, 255, 255, 0.22) 0%,
       rgba(255, 255, 255, 0.07) 36%,
       transparent 70%
     ),
-    /* Dispersión cromática fría (estela con inercia) */
     radial-gradient(
-      220px circle at calc(var(--tx, 50%) + 4%) calc(var(--ty, 50%) - 3%),
+      220px circle at var(--tx1, 54%) var(--ty1, 47%),
       rgba(90, 235, 255, 0.16) 0%,
       rgba(90, 235, 255, 0.04) 42%,
       transparent 68%
     ),
-    /* Dispersión cromática cálida/violeta opuesta */
     radial-gradient(
-      210px circle at calc(var(--tx, 50%) - 4%) calc(var(--ty, 50%) + 3%),
+      210px circle at var(--tx2, 46%) var(--ty2, 53%),
       rgba(216, 140, 255, 0.14) 0%,
       rgba(255, 195, 140, 0.04) 45%,
       transparent 70%
     );
-  opacity: calc(0.06 + var(--glass-active, 0) * 0.94);
+  opacity: var(--glass-sheen-opacity, 0.06);
   transition: opacity 0.28s ease;
 }
 
 /* ── NIVEL 1: FROST BAJO (11px) — Píldoras, Badges, Botones (estilo Focus pill Frost: 13) ── */
 .liquid-glass-pill {
-  --glass-frost: 11px;
+  --glass-blur: 11px;
+  --glass-bright: 1.03;
   background: linear-gradient(
     165deg,
     rgba(255, 255, 255, 0.12) 0%,
     rgba(24, 28, 44, 0.36) 42%,
     rgba(10, 12, 22, 0.46) 100%
   );
-  backdrop-filter: blur(calc(var(--glass-frost) + var(--glass-flow, 0px) * 0.32)) saturate(210%) brightness(calc(1.03 + var(--glass-active, 0) * 0.08));
-  -webkit-backdrop-filter: blur(calc(var(--glass-frost) + var(--glass-flow, 0px) * 0.32)) saturate(210%) brightness(calc(1.03 + var(--glass-active, 0) * 0.08));
+  backdrop-filter: blur(var(--glass-blur, 11px)) saturate(210%) brightness(var(--glass-bright, 1.03));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 11px)) saturate(210%) brightness(var(--glass-bright, 1.03));
   border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow:
     0 10px 26px -6px rgba(0, 0, 0, 0.55),
@@ -164,27 +164,28 @@
       transparent 72%
     ),
     radial-gradient(
-      125px circle at calc(var(--tx, 50%) + 6%) calc(var(--ty, 50%) - 4%),
+      125px circle at var(--tx1, 54%) var(--ty1, 47%),
       rgba(100, 240, 255, 0.22) 0%,
       transparent 68%
     ),
     radial-gradient(
-      125px circle at calc(var(--tx, 50%) - 6%) calc(var(--ty, 50%) + 4%),
+      125px circle at var(--tx2, 46%) var(--ty2, 53%),
       rgba(220, 150, 255, 0.18) 0%,
       transparent 68%
     );
 }
 
 .liquid-glass-btn {
-  --glass-frost: 12px;
+  --glass-blur: 12px;
+  --glass-bright: 1.04;
   background: linear-gradient(
     155deg,
     rgba(72, 165, 255, 0.36) 0%,
     rgba(14, 145, 195, 0.26) 52%,
     rgba(10, 24, 54, 0.45) 100%
   );
-  backdrop-filter: blur(calc(var(--glass-frost) + var(--glass-flow, 0px) * 0.32)) saturate(215%) brightness(calc(1.04 + var(--glass-active, 0) * 0.1));
-  -webkit-backdrop-filter: blur(calc(var(--glass-frost) + var(--glass-flow, 0px) * 0.32)) saturate(215%) brightness(calc(1.04 + var(--glass-active, 0) * 0.1));
+  backdrop-filter: blur(var(--glass-blur, 12px)) saturate(215%) brightness(var(--glass-bright, 1.04));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)) saturate(215%) brightness(var(--glass-bright, 1.04));
   border: 1px solid rgba(155, 238, 255, 0.34);
   box-shadow:
     0 12px 28px -6px rgba(0, 160, 220, 0.32),
@@ -202,15 +203,16 @@
 
 /* ── NIVEL 2: FROST MEDIO (18px) — Tarjetas de planetas, métricas, filas, reglas ── */
 .liquid-glass {
-  --glass-frost: 18px;
+  --glass-blur: 18px;
+  --glass-bright: 1.01;
   background: linear-gradient(
     160deg,
     rgba(255, 255, 255, 0.085) 0%,
     rgba(16, 20, 36, 0.42) 45%,
     rgba(8, 10, 22, 0.54) 100%
   );
-  backdrop-filter: blur(calc(var(--glass-frost) + var(--glass-flow, 0px) * 0.35)) saturate(195%) brightness(calc(1.01 + var(--glass-active, 0) * 0.05));
-  -webkit-backdrop-filter: blur(calc(var(--glass-frost) + var(--glass-flow, 0px) * 0.35)) saturate(195%) brightness(calc(1.01 + var(--glass-active, 0) * 0.05));
+  backdrop-filter: blur(var(--glass-blur, 18px)) saturate(195%) brightness(var(--glass-bright, 1.01));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 18px)) saturate(195%) brightness(var(--glass-bright, 1.01));
   border: 1px solid rgba(255, 255, 255, 0.13);
   box-shadow:
     0 18px 42px -10px rgba(0, 0, 0, 0.65),
@@ -233,26 +235,26 @@
 
 /* ── NIVEL 3: FROST MEDIO-ALTO (26px) — Banners de encabezado y paneles de lectura larga ── */
 .liquid-glass-panel {
-  --glass-frost: 26px;
+  --glass-blur: 26px;
+  --glass-bright: 1.01;
   background: linear-gradient(
     165deg,
     rgba(255, 255, 255, 0.08) 0%,
     rgba(12, 16, 30, 0.62) 48%,
     rgba(6, 9, 20, 0.72) 100%
   );
-  backdrop-filter: blur(calc(var(--glass-frost) + var(--glass-flow, 0px) * 0.3)) saturate(185%) brightness(calc(1.01 + var(--glass-active, 0) * 0.04));
-  -webkit-backdrop-filter: blur(calc(var(--glass-frost) + var(--glass-flow, 0px) * 0.3)) saturate(185%) brightness(calc(1.01 + var(--glass-active, 0) * 0.04));
+  backdrop-filter: blur(var(--glass-blur, 26px)) saturate(185%) brightness(var(--glass-bright, 1.01));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 26px)) saturate(185%) brightness(var(--glass-bright, 1.01));
 }
 
 .liquid-glass-header {
-  --glass-frost: 26px;
   background: linear-gradient(
     180deg,
     rgba(7, 11, 24, 0.78) 0%,
     rgba(4, 6, 16, 0.72) 100%
   );
-  backdrop-filter: blur(var(--glass-frost)) saturate(190%);
-  -webkit-backdrop-filter: blur(var(--glass-frost)) saturate(190%);
+  backdrop-filter: blur(26px) saturate(190%);
+  -webkit-backdrop-filter: blur(26px) saturate(190%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.13);
   box-shadow:
     0 10px 34px rgba(0, 0, 0, 0.5),
@@ -264,18 +266,17 @@
   position: relative;
   --lx: 50%;
   --ly: 50%;
-  --tx: 50%;
-  --ty: 50%;
-  --glass-active: 0;
-  --glass-flow: 0px;
-  --glass-frost: 38px;
+  --tx1: 54%;
+  --ty1: 47%;
+  --glass-blur: 38px;
+  --glass-sheen-opacity: 0.1;
   background: linear-gradient(
     180deg,
     rgba(5, 8, 20, 0.89) 0%,
     rgba(3, 5, 14, 0.93) 100%
   );
-  backdrop-filter: blur(calc(var(--glass-frost) + var(--glass-flow, 0px) * 0.25)) saturate(180%);
-  -webkit-backdrop-filter: blur(calc(var(--glass-frost) + var(--glass-flow, 0px) * 0.25)) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur, 38px)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 38px)) saturate(180%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
     0 28px 64px rgba(0, 0, 0, 0.88),
@@ -297,23 +298,24 @@
       transparent 68%
     ),
     radial-gradient(
-      280px circle at calc(var(--tx, 50%) + 3%) calc(var(--ty, 50%) - 2%),
+      280px circle at var(--tx1, 54%) var(--ty1, 47%),
       rgba(80, 230, 255, 0.065) 0%,
       transparent 65%
     );
-  opacity: calc(0.1 + var(--glass-active, 0) * 0.9);
+  opacity: var(--glass-sheen-opacity, 0.1);
   transition: opacity 0.3s ease;
 }
 
 .liquid-glass-modal {
-  --glass-frost: 36px;
+  --glass-blur: 36px;
+  --glass-bright: 1.0;
   background: linear-gradient(
     160deg,
     rgba(12, 16, 36, 0.88) 0%,
     rgba(5, 8, 20, 0.92) 100%
   );
-  backdrop-filter: blur(calc(var(--glass-frost) + var(--glass-flow, 0px) * 0.25)) saturate(185%);
-  -webkit-backdrop-filter: blur(calc(var(--glass-frost) + var(--glass-flow, 0px) * 0.25)) saturate(185%);
+  backdrop-filter: blur(var(--glass-blur, 36px)) saturate(185%) brightness(var(--glass-bright, 1));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 36px)) saturate(185%) brightness(var(--glass-bright, 1));
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
     0 28px 68px rgba(0, 0, 0, 0.82),
