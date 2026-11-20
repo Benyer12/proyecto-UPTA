@@ -45,7 +45,7 @@ export default function AboutPage() {
             </p>
           </section>
 
-          <section className="liquid-glass rounded-3xl p-8 sm:p-10">
+          <section className="liquid-glass liquid-glass-panel rounded-3xl p-8 sm:p-10">
             <h2 className="text-2xl font-black text-white mb-5 tracking-wide flex items-center gap-2.5">
               <span>📖</span> ¿Cómo nació este proyecto?
             </h2>
@@ -76,7 +76,7 @@ export default function AboutPage() {
                   key={p.nombre}
                   className="liquid-glass liquid-glass-interactive rounded-3xl p-7 text-center"
                   style={{
-                    background: `linear-gradient(145deg, ${p.tint} 0%, rgba(255,255,255,0.03) 60%, rgba(255,255,255,0.01) 100%)`,
+                    background: `linear-gradient(155deg, ${p.tint} 0%, rgba(14,18,34,0.44) 52%, rgba(8,10,22,0.56) 100%)`,
                     borderColor: `${p.accent}38`,
                   }}
                 >

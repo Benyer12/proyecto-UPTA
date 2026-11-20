@@ -35,12 +35,18 @@ const PALETTE = [
   '250, 204, 21',  // Dorado estelar (#facc15)
 ];
 
-const ALLOWED_ROUTES = ['/', '/dashboard', '/maestro', '/admin'];
+const ALLOWED_ROUTES = ['/', '/dashboard', '/maestro', '/docente', '/tutor', '/admin', '/asignaciones'];
 
 function isRouteAllowed(pathname: string | null): boolean {
   if (!pathname) return false;
   const clean = pathname === '/' ? '/' : pathname.replace(/\/+$/, '');
-  return ALLOWED_ROUTES.includes(clean);
+  if (ALLOWED_ROUTES.includes(clean)) return true;
+  return (
+    clean.startsWith('/maestro/') ||
+    clean.startsWith('/docente/') ||
+    clean.startsWith('/tutor/') ||
+    clean.startsWith('/asignaciones/')
+  );
 }
 
 export default function AntigravityParticles() {

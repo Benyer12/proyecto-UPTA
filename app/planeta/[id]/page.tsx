@@ -160,7 +160,7 @@ function CoursePortalSection({
   planetId: number;
 }) {
   return (
-    <div className="mb-14 last:mb-0 rounded-3xl liquid-glass p-6 sm:p-8">
+    <div className="mb-14 last:mb-0 rounded-3xl liquid-glass liquid-glass-panel p-6 sm:p-8">
       <div className="text-center mb-8">
         <span
           className="inline-block px-4 py-1.5 rounded-full liquid-glass-pill text-xs font-bold uppercase tracking-[0.2em]"
@@ -312,7 +312,7 @@ export default function PlanetaPage() {
           Mapa estelar
         </button>
 
-        <div className="text-center mb-10 rounded-3xl liquid-glass p-7 sm:p-8">
+        <div className="text-center mb-10 rounded-3xl liquid-glass liquid-glass-panel p-7 sm:p-8">
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}

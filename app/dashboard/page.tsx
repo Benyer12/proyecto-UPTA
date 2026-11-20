@@ -54,7 +54,7 @@ function StudentView({ planets, progress, user, totalStars }: { planets: Planet[
   return (
     <div className="space-y-10">
       {/* Banner Superior de Bienvenida Liquid Glass */}
-      <div className="max-w-5xl mx-auto rounded-3xl liquid-glass p-6 sm:p-7 flex flex-col sm:flex-row items-center justify-between gap-4 relative overflow-hidden">
+      <div className="max-w-5xl mx-auto rounded-3xl liquid-glass liquid-glass-panel p-6 sm:p-7 flex flex-col sm:flex-row items-center justify-between gap-4 relative overflow-hidden">
         <div className="flex items-center gap-4 relative z-10">
           <div className="w-16 h-16 rounded-2xl liquid-glass-pill flex items-center justify-center text-3xl shadow-[0_0_24px_rgba(0,245,255,0.28)] border border-cyan-400/40">
             👩‍🚀
@@ -97,9 +97,9 @@ function StudentView({ planets, progress, user, totalStars }: { planets: Planet[
               transition={{ delay: planet.order * 0.1 }}
               className="rounded-3xl liquid-glass liquid-glass-interactive overflow-hidden relative group flex flex-col justify-between"
               style={{
-                background: `linear-gradient(145deg, ${styles.tint} 0%, rgba(255,255,255,0.03) 55%, rgba(255,255,255,0.01) 100%)`,
+                background: `linear-gradient(155deg, ${styles.tint} 0%, rgba(14,18,34,0.44) 50%, rgba(8,10,22,0.56) 100%)`,
                 borderColor: `${styles.color}38`,
-                boxShadow: `0 16px 40px -8px rgba(0,0,0,0.6), 0 0 24px -6px ${styles.color}22, inset 0 1px 1px rgba(255,255,255,0.25)`
+                boxShadow: `0 18px 42px -10px rgba(0,0,0,0.68), 0 0 24px -6px ${styles.color}20, inset 0 1.5px 1px rgba(255,255,255,0.28), inset 0 -3px 8px rgba(0,0,0,0.45)`
               }}
             >
               <div className="p-7 text-center relative z-10 flex-1 flex flex-col">
@@ -232,7 +232,7 @@ export default function Dashboard() {
   if (!user) {
     return (
       <div className="relative min-h-screen flex items-center justify-center px-6">
-        <div className="relative z-10 text-center max-w-md w-full mx-auto p-8 rounded-3xl liquid-glass">
+        <div className="relative z-10 text-center max-w-md w-full mx-auto p-8 rounded-3xl liquid-glass liquid-glass-panel">
           <div className="text-5xl mb-4">🚀</div>
           <h1 className="text-2xl font-black text-white mb-2 tracking-wide">Mapa Estelar</h1>
           <p className="text-sm text-slate-300 mb-7 leading-relaxed">

@@ -176,7 +176,7 @@ export default function MaestroPage() {
     <div className="relative min-h-screen px-6 py-12">
       <div className="relative z-10 max-w-6xl mx-auto space-y-10">
         {/* Encabezado Liquid Glass */}
-        <div className="rounded-3xl liquid-glass p-7 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="rounded-3xl liquid-glass liquid-glass-panel p-7 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.2em] text-cyan-300 mb-2">
               <span>✦</span> Panel Docente
@@ -224,7 +224,7 @@ export default function MaestroPage() {
                 key={p.nombre}
                 className="liquid-glass liquid-glass-interactive rounded-3xl p-6"
                 style={{
-                  background: `linear-gradient(145deg, ${p.tint} 0%, rgba(255,255,255,0.03) 60%, rgba(255,255,255,0.01) 100%)`,
+                  background: `linear-gradient(155deg, ${p.tint} 0%, rgba(14,18,34,0.44) 52%, rgba(8,10,22,0.56) 100%)`,
                   borderColor: `${p.accent}35`,
                 }}
               >

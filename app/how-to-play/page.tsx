@@ -102,7 +102,7 @@ export default function HowToPlayPage() {
                 key={rule.title}
                 className="liquid-glass liquid-glass-interactive rounded-3xl p-7"
                 style={{
-                  background: `linear-gradient(145deg, ${rule.tint} 0%, rgba(255,255,255,0.03) 60%, rgba(255,255,255,0.01) 100%)`,
+                  background: `linear-gradient(155deg, ${rule.tint} 0%, rgba(14,18,34,0.44) 52%, rgba(8,10,22,0.56) 100%)`,
                   borderColor: `${rule.accent}38`,
                 }}
               >
@@ -115,7 +115,7 @@ export default function HowToPlayPage() {
             ))}
           </section>
 
-          <section className="liquid-glass rounded-3xl p-8 sm:p-10">
+          <section className="liquid-glass liquid-glass-panel rounded-3xl p-8 sm:p-10">
             <h2 className="text-2xl font-black text-white mb-7 text-center tracking-tight">
               📋 Flujo del juego
             </h2>
@@ -144,7 +144,7 @@ export default function HowToPlayPage() {
                   key={role.title}
                   className="liquid-glass liquid-glass-interactive rounded-3xl p-7 text-center"
                   style={{
-                    background: `linear-gradient(145deg, ${role.tint} 0%, rgba(255,255,255,0.03) 60%, rgba(255,255,255,0.01) 100%)`,
+                    background: `linear-gradient(155deg, ${role.tint} 0%, rgba(14,18,34,0.44) 52%, rgba(8,10,22,0.56) 100%)`,
                     borderColor: `${role.accent}38`,
                   }}
                 >

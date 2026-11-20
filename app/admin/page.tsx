@@ -86,7 +86,7 @@ export default function AdminPage() {
     <div className="relative min-h-screen px-6 py-12">
       <div className="relative z-10 max-w-4xl mx-auto space-y-8">
         {/* Encabezado Liquid Glass */}
-        <div className="rounded-3xl liquid-glass p-7 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+        <div className="rounded-3xl liquid-glass liquid-glass-panel p-7 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div>
             <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.2em] text-cyan-300 mb-2">
               <span>✦</span> Control del Sistema
