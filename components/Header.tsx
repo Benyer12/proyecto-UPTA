@@ -185,7 +185,7 @@ export default function Header() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="sm:hidden border-t border-white/10 liquid-glass overflow-hidden"
+            className="sm:hidden border-t border-white/15 liquid-glass-dropdown overflow-hidden"
           >
             <div className="flex flex-col p-4 gap-3">
               <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-200 hover:text-cyan-300 px-3 py-2 rounded-lg hover:bg-white/5">
@@ -207,7 +207,7 @@ export default function Header() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="overflow-hidden border-t border-white/15 liquid-glass"
+            className="overflow-hidden border-t border-white/15 liquid-glass-dropdown"
           >
             <div className="max-w-md mx-auto px-6 py-8">
               <div className="flex mb-6 p-1 rounded-xl liquid-glass-pill">
