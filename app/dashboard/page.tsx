@@ -209,13 +209,13 @@ export default function Dashboard() {
 
   if (!mounted) {
     return (
-      <div className="relative min-h-screen" style={{ background: '#00000a' }} />
+      <div className="relative min-h-screen" />
     );
   }
 
   if (!user) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center" style={{ background: '#00000a' }}>
+      <div className="relative min-h-screen flex items-center justify-center">
         <div className="relative z-10 text-center max-w-md mx-auto px-6">
           <div className="text-5xl mb-4">🚀</div>
           <h1 className="text-2xl font-black text-white mb-2">Mapa Estelar</h1>
@@ -234,7 +234,7 @@ export default function Dashboard() {
   if (user.role === 'admin' || user.role === 'tutor' || user.role === 'docente') return null;
 
   return (
-    <div className="relative min-h-screen" style={{ background: '#00000a' }}>
+    <div className="relative min-h-screen">
       <div className="relative z-10 px-6 py-12">
         {user.role === 'student' && (
           <StudentView planets={MOCK_PLANETS} progress={progress} user={user} totalStars={totalStars} />

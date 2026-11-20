@@ -179,8 +179,8 @@ export default function MaestroPage() {
   if (!mounted || !user || (user.role !== 'tutor' && user.role !== 'docente')) return null;
 
   return (
-    <div className="min-h-screen bg-[#00000a] px-6 py-12">
-      <div className="max-w-6xl mx-auto space-y-10">
+    <div className="relative min-h-screen px-6 py-12">
+      <div className="relative z-10 max-w-6xl mx-auto space-y-10">
         <div>
           <h1 className="text-3xl md:text-4xl font-black text-white">
             🚀 Puente de Mando

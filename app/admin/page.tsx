@@ -83,8 +83,8 @@ export default function AdminPage() {
   if (!mounted || !user || user.role !== 'admin') return null;
 
   return (
-    <div className="min-h-screen bg-[#00000a] px-6 py-12">
-      <div className="max-w-4xl mx-auto">
+    <div className="relative min-h-screen px-6 py-12">
+      <div className="relative z-10 max-w-4xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-black text-white mb-2">
