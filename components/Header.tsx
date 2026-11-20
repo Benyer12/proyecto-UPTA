@@ -7,6 +7,255 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from '../lib/auth-store';
 import type { LoginData, RegisterData } from '../shared/types';
 
+interface DropdownParticle {
+  x: number;
+  y: number;
+  originX: number;
+  originY: number;
+  vx: number;
+  vy: number;
+  size: number;
+  length: number;
+  angle: number;
+  targetAngle: number;
+  color: string;
+  baseAlpha: number;
+  alpha: number;
+  phase: number;
+  speed: number;
+  orbitRadius: number;
+  orbitOffset: number;
+}
+
+const DROPDOWN_PALETTE = [
+  '0, 245, 255',   // Cyan Numérix
+  '56, 189, 248',  // Azul celeste
+  '59, 130, 246',  // Azul profundo
+  '191, 64, 255',  // Púrpura Letralia
+  '217, 70, 239',  // Magenta
+  '0, 255, 136',   // Esmeralda Naturae
+  '250, 204, 21',  // Dorado estelar
+];
+
+function DropdownAntigravityCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationId: number;
+    let particles: DropdownParticle[] = [];
+
+    const mouse = {
+      x: -9999,
+      y: -9999,
+      targetX: -9999,
+      targetY: -9999,
+      vx: 0,
+      vy: 0,
+      active: false,
+    };
+
+    const getColor = (x: number, y: number, w: number, h: number) => {
+      const nx = x / Math.max(1, w);
+      const ny = y / Math.max(1, h);
+      const ratio = Math.max(0, Math.min(0.999, nx * 0.65 + ny * 0.35 + (Math.random() - 0.5) * 0.2));
+      return DROPDOWN_PALETTE[Math.floor(ratio * DROPDOWN_PALETTE.length)];
+    };
+
+    const initParticles = (w: number, h: number) => {
+      const list: DropdownParticle[] = [];
+      const spacing = w < 640 ? 64 : 52;
+      const cols = Math.ceil(w / spacing);
+      const rows = Math.ceil(h / spacing);
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const ox = (c + 0.5) * spacing + (Math.random() - 0.5) * spacing * 0.8;
+          const oy = (r + 0.5) * spacing + (Math.random() - 0.5) * spacing * 0.8;
+          const ang = Math.random() * Math.PI * 2;
+          list.push({
+            x: ox,
+            y: oy,
+            originX: ox,
+            originY: oy,
+            vx: 0,
+            vy: 0,
+            size: 1.2 + Math.random() * 1.1,
+            length: 3.5 + Math.random() * 4.5,
+            angle: ang,
+            targetAngle: ang,
+            color: getColor(ox, oy, w, h),
+            baseAlpha: 0.14 + Math.random() * 0.2,
+            alpha: 0.18,
+            phase: Math.random() * Math.PI * 2,
+            speed: 0.45 + Math.random() * 0.55,
+            orbitRadius: 48 + Math.random() * 115,
+            orbitOffset: Math.random() * Math.PI * 2,
+          });
+        }
+      }
+      return list;
+    };
+
+    const resize = () => {
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const rect = parent.getBoundingClientRect();
+      canvas.width = Math.max(320, rect.width);
+      canvas.height = Math.max(300, rect.height);
+      particles = initParticles(canvas.width, canvas.height);
+    };
+
+    const ro = new ResizeObserver(resize);
+    if (canvas.parentElement) ro.observe(canvas.parentElement);
+
+    const handlePointerMove = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      if (
+        e.clientX >= rect.left - 40 &&
+        e.clientX <= rect.right + 40 &&
+        e.clientY >= rect.top - 40 &&
+        e.clientY <= rect.bottom + 40
+      ) {
+        const rx = e.clientX - rect.left;
+        const ry = e.clientY - rect.top;
+        mouse.targetX = rx;
+        mouse.targetY = ry;
+        if (!mouse.active) {
+          mouse.x = rx;
+          mouse.y = ry;
+          mouse.active = true;
+        }
+      } else {
+        mouse.active = false;
+      }
+    };
+
+    const animate = (ts: number) => {
+      const time = ts / 1000;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (mouse.active) {
+        const px = mouse.x;
+        const py = mouse.y;
+        mouse.x += (mouse.targetX - mouse.x) * 0.13;
+        mouse.y += (mouse.targetY - mouse.y) * 0.13;
+        mouse.vx = mouse.x - px;
+        mouse.vy = mouse.y - py;
+      } else {
+        mouse.vx *= 0.9;
+        mouse.vy *= 0.9;
+      }
+
+      const attractRadius = 290;
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        const floatX = Math.cos(time * p.speed + p.phase) * 5;
+        const floatY = Math.sin(time * p.speed * 0.85 + p.phase) * 5;
+        const homeX = p.originX + floatX;
+        const homeY = p.originY + floatY;
+
+        let targetAlpha = p.baseAlpha * (0.75 + 0.25 * Math.sin(time * 1.4 + p.phase));
+        let stretch = 1;
+
+        if (mouse.active) {
+          const dxM = mouse.x - p.x;
+          const dyM = mouse.y - p.y;
+          const distM = Math.hypot(dxM, dyM);
+          const distO = Math.hypot(mouse.x - p.originX, mouse.y - p.originY);
+          const effDist = Math.min(distM, distO * 0.85);
+
+          if (effDist < attractRadius) {
+            const inf = 1 - effDist / attractRadius;
+            const smooth = inf * inf;
+            const orbitAng = p.orbitOffset + time * 0.4;
+            const desX = mouse.x + Math.cos(orbitAng) * p.orbitRadius;
+            const desY = mouse.y + Math.sin(orbitAng) * p.orbitRadius;
+
+            p.vx += (desX - p.x) * 0.025 * smooth + mouse.vx * 0.045 * smooth;
+            p.vy += (desY - p.y) * 0.025 * smooth + mouse.vy * 0.045 * smooth;
+
+            if (distM < 36 && distM > 0.1) {
+              const push = ((36 - distM) / 36) * 0.35;
+              p.vx -= (dxM / distM) * push;
+              p.vy -= (dyM / distM) * push;
+            }
+
+            targetAlpha = Math.min(0.65, p.baseAlpha + smooth * 0.36);
+            stretch = 1 + smooth * 0.85;
+          }
+        }
+
+        p.vx += (homeX - p.x) * 0.015;
+        p.vy += (homeY - p.y) * 0.015;
+        p.vx *= 0.88;
+        p.vy *= 0.88;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        const speedSq = p.vx * p.vx + p.vy * p.vy;
+        if (speedSq > 0.04) {
+          p.targetAngle = Math.atan2(p.vy, p.vx);
+        } else if (mouse.active) {
+          p.targetAngle = Math.atan2(mouse.y - p.y, mouse.x - p.x);
+        } else {
+          p.targetAngle = Math.atan2(floatY, floatX);
+        }
+
+        let diff = p.targetAngle - p.angle;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        p.angle += diff * 0.13;
+        p.alpha += (targetAlpha - p.alpha) * 0.14;
+
+        const len = (p.length + Math.min(5, Math.sqrt(speedSq) * 1.4)) * stretch;
+        const half = len * 0.5;
+        const cos = Math.cos(p.angle);
+        const sin = Math.sin(p.angle);
+
+        ctx.beginPath();
+        ctx.moveTo(p.x - cos * half, p.y - sin * half);
+        ctx.lineTo(p.x + cos * half, p.y + sin * half);
+        ctx.strokeStyle = `rgba(${p.color}, ${p.alpha.toFixed(3)})`;
+        ctx.lineWidth = p.size * 1.45;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
+
+      animationId = requestAnimationFrame(animate);
+    };
+
+    resize();
+    animationId = requestAnimationFrame(animate);
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      ro.disconnect();
+      window.removeEventListener('pointermove', handlePointerMove);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      className="absolute inset-0 w-full h-full pointer-events-none z-0"
+    />
+  );
+}
+
+const PLANET_CHIPS = [
+  { name: 'Numérix', sub: 'Matemáticas', icon: '🔢', color: '#00f5ff', bg: 'rgba(0, 245, 255, 0.09)' },
+  { name: 'Letralia', sub: 'Lenguas', icon: '📖', color: '#bf40ff', bg: 'rgba(191, 64, 255, 0.09)' },
+  { name: 'Naturae', sub: 'Ciencias', icon: '🌿', color: '#00ff88', bg: 'rgba(0, 255, 136, 0.09)' },
+];
+
 export default function Header() {
   const router = useRouter();
   const { user, token, login, register, logout, getRedirect } = useAuthStore();
@@ -199,6 +448,7 @@ export default function Header() {
         )}
       </AnimatePresence>
 
+      {/* Panel Desplegable de Autenticación con Partículas Interactivas + Cápsulas Liquid Glass */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -206,151 +456,253 @@ export default function Header() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="overflow-hidden border-t border-white/15 liquid-glass-dropdown"
+            transition={{ duration: 0.32, ease: 'easeInOut' }}
+            className="relative overflow-hidden border-t border-white/15 liquid-glass-dropdown"
           >
-            <div className="max-w-md mx-auto px-6 py-8">
-              <div className="flex mb-6 p-1 rounded-xl liquid-glass-pill">
-                <button
-                  onClick={() => { setTab('login'); resetRegForm(); }}
-                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${
-                    tab === 'login'
-                      ? 'bg-gradient-to-r from-cyan-500/30 to-blue-500/30 text-white border border-cyan-400/40 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  Iniciar sesión
-                </button>
-                <button
-                  onClick={() => { setTab('register'); resetLoginForm(); }}
-                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${
-                    tab === 'register'
-                      ? 'bg-gradient-to-r from-cyan-500/30 to-blue-500/30 text-white border border-cyan-400/40 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  Registrarse
-                </button>
-              </div>
+            {/* Lienzo de partículas Antigravity dentro del panel desplegable */}
+            <DropdownAntigravityCanvas />
 
-              {tab === 'login' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs text-slate-300 font-semibold tracking-wide" htmlFor="header-user">Usuario</label>
-                    <input
-                      id="header-user"
-                      type="text"
-                      value={loginUser}
-                      onChange={(e) => setLoginUser(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                      className="w-full mt-1.5 liquid-glass-input rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500"
-                      placeholder="Tu nombre de usuario"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-300 font-semibold tracking-wide" htmlFor="header-pass">Contraseña</label>
-                    <input
-                      id="header-pass"
-                      type="password"
-                      value={loginPass}
-                      onChange={(e) => setLoginPass(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                      className="w-full mt-1.5 liquid-glass-input rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500"
-                      placeholder="Tu contraseña"
-                    />
-                  </div>
-
-                  {loginError && (
-                    <p className="text-red-400 text-xs font-medium">{loginError}</p>
-                  )}
-
-                  <button
-                    onClick={handleLogin}
-                    disabled={loading}
-                    className="w-full liquid-glass-btn text-white font-bold py-2.5 rounded-xl text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    {loading ? 'Cargando...' : 'Entrar'}
-                  </button>
-                </div>
-              )}
-
-              {tab === 'register' && (
-                <div className="space-y-4">
-                  {regSuccess ? (
-                    <div className="text-center py-8 liquid-glass rounded-2xl p-6">
-                      <p className="text-emerald-400 font-bold text-sm">
-                        ✅ Registro exitoso.
-                      </p>
-                      <p className="text-slate-300 text-xs mt-2">
-                        Un administrador debe asignar tu rol para que puedas acceder.
-                      </p>
+            <div className="relative z-10 max-w-5xl mx-auto px-6 py-8 md:py-10">
+              <div className="grid lg:grid-cols-12 gap-6 items-stretch">
+                {/* Columna Izquierda: Tarjeta de Telemetría y Mundos en Liquid Glass */}
+                <div className="hidden lg:flex lg:col-span-5 flex-col justify-between rounded-3xl liquid-glass p-7">
+                  <div className="space-y-4">
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass-pill text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-300">
+                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#00f5ff]" />
+                      Portal de Acceso Estelar
                     </div>
-                  ) : (
-                    <>
-                      <div>
-                        <label className="text-xs text-slate-300 font-semibold tracking-wide" htmlFor="reg-name">Nombre completo</label>
-                        <input
-                          id="reg-name"
-                          type="text"
-                          value={regName}
-                          onChange={(e) => setRegName(e.target.value)}
-                          className="w-full mt-1.5 liquid-glass-input rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500"
-                          placeholder="Ej: Juan Pérez"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-slate-300 font-semibold tracking-wide" htmlFor="reg-email">Correo electrónico</label>
-                        <input
-                          id="reg-email"
-                          type="email"
-                          value={regEmail}
-                          onChange={(e) => setRegEmail(e.target.value)}
-                          className="w-full mt-1.5 liquid-glass-input rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500"
-                          placeholder="correo@ejemplo.com"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-slate-300 font-semibold tracking-wide" htmlFor="reg-user">Usuario</label>
-                        <input
-                          id="reg-user"
-                          type="text"
-                          value={regUser}
-                          onChange={(e) => setRegUser(e.target.value)}
-                          className="w-full mt-1.5 liquid-glass-input rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500"
-                          placeholder="Tu nombre de usuario"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-slate-300 font-semibold tracking-wide" htmlFor="reg-pass">Contraseña</label>
-                        <input
-                          id="reg-pass"
-                          type="password"
-                          value={regPass}
-                          onChange={(e) => setRegPass(e.target.value)}
-                          className="w-full mt-1.5 liquid-glass-input rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500"
-                          placeholder="Mínimo 6 caracteres"
-                        />
-                      </div>
 
-                      {regError && (
-                        <p className="text-red-400 text-xs font-medium">{regError}</p>
-                      )}
+                    <h3 className="text-2xl font-black text-white tracking-tight leading-snug">
+                      Explora el cosmos del aprendizaje
+                    </h3>
 
-                      <button
-                        onClick={handleRegister}
-                        disabled={loading}
-                        className="w-full liquid-glass-btn text-white font-bold py-2.5 rounded-xl text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                      >
-                        {loading ? 'Cargando...' : 'Crear cuenta'}
-                      </button>
+                    <p className="text-xs text-slate-300/90 leading-relaxed">
+                      Ingresa con tu cuenta de explorador, tutor o administrador para sincronizar tu progreso, misiones y estrellas en tiempo real.
+                    </p>
+                  </div>
 
-                      <p className="text-xs text-slate-400 text-center">
-                        Después de registrarte, un administrador debe aprobar tu cuenta.
-                      </p>
-                    </>
-                  )}
+                  {/* Mini cápsulas Liquid Glass de los 3 planetas */}
+                  <div className="space-y-2.5 my-5">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                      Mundos conectados
+                    </div>
+                    <div className="grid grid-cols-3 gap-2.5">
+                      {PLANET_CHIPS.map((p) => (
+                        <div
+                          key={p.name}
+                          className="liquid-glass-pill rounded-2xl p-3 text-center"
+                          style={{
+                            background: `linear-gradient(155deg, ${p.bg} 0%, rgba(15, 20, 38, 0.45) 100%)`,
+                            borderColor: `${p.color}40`,
+                          }}
+                        >
+                          <div className="text-xl mb-1">{p.icon}</div>
+                          <div className="text-xs font-extrabold text-white tracking-wide">{p.name}</div>
+                          <div className="text-[10px] font-semibold" style={{ color: p.color }}>
+                            {p.sub}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Estado del sistema en cápsula Liquid Glass */}
+                  <div className="liquid-glass-pill rounded-2xl px-4 py-3 flex items-center justify-between text-xs">
+                    <span className="text-slate-300 font-medium flex items-center gap-2">
+                      <span>🛡️</span> Sincronización Offline/Online
+                    </span>
+                    <span className="text-emerald-300 font-bold tracking-wider uppercase text-[10px]">
+                      ● Activa
+                    </span>
+                  </div>
                 </div>
-              )}
+
+                {/* Columna Derecha: Cápsula Liquid Glass del Formulario */}
+                <div className="lg:col-span-7">
+                  <div className="rounded-3xl liquid-glass p-6 sm:p-8 h-full flex flex-col justify-center">
+                    <div className="flex items-center justify-between mb-5">
+                      <div>
+                        <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-300/90 block">
+                          {tab === 'login' ? 'Bienvenido de vuelta' : 'Nuevo Explorador'}
+                        </span>
+                        <h4 className="text-xl font-black text-white tracking-wide">
+                          {tab === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta Espacial'}
+                        </h4>
+                      </div>
+                      <button
+                        onClick={() => setIsOpen(false)}
+                        className="liquid-glass-pill w-8 h-8 rounded-xl flex items-center justify-center text-slate-300 hover:text-white text-xs font-bold cursor-pointer"
+                        title="Cerrar panel"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* Selector de pestañas en cápsula Liquid Glass */}
+                    <div className="flex mb-6 p-1.5 rounded-2xl liquid-glass-pill">
+                      <button
+                        onClick={() => { setTab('login'); resetRegForm(); }}
+                        className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer ${
+                          tab === 'login'
+                            ? 'liquid-glass-btn text-white shadow-sm'
+                            : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        Iniciar sesión
+                      </button>
+                      <button
+                        onClick={() => { setTab('register'); resetLoginForm(); }}
+                        className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer ${
+                          tab === 'register'
+                            ? 'liquid-glass-btn text-white shadow-sm'
+                            : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        Registrarse
+                      </button>
+                    </div>
+
+                    {tab === 'login' && (
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-xs text-slate-200 font-semibold tracking-wide" htmlFor="header-user">
+                            Usuario
+                          </label>
+                          <input
+                            id="header-user"
+                            type="text"
+                            value={loginUser}
+                            onChange={(e) => setLoginUser(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                            className="w-full mt-1.5 liquid-glass-input rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500"
+                            placeholder="Tu nombre de usuario"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-slate-200 font-semibold tracking-wide" htmlFor="header-pass">
+                            Contraseña
+                          </label>
+                          <input
+                            id="header-pass"
+                            type="password"
+                            value={loginPass}
+                            onChange={(e) => setLoginPass(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                            className="w-full mt-1.5 liquid-glass-input rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500"
+                            placeholder="Tu contraseña"
+                          />
+                        </div>
+
+                        {loginError && (
+                          <div className="liquid-glass-pill border-red-400/40 bg-red-500/10 rounded-xl px-4 py-2.5 text-red-300 text-xs font-semibold">
+                            ⚠️ {loginError}
+                          </div>
+                        )}
+
+                        <button
+                          onClick={handleLogin}
+                          disabled={loading}
+                          className="w-full liquid-glass-btn text-white font-bold py-3 rounded-xl text-sm tracking-wider uppercase disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-2"
+                        >
+                          {loading ? 'Conectando...' : '🚀 Entrar al Universo'}
+                        </button>
+                      </div>
+                    )}
+
+                    {tab === 'register' && (
+                      <div className="space-y-3.5">
+                        {regSuccess ? (
+                          <div className="text-center py-8 liquid-glass-pill rounded-2xl p-6">
+                            <p className="text-emerald-300 font-bold text-base">
+                              ✅ Registro exitoso
+                            </p>
+                            <p className="text-slate-300 text-xs mt-2">
+                              Un administrador debe asignar tu rol para que puedas acceder.
+                            </p>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="grid sm:grid-cols-2 gap-3.5">
+                              <div>
+                                <label className="text-xs text-slate-200 font-semibold tracking-wide" htmlFor="reg-name">
+                                  Nombre completo
+                                </label>
+                                <input
+                                  id="reg-name"
+                                  type="text"
+                                  value={regName}
+                                  onChange={(e) => setRegName(e.target.value)}
+                                  className="w-full mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-slate-500"
+                                  placeholder="Ej: Juan Pérez"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-200 font-semibold tracking-wide" htmlFor="reg-email">
+                                  Correo electrónico
+                                </label>
+                                <input
+                                  id="reg-email"
+                                  type="email"
+                                  value={regEmail}
+                                  onChange={(e) => setRegEmail(e.target.value)}
+                                  className="w-full mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-slate-500"
+                                  placeholder="correo@ejemplo.com"
+                                />
+                              </div>
+                            </div>
+                            <div className="grid sm:grid-cols-2 gap-3.5">
+                              <div>
+                                <label className="text-xs text-slate-200 font-semibold tracking-wide" htmlFor="reg-user">
+                                  Usuario
+                                </label>
+                                <input
+                                  id="reg-user"
+                                  type="text"
+                                  value={regUser}
+                                  onChange={(e) => setRegUser(e.target.value)}
+                                  className="w-full mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-slate-500"
+                                  placeholder="Nombre de usuario"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-slate-200 font-semibold tracking-wide" htmlFor="reg-pass">
+                                  Contraseña
+                                </label>
+                                <input
+                                  id="reg-pass"
+                                  type="password"
+                                  value={regPass}
+                                  onChange={(e) => setRegPass(e.target.value)}
+                                  className="w-full mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-slate-500"
+                                  placeholder="Mínimo 6 caracteres"
+                                />
+                              </div>
+                            </div>
+
+                            {regError && (
+                              <div className="liquid-glass-pill border-red-400/40 bg-red-500/10 rounded-xl px-4 py-2 text-red-300 text-xs font-semibold">
+                                ⚠️ {regError}
+                              </div>
+                            )}
+
+                            <button
+                              onClick={handleRegister}
+                              disabled={loading}
+                              className="w-full liquid-glass-btn text-white font-bold py-3 rounded-xl text-sm tracking-wider uppercase disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            >
+                              {loading ? 'Creando cuenta...' : '✨ Crear cuenta'}
+                            </button>
+
+                            <p className="text-[11px] text-slate-400 text-center">
+                              Después de registrarte, un administrador aprobará tu cuenta.
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
