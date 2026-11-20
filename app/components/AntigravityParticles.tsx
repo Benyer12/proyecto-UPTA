@@ -35,7 +35,17 @@ const PALETTE = [
   '250, 204, 21',  // Dorado estelar (#facc15)
 ];
 
-const ALLOWED_ROUTES = ['/', '/dashboard', '/maestro', '/docente', '/tutor', '/admin', '/asignaciones'];
+const ALLOWED_ROUTES = [
+  '/',
+  '/about',
+  '/how-to-play',
+  '/dashboard',
+  '/maestro',
+  '/docente',
+  '/tutor',
+  '/admin',
+  '/asignaciones',
+];
 
 function isRouteAllowed(pathname: string | null): boolean {
   if (!pathname) return false;
