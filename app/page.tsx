@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Planeta from './components/Planeta';
@@ -45,44 +44,43 @@ const PLANETAS_PREVIEW = [
   },
 ];
 
-
-
 export default function LandingPage() {
   return (
     <div className="relative min-h-screen">
-
-      <section className="relative z-10 flex flex-col items-center pt-16 min-h-[80vh] px-6 text-center">
+      <section className="relative z-10 flex flex-col items-center justify-center pt-12 pb-16 min-h-[78vh] px-6 text-center">
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 36 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="max-w-4xl mx-auto"
+          className="max-w-4xl mx-auto flex flex-col items-center"
         >
-          <h1
-            className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-none mb-6 cosmic-title"
-          >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full liquid-glass-pill text-xs font-bold uppercase tracking-[0.22em] text-cyan-300 mb-6">
+            <span>✦</span> Aventura Educativa Espacial <span>✦</span>
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08] mb-6 cosmic-title">
             UNIVERSO DEL CONOCIMIENTO
           </h1>
 
-          <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-4">
+          <p className="text-base sm:text-lg md:text-xl text-slate-200/90 max-w-2xl mx-auto mb-5 leading-relaxed font-normal">
             Una plataforma educativa gamificada que convierte el aprendizaje
             en un viaje espacial para niños de 10 a 12 años.
           </p>
 
-          <p className="text-base md:text-lg text-cyan-300/70 font-semibold tracking-wider mb-10">
-            ✦ Explora. Aprende. Brilla como una estrella. ✦
+          <p className="text-sm md:text-base text-cyan-300/80 font-semibold tracking-[0.18em] uppercase mb-10">
+            ✦ Explora · Aprende · Brilla como una estrella ✦
           </p>
 
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               href="/dashboard"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3.5 rounded-xl transition-all text-sm tracking-wider shadow-lg shadow-blue-600/30"
+              className="liquid-glass-btn text-white font-bold px-8 py-3.5 rounded-2xl text-sm tracking-widest uppercase"
             >
               COMENZAR VIAJE
             </Link>
             <Link
               href="/about"
-              className="border border-white/20 hover:border-white/40 text-white font-semibold px-8 py-3.5 rounded-xl transition-all text-sm tracking-wider"
+              className="liquid-glass-pill hover:bg-white/15 text-white font-semibold px-8 py-3.5 rounded-2xl transition-all text-sm tracking-widest uppercase"
             >
               MÁS INFORMACIÓN
             </Link>
@@ -90,7 +88,7 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      <section className="relative z-10 px-6 pb-24">
+      <section className="relative z-10 px-6 pb-28">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -98,12 +96,14 @@ export default function LandingPage() {
           transition={{ duration: 0.6 }}
           className="max-w-6xl mx-auto"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-4">
-            Explora los mundos del conocimiento
-          </h2>
-          <p className="text-slate-400 text-center max-w-2xl mx-auto mb-12 text-base md:text-lg leading-relaxed">
-            Cada planeta contiene cursos y niveles adaptados al ritmo de aprendizaje del estudiante.
-          </p>
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-3">
+              Explora los mundos del conocimiento
+            </h2>
+            <p className="text-slate-300/80 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
+              Cada planeta contiene cursos y niveles adaptados al ritmo de aprendizaje del estudiante.
+            </p>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {PLANETAS_PREVIEW.map((p, i) => (
@@ -113,13 +113,15 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.15, duration: 0.5 }}
-                className="relative group"
+                className="relative group flex"
               >
                 <div
-                  className="rounded-2xl p-6 text-center border border-white/10 bg-white/5 backdrop-blur-sm
-                    hover:border-white/30 transition-all duration-300 hover:-translate-y-1"
+                  className="liquid-glass liquid-glass-interactive rounded-3xl p-7 text-center flex flex-col justify-between w-full"
+                  style={{
+                    boxShadow: `0 16px 40px -10px rgba(0,0,0,0.6), 0 0 28px -8px ${p.glow}25, inset 0 1px 1px rgba(255,255,255,0.25)`,
+                  }}
                 >
-                  <div className="flex justify-center mb-4">
+                  <div className="flex justify-center mb-3">
                     <Planeta
                       planetId={p.id}
                       nombre={p.nombre}
@@ -131,15 +133,15 @@ export default function LandingPage() {
                       cursos={p.cursos}
                     />
                   </div>
-                  <p className="text-base md:text-lg text-slate-300 leading-relaxed mt-4">{p.descripcion}</p>
+                  <p className="text-sm md:text-base text-slate-200/90 leading-relaxed mt-3 font-medium">
+                    {p.descripcion}
+                  </p>
                 </div>
               </motion.div>
             ))}
           </div>
         </motion.div>
       </section>
-
-
     </div>
   );
 }

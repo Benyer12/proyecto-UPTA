@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../lib/auth-store';
-import { supabase } from '../../lib/supabase'; // Verifica que coincida con la ruta de tu cliente Supabase
+import { supabase } from '../../lib/supabase';
 
 const PLANET_DATA = [
   {
@@ -11,24 +11,24 @@ const PLANET_DATA = [
     materia: 'Matemáticas',
     icon: '🔢',
     niveles: 6,
-    color: 'border-cyan-500/30',
-    bg: 'from-cyan-950/20',
+    accent: '#00f5ff',
+    tint: 'rgba(0, 245, 255, 0.08)',
   },
   {
     nombre: 'Letralia',
     materia: 'Lenguas',
     icon: '📖',
     niveles: 3,
-    color: 'border-purple-500/30',
-    bg: 'from-purple-950/20',
+    accent: '#bf40ff',
+    tint: 'rgba(191, 64, 255, 0.08)',
   },
   {
     nombre: 'Naturae',
     materia: 'Ciencias',
     icon: '🌿',
     niveles: 3,
-    color: 'border-green-500/30',
-    bg: 'from-green-950/20',
+    accent: '#00ff88',
+    tint: 'rgba(0, 255, 136, 0.08)',
   },
 ];
 
@@ -84,7 +84,6 @@ export default function MaestroPage() {
     if (!user) return;
     setLoading(true);
     try {
-      // 1. Consultar en 'tutor_estudiantes' los IDs de estudiantes asignados a este tutor
       const { data: asignaciones, error: errAsig } = await supabase
         .from('tutor_estudiantes')
         .select('estudiante_id')
@@ -94,7 +93,6 @@ export default function MaestroPage() {
 
       const idsAsignados = (asignaciones || []).map((a) => a.estudiante_id);
 
-      // 2. Contar cuántos niveles existen en la tabla 'niveles'
       const { count: conteoNiveles } = await supabase
         .from('niveles')
         .select('*', { count: 'exact', head: true });
@@ -103,7 +101,6 @@ export default function MaestroPage() {
         setTotalNiveles(conteoNiveles);
       }
 
-      // Si el tutor aún no tiene estudiantes asignados, dejamos las listas en 0
       if (idsAsignados.length === 0) {
         setStudents([]);
         setTotalCompletados(0);
@@ -112,7 +109,6 @@ export default function MaestroPage() {
         return;
       }
 
-      // 3. Obtener de 'usuarios' únicamente los estudiantes asignados con rol 'student'
       const { data: usuariosData, error: errUsuarios } = await supabase
         .from('usuarios')
         .select('id, nombre, usuario, correo, role')
@@ -122,7 +118,6 @@ export default function MaestroPage() {
 
       if (errUsuarios) throw errUsuarios;
 
-      // 4. Obtener el progreso de esos estudiantes en 'progreso_usuario'
       const { data: progresoData, error: errProgreso } = await supabase
         .from('progreso_usuario')
         .select('id, usuario_id, nivel_id, completado, estrellas, ultima_sesion')
@@ -132,7 +127,6 @@ export default function MaestroPage() {
 
       const registrosProgreso = (progresoData || []) as ProgresoRegistro[];
 
-      // 5. Cruzar progreso y estrellas de cada estudiante asignado
       const listaEstudiantes: EstudianteConProgreso[] = (usuariosData || []).map((est) => {
         const misRegistros = registrosProgreso.filter(
           (p) => p.usuario_id === est.id
@@ -181,56 +175,73 @@ export default function MaestroPage() {
   return (
     <div className="relative min-h-screen px-6 py-12">
       <div className="relative z-10 max-w-6xl mx-auto space-y-10">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-black text-white">
-            🚀 Puente de Mando
-          </h1>
-          <p className="text-slate-400 text-sm mt-2">
-            Bienvenido, {user.name}. Aquí puedes supervisar el progreso de tus estudiantes.
-          </p>
+        {/* Encabezado Liquid Glass */}
+        <div className="rounded-3xl liquid-glass p-7 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.2em] text-cyan-300 mb-2">
+              <span>✦</span> Panel Docente
+            </span>
+            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
+              🚀 Puente de Mando
+            </h1>
+            <p className="text-slate-300/90 text-sm md:text-base mt-1.5">
+              Bienvenido, <strong className="text-white">{user.name}</strong>. Supervisa el rendimiento y progreso espacial de tus estudiantes.
+            </p>
+          </div>
         </div>
 
-        {/* Tarjetas de métricas globales */}
+        {/* Tarjetas de métricas globales Liquid Glass */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <div className="text-2xl font-bold text-white">{students.length}</div>
-            <div className="text-xs text-slate-400">Estudiantes</div>
+          <div className="liquid-glass liquid-glass-interactive rounded-2xl p-5">
+            <div className="text-2xl md:text-3xl font-black text-white">{students.length}</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-300 mt-1">Estudiantes</div>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <div className="text-2xl font-bold text-white">{PLANET_DATA.length}</div>
-            <div className="text-xs text-slate-400">Planetas</div>
+          <div className="liquid-glass liquid-glass-interactive rounded-2xl p-5">
+            <div className="text-2xl md:text-3xl font-black text-white">{PLANET_DATA.length}</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-300 mt-1">Planetas</div>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <div className="text-2xl font-bold text-white">{totalNiveles}</div>
-            <div className="text-xs text-slate-400">Niveles totales</div>
+          <div className="liquid-glass liquid-glass-interactive rounded-2xl p-5">
+            <div className="text-2xl md:text-3xl font-black text-white">{totalNiveles}</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-300 mt-1">Niveles totales</div>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <div className="text-2xl font-bold text-cyan-400">{totalCompletados}</div>
-            <div className="text-xs text-slate-400">Completados</div>
+          <div className="liquid-glass liquid-glass-interactive rounded-2xl p-5">
+            <div className="text-2xl md:text-3xl font-black text-cyan-300">{totalCompletados}</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-300 mt-1">Completados</div>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-            <div className="text-2xl font-bold text-yellow-400">⭐ {totalEstrellas}</div>
-            <div className="text-xs text-slate-400">Total de estrellas</div>
+          <div className="liquid-glass liquid-glass-interactive rounded-2xl p-5 col-span-2 md:col-span-1">
+            <div className="text-2xl md:text-3xl font-black text-yellow-300">⭐ {totalEstrellas}</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-300 mt-1">Total estrellas</div>
           </div>
         </div>
 
         <section>
-          <h2 className="text-xl font-bold text-white mb-4">📚 Planes de estudio</h2>
-          <div className="grid md:grid-cols-3 gap-4">
+          <h2 className="text-xl font-black text-white mb-5 tracking-wide flex items-center gap-2">
+            <span>📚</span> Planes de estudio
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6">
             {PLANET_DATA.map((p) => (
               <div
                 key={p.nombre}
-                className={`bg-gradient-to-br ${p.bg} to-transparent border ${p.color} rounded-xl p-6`}
+                className="liquid-glass liquid-glass-interactive rounded-3xl p-6"
+                style={{
+                  background: `linear-gradient(145deg, ${p.tint} 0%, rgba(255,255,255,0.03) 60%, rgba(255,255,255,0.01) 100%)`,
+                  borderColor: `${p.accent}35`,
+                }}
               >
-                <div className="text-3xl mb-2">{p.icon}</div>
-                <h3 className="text-lg font-bold text-white">{p.nombre}</h3>
-                <p className="text-xs text-slate-400 uppercase tracking-wider mb-3">
+                <div className="w-12 h-12 rounded-2xl liquid-glass-pill flex items-center justify-center text-2xl mb-4">
+                  {p.icon}
+                </div>
+                <h3 className="text-xl font-black text-white tracking-wide">{p.nombre}</h3>
+                <p
+                  className="text-xs font-bold uppercase tracking-[0.18em] mb-3 mt-0.5"
+                  style={{ color: p.accent }}
+                >
                   {p.materia}
                 </p>
-                <p className="text-sm text-slate-300">
+                <p className="text-sm text-slate-200 font-medium leading-relaxed">
                   {p.niveles} niveles organizados en cursos progresivos.
                 </p>
-                <p className="text-xs text-slate-500 mt-3">
+                <p className="text-xs text-slate-300/75 mt-3 leading-relaxed">
                   Cada nivel refuerza competencias específicas alineadas con el currículo de educación primaria.
                 </p>
               </div>
@@ -239,48 +250,50 @@ export default function MaestroPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-white mb-4">👨‍🎓 Mis estudiantes</h2>
+          <h2 className="text-xl font-black text-white mb-5 tracking-wide flex items-center gap-2">
+            <span>👨‍🎓</span> Mis estudiantes
+          </h2>
           {loading ? (
-            <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center">
-              <p className="text-slate-400 text-sm">Cargando datos de los estudiantes...</p>
+            <div className="liquid-glass rounded-3xl p-10 text-center">
+              <p className="text-slate-300 text-sm font-medium">Cargando datos de los estudiantes...</p>
             </div>
           ) : students.length === 0 ? (
-            <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center">
-              <p className="text-slate-400 text-sm">No tienes estudiantes asignados.</p>
-              <p className="text-slate-600 text-xs mt-1">
-                Contacta al administrador para que te asigne estudiantes.
+            <div className="liquid-glass rounded-3xl p-10 text-center">
+              <p className="text-slate-200 text-base font-bold">No tienes estudiantes asignados.</p>
+              <p className="text-slate-400 text-xs mt-1.5">
+                Contacta al administrador para que te asigne estudiantes en el sistema.
               </p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {students.map((s) => (
                 <div
                   key={s.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 liquid-glass liquid-glass-interactive rounded-2xl p-5"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold uppercase">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-400/80 to-purple-600/80 border border-white/25 flex items-center justify-center text-white text-sm font-black uppercase shadow-[0_0_15px_rgba(0,245,255,0.25)]">
                       {s.nombre ? s.nombre.charAt(0) : 'E'}
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-white">{s.nombre}</div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-base font-bold text-white leading-snug">{s.nombre}</div>
+                      <div className="text-xs text-slate-300/80">
                         @{s.usuario} · {s.correo}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 text-xs">
+                  <div className="flex flex-wrap items-center gap-2.5 text-xs">
                     {s.ultimaSesion && (
-                      <span className="text-slate-500">
+                      <span className="text-slate-300/80 px-2.5 py-1 rounded-lg bg-white/5">
                         Última sesión: {new Date(s.ultimaSesion).toLocaleDateString()}
                       </span>
                     )}
-                    <span className="bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 px-3 py-1 rounded-lg">
-                      Completados: <strong>{s.nivelesCompletados}</strong> / {totalNiveles}
+                    <span className="liquid-glass-pill border-cyan-400/35 text-cyan-200 px-3.5 py-1.5 rounded-xl font-medium">
+                      Completados: <strong className="text-white font-black">{s.nivelesCompletados}</strong> / {totalNiveles}
                     </span>
-                    <span className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-300 px-3 py-1 rounded-lg">
-                      ⭐ <strong>{s.estrellasTotales}</strong> estrellas
+                    <span className="liquid-glass-pill border-yellow-400/35 text-yellow-200 px-3.5 py-1.5 rounded-xl font-medium">
+                      ⭐ <strong className="text-white font-black">{s.estrellasTotales}</strong> estrellas
                     </span>
                   </div>
                 </div>

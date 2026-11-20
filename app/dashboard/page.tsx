@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -46,40 +45,48 @@ function StudentView({ planets, progress, user, totalStars }: { planets: Planet[
   const [expanded, setExpanded] = useState<number | null>(null);
 
   const getPlanetStyles = (name: string) => {
-    if (name.includes('Numérix')) return { color: '#00f5ff', gradient: 'from-[#00f5ff]/10 to-[#00f5ff]/5' };
-    if (name.includes('Letralia')) return { color: '#bf40ff', gradient: 'from-[#bf40ff]/10 to-[#bf40ff]/5' };
-    if (name.includes('Naturae')) return { color: '#00ff88', gradient: 'from-[#00ff88]/10 to-[#00ff88]/5' };
-    return { color: '#80f0ff', gradient: 'from-[#80f0ff]/10 to-[#80f0ff]/5' };
+    if (name.includes('Numérix')) return { color: '#00f5ff', tint: 'rgba(0, 245, 255, 0.08)' };
+    if (name.includes('Letralia')) return { color: '#bf40ff', tint: 'rgba(191, 64, 255, 0.08)' };
+    if (name.includes('Naturae')) return { color: '#00ff88', tint: 'rgba(0, 255, 136, 0.08)' };
+    return { color: '#80f0ff', tint: 'rgba(128, 240, 255, 0.08)' };
   };
 
   return (
-    <div className="space-y-8">
-      {/* Banner Superior de Bienvenida */}
-      <div className="max-w-5xl mx-auto rounded-2xl bg-gradient-to-r from-slate-900/80 to-black/80 backdrop-blur-md border border-white/10 p-6 flex flex-col md:flex-row items-center justify-between shadow-[0_0_20px_rgba(0,245,255,0.1)] relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none"></div>
+    <div className="space-y-10">
+      {/* Banner Superior de Bienvenida Liquid Glass */}
+      <div className="max-w-5xl mx-auto rounded-3xl liquid-glass p-6 sm:p-7 flex flex-col sm:flex-row items-center justify-between gap-4 relative overflow-hidden">
         <div className="flex items-center gap-4 relative z-10">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-3xl shadow-[0_0_15px_rgba(0,245,255,0.4)]">
+          <div className="w-16 h-16 rounded-2xl liquid-glass-pill flex items-center justify-center text-3xl shadow-[0_0_24px_rgba(0,245,255,0.28)] border border-cyan-400/40">
             👩‍🚀
           </div>
-          <div>
-            <h2 className="text-xl md:text-2xl font-black text-white tracking-wide">¡Hola, {user?.name || 'Explorador'}!</h2>
+          <div className="text-center sm:text-left">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300/80 block mb-0.5">
+              Centro de Exploración
+            </span>
+            <h2 className="text-xl md:text-2xl font-black text-white tracking-wide">
+              ¡Hola, {user?.name || 'Explorador'}!
+            </h2>
           </div>
         </div>
-        <div className="mt-4 md:mt-0 bg-black/40 px-6 py-3 rounded-full border border-cyan-500/30 flex items-center gap-3 relative z-10">
-          <span className="text-2xl filter drop-shadow-[0_0_5px_rgba(255,215,0,0.8)]">⭐</span>
+        <div className="liquid-glass-pill px-6 py-3 rounded-2xl border border-cyan-400/30 flex items-center gap-3.5 relative z-10">
+          <span className="text-2xl filter drop-shadow-[0_0_8px_rgba(250,204,21,0.85)]">⭐</span>
           <div>
-            <div className="text-xs text-slate-400 uppercase tracking-wider font-bold">Estrellas</div>
-            <div className="text-xl font-black text-white">{totalStars}</div>
+            <div className="text-[11px] text-slate-300 uppercase tracking-widest font-bold">Estrellas</div>
+            <div className="text-xl font-black text-white leading-tight">{totalStars}</div>
           </div>
         </div>
       </div>
 
-      <h1 className="text-4xl md:text-5xl font-black tracking-wide text-center bg-gradient-to-r from-cyan-400 via-white to-blue-400 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]">
-        MAPAS ESTELARES
-      </h1>
-      <p className="text-center text-gray-300 font-medium text-lg md:text-xl mb-10">Selecciona un planeta para comenzar tu misión</p>
+      <div className="text-center space-y-2">
+        <h1 className="text-4xl md:text-5xl font-black tracking-tight cosmic-title">
+          MAPAS ESTELARES
+        </h1>
+        <p className="text-slate-300/90 font-medium text-base md:text-lg">
+          Selecciona un planeta para comenzar tu misión
+        </p>
+      </div>
 
-      <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <div className="grid md:grid-cols-3 gap-7 max-w-5xl mx-auto">
         {planets.map((planet) => {
           const styles = getPlanetStyles(planet.name);
           return (
@@ -88,58 +95,70 @@ function StudentView({ planets, progress, user, totalStars }: { planets: Planet[
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: planet.order * 0.1 }}
-              className={`rounded-2xl border bg-gradient-to-b ${styles.gradient} backdrop-blur-md overflow-hidden relative group`}
+              className="rounded-3xl liquid-glass liquid-glass-interactive overflow-hidden relative group flex flex-col justify-between"
               style={{
-                borderColor: `${styles.color}40`,
-                boxShadow: `0 0 15px ${styles.color}20`
+                background: `linear-gradient(145deg, ${styles.tint} 0%, rgba(255,255,255,0.03) 55%, rgba(255,255,255,0.01) 100%)`,
+                borderColor: `${styles.color}38`,
+                boxShadow: `0 16px 40px -8px rgba(0,0,0,0.6), 0 0 24px -6px ${styles.color}22, inset 0 1px 1px rgba(255,255,255,0.25)`
               }}
             >
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none mix-blend-screen group-hover:opacity-30 transition-opacity duration-700"></div>
-              
-              <div className="p-6 text-center relative z-10">
-                <div className="mb-6 flex justify-center scale-75 transform-origin-top">
+              <div className="p-7 text-center relative z-10 flex-1 flex flex-col">
+                <div className="mb-4 flex justify-center scale-75 transform-origin-top">
                   <PlanetVisual name={planet.name} />
                 </div>
                 
-                <h2 className="text-2xl font-black text-white mb-1 tracking-wide" style={{ textShadow: `0 0 10px ${styles.color}80` }}>{planet.name}</h2>
-                <p className="text-xs text-slate-300 uppercase tracking-widest mb-6 font-medium h-8">{planet.shortDescription}</p>
+                <h2
+                  className="text-2xl font-black text-white mb-2 tracking-wide"
+                  style={{ textShadow: `0 0 14px ${styles.color}65` }}
+                >
+                  {planet.name}
+                </h2>
+                <p className="text-xs text-slate-200/80 uppercase tracking-[0.16em] mb-6 font-semibold min-h-[2.25rem] flex items-center justify-center">
+                  {planet.shortDescription}
+                </p>
                 
-                <button
-                  onClick={() => router.push(`/planeta/${planet.id}`)}
-                  className="w-full py-3 rounded-xl font-black uppercase tracking-widest text-sm transition-all duration-300 flex items-center justify-center gap-2 mb-4"
-                  style={{
-                    background: `linear-gradient(90deg, ${styles.color}20, ${styles.color}40)`,
-                    border: `1px solid ${styles.color}80`,
-                    color: '#fff',
-                    textShadow: '0 1px 2px rgba(0,0,0,0.8)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow = `0 0 20px ${styles.color}60`;
-                    e.currentTarget.style.background = `linear-gradient(90deg, ${styles.color}40, ${styles.color}60)`;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow = 'none';
-                    e.currentTarget.style.background = `linear-gradient(90deg, ${styles.color}20, ${styles.color}40)`;
-                  }}
-                >
-                  🚀 Explorar Planeta
-                </button>
+                <div className="mt-auto space-y-3">
+                  <button
+                    onClick={() => router.push(`/planeta/${planet.id}`)}
+                    className="w-full py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                    style={{
+                      background: `linear-gradient(135deg, ${styles.color}28, ${styles.color}14)`,
+                      border: `1px solid ${styles.color}75`,
+                      color: '#fff',
+                      boxShadow: `0 6px 20px -4px ${styles.color}25, inset 0 1px 1px rgba(255,255,255,0.3)`,
+                      textShadow: '0 1px 2px rgba(0,0,0,0.6)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.boxShadow = `0 0 24px ${styles.color}55, inset 0 1px 1.5px rgba(255,255,255,0.45)`;
+                      e.currentTarget.style.background = `linear-gradient(135deg, ${styles.color}45, ${styles.color}25)`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.boxShadow = `0 6px 20px -4px ${styles.color}25, inset 0 1px 1px rgba(255,255,255,0.3)`;
+                      e.currentTarget.style.background = `linear-gradient(135deg, ${styles.color}28, ${styles.color}14)`;
+                    }}
+                  >
+                    🚀 Explorar Planeta
+                  </button>
 
-                <button
-                  onClick={() => setExpanded(expanded === planet.id ? null : planet.id)}
-                  className="text-xs font-bold transition-colors uppercase tracking-widest flex items-center justify-center gap-1 mx-auto"
-                  style={{ color: styles.color }}
-                >
-                  {expanded === planet.id ? '▲ Ocultar cursos' : '▼ Ver cursos'}
-                </button>
+                  <button
+                    onClick={() => setExpanded(expanded === planet.id ? null : planet.id)}
+                    className="text-xs font-bold transition-colors uppercase tracking-widest flex items-center justify-center gap-1.5 mx-auto py-1 cursor-pointer opacity-90 hover:opacity-100"
+                    style={{ color: styles.color }}
+                  >
+                    {expanded === planet.id ? '▲ Ocultar cursos' : '▼ Ver cursos'}
+                  </button>
+                </div>
               </div>
 
               {expanded === planet.id && (
-                <div className="px-6 pb-6 space-y-3 pt-4 bg-black/40 relative z-10" style={{ borderTop: `1px solid ${styles.color}30` }}>
+                <div
+                  className="px-6 pb-6 space-y-3.5 pt-4 bg-black/35 backdrop-blur-xl relative z-10"
+                  style={{ borderTop: `1px solid ${styles.color}30` }}
+                >
                   {planet.courses.map((course) => (
-                    <div key={course.id} className="space-y-1">
+                    <div key={course.id} className="space-y-1.5">
                       <h3 className="text-sm font-bold text-white">{course.name}</h3>
-                      <p className="text-xs text-slate-300">{course.description}</p>
+                      <p className="text-xs text-slate-300/80">{course.description}</p>
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {course.levels.map((level) => {
                           const prog = progress[level.id];
@@ -147,14 +166,14 @@ function StudentView({ planets, progress, user, totalStars }: { planets: Planet[
                           return (
                             <span
                               key={level.id}
-                              className={`text-[10px] font-bold px-2.5 py-1 rounded-md border ${
+                              className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border backdrop-blur-md ${
                                 isLocked
-                                  ? 'border-slate-700 text-slate-500 bg-slate-900/50'
+                                  ? 'border-white/10 text-slate-400 bg-white/5'
                                   : prog.status === 'completed'
-                                    ? 'border-green-500 text-green-300 bg-green-900/40 shadow-[0_0_8px_rgba(0,255,0,0.2)]'
-                                    : `border-[${styles.color}] text-white shadow-[0_0_8px_${styles.color}40]`
+                                    ? 'border-emerald-400/50 text-emerald-200 bg-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                                    : 'text-white'
                               }`}
-                              style={!isLocked && prog.status !== 'completed' ? { backgroundColor: `${styles.color}30`, borderColor: styles.color } : {}}
+                              style={!isLocked && prog.status !== 'completed' ? { backgroundColor: `${styles.color}28`, borderColor: `${styles.color}80` } : {}}
                             >
                               {isLocked ? '🔒' : prog.status === 'completed' ? '✅' : '🔓'} {level.name}
                             </span>
@@ -184,8 +203,6 @@ export default function Dashboard() {
     setMounted(true);
   }, []);
 
-  // Cargar el progreso real de Supabase al montar y tener el usuario autenticado
-// Cargar el progreso real de Supabase al montar y tener el usuario autenticado
   useEffect(() => {
     const userId = (user as any)?.id;
     if (mounted && userId) {
@@ -196,7 +213,6 @@ export default function Dashboard() {
     }
   }, [mounted, user]);
 
-  // Redirección automática al detectar rol admin o tutor/docente
   useEffect(() => {
     if (mounted && user?.role) {
       if (user.role === 'admin') {
@@ -215,14 +231,16 @@ export default function Dashboard() {
 
   if (!user) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center">
-        <div className="relative z-10 text-center max-w-md mx-auto px-6">
+      <div className="relative min-h-screen flex items-center justify-center px-6">
+        <div className="relative z-10 text-center max-w-md w-full mx-auto p-8 rounded-3xl liquid-glass">
           <div className="text-5xl mb-4">🚀</div>
-          <h1 className="text-2xl font-black text-white mb-2">Mapa Estelar</h1>
-          <p className="text-sm text-slate-400 mb-6">Inicia sesión para explorar los planetas y ver tu progreso.</p>
+          <h1 className="text-2xl font-black text-white mb-2 tracking-wide">Mapa Estelar</h1>
+          <p className="text-sm text-slate-300 mb-7 leading-relaxed">
+            Inicia sesión para explorar los planetas y guardar tu progreso espacial.
+          </p>
           <button
             onClick={() => router.push('/')}
-            className="px-8 py-3 rounded-full text-sm font-bold tracking-widest border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all"
+            className="liquid-glass-btn px-8 py-3 rounded-2xl text-xs font-bold tracking-widest text-white uppercase cursor-pointer"
           >
             IR AL INICIO
           </button>
@@ -243,4 +261,3 @@ export default function Dashboard() {
     </div>
   );
 }
-

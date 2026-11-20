@@ -213,11 +213,11 @@ export default function Planeta({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.85, opacity: 0, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-lg rounded-2xl border overflow-y-auto max-h-[85vh]"
+              className="relative w-full max-w-lg rounded-3xl liquid-glass overflow-y-auto max-h-[85vh]"
               style={{
-                borderColor: `${glowColor}44`,
-                background: `linear-gradient(135deg, rgba(10,10,30,0.98), rgba(5,5,20,0.98))`,
-                boxShadow: `0 0 60px ${glowColor}30, 0 20px 60px rgba(0,0,0,0.6)`,
+                borderColor: `${glowColor}55`,
+                background: 'linear-gradient(135deg, rgba(16,22,48,0.82), rgba(8,11,28,0.75))',
+                boxShadow: `0 0 60px ${glowColor}30, 0 24px 60px rgba(0,0,0,0.65), inset 0 1px 1.5px rgba(255,255,255,0.28)`,
               }}
               onClick={(e) => e.stopPropagation()}
             >

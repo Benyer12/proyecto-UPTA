@@ -71,11 +71,11 @@ function GenericBoard({
       className="relative w-full max-w-sm aspect-square"
     >
       <div
-        className="absolute inset-0 rounded-[32px] overflow-hidden"
+        className="absolute inset-0 rounded-[32px] overflow-hidden liquid-glass"
         style={{
-          border: `1px solid ${planetColor}22`,
-          background: `radial-gradient(ellipse at 50% 40%, ${planetColor}15, transparent 70%), radial-gradient(ellipse at 50% 80%, ${planetColor}08, transparent 50%)`,
-          boxShadow: `inset 0 0 80px ${planetColor}08, 0 0 60px ${planetColor}08`,
+          border: `1px solid ${planetColor}44`,
+          background: `radial-gradient(ellipse at 50% 40%, ${planetColor}20, rgba(255,255,255,0.03) 70%), radial-gradient(ellipse at 50% 80%, ${planetColor}10, transparent 50%)`,
+          boxShadow: `inset 0 1px 1.5px rgba(255,255,255,0.28), inset 0 0 80px ${planetColor}12, 0 20px 60px rgba(0,0,0,0.6), 0 0 40px ${planetColor}15`,
         }}
       >
         <div className="absolute inset-4 rounded-2xl border border-white/[0.03]" />
@@ -401,10 +401,9 @@ export default function JuegoPage() {
 
       {/* ── HUD HEADER ── */}
       <header
-        className="fixed top-0 left-0 w-full z-50"
+        className="fixed top-0 left-0 w-full z-50 liquid-glass-header"
         style={{
-          background: 'linear-gradient(180deg, rgba(0,20,28,.95) 0%, transparent 100%)',
-          borderBottom: `1px solid rgba(${pc},.2)`,
+          borderBottom: `1px solid rgba(${pc},.28)`,
         }}
       >
         <div className="w-full mx-auto px-4 h-14 flex items-center justify-between">

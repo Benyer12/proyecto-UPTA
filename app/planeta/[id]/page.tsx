@@ -160,9 +160,14 @@ function CoursePortalSection({
   planetId: number;
 }) {
   return (
-    <div className="mb-14 last:mb-0">
+    <div className="mb-14 last:mb-0 rounded-3xl liquid-glass p-6 sm:p-8">
       <div className="text-center mb-8">
-        <h2 className="text-base font-bold text-white/80 tracking-wide">{course.name}</h2>
+        <span
+          className="inline-block px-4 py-1.5 rounded-full liquid-glass-pill text-xs font-bold uppercase tracking-[0.2em]"
+          style={{ color: planetColor, borderColor: `${planetColor}44` }}
+        >
+          {course.name}
+        </span>
       </div>
 
       <div className="relative">
@@ -295,20 +300,19 @@ export default function PlanetaPage() {
   const symbol = PLANET_SYMBOLS[planet.name] || planet.icon;
 
   return (
-    <div className="relative min-h-screen" style={{ background: '#00000a' }}>
-      <FondoCosmico />
+    <div className="relative min-h-screen">
       <div className="relative z-10 px-4 py-8 max-w-2xl mx-auto">
         <button
           onClick={() => router.push('/dashboard')}
-          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-300 hover:text-white liquid-glass-pill px-4 py-2 rounded-xl transition-all mb-8 cursor-pointer"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
           Mapa estelar
         </button>
 
-        <div className="text-center mb-10">
+        <div className="text-center mb-10 rounded-3xl liquid-glass p-7 sm:p-8">
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -365,7 +369,7 @@ export default function PlanetaPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
-            className="text-sm text-slate-500 mt-2 max-w-md mx-auto"
+            className="text-sm text-slate-300/90 mt-2 max-w-md mx-auto leading-relaxed"
           >
             {planet.description}
           </motion.p>
