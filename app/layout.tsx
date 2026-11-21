@@ -7,7 +7,7 @@ import { Outfit, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import Header from '../components/Header';
 
-const outfit = Outfit({ subsets: ['latin'], weight: ['400', '500', '600', '700', '900'], variable: '--font-sans' });
+const outfit = Outfit({ subsets: ['latin'], variable: '--font-sans' });
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
 export const metadata: Metadata = {
