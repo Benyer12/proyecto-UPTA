@@ -14,6 +14,8 @@ interface ThemeState {
   initTheme: () => void;
 }
 
+let storageListenerAttached = false;
+
 function applyThemeToDom(theme: AppTheme) {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
@@ -24,6 +26,10 @@ function applyThemeToDom(theme: AppTheme) {
   } else {
     root.classList.add('dark');
     root.classList.remove('light');
+  }
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
+  if (meta) {
+    meta.content = theme;
   }
 }
 
@@ -52,5 +58,15 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
     } catch {}
     applyThemeToDom(resolved);
     set({ theme: resolved, initialized: true });
+
+    if (!storageListenerAttached) {
+      storageListenerAttached = true;
+      window.addEventListener('storage', (event) => {
+        if (event.key !== STORAGE_KEY) return;
+        const next: AppTheme = event.newValue === 'light' ? 'light' : 'dark';
+        applyThemeToDom(next);
+        set({ theme: next, initialized: true });
+      });
+    }
   },
 }));
