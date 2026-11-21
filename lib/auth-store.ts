@@ -3,6 +3,13 @@ import { persist } from 'zustand/middleware';
 import { verificarCredenciales, registrarUsuario } from './auth-service';
 import type { LoginData, RegisterData } from '../shared/types';
 
+interface LoginErrorInfo {
+  code?: 'INACTIVE_ACCOUNT' | 'INVALID_CREDENTIALS' | 'NOT_FOUND' | 'ERROR';
+  message: string;
+  usuarioNombre?: string;
+  usuarioRol?: string;
+}
+
 interface AuthState {
   user: {
     id: string | number;
@@ -12,9 +19,11 @@ interface AuthState {
     correo?: string;
   } | null;
   token: string | null;
+  lastLoginError: LoginErrorInfo | null;
   login: (data: LoginData) => Promise<boolean>;
   register: (data: RegisterData) => Promise<boolean>;
   logout: () => void;
+  clearLoginError: () => void;
   getRedirect: () => string;
   assignRole: (userId: string | number, newRole: string) => void;
 }
@@ -24,12 +33,27 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       token: null,
+      lastLoginError: null,
 
       // 1. LOGIN GLOBAL (Conectado a Supabase vía auth-service)
       login: async (data: LoginData) => {
+        set({ lastLoginError: null });
         const resultado = await verificarCredenciales(data.username, data.password);
 
         if (resultado.success && resultado.usuario) {
+          if (resultado.usuario.role !== 'admin' && resultado.usuario.status === false) {
+            set({
+              lastLoginError: {
+                code: 'INACTIVE_ACCOUNT',
+                message:
+                  'Tu cuenta se encuentra inactiva. Comunícate con un administrador para habilitar tu acceso.',
+                usuarioNombre: resultado.usuario.nombre,
+                usuarioRol: resultado.usuario.role,
+              },
+            });
+            return false;
+          }
+
           set({
             user: {
               id: resultado.usuario.id,
@@ -39,10 +63,24 @@ export const useAuthStore = create<AuthState>()(
               correo: resultado.usuario.correo,
             },
             token: 'token-local-simulado',
+            lastLoginError: null,
           });
           return true;
         }
 
+        set({
+          lastLoginError: !resultado.success
+            ? {
+                code: resultado.code,
+                message: resultado.message,
+                usuarioNombre: resultado.usuarioNombre,
+                usuarioRol: resultado.usuarioRol,
+              }
+            : {
+                code: 'INVALID_CREDENTIALS',
+                message: 'Usuario o contraseña incorrectos.',
+              },
+        });
         return false;
       },
 
@@ -59,7 +97,11 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        set({ user: null, token: null });
+        set({ user: null, token: null, lastLoginError: null });
+      },
+
+      clearLoginError: () => {
+        set({ lastLoginError: null });
       },
 
       // Si el usuario modificado tiene sesión activa en este navegador, actualiza su rol

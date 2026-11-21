@@ -2,9 +2,13 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from '../lib/auth-store';
+import { supabase } from '../lib/supabase';
+import LiquidGlassToast, {
+  type LiquidGlassToastData,
+} from '../app/components/LiquidGlassToast';
 import type { LoginData, RegisterData } from '../shared/types';
 
 interface DropdownParticle {
@@ -258,12 +262,14 @@ const PLANET_CHIPS = [
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, token, login, register, logout, getRedirect } = useAuthStore();
 
   const [isOpen, setIsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
+  const [authToast, setAuthToast] = useState<LiquidGlassToastData | null>(null);
 
   const [loginUser, setLoginUser] = useState('');
   const [loginPass, setLoginPass] = useState('');
@@ -278,8 +284,46 @@ export default function Header() {
 
   const formRef = useRef<HTMLDivElement | null>(null);
 
+  // Verificar que cuentas activas (student/tutor, excepto admin) no hayan sido desactivadas
+  useEffect(() => {
+    if (!token || !user || user.role === 'admin') return;
+    let cancelled = false;
+
+    const verificarEstadoCuenta = async () => {
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('status, role, nombre')
+        .eq('id', String(user.id))
+        .maybeSingle();
+
+      if (cancelled || error || !data) return;
+
+      if (data.role !== 'admin' && data.status === false) {
+        const rolLegible =
+          data.role === 'tutor' || data.role === 'docente' ? 'Tutor' : 'Estudiante';
+        await supabase.auth.signOut().catch(() => {});
+        logout();
+        router.push('/');
+        setAuthToast({
+          id: Date.now(),
+          variant: 'blocked',
+          eyebrow: 'SESIÓN INTERRUMPIDA · CUENTA INACTIVA',
+          title: 'Acceso suspendido por administración',
+          message: `Tu cuenta de ${rolLegible} (${data.nombre || user.name}) fue marcada como inactiva. Comunícate con un administrador para restablecer tu acceso.`,
+          durationMs: 7500,
+        });
+      }
+    };
+
+    verificarEstadoCuenta();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, user, pathname, logout, router]);
+
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
+      if ((e.target as HTMLElement | null)?.closest('[data-liquid-toast="true"]')) return;
       if (formRef.current && !formRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
@@ -306,16 +350,37 @@ export default function Header() {
   const handleLogin = async () => {
     setLoginError('');
     setLoading(true);
-    
+
     const ok = await login({ username: loginUser, password: loginPass } as LoginData);
-    
+
     setLoading(false);
     if (ok) {
       setIsOpen(false);
       resetLoginForm();
       router.push(getRedirect() as any);
     } else {
-      setLoginError('Usuario o contraseña incorrectos.');
+      const err = useAuthStore.getState().lastLoginError;
+      if (err?.code === 'INACTIVE_ACCOUNT') {
+        const rolLegible =
+          err.usuarioRol === 'tutor' || err.usuarioRol === 'docente'
+            ? 'Tutor'
+            : 'Estudiante';
+        setLoginError(
+          `Esta cuenta de ${rolLegible} está inactiva. Contacta a un administrador para reactivarla.`,
+        );
+        setAuthToast({
+          id: Date.now(),
+          variant: 'blocked',
+          eyebrow: 'ACCESO DENEGADO · CUENTA INACTIVA',
+          title: 'No es posible iniciar sesión',
+          message:
+            err.message ||
+            `Tu cuenta de ${rolLegible} se encuentra desactivada actualmente. Un administrador debe reactivarla para permitir el acceso.`,
+          durationMs: 7500,
+        });
+      } else {
+        setLoginError('Usuario o contraseña incorrectos.');
+      }
     }
   };
 
@@ -351,6 +416,7 @@ export default function Header() {
   };
 
   return (
+    <>
     <header className="fixed top-0 left-0 w-full z-50 liquid-glass-header">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 text-white no-underline group">
@@ -599,8 +665,9 @@ export default function Header() {
                         </div>
 
                         {loginError && (
-                          <div className="liquid-glass-pill border-red-400/40 bg-red-500/10 rounded-xl px-4 py-2.5 text-red-300 text-xs font-semibold">
-                            ⚠️ {loginError}
+                          <div className="liquid-glass-pill border-rose-400/45 bg-rose-500/12 rounded-xl px-4 py-2.5 text-rose-200 text-xs font-semibold flex items-center gap-2.5">
+                            <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0 shadow-[0_0_8px_rgba(251,113,133,0.85)]" />
+                            <span>{loginError}</span>
                           </div>
                         )}
 
@@ -713,5 +780,7 @@ export default function Header() {
         )}
       </AnimatePresence>
     </header>
+    <LiquidGlassToast toast={authToast} onClose={() => setAuthToast(null)} />
+    </>
   );
 }

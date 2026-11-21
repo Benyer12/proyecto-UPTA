@@ -6,6 +6,10 @@ import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from '../../../lib/auth-store';
 import { supabase } from '../../../lib/supabase';
+import LiquidGlassToast, {
+  type LiquidGlassToastData,
+  type LiquidGlassToastVariant,
+} from '../../components/LiquidGlassToast';
 
 type EditableRole = 'student' | 'tutor';
 
@@ -69,18 +73,21 @@ export default function AdminUsuariosPage() {
   // Cambio rápido de estado (status)
   const [togglingStatusId, setTogglingStatusId] = useState<string | null>(null);
 
-  // Notificación flotante
-  const [toast, setToast] = useState<{ tipo: 'success' | 'error'; texto: string } | null>(null);
+  // Notificación flotante profesional en Liquid Glass
+  const [toast, setToast] = useState<LiquidGlassToastData | null>(null);
 
-  const mostrarToast = useCallback((tipo: 'success' | 'error', texto: string) => {
-    setToast({ tipo, texto });
-  }, []);
-
-  useEffect(() => {
-    if (!toast) return;
-    const timer = setTimeout(() => setToast(null), 4000);
-    return () => clearTimeout(timer);
-  }, [toast]);
+  const mostrarToast = useCallback(
+    (payload: {
+      variant: LiquidGlassToastVariant;
+      eyebrow?: string;
+      title: string;
+      message: string;
+      durationMs?: number;
+    }) => {
+      setToast({ id: Date.now(), ...payload });
+    },
+    [],
+  );
 
   const abrirEditor = useCallback((u: UsuarioEditableDB) => {
     setEditingUser(u);
@@ -221,15 +228,31 @@ export default function AdminUsuariosPage() {
 
     if (error || !data) {
       console.error('Error al actualizar status:', error?.message);
-      mostrarToast('error', `No se pudo cambiar el estado de ${u.nombre}.`);
+      mostrarToast({
+        variant: 'error',
+        eyebrow: 'ERROR DE SINCRONIZACIÓN',
+        title: 'No se pudo actualizar el estado',
+        message: `Ocurrió un inconveniente al modificar el acceso de ${u.nombre}. Intenta nuevamente.`,
+      });
     } else {
       setUsuarios((prev) =>
         prev.map((item) => (item.id === u.id ? { ...item, status: data.status } : item)),
       );
-      mostrarToast(
-        'success',
-        `${u.nombre} marcado como ${nuevoStatus ? 'Activo' : 'Inactivo'}.`,
-      );
+      if (nuevoStatus) {
+        mostrarToast({
+          variant: 'activated',
+          eyebrow: 'ESTADO ACTUALIZADO · ACTIVO',
+          title: 'Cuenta habilitada',
+          message: `${u.nombre} ahora se encuentra activo y cuenta con acceso habilitado a la plataforma.`,
+        });
+      } else {
+        mostrarToast({
+          variant: 'deactivated',
+          eyebrow: 'ESTADO ACTUALIZADO · INACTIVO',
+          title: 'Cuenta suspendida',
+          message: `${u.nombre} ahora está inactivo. Su inicio de sesión ha sido restringido hasta nueva reactivación.`,
+        });
+      }
     }
 
     setTogglingStatusId(null);
@@ -329,7 +352,31 @@ export default function AdminUsuariosPage() {
           assignRole(editingUser.id, form.role);
         }
 
-        mostrarToast('success', `Cambios de ${cleanNombre} guardados en Supabase.`);
+        const estadoAnterior = editingUser.status !== false;
+        if (form.status !== estadoAnterior) {
+          if (form.status) {
+            mostrarToast({
+              variant: 'activated',
+              eyebrow: 'PERFIL ACTUALIZADO · ACTIVO',
+              title: 'Cambios guardados y cuenta habilitada',
+              message: `Los datos de ${cleanNombre} se guardaron y su acceso a la plataforma fue reactivado.`,
+            });
+          } else {
+            mostrarToast({
+              variant: 'deactivated',
+              eyebrow: 'PERFIL ACTUALIZADO · INACTIVO',
+              title: 'Cambios guardados y cuenta suspendida',
+              message: `Los datos de ${cleanNombre} se guardaron y su cuenta quedó inactiva para iniciar sesión.`,
+            });
+          }
+        } else {
+          mostrarToast({
+            variant: 'saved',
+            eyebrow: 'REGISTRO SINCRONIZADO',
+            title: 'Perfil actualizado',
+            message: `La información de ${cleanNombre} se actualizó correctamente en la base de datos.`,
+          });
+        }
         setEditingUser(null);
       }
     } catch (err: any) {
@@ -347,27 +394,8 @@ export default function AdminUsuariosPage() {
   return (
     <div className="relative min-h-screen px-4 sm:px-6 py-10 sm:py-12">
       <div className="relative z-10 max-w-5xl mx-auto space-y-6">
-        {/* ── NOTIFICACIÓN FLOTANTE (TOAST) ── */}
-        <AnimatePresence>
-          {toast && (
-            <motion.div
-              initial={{ opacity: 0, y: -14 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -14 }}
-              className="fixed top-20 right-4 sm:right-6 z-[130] max-w-sm rounded-2xl px-4 py-3 liquid-glass-modal flex items-center gap-2.5 text-xs sm:text-sm font-semibold shadow-2xl"
-              style={{
-                borderColor:
-                  toast.tipo === 'success'
-                    ? 'rgba(110, 231, 183, 0.55)'
-                    : 'rgba(251, 113, 133, 0.55)',
-                color: toast.tipo === 'success' ? '#ECFDF5' : '#FFE4E6',
-              }}
-            >
-              <span>{toast.tipo === 'success' ? '✅' : '⚠️'}</span>
-              <span>{toast.texto}</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* ── NOTIFICACIÓN PROFESIONAL EN LIQUID GLASS ── */}
+        <LiquidGlassToast toast={toast} onClose={() => setToast(null)} />
 
         {/* ── ENCABEZADO PRINCIPAL LIQUID GLASS ── */}
         <div className="rounded-3xl liquid-glass liquid-glass-panel p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
