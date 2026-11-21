@@ -5,6 +5,15 @@ import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createBrowserClient } from '@supabase/ssr';
 import { useAuthStore } from '../../lib/auth-store';
+import {
+  playCorrect,
+  playDiceLand,
+  playDiceRoll,
+  playIncorrect,
+  playStarWin,
+  playStep,
+} from '../../lib/sound-engine';
+import SoundTogglePill from '../../components/SoundTogglePill';
 import { actualizarProgresoUsuario } from '../actions/progress';
 import Dado3D from './Dado3D';
 import MapaMontañaCuantica, {
@@ -363,6 +372,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
       const iv = setInterval(() => {
         actual += dir;
         setPos(actual);
+        playStep();
         if (actual === hasta) {
           clearInterval(iv);
           setCaminando(false);
@@ -446,11 +456,13 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     const resultado = Math.floor(Math.random() * 6) + 1;
     setDiceResult(resultado);
     setRolling(true);
+    playDiceRoll();
     setAvisoFlotante('Calculando vector de salto cuántico...');
   }, [rolling, caminando, modalAbierto, pos, startBossBattle]);
 
   const handleRollComplete = useCallback(() => {
     setRolling(false);
+    playDiceLand();
     const destino = Math.min(TOTAL - 1, pos + diceResult);
     setAvisoFlotante(`¡Salto cuántico de +${diceResult} ${diceResult === 1 ? 'cubo' : 'cubos'}!`);
     moverPasoAPaso(pos, destino, (posFinal) => {
@@ -500,8 +512,10 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     if (esCorrecta) {
       setSpecialStatus('correct');
       desbloquearNucleoPorPosicion(pos);
+      playCorrect();
     } else {
       setSpecialStatus('incorrect');
+      playIncorrect();
     }
   }, [
     specialStatus,
@@ -531,9 +545,11 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     if (esCorrecta) {
       setQStatus('correct');
       desbloquearNucleoPorPosicion(pos);
+      playCorrect();
       setAvisoFlotante('¡Cálculo verificado! Precisión cuántica actualizada.');
     } else {
       setQStatus('incorrect');
+      playIncorrect();
       setAvisoFlotante('Revisa la explicación del reactor y prepárate para el próximo salto.');
     }
   }, [question, qStatus, selectedOpt, pos, desbloquearNucleoPorPosicion, registrarDesempenoRegular]);
@@ -550,8 +566,10 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
       if (esCorrecta) {
         setTrapStatus('correct');
         desbloquearNucleoPorPosicion(pos);
+        playCorrect();
       } else {
         setTrapStatus('incorrect');
+        playIncorrect();
       }
     },
     [trapStatus, trapCondition, trapAsteroids, pos, desbloquearNucleoPorPosicion, registrarDesempenoRegular],
@@ -588,6 +606,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         setBossBattleActive(false);
         await guardarProgresoEnSupabase(aciertos, totalPreguntas);
         setShowWin(true);
+        playStarWin();
         setAvisoFlotante('¡Núcleo Armilar de Numérix restaurado al 100%!');
       }
       return;
@@ -605,8 +624,10 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     if (bossSelectedOpt === null) return;
     if (bossSelectedOpt === bossReto.indiceCorrecto) {
       setBossStatus('correct');
+      playCorrect();
     } else {
       setBossStatus('incorrect');
+      playIncorrect();
     }
   }, [
     bossStatus,
@@ -722,7 +743,10 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
           }}
         >
           {/* ── 1. CABECERA: NUMÉRIX — TABLERO CUÁNTICO ── */}
-          <div className="text-center pt-0.5 pb-3 border-b border-white/10">
+          <div className="relative text-center pt-0.5 pb-3 border-b border-white/10">
+            <div className="absolute right-0 top-0">
+              <SoundTogglePill />
+            </div>
             <h1
               className="text-2xl sm:text-3xl font-black tracking-wider leading-none select-none"
               style={{

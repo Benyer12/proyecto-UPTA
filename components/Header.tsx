@@ -12,6 +12,7 @@ import LiquidGlassToast, {
 } from '../app/components/LiquidGlassToast';
 import { LiquidGlass } from './ui/glasscn/liquid-glass';
 import ThemeTogglePill from './ThemeTogglePill';
+import SoundTogglePill from './SoundTogglePill';
 import type { LoginData, RegisterData } from '../shared/types';
 
 interface DropdownParticle {
@@ -698,7 +699,8 @@ export default function Header() {
                 </button>
               )}
 
-              {/* Botón compacto de modo claro/oscuro en la barra superior */}
+              {/* Botones compactos de sonido y tema en la barra superior */}
+              <SoundTogglePill className="hidden sm:inline-flex" />
               <ThemeTogglePill className="hidden sm:inline-flex" />
 
               {/* Botón menú móvil / tablet con etiqueta visible */}
@@ -780,11 +782,14 @@ export default function Header() {
                   </Link>
                 </>
               )}
-              <div className="pt-2 mt-1 border-t border-white/10 flex items-center justify-between px-2">
+              <div className="pt-2 mt-1 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 px-2">
                 <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/55">
-                  Apariencia
+                  Preferencias
                 </span>
-                <ThemeTogglePill showLabels />
+                <div className="flex items-center gap-2">
+                  <SoundTogglePill showLabels />
+                  <ThemeTogglePill showLabels />
+                </div>
               </div>
             </div>
           </motion.div>

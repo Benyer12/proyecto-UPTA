@@ -11,6 +11,8 @@ import { actualizarProgresoUsuario } from '../../../actions/progress';
 import Dado3D from '../../../components/Dado3D';
 import TableroIsometrico from '../../../components/TableroIsometrico';
 import TableroLetralia from '../../../components/TableroLetralia';
+import SoundTogglePill from '../../../../components/SoundTogglePill';
+import { playDiceLand, playDiceRoll } from '../../../../lib/sound-engine';
 
 const FondoCosmico = dynamic(() => import('../../../FondoCosmico'), { ssr: false });
 
@@ -380,12 +382,14 @@ export default function JuegoPage() {
     setDiceResult(result);
     setDiceRolling(true);
     setShowResult(false);
+    playDiceRoll();
   }, [diceRolling]);
 
   const handleRollComplete = useCallback(() => {
     setDiceRolling(false);
     setLastRoll(diceResult);
     setShowResult(true);
+    playDiceLand();
   }, [diceResult]);
 
   if (!planet || !level) {
@@ -497,8 +501,11 @@ export default function JuegoPage() {
               </span>
             </div>
           </div>
-          <div className="text-xs font-semibold tracking-wider text-[#CBD5E1] tabular-nums">
-            {user ? `Jugador: ${user.name}` : 'Sin sesión'} · Casilla {currentPos + 1} / 20
+          <div className="flex items-center gap-3">
+            <div className="text-xs font-semibold tracking-wider text-[#CBD5E1] tabular-nums">
+              {user ? `Jugador: ${user.name}` : 'Sin sesión'} · Casilla {currentPos + 1} / 20
+            </div>
+            <SoundTogglePill />
           </div>
         </div>
       </header>

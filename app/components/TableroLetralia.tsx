@@ -6,6 +6,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { createBrowserClient } from '@supabase/ssr';
 import { useAuthStore } from '../../lib/auth-store';
 import { getPlanetById } from '../../lib/mock-data';
+import {
+  playCorrect,
+  playDiceLand,
+  playDiceRoll,
+  playIncorrect,
+  playStarWin,
+  playStep,
+} from '../../lib/sound-engine';
+import SoundTogglePill from '../../components/SoundTogglePill';
 import { actualizarProgresoUsuario } from '../actions/progress';
 import Dado3D from './Dado3D';
 import MapaAstral from './letralia/MapaAstral';
@@ -377,6 +386,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
           nuevo.add(destino.id);
           return nuevo;
         });
+        playStep();
         setRastroG((prev) => {
           const ultimo = prev[prev.length - 1];
           if (ultimo && Math.hypot(ultimo.x - destino.g.x, ultimo.y - destino.g.y) < 2) {
@@ -411,12 +421,14 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
     const tirada = Math.floor(Math.random() * 6) + 1;
     setResultadoDado(tirada);
     setRodandoDado(true);
+    playDiceRoll();
     setAvisoFlotante('Rodando el dado astral...');
   }, [rodandoDado, caminando, eligiendoRama, modalActivo, victoriaFinal, casillaActual, ramaElegida]);
 
   /* ── Cuando el Dado 3D termina de girar ── */
   const handleDadoCompletado = useCallback(() => {
     setRodandoDado(false);
+    playDiceLand();
     setTurno((t) => t + 1);
 
     if (!ramaElegida) {
@@ -510,6 +522,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         if (res.exito) {
           nuevosAciertos = aciertosTotales + 1;
           setAciertosTotales(nuevosAciertos);
+          playCorrect();
+        } else {
+          playIncorrect();
         }
       }
 
@@ -542,6 +557,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
       if (res.esBossFinal && res.exito) {
         await guardarProgresoLetralia(nuevosAciertos, nuevoTotal);
         setVictoriaFinal(true);
+        playStarWin();
         setAvisoFlotante('¡Has restaurado el Archivo Astral de Letralia!');
         return;
       }
@@ -785,7 +801,10 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
           </div>
 
           {/* ── 1. CABECERA: LETRALIA — ARCHIVO ASTRAL ── */}
-          <div className="text-center pt-0.5 pb-2.5 border-b-2 border-[#C4B5FD]/80">
+          <div className="relative text-center pt-0.5 pb-2.5 border-b-2 border-[#C4B5FD]/80">
+            <div className="absolute right-0 top-0">
+              <SoundTogglePill />
+            </div>
             <h1
               className="text-2xl sm:text-3xl font-black tracking-wider leading-none select-none"
               style={{

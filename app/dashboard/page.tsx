@@ -8,6 +8,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import PlanetVisual from '../components/PlanetVisual';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
+import SoundTogglePill from '../../components/SoundTogglePill';
 import RoleAvatar from '../../components/RoleAvatar';
 import { useAuthStore } from '../../lib/auth-store';
 import { useThemeStore } from '../../lib/theme-store';
@@ -304,6 +305,7 @@ function StudentDashboardView({
           </div>
 
           <div className="flex items-center gap-3 flex-wrap justify-end">
+            <SoundTogglePill />
             <ThemeTogglePill showLabels />
 
             <LiquidGlass
