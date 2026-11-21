@@ -766,7 +766,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               className={
                 rolling || caminando || modalAbierto
                   ? 'cursor-not-allowed'
-                  : 'cursor-pointer hover:scale-105 transition-transform'
+                  : 'cursor-pointer'
               }
               title="Haz clic para iniciar el salto cuántico"
             >

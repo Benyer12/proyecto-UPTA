@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { motion, useAnimationControls } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 
 interface Dado3DProps {
   size?: number;
@@ -57,7 +57,11 @@ function DiceFace({
 }) {
   const pips = DICE_PIP_LAYOUTS[num];
   const pipSize = num === 1 ? size * 0.2 : size * 0.155;
-  const isLavender = themed && (color.toLowerCase().startsWith('#e') || color.toLowerCase().startsWith('#f') || color.toLowerCase().startsWith('#d'));
+  const isLavender =
+    themed &&
+    (color.toLowerCase().startsWith('#e') ||
+      color.toLowerCase().startsWith('#f') ||
+      color.toLowerCase().startsWith('#d'));
 
   return (
     <div
@@ -77,7 +81,6 @@ function DiceFace({
         WebkitBackfaceVisibility: 'hidden',
       }}
     >
-      {/* Marco interior grabado tipo cristal cuántico */}
       {!isLavender && (
         <div
           className="absolute pointer-events-none"
@@ -85,12 +88,12 @@ function DiceFace({
             inset: size * 0.08,
             borderRadius: size * 0.15,
             border: '1px solid rgba(191, 219, 254, 0.22)',
-            background: 'radial-gradient(circle at 30% 22%, rgba(226, 238, 255, 0.14) 0%, transparent 60%)',
+            background:
+              'radial-gradient(circle at 30% 22%, rgba(226, 238, 255, 0.14) 0%, transparent 60%)',
           }}
         />
       )}
 
-      {/* Reflejo especular diagonal de cristal */}
       <div
         className="absolute -top-1/2 -left-1/2 w-full h-full rotate-45 pointer-events-none"
         style={{
@@ -139,24 +142,46 @@ export default function Dado3D({
   borderColor,
   pipColor,
 }: Dado3DProps) {
-  const [rollKey, setRollKey] = useState(0);
-  const [spin, setSpin] = useState({ x: 0, y: 0 });
-  const [from, setFrom] = useState(FACE_ROTATIONS[1]);
-  const lastFaceRef = useRef(1);
+  const controls = useAnimationControls();
+  const cumulativeSpinRef = useRef({ x: 0, y: 0 });
+  const isRollingRef = useRef(false);
+  const onRollCompleteRef = useRef(onRollComplete);
+  onRollCompleteRef.current = onRollComplete;
+
   const half = size / 2;
-  const target = FACE_ROTATIONS[result] || FACE_ROTATIONS[1];
   const themed = Boolean(faceColor);
 
   useEffect(() => {
-    if (rolling) {
-      setFrom(FACE_ROTATIONS[lastFaceRef.current] || FACE_ROTATIONS[1]);
-      setSpin({
-        x: 360 * (3 + Math.floor(Math.random() * 2)),
-        y: 360 * (3 + Math.floor(Math.random() * 2)),
+    if (rolling && !isRollingRef.current) {
+      isRollingRef.current = true;
+      const target = FACE_ROTATIONS[result] || FACE_ROTATIONS[1];
+      // Acumulamos giros completos de 360° hacia adelante para que nunca retroceda ni haga saltos/zooms cortados
+      cumulativeSpinRef.current = {
+        x: cumulativeSpinRef.current.x + 360 * 3,
+        y: cumulativeSpinRef.current.y + 360 * 3,
+      };
+
+      controls
+        .start({
+          rotateX: target.rotateX + cumulativeSpinRef.current.x,
+          rotateY: target.rotateY + cumulativeSpinRef.current.y,
+          transition: {
+            duration: 1.05,
+            ease: [0.22, 1, 0.36, 1],
+          },
+        })
+        .then(() => {
+          isRollingRef.current = false;
+          onRollCompleteRef.current?.();
+        });
+    } else if (!rolling && !isRollingRef.current) {
+      const target = FACE_ROTATIONS[result] || FACE_ROTATIONS[1];
+      controls.set({
+        rotateX: target.rotateX + cumulativeSpinRef.current.x,
+        rotateY: target.rotateY + cumulativeSpinRef.current.y,
       });
-      setRollKey((k) => k + 1);
     }
-  }, [rolling]);
+  }, [rolling, result, controls]);
 
   const faceTransforms: Record<number, string> = {
     1: `translateZ(${half}px)`,
@@ -170,25 +195,14 @@ export default function Dado3D({
   return (
     <div
       className="flex items-center justify-center"
-      style={{ perspective: size * 5, width: size, height: size }}
+      style={{ perspective: size * 6, width: size, height: size }}
     >
       <motion.div
-        key={`dice-${rollKey}`}
-        initial={{ rotateX: from.rotateX, rotateY: from.rotateY }}
-        animate={{
-          rotateX: target.rotateX + spin.x,
-          rotateY: target.rotateY + spin.y,
+        initial={{
+          rotateX: FACE_ROTATIONS[1].rotateX,
+          rotateY: FACE_ROTATIONS[1].rotateY,
         }}
-        transition={{
-          duration: rolling ? 1.2 : 0.5,
-          ease: [0.2, 0.8, 0.2, 1],
-        }}
-        onAnimationComplete={() => {
-          if (rolling) {
-            lastFaceRef.current = result;
-            onRollComplete?.();
-          }
-        }}
+        animate={controls}
         style={{
           width: size,
           height: size,

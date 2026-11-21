@@ -916,8 +916,20 @@ const EscenarioMontaña = memo(function EscenarioMontaña() {
       <ChoqueMeteoritos x={88} y={556} />
 
       {/* ── Segundo Choque/Fragmentos de Meteorito Menor (Derecha Media) ── */}
-      <g transform="translate(828 368) scale(0.72)">
+      <g transform="translate(838 355) scale(0.76)">
         <ChoqueMeteoritos x={0} y={0} />
+      </g>
+
+      {/* ── Estación Satelital & Nebulosa Derecha (cierra y equilibra el espacio derecho) ── */}
+      <g transform="translate(836 530)">
+        <ellipse rx="72" ry="42" fill="url(#purpleNebulaGrad)" />
+        <g transform="rotate(-16)">
+          <ellipse rx="46" ry="13" fill="none" stroke="#93C5FD" strokeOpacity="0.45" strokeWidth="1.2" strokeDasharray="6 4" />
+          <ellipse rx="30" ry="8" fill="none" stroke="#6EE7B7" strokeOpacity="0.5" strokeWidth="1" />
+        </g>
+        <polygon points="0,-18 11,-4 4,15 -9,10 -11,-6" fill="#312E81" stroke="#E2EEFF" strokeWidth="1.1" />
+        <circle cx="-36" cy="8" r="2.2" fill="#6EE7B7" />
+        <circle cx="38" cy="-7" r="2.5" fill="#E879F9" />
       </g>
 
       {/* ══════════════════ 1. BASE ESCULTÓRICA CENTRADA DE LA ISLA FLOTANTE ══════════════════ */}
@@ -1065,7 +1077,7 @@ export default function MapaMontañaCuantica({
 
   return (
     <svg
-      viewBox="0 15 1040 650"
+      viewBox="-25 18 1190 644"
       preserveAspectRatio="xMidYMid meet"
       className="w-full h-full select-none overflow-visible"
       role="img"
@@ -1230,7 +1242,7 @@ export default function MapaMontañaCuantica({
         </linearGradient>
       </defs>
 
-      <g transform="translate(55 4) scale(1.02)">
+      <g transform="translate(55 4) scale(1.22, 1.02)">
         <EscenarioMontaña />
 
         {/* ── RIEL FLUIDO Y ELEGANTE (Azul Crema -> Morado -> Esmeralda) ── */}
