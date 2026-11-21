@@ -162,6 +162,17 @@ export default function AsignacionesPage() {
 
   const tutorActivo = tutores.find((t) => t.id === tutorSeleccionadoId);
 
+  const estudiantesOrdenados = [...estudiantes].sort((a, b) => {
+    const aAsignado = relaciones.some(
+      (r) => r.estudiante_id === a.id && r.tutor_id === tutorSeleccionadoId
+    );
+    const bAsignado = relaciones.some(
+      (r) => r.estudiante_id === b.id && r.tutor_id === tutorSeleccionadoId
+    );
+    if (aAsignado !== bAsignado) return aAsignado ? -1 : 1;
+    return (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' });
+  });
+
   return (
     <div className="relative min-h-screen px-6 py-12">
       <div className="relative z-10 max-w-4xl mx-auto space-y-8">
@@ -263,7 +274,7 @@ export default function AsignacionesPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {estudiantes.map((est) => {
+                  {estudiantesOrdenados.map((est) => {
                     const relacion = relaciones.find(
                       (r) => r.estudiante_id === est.id
                     );
