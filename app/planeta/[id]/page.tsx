@@ -1,6 +1,5 @@
 'use client';
 
-import type { CSSProperties } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -129,12 +128,27 @@ function MissingPortalIllustration() {
 function getReadableAccent(color: string) {
   const normalized = color.toLowerCase();
   if (normalized.includes('bf40ff') || normalized.includes('a855f7')) {
-    return { text: '#D8B4FE', border: 'rgba(216, 180, 254, 0.42)', glow: '#BF40FF' };
+    return {
+      text: '#D8B4FE',
+      border: 'rgba(216, 180, 254, 0.42)',
+      glow: '#BF40FF',
+      crystalBg: 'bg-[#160726]/[0.34]',
+    };
   }
   if (normalized.includes('00ff88') || normalized.includes('10b981') || normalized.includes('34d399')) {
-    return { text: '#6EE7B7', border: 'rgba(110, 231, 183, 0.42)', glow: '#00FF88' };
+    return {
+      text: '#6EE7B7',
+      border: 'rgba(110, 231, 183, 0.42)',
+      glow: '#00FF88',
+      crystalBg: 'bg-[#031B14]/[0.34]',
+    };
   }
-  return { text: '#67E8F9', border: 'rgba(103, 232, 249, 0.42)', glow: color || '#00F5FF' };
+  return {
+    text: '#67E8F9',
+    border: 'rgba(103, 232, 249, 0.42)',
+    glow: color || '#00F5FF',
+    crystalBg: 'bg-[#031524]/[0.34]',
+  };
 }
 
 function RetroGlassLevelCard({
@@ -153,25 +167,23 @@ function RetroGlassLevelCard({
   const accent = getReadableAccent(color);
 
   const cardInner = (
-    <div
-      className={`relative rounded-3xl liquid-glass p-2.5 transition-all duration-300 ${
-        available ? 'liquid-glass-interactive group-hover:-translate-y-0.5' : ''
+    <LiquidGlass
+      blur={2}
+      refraction={24}
+      bezel={0.38}
+      saturation={1.68}
+      className={`relative rounded-3xl ${accent.crystalBg} p-4 sm:p-5 transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_26px_-12px_rgba(180,220,255,0.18),0_22px_64px_-28px_rgba(0,0,0,0.75)] ${
+        available ? 'glance group-hover:-translate-y-0.5' : ''
       }`}
-      style={
-        {
-          '--glass-caustic': available ? `${accent.glow}2E` : 'rgba(120,170,255,0.08)',
-          borderColor: available ? accent.border : 'rgba(255,255,255,0.09)',
-          opacity: available ? 1 : 0.72,
-        } as CSSProperties
-      }
+      style={{
+        borderColor: available ? accent.border : 'rgba(255,255,255,0.12)',
+        opacity: available ? 1 : 0.68,
+        backgroundImage:
+          'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.02) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.22) 100%)',
+      }}
     >
-      {/* Cápsula interior ultra-transparente estilo glasscn */}
-      <div
-        className="relative rounded-2xl bg-white/[0.03] border p-4 sm:p-5 overflow-hidden"
-        style={{
-          borderColor: available ? 'rgba(255,255,255,0.11)' : 'rgba(255,255,255,0.06)',
-        }}
-      >
+      {/* Cápsula interior cristalina transparente */}
+      <div className="relative overflow-hidden">
         {/* Esquinas técnicas del visor */}
         <span
           aria-hidden="true"
@@ -253,12 +265,13 @@ function RetroGlassLevelCard({
         {/* Cuerpo del nivel: bloque numérico + descripción */}
         <div className="relative z-10 flex items-center gap-4">
           <div
-            className="relative w-16 h-16 rounded-2xl liquid-glass flex flex-col items-center justify-center shrink-0"
+            className="relative w-16 h-16 rounded-2xl border backdrop-blur-[4px] flex flex-col items-center justify-center shrink-0"
             style={{
               background: available
-                ? `radial-gradient(circle at 35% 30%, ${accent.glow}30 0%, rgba(6, 11, 26, 0.94) 82%)`
-                : 'rgba(8, 12, 24, 0.9)',
-              borderColor: available ? accent.border : 'rgba(255,255,255,0.1)',
+                ? `radial-gradient(circle at 35% 30%, ${accent.glow}28 0%, rgba(255, 255, 255, 0.04) 85%)`
+                : 'rgba(255, 255, 255, 0.04)',
+              borderColor: available ? accent.border : 'rgba(255,255,255,0.12)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.24)',
             }}
           >
             <span
@@ -360,7 +373,7 @@ function RetroGlassLevelCard({
           </span>
         </div>
       </div>
-    </div>
+    </LiquidGlass>
   );
 
   if (available) {
@@ -395,8 +408,20 @@ function CoursePortalSection({
   return (
     <section
       aria-labelledby={`course-heading-${course.id}`}
-      className="mb-10 last:mb-0 rounded-3xl liquid-glass liquid-glass-panel p-5 sm:p-7"
+      className="mb-10 last:mb-0"
     >
+      <LiquidGlass
+        blur={2}
+        refraction={24}
+        bezel={0.34}
+        saturation={1.65}
+        className={`rounded-3xl ${accent.crystalBg} p-5 sm:p-7 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.32),inset_0_-16px_30px_-14px_rgba(180,220,255,0.16),0_26px_76px_-30px_rgba(0,0,0,0.78)]`}
+        style={{
+          borderColor: accent.border,
+          backgroundImage:
+            'radial-gradient(120% 80% at 15% 6%, rgba(255,255,255,0.11) 0%, rgba(255,255,255,0.02) 40%, transparent 70%), linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.22) 100%)',
+        }}
+      >
       {/* Cabecera del Curso */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-7 pb-4 border-b border-white/10">
         <div className="flex items-center gap-3.5">
@@ -540,6 +565,7 @@ function CoursePortalSection({
           })}
         </div>
       </div>
+      </LiquidGlass>
     </section>
   );
 }
@@ -598,10 +624,16 @@ export default function PlanetaPage() {
           className="mb-10"
         >
           <LiquidGlass
-            blur={8}
-            refraction={14}
-            bezel={0.26}
-            className="rounded-3xl bg-[#070c1b]/[0.78] border-white/[0.12] p-6 sm:p-8"
+            blur={2}
+            refraction={24}
+            bezel={0.36}
+            saturation={1.68}
+            className={`rounded-3xl ${accent.crystalBg} p-6 sm:p-8 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_28px_-12px_rgba(180,220,255,0.18),0_26px_76px_-30px_rgba(0,0,0,0.78)]`}
+            style={{
+              borderColor: accent.border,
+              backgroundImage:
+                'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.22) 100%)',
+            }}
           >
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
               <motion.div

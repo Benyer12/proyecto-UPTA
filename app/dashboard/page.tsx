@@ -76,29 +76,29 @@ function getPlanetTheme(name: string): PlanetTheme {
     return {
       discipline: 'MATEMÁTICAS',
       accent: '#67E8F9',
-      border: 'rgba(0, 245, 255, 0.3)',
-      cardBg: 'bg-[#041724]/[0.82]',
-      btnBg: 'rgba(0, 245, 255, 0.14)',
-      btnBorder: 'rgba(103, 232, 249, 0.45)',
+      border: 'rgba(103, 232, 249, 0.36)',
+      cardBg: 'bg-[#031524]/[0.34]',
+      btnBg: 'rgba(0, 245, 255, 0.16)',
+      btnBorder: 'rgba(103, 232, 249, 0.5)',
     };
   }
   if (name.includes('Letralia')) {
     return {
       discipline: 'LENGUAS',
       accent: '#D8B4FE',
-      border: 'rgba(191, 64, 255, 0.34)',
-      cardBg: 'bg-[#160828]/[0.82]',
-      btnBg: 'rgba(191, 64, 255, 0.16)',
-      btnBorder: 'rgba(216, 180, 254, 0.45)',
+      border: 'rgba(216, 180, 254, 0.38)',
+      cardBg: 'bg-[#160726]/[0.36]',
+      btnBg: 'rgba(191, 64, 255, 0.18)',
+      btnBorder: 'rgba(216, 180, 254, 0.52)',
     };
   }
   return {
     discipline: 'CIENCIAS',
     accent: '#6EE7B7',
-    border: 'rgba(0, 255, 136, 0.3)',
-    cardBg: 'bg-[#041C14]/[0.82]',
-    btnBg: 'rgba(0, 255, 136, 0.14)',
-    btnBorder: 'rgba(110, 231, 183, 0.45)',
+    border: 'rgba(110, 231, 183, 0.36)',
+    cardBg: 'bg-[#031B14]/[0.34]',
+    btnBg: 'rgba(0, 255, 136, 0.16)',
+    btnBorder: 'rgba(110, 231, 183, 0.5)',
   };
 }
 
@@ -254,13 +254,13 @@ function StudentDashboardView({
         </div>
       )}
 
-      {/* 1. BARRA DE SALUDO LIMPIA EN LIQUID GLASS (ESTILO CLÁSICO FAVORITO + MAYOR OPACIDAD) */}
+      {/* 1. BARRA DE SALUDO EN LIQUID-REFRACT CRISTALIZADO */}
       <LiquidGlass
-        blur={8}
-        refraction={12}
-        bezel={0.28}
-        saturation={1.45}
-        className="rounded-3xl bg-[#070d1f]/[0.82] border-white/[0.13] px-5 sm:px-7 py-4 sm:py-5"
+        blur={2}
+        refraction={22}
+        bezel={0.38}
+        saturation={1.65}
+        className="rounded-3xl bg-white/[0.045] border-white/[0.16] px-5 sm:px-7 py-4 sm:py-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.32),inset_0_-14px_26px_-12px_rgba(180,220,255,0.18),0_24px_70px_-32px_rgba(0,0,0,0.75)]"
       >
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
@@ -270,17 +270,23 @@ function StudentDashboardView({
             </h1>
           </div>
 
-          <div className="inline-flex items-center gap-3 rounded-full border border-white/14 bg-[#0B1328]/85 px-4 sm:px-5 py-2 shrink-0">
+          <LiquidGlass
+            blur={2}
+            refraction={14}
+            bezel={0.42}
+            saturation={1.65}
+            className="inline-flex items-center gap-3 rounded-full border-white/[0.18] bg-white/[0.05] px-4 sm:px-5 py-2 shrink-0"
+          >
             <IconStar className="w-6 h-6 shrink-0" />
             <div className="leading-tight">
-              <div className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">
+              <div className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white/70">
                 Estrellas
               </div>
               <div className="text-lg sm:text-xl font-black text-white tabular-nums">
                 {loadingProgress ? '...' : totalStars}
               </div>
             </div>
-          </div>
+          </LiquidGlass>
         </div>
       </LiquidGlass>
 
@@ -305,12 +311,16 @@ function StudentDashboardView({
             return (
               <LiquidGlass
                 key={planet.id}
-                blur={8}
-                refraction={14}
-                bezel={0.24}
-                saturation={1.45}
-                className={`rounded-3xl ${theme.cardBg} p-6 sm:p-7 flex flex-col justify-between`}
-                style={{ borderColor: theme.border }}
+                blur={2}
+                refraction={24}
+                bezel={0.38}
+                saturation={1.68}
+                className={`rounded-3xl ${theme.cardBg} p-6 sm:p-7 flex flex-col justify-between shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_28px_-12px_rgba(180,220,255,0.18),0_26px_76px_-30px_rgba(0,0,0,0.78)]`}
+                style={{
+                  borderColor: theme.border,
+                  backgroundImage:
+                    'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.22) 100%)',
+                }}
               >
                 <article
                   aria-labelledby={`planet-title-${planet.id}`}
