@@ -20,6 +20,55 @@ interface RelacionTutorEstudiante {
   fecha_asignacion: string | null;
 }
 
+function IconCheckCircle({ className = 'w-3.5 h-3.5' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className={className} aria-hidden="true">
+      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M5.2 8.2L7.1 10.1L10.9 6.1"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function EmptyAssignmentIllustration({ label }: { label: string }) {
+  return (
+    <svg
+      viewBox="0 0 190 110"
+      fill="none"
+      className="w-40 h-24 mx-auto mb-3"
+      role="img"
+      aria-label={label}
+    >
+      <ellipse
+        cx="95"
+        cy="62"
+        rx="70"
+        ry="20"
+        stroke="#67E8F9"
+        strokeOpacity="0.3"
+        strokeWidth="1.4"
+        strokeDasharray="4 5"
+      />
+      <circle cx="66" cy="54" r="14" fill="#0B1226" stroke="#67E8F9" strokeOpacity="0.65" strokeWidth="1.6" />
+      <circle cx="124" cy="54" r="14" fill="#0B1226" stroke="#6EE7B7" strokeOpacity="0.65" strokeWidth="1.6" />
+      <line
+        x1="80"
+        y1="54"
+        x2="110"
+        y2="54"
+        stroke="#94A3B8"
+        strokeWidth="1.6"
+        strokeDasharray="3 4"
+      />
+    </svg>
+  );
+}
+
 export default function AsignacionesPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -174,40 +223,78 @@ export default function AsignacionesPage() {
   });
 
   return (
-    <div className="relative min-h-screen px-6 py-12">
+    <div className="relative min-h-screen px-4 sm:px-6 py-10 sm:py-12">
       <div className="relative z-10 max-w-4xl mx-auto space-y-8">
         {/* Encabezado Liquid Glass */}
-        <div className="rounded-3xl liquid-glass liquid-glass-panel p-7 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.2em] text-cyan-300 mb-2">
-              <span>✦</span> Gestión Académica
+        <section
+          aria-labelledby="assignments-heading"
+          className="rounded-3xl liquid-glass liquid-glass-panel p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5"
+        >
+          <div className="space-y-2">
+            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#67E8F9]">
+              <svg viewBox="0 0 18 18" fill="none" className="w-4 h-4" aria-hidden="true">
+                <circle cx="5" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+                <circle cx="13" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M7.5 9H10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+              <span>Gestión Académica</span>
             </span>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            <h1
+              id="assignments-heading"
+              className="text-2xl sm:text-3xl font-black text-[#F8FAFC] tracking-tight"
+            >
               Asignación de Tutores y Estudiantes
             </h1>
-            <p className="text-sm text-slate-300/90 mt-1">
-              Selecciona un tutor y elige los estudiantes que estarán a su cargo.
+            <p className="text-sm text-[#CBD5E1] max-w-xl leading-relaxed">
+              Selecciona un tutor y elige los estudiantes que estarán a su cargo. Los estudiantes
+              asignados al tutor seleccionado aparecen primero.
             </p>
           </div>
-        </div>
+
+          <div className="grid grid-cols-2 gap-3 self-start md:self-center shrink-0">
+            <div className="rounded-2xl liquid-glass-inset px-4 py-3 text-center min-w-[96px]">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-[#67E8F9]">
+                Tutores
+              </div>
+              <div className="text-2xl font-black text-[#F8FAFC] mt-0.5 tabular-nums">
+                {tutores.length}
+              </div>
+            </div>
+            <div className="rounded-2xl liquid-glass-inset px-4 py-3 text-center min-w-[96px]">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-[#6EE7B7]">
+                Vínculos
+              </div>
+              <div className="text-2xl font-black text-[#F8FAFC] mt-0.5 tabular-nums">
+                {relaciones.length}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {loading ? (
-          <div className="liquid-glass rounded-3xl p-8 text-center">
-            <p className="text-sm text-slate-300 font-medium">
+          <div className="liquid-glass rounded-3xl p-8 text-center" role="status">
+            <p className="text-sm text-[#CBD5E1] font-medium">
               Cargando tutores y estudiantes...
             </p>
           </div>
         ) : tutores.length === 0 ? (
-          <div className="liquid-glass rounded-3xl p-8 text-center border-yellow-400/30">
-            <p className="text-sm text-yellow-300 font-semibold">
-              No hay usuarios con el rol de Tutor. Ve al Panel Admin y asigna al menos un Tutor.
+          <div className="liquid-glass liquid-glass-panel rounded-3xl p-10 text-center border-amber-300/35">
+            <EmptyAssignmentIllustration label="Ilustración sin tutores registrados" />
+            <p className="text-sm sm:text-base text-[#FDE68A] font-bold">
+              No hay usuarios con el rol de Tutor.
+            </p>
+            <p className="text-xs sm:text-sm text-[#CBD5E1] mt-1.5 max-w-md mx-auto">
+              Ve al Panel de Administración y asigna al menos un Tutor para vincular estudiantes.
             </p>
           </div>
         ) : (
           <>
             {/* 1. Selección de Tutor */}
-            <section className="space-y-4">
-              <h2 className="text-lg font-black text-white tracking-wide">
+            <section aria-labelledby="select-tutor-heading" className="space-y-4">
+              <h2
+                id="select-tutor-heading"
+                className="text-lg font-black text-[#F8FAFC] tracking-tight tabular-nums"
+              >
                 1. Selecciona un Tutor ({tutores.length})
               </h2>
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -219,38 +306,41 @@ export default function AsignacionesPage() {
 
                   return (
                     <button
+                      type="button"
                       key={t.id}
+                      aria-pressed={activo}
                       onClick={() => setTutorSeleccionadoId(t.id)}
-                      className={`text-left p-5 rounded-2xl liquid-glass liquid-glass-interactive cursor-pointer ${
+                      className={`text-left p-5 rounded-2xl liquid-glass cursor-pointer transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9] ${
                         activo
-                          ? 'border-cyan-400/70 shadow-[0_0_28px_rgba(0,245,255,0.22)]'
-                          : ''
+                          ? 'border-[#67E8F9]/70 shadow-[0_0_26px_rgba(0,245,255,0.2)]'
+                          : 'hover:border-white/25'
                       }`}
                       style={
                         activo
                           ? {
                               background:
-                                'linear-gradient(135deg, rgba(6, 182, 212, 0.22) 0%, rgba(59, 130, 246, 0.1) 100%)',
+                                'linear-gradient(145deg, rgba(6, 182, 212, 0.2) 0%, rgba(11, 16, 34, 0.88) 100%)',
                             }
                           : undefined
                       }
                     >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-base font-bold text-white">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="text-base font-bold text-[#F8FAFC] truncate">
                           {t.nombre}
                         </span>
                         <span
-                          className={`w-2.5 h-2.5 rounded-full ${
+                          aria-hidden="true"
+                          className={`w-2.5 h-2.5 rounded-full shrink-0 ${
                             activo
-                              ? 'bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.9)]'
-                              : 'bg-blue-400/60'
+                              ? 'bg-[#67E8F9] shadow-[0_0_10px_rgba(103,232,249,0.9)]'
+                              : 'bg-slate-500'
                           }`}
                         />
                       </div>
-                      <div className="text-xs text-slate-300/80 mb-3.5">
+                      <div className="text-xs text-[#CBD5E1] mb-3.5 truncate">
                         @{t.usuario}
                       </div>
-                      <div className="text-[11px] font-bold text-cyan-200 liquid-glass-pill inline-block px-3 py-1 rounded-lg">
+                      <div className="text-xs font-bold text-[#67E8F9] liquid-glass-inset inline-block px-3 py-1.5 rounded-lg tabular-nums">
                         {cantidadAsignados} estudiante
                         {cantidadAsignados === 1 ? '' : 's'} a cargo
                       </div>
@@ -261,14 +351,23 @@ export default function AsignacionesPage() {
             </section>
 
             {/* 2. Lista de Estudiantes */}
-            <section className="space-y-4">
-              <h2 className="text-lg font-black text-white tracking-wide">
-                2. Estudiantes para {tutorActivo?.nombre} ({estudiantes.length})
-              </h2>
+            <section aria-labelledby="students-for-tutor-heading" className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <h2
+                  id="students-for-tutor-heading"
+                  className="text-lg font-black text-[#F8FAFC] tracking-tight tabular-nums"
+                >
+                  2. Estudiantes para {tutorActivo?.nombre} ({estudiantes.length})
+                </h2>
+                <span className="text-xs font-medium text-[#94A3B8]">
+                  Asignados a este tutor primero
+                </span>
+              </div>
 
               {estudiantes.length === 0 ? (
-                <div className="liquid-glass rounded-3xl p-8 text-center">
-                  <p className="text-sm text-slate-400 font-medium">
+                <div className="liquid-glass liquid-glass-panel rounded-3xl p-10 text-center">
+                  <EmptyAssignmentIllustration label="Ilustración sin estudiantes registrados" />
+                  <p className="text-sm text-[#CBD5E1] font-medium">
                     No hay usuarios con el rol de estudiante registrados.
                   </p>
                 </div>
@@ -288,49 +387,53 @@ export default function AsignacionesPage() {
                     return (
                       <div
                         key={est.id}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass liquid-glass-interactive"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass"
                         style={
                           esDeEsteTutor
                             ? {
                                 background:
-                                  'linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(255, 255, 255, 0.03) 100%)',
-                                borderColor: 'rgba(52, 211, 153, 0.45)',
+                                  'linear-gradient(145deg, rgba(16, 185, 129, 0.16) 0%, rgba(11, 16, 34, 0.88) 100%)',
+                                borderColor: 'rgba(110, 231, 183, 0.48)',
                               }
                             : undefined
                         }
                       >
-                        <div className="flex items-center gap-3.5">
+                        <div className="flex items-start sm:items-center gap-3.5 min-w-0">
                           <span
-                            className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                            aria-hidden="true"
+                            className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 sm:mt-0 ${
                               esDeEsteTutor
-                                ? 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)]'
+                                ? 'bg-[#6EE7B7] shadow-[0_0_10px_rgba(52,211,153,0.9)]'
                                 : otroTutor
-                                ? 'bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)]'
-                                : 'bg-slate-500'
+                                  ? 'bg-[#FDE68A] shadow-[0_0_10px_rgba(250,204,21,0.75)]'
+                                  : 'bg-slate-500'
                             }`}
                           />
-                          <div>
-                            <div className="text-sm sm:text-base text-white font-bold">
-                              {est.nombre}
-                              <span className="text-xs text-slate-300/80 font-normal ml-2">
+                          <div className="min-w-0">
+                            <div className="text-sm sm:text-base text-[#F8FAFC] font-bold flex flex-wrap items-baseline gap-x-2">
+                              <span>{est.nombre}</span>
+                              <span className="text-xs text-[#CBD5E1] font-normal">
                                 @{est.usuario} · {est.correo}
                               </span>
                             </div>
                             <div className="text-xs mt-1">
                               {esDeEsteTutor ? (
-                                <span className="text-emerald-300 font-semibold">
-                                  ✓ Asignado a {tutorActivo?.nombre}
-                                  {relacion?.fecha_asignacion &&
-                                    ` (${new Date(
-                                      relacion.fecha_asignacion
-                                    ).toLocaleDateString()})`}
+                                <span className="inline-flex items-center gap-1.5 text-[#6EE7B7] font-semibold">
+                                  <IconCheckCircle className="w-3.5 h-3.5 shrink-0" />
+                                  <span>
+                                    Asignado a {tutorActivo?.nombre}
+                                    {relacion?.fecha_asignacion &&
+                                      ` (${new Date(
+                                        relacion.fecha_asignacion
+                                      ).toLocaleDateString()})`}
+                                  </span>
                                 </span>
                               ) : otroTutor ? (
-                                <span className="text-yellow-300/90 font-medium">
+                                <span className="text-[#FDE68A] font-medium">
                                   Asignado actualmente a: {otroTutor.nombre}
                                 </span>
                               ) : (
-                                <span className="text-slate-400">
+                                <span className="text-[#94A3B8]">
                                   Sin tutor asignado
                                 </span>
                               )}
@@ -338,23 +441,24 @@ export default function AsignacionesPage() {
                           </div>
                         </div>
 
-                        <div className="flex gap-2 self-end sm:self-center">
+                        <div className="flex gap-2 self-end sm:self-center shrink-0">
                           <button
+                            type="button"
                             onClick={() => toggleAsignacion(est.id)}
                             disabled={isUpdating}
-                            className={`text-xs px-4 py-2 rounded-xl font-bold transition-all disabled:opacity-50 cursor-pointer ${
+                            className={`min-h-[44px] text-xs px-4 py-2.5 rounded-xl font-bold transition-all disabled:opacity-50 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9] ${
                               esDeEsteTutor
-                                ? 'bg-red-500/20 hover:bg-red-500/35 text-red-200 border border-red-400/40 backdrop-blur-md'
-                                : 'liquid-glass-btn text-white'
+                                ? 'bg-rose-500/20 hover:bg-rose-500/35 text-rose-100 border border-rose-400/50 backdrop-blur-md'
+                                : 'liquid-glass-btn text-[#F8FAFC]'
                             }`}
                           >
                             {isUpdating
                               ? 'Guardando...'
                               : esDeEsteTutor
-                              ? 'Quitar de este tutor'
-                              : otroTutor
-                              ? `Cambiar a ${tutorActivo?.nombre}`
-                              : `Asignar a ${tutorActivo?.nombre}`}
+                                ? 'Quitar de este tutor'
+                                : otroTutor
+                                  ? `Cambiar a ${tutorActivo?.nombre}`
+                                  : `Asignar a ${tutorActivo?.nombre}`}
                           </button>
                         </div>
                       </div>

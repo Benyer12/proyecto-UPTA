@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useAuthStore } from '../../../lib/auth-store';
 import { supabase } from '../../../lib/supabase';
 import LiquidGlassToast, {
@@ -38,8 +38,49 @@ function ordenarPorRolYNombre<T extends { role: string; nombre: string }>(lista:
   });
 }
 
+function AllClearOrbitIllustration() {
+  return (
+    <svg
+      viewBox="0 0 200 120"
+      fill="none"
+      className="w-44 h-24 mx-auto"
+      role="img"
+      aria-label="Ilustración de verificación completada sin solicitudes pendientes"
+    >
+      <ellipse
+        cx="100"
+        cy="62"
+        rx="74"
+        ry="22"
+        stroke="#6EE7B7"
+        strokeOpacity="0.32"
+        strokeWidth="1.4"
+        strokeDasharray="4 5"
+      />
+      <path
+        d="M100 26L74 37.5V59C74 75.5 85.1 90.2 100 95C114.9 90.2 126 75.5 126 59V37.5L100 26Z"
+        fill="#0B1424"
+        stroke="#6EE7B7"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M89.5 60.5L96.8 67.8L111.5 53.1"
+        stroke="#A7F3D0"
+        strokeWidth="2.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="38" cy="54" r="3" fill="#6EE7B7" fillOpacity="0.7" />
+      <circle cx="164" cy="48" r="2.5" fill="#67E8F9" fillOpacity="0.7" />
+      <circle cx="148" cy="86" r="2" fill="#FDE68A" fillOpacity="0.75" />
+    </svg>
+  );
+}
+
 export default function AdminPendientesPage() {
   const router = useRouter();
+  const prefersReducedMotion = useReducedMotion();
   const user = useAuthStore((s) => s.user);
   const assignRole = useAuthStore((s) => s.assignRole);
 
@@ -162,23 +203,38 @@ export default function AdminPendientesPage() {
         <LiquidGlassToast toast={toast} onClose={() => setToast(null)} />
 
         {/* ── ENCABEZADO LIQUID GLASS ── */}
-        <div className="rounded-3xl liquid-glass liquid-glass-panel p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-          <div>
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-amber-300/95 mb-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.9)]" />
-              Control de Ingresos
+        <section
+          aria-labelledby="pending-heading"
+          className="rounded-3xl liquid-glass liquid-glass-panel p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5"
+        >
+          <div className="space-y-2">
+            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#FDE68A]">
+              <svg viewBox="0 0 18 18" fill="none" className="w-4 h-4" aria-hidden="true">
+                <circle cx="9" cy="9" r="6.8" stroke="currentColor" strokeWidth="1.5" />
+                <path
+                  d="M9 5.5V9.3L11.6 10.8"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span>Control de Ingresos</span>
             </span>
-            <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+            <h1
+              id="pending-heading"
+              className="text-2xl sm:text-4xl font-black text-[#F8FAFC] tracking-tight"
+            >
               Pendientes por aprobar
             </h1>
-            <p className="text-sm text-slate-300/90 mt-1.5 max-w-xl">
+            <p className="text-sm text-[#CBD5E1] max-w-xl leading-relaxed">
               Revisa las cuentas registradas en estado inactivo, asigna su rol y habilita su acceso
               a la plataforma.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 self-start sm:self-center">
-            <div className="liquid-glass-pill px-4 py-2.5 rounded-2xl text-xs font-bold tracking-wider uppercase text-amber-200 whitespace-nowrap">
+          <div className="flex flex-wrap items-center gap-3 self-start sm:self-center">
+            <div className="min-h-[44px] inline-flex items-center liquid-glass-inset border-amber-300/35 px-4 py-2 rounded-xl text-xs font-bold tracking-wider uppercase text-[#FDE68A] whitespace-nowrap tabular-nums">
               {pendientes.length}{' '}
               {pendientes.length === 1 ? 'solicitud' : 'solicitudes'}
             </div>
@@ -186,22 +242,22 @@ export default function AdminPendientesPage() {
               type="button"
               onClick={cargarPendientes}
               disabled={loading}
-              className="liquid-glass-btn text-white text-xs font-bold tracking-wider uppercase px-4 py-2.5 rounded-2xl disabled:opacity-50 cursor-pointer whitespace-nowrap"
+              className="min-h-[44px] inline-flex items-center justify-center liquid-glass-btn text-[#F8FAFC] text-xs font-bold tracking-wider uppercase px-4 py-2.5 rounded-xl disabled:opacity-50 cursor-pointer whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
             >
-              {loading ? 'Actualizando...' : 'Actualizar'}
+              {loading ? 'Actualizando...' : 'Actualizar lista'}
             </button>
           </div>
-        </div>
+        </section>
 
         {/* ── BUSCADOR (solo si hay solicitudes) ── */}
         {pendientes.length > 0 && (
-          <div className="rounded-2xl liquid-glass p-4 flex items-center gap-3">
+          <div className="rounded-2xl liquid-glass p-3.5 sm:p-4 flex items-center gap-3">
             <svg
               width="18"
               height="18"
               viewBox="0 0 24 24"
               fill="none"
-              className="text-slate-400 shrink-0 ml-1"
+              className="text-[#94A3B8] shrink-0 ml-1"
               aria-hidden="true"
             >
               <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
@@ -216,63 +272,44 @@ export default function AdminPendientesPage() {
               type="text"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
+              aria-label="Filtrar solicitudes pendientes"
               placeholder="Filtrar solicitudes por nombre, @usuario o correo..."
-              className="w-full bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none"
+              className="w-full min-h-[44px] bg-transparent text-sm text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none"
             />
           </div>
         )}
 
         {/* ── LISTADO DE PENDIENTES ── */}
-        <section className="space-y-3.5">
+        <section aria-label="Solicitudes de acceso pendientes" className="space-y-3.5">
           {loading ? (
-            <div className="liquid-glass rounded-3xl p-10 text-center">
-              <p className="text-sm text-slate-300 font-medium">
+            <div className="liquid-glass rounded-3xl p-10 text-center" role="status">
+              <p className="text-sm text-[#CBD5E1] font-medium">
                 Consultando usuarios pendientes por aprobar...
               </p>
             </div>
           ) : loadError ? (
-            <div className="liquid-glass rounded-3xl p-8 text-center space-y-4 border-rose-400/35">
+            <div
+              role="alert"
+              className="liquid-glass rounded-3xl p-8 text-center space-y-4 border-rose-400/40"
+            >
               <p className="text-sm text-rose-200 font-semibold">{loadError}</p>
               <button
                 type="button"
                 onClick={cargarPendientes}
-                className="liquid-glass-btn px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-white cursor-pointer"
+                className="min-h-[44px] liquid-glass-btn px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-[#F8FAFC] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
               >
-                Reintentar
+                Reintentar carga
               </button>
             </div>
           ) : filtrados.length === 0 ? (
-            <div className="liquid-glass rounded-3xl p-10 sm:p-12 text-center flex flex-col items-center gap-3">
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                style={{
-                  background:
-                    'linear-gradient(145deg, rgba(16, 185, 129, 0.25) 0%, rgba(15, 23, 42, 0.6) 100%)',
-                  border: '1px solid rgba(110, 231, 183, 0.45)',
-                }}
-              >
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path
-                    d="M12 2.75L4.75 5.85V11.6C4.75 16.25 7.82 20.42 12 21.75C16.18 20.42 19.25 16.25 19.25 11.6V5.85L12 2.75Z"
-                    stroke="#6EE7B7"
-                    strokeWidth="1.8"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M8.75 12.1L10.95 14.3L15.45 9.8"
-                    stroke="#A7F3D0"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-lg font-bold text-white">
+            <div className="liquid-glass liquid-glass-panel rounded-3xl p-10 sm:p-12 text-center flex flex-col items-center gap-3">
+              <AllClearOrbitIllustration />
+              <h2 className="text-lg font-bold text-[#F8FAFC]">
                 {busqueda
                   ? 'No hay coincidencias con tu búsqueda'
                   : 'No hay usuarios pendientes por aprobar'}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-300/80 max-w-md">
+              <p className="text-xs sm:text-sm text-[#CBD5E1] max-w-md leading-relaxed">
                 {busqueda
                   ? 'Prueba con otro nombre, usuario o correo electrónico.'
                   : 'Todas las cuentas de estudiantes y tutores registradas se encuentran aprobadas y al día.'}
@@ -289,23 +326,23 @@ export default function AdminPendientesPage() {
                   return (
                     <motion.div
                       key={u.id}
-                      layout
-                      initial={{ opacity: 0, y: 8 }}
+                      layout={!prefersReducedMotion}
+                      initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: 24, scale: 0.97 }}
+                      exit={prefersReducedMotion ? undefined : { opacity: 0, x: 24, scale: 0.97 }}
                       transition={{ duration: 0.22 }}
-                      className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass liquid-glass-interactive"
+                      className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass"
                       style={{
-                        borderColor: 'rgba(251, 191, 36, 0.24)',
+                        borderColor: 'rgba(253, 230, 138, 0.28)',
                       }}
                     >
                       {/* Información del usuario */}
                       <div className="flex items-start sm:items-center gap-3.5 min-w-0">
                         <div
-                          className="w-11 h-11 rounded-2xl liquid-glass-pill flex items-center justify-center font-black text-sm shrink-0 text-amber-100"
+                          className="w-11 h-11 rounded-2xl liquid-glass-inset flex items-center justify-center font-black text-sm shrink-0 text-[#FEF3C7]"
                           style={{
                             background:
-                              'linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(139, 92, 246, 0.28) 100%)',
+                              'linear-gradient(135deg, rgba(245, 158, 11, 0.28) 0%, rgba(139, 92, 246, 0.24) 100%)',
                             borderColor: 'rgba(253, 230, 138, 0.45)',
                           }}
                         >
@@ -314,16 +351,18 @@ export default function AdminPendientesPage() {
 
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm sm:text-base text-white font-bold truncate">
+                            <span className="text-sm sm:text-base text-[#F8FAFC] font-bold truncate">
                               {u.nombre}
                             </span>
-                            <span className="text-[10px] uppercase tracking-widest font-bold px-2.5 py-0.5 rounded-full border border-amber-400/45 bg-amber-500/15 text-amber-200">
+                            <span className="text-[11px] uppercase tracking-wider font-bold px-2.5 py-0.5 rounded-full border border-amber-300/45 bg-amber-500/15 text-[#FDE68A]">
                               Pendiente
                             </span>
                           </div>
-                          <div className="text-xs text-slate-300/85 mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
-                            <span className="font-medium text-[#BFDBFE]">@{u.usuario}</span>
-                            <span className="text-slate-500">·</span>
+                          <div className="text-xs text-[#CBD5E1] mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
+                            <span className="font-semibold text-[#67E8F9]">@{u.usuario}</span>
+                            <span className="text-[#94A3B8]" aria-hidden="true">
+                              ·
+                            </span>
                             <span className="truncate">{u.correo}</span>
                           </div>
                         </div>
@@ -331,17 +370,22 @@ export default function AdminPendientesPage() {
 
                       {/* Selector de rol + Botón Aprobar */}
                       <div className="flex flex-wrap items-center gap-2.5 self-end lg:self-center shrink-0">
-                        <div className="inline-flex p-1 rounded-xl liquid-glass-pill gap-1">
+                        <div
+                          role="group"
+                          aria-label={`Seleccionar rol para ${u.nombre}`}
+                          className="inline-flex p-1 rounded-xl liquid-glass-inset gap-1"
+                        >
                           <button
                             type="button"
                             disabled={isApproving}
+                            aria-pressed={rolElegido === 'student'}
                             onClick={() =>
                               setRolesSeleccionados((prev) => ({ ...prev, [u.id]: 'student' }))
                             }
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            className={`min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#67E8F9] ${
                               rolElegido === 'student'
-                                ? 'bg-emerald-500/30 border border-emerald-300/60 text-emerald-100'
-                                : 'text-slate-300 hover:text-white'
+                                ? 'bg-emerald-500/25 border border-[#6EE7B7]/60 text-[#A7F3D0]'
+                                : 'text-[#CBD5E1] hover:text-white'
                             }`}
                           >
                             Estudiante
@@ -349,13 +393,14 @@ export default function AdminPendientesPage() {
                           <button
                             type="button"
                             disabled={isApproving}
+                            aria-pressed={rolElegido === 'tutor'}
                             onClick={() =>
                               setRolesSeleccionados((prev) => ({ ...prev, [u.id]: 'tutor' }))
                             }
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            className={`min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#67E8F9] ${
                               rolElegido === 'tutor'
-                                ? 'bg-purple-500/30 border border-purple-300/60 text-purple-100'
-                                : 'text-slate-300 hover:text-white'
+                                ? 'bg-purple-500/25 border border-[#D8B4FE]/60 text-[#E9D5FF]'
+                                : 'text-[#CBD5E1] hover:text-white'
                             }`}
                           >
                             Tutor
@@ -366,12 +411,7 @@ export default function AdminPendientesPage() {
                           type="button"
                           onClick={() => handleAprobar(u)}
                           disabled={isApproving}
-                          className="liquid-glass-btn text-white text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl cursor-pointer disabled:opacity-50"
-                          style={{
-                            background:
-                              'linear-gradient(135deg, rgba(16, 185, 129, 0.72) 0%, rgba(5, 150, 105, 0.65) 100%)',
-                            borderColor: 'rgba(110, 231, 183, 0.6)',
-                          }}
+                          className="min-h-[44px] inline-flex items-center justify-center text-[#06101F] bg-[#00FF88] hover:opacity-90 text-xs font-extrabold uppercase tracking-wider px-5 py-2.5 rounded-xl cursor-pointer disabled:opacity-50 transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
                         >
                           {isApproving ? 'Aprobando...' : 'Aprobar acceso'}
                         </button>
