@@ -697,28 +697,22 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         </div>
 
         {/* ── Abajo al Centro: Píldora Flotante de Instrucciones en Liquid Glass ── */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={avisoFlotante}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 max-w-[92%] sm:max-w-lg px-6 py-2.5 rounded-2xl liquid-glass-pill flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#E2EEFF] text-center"
-            style={{
-              background: 'linear-gradient(135deg, rgba(15, 23, 52, 0.84) 0%, rgba(9, 14, 34, 0.9) 100%)',
-              borderColor: 'rgba(191, 219, 254, 0.28)',
-            }}
-          >
-            <span className="text-[#6EE7B7]">✦</span>
-            <span>{avisoFlotante}</span>
-          </motion.div>
-        </AnimatePresence>
+        <div
+          className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 max-w-[92%] sm:max-w-lg px-6 py-2.5 rounded-2xl liquid-glass-pill flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#E2EEFF] text-center transition-opacity duration-200"
+          style={{
+            background: 'linear-gradient(135deg, rgba(15, 23, 52, 0.84) 0%, rgba(9, 14, 34, 0.9) 100%)',
+            borderColor: 'rgba(191, 219, 254, 0.28)',
+          }}
+        >
+          <span className="text-[#6EE7B7]">✦</span>
+          <span>{avisoFlotante}</span>
+        </div>
       </div>
 
       {/* ════════════════════ HUD LATERAL DERECHO EN LIQUID GLASS ════════════════════ */}
       <aside className="relative z-30 w-full lg:w-[335px] xl:w-[355px] lg:h-full p-2.5 sm:p-3.5 flex flex-col justify-center shrink-0">
         <div
-          className="relative w-full h-full max-h-[820px] rounded-3xl liquid-glass liquid-glass-panel p-4 sm:p-5 flex flex-col justify-between overflow-y-auto"
+          className="relative w-full h-full max-h-[820px] rounded-3xl liquid-glass liquid-glass-panel p-4 sm:p-5 flex flex-col justify-between overflow-x-hidden overflow-y-auto"
           style={{
             background:
               'linear-gradient(165deg, rgba(22, 32, 70, 0.68) 0%, rgba(11, 17, 38, 0.82) 55%, rgba(6, 10, 24, 0.9) 100%)',
@@ -804,12 +798,10 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               </div>
 
               <div className="relative h-4 rounded-full bg-[#060A18]/90 border border-white/15 p-0.5 shadow-inner">
-                <motion.div
-                  className="h-full rounded-full"
-                  initial={{ width: '5%' }}
-                  animate={{ width: `${Math.max(6, progresoPct)}%` }}
-                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                <div
+                  className="h-full rounded-full transition-[width] duration-300 ease-out"
                   style={{
+                    width: `${Math.max(6, progresoPct)}%`,
                     background: 'linear-gradient(90deg, #6366F1 0%, #A855F7 50%, #34D399 100%)',
                     boxShadow: '0 0 12px rgba(168, 85, 247, 0.5)',
                   }}

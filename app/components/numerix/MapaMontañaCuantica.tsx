@@ -344,50 +344,52 @@ function ChoqueMeteoritos({ x, y }: { x: number; y: number }) {
   );
 }
 
-/** Cometas luminosos atravesando el cosmos en segundo plano. */
+/** Cometas luminosos atravesando el cosmos en segundo plano (dentro de los límites del viewBox). */
 function CometasPasando() {
   return (
     <g pointerEvents="none">
-      {/* Cometa 1: Azul Crema / Esmeralda (arriba izquierda hacia el centro) */}
+      {/* Cometa 1: Azul Crema / Esmeralda */}
       <g>
         <animateTransform
           attributeName="transform"
           type="translate"
-          values="-120 40; 940 280"
+          values="120 45; 780 235"
           dur="11s"
           repeatCount="indefinite"
         />
-        <g transform="rotate(13)">
+        <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.88;1" dur="11s" repeatCount="indefinite" />
+        <g transform="rotate(16)">
           <path
-            d="M -110,0 L 0,0"
+            d="M -75,0 L 0,0"
             stroke="url(#cometTailEmerald)"
-            strokeWidth="4"
+            strokeWidth="3.5"
             strokeLinecap="round"
           />
-          <circle cx="0" cy="0" r="3.5" fill="#FFFFFF" />
-          <circle cx="0" cy="0" r="7" fill="#6EE7B7" opacity="0.45" />
+          <circle cx="0" cy="0" r="3" fill="#FFFFFF" />
+          <circle cx="0" cy="0" r="6" fill="#6EE7B7" opacity="0.45" />
         </g>
       </g>
 
-      {/* Cometa 2: Magenta / Amatista (derecha hacia abajo izquierda) */}
+      {/* Cometa 2: Magenta / Amatista */}
       <g>
         <animateTransform
           attributeName="transform"
           type="translate"
-          values="960 110; -140 460"
-          dur="15s"
-          begin="3s"
+          values="770 110; 130 410"
+          dur="14s"
+          begin="2s"
           repeatCount="indefinite"
         />
-        <g transform="rotate(162)">
+        <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.12;0.88;1" dur="14s" begin="2s" repeatCount="indefinite" />
+        <g transform="rotate(155)">
           <path
-            d="M -130,0 L 0,0"
+            d="M -80,0 L 0,0"
             stroke="url(#cometTailPurple)"
-            strokeWidth="4.5"
+            strokeWidth="3.8"
             strokeLinecap="round"
           />
-          <circle cx="0" cy="0" r="3.8" fill="#FFFFFF" />
-          <circle cx="0" cy="0" r="8" fill="#E879F9" opacity="0.45" />
+          <circle cx="0" cy="0" r="3.2" fill="#FFFFFF" />
+          <circle cx="0" cy="0" r="6.5" fill="#E879F9" opacity="0.45" />
         </g>
       </g>
     </g>
@@ -1077,9 +1079,9 @@ export default function MapaMontañaCuantica({
 
   return (
     <svg
-      viewBox="0 0 900 680"
+      viewBox="-35 0 970 680"
       preserveAspectRatio="xMidYMid meet"
-      className="w-full h-full select-none overflow-visible"
+      className="w-full h-full select-none"
       role="img"
       aria-label="Montaña Cuántica de Numérix"
     >
@@ -1298,16 +1300,17 @@ export default function MapaMontañaCuantica({
           ))}
 
         {/* ── TOKEN DEL JUGADOR: EXPLORADOR ESPACIAL CUÁNTICO ── */}
-        <motion.g
-          initial={false}
-          animate={{
-            x: nodoActual.x,
-            y: nodoActual.tipo === 'boss' ? nodoActual.y - 6 : nodoActual.y - 16,
+        <g
+          style={{
+            transform: `translate3d(${nodoActual.x}px, ${
+              nodoActual.tipo === 'boss' ? nodoActual.y - 6 : nodoActual.y - 16
+            }px, 0)`,
+            transition: 'transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
+            willChange: 'transform',
           }}
-          transition={{ type: 'spring', stiffness: 220, damping: 22 }}
         >
           <JovenAstronauta caminando={caminando} />
-        </motion.g>
+        </g>
       </g>
     </svg>
   );
