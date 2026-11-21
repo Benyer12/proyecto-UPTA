@@ -175,16 +175,49 @@ function GenericBoard({
           }}
         >
           {diceRolling ? (
-            <span className="flex items-center gap-2">
-              <motion.span animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}>
-                ⏳
-              </motion.span>
-              Rodando...
+            <span className="inline-flex items-center gap-2">
+              <svg
+                viewBox="0 0 18 18"
+                fill="none"
+                className="w-4 h-4 animate-spin"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="9"
+                  cy="9"
+                  r="6.5"
+                  stroke="currentColor"
+                  strokeOpacity="0.3"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M9 2.5A6.5 6.5 0 0 1 15.5 9"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span>Rodando...</span>
             </span>
           ) : (
-            <span className="flex items-center gap-2">
-              <span>🎲</span>
-              LANZAR DADO
+            <span className="inline-flex items-center gap-2">
+              <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4" aria-hidden="true">
+                <rect
+                  x="3"
+                  y="3"
+                  width="14"
+                  height="14"
+                  rx="3"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                />
+                <circle cx="7.2" cy="7.2" r="1.15" fill="currentColor" />
+                <circle cx="12.8" cy="7.2" r="1.15" fill="currentColor" />
+                <circle cx="10" cy="10" r="1.15" fill="currentColor" />
+                <circle cx="7.2" cy="12.8" r="1.15" fill="currentColor" />
+                <circle cx="12.8" cy="12.8" r="1.15" fill="currentColor" />
+              </svg>
+              <span>Lanzar dado</span>
             </span>
           )}
         </motion.button>
@@ -357,16 +390,20 @@ export default function JuegoPage() {
 
   if (!planet || !level) {
     return (
-      <div className="fixed inset-0 z-[100] h-screen w-screen flex items-center justify-center" style={{ background: '#00000a' }}>
+      <div className="fixed inset-0 z-[100] h-screen w-screen flex items-center justify-center px-6" style={{ background: '#00000a' }}>
         <FondoCosmico />
-        <div className="relative z-10 text-center">
-          <h1 className="text-2xl font-black text-white mb-2">Nivel no encontrado</h1>
-          <p className="text-slate-400 text-sm mb-4">Este nivel no existe en el cosmos...</p>
+        <div className="relative z-10 text-center liquid-glass liquid-glass-panel rounded-3xl p-8 max-w-md w-full space-y-4">
+          <h1 className="text-2xl font-black text-[#F8FAFC] tracking-tight">Nivel no encontrado</h1>
+          <p className="text-[#CBD5E1] text-sm">Este nivel no existe en las cartas estelares disponibles.</p>
           <button
+            type="button"
             onClick={() => router.push('/dashboard')}
-            className="px-6 py-2 rounded-full text-sm font-bold border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+            className="min-h-[44px] inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider liquid-glass-btn text-[#F8FAFC] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
           >
-            ← Volver al mapa
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" aria-hidden="true">
+              <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span>Volver al mapa</span>
           </button>
         </div>
       </div>
@@ -433,34 +470,35 @@ export default function JuegoPage() {
             <div style={{ borderLeft: `1px solid rgba(${pc},.3)`, height: 20 }} />
             <div className="flex items-center gap-2">
               <span
+                className="inline-flex items-center gap-2"
                 style={{
                   fontFamily: "'Orbitron',monospace",
                   fontWeight: 900,
                   fontSize: '.85rem',
-                  letterSpacing: '.2em',
-                  color: planet.color,
-                  textShadow: `0 0 12px rgba(${pc},.6)`,
+                  letterSpacing: '.18em',
+                  color: '#F8FAFC',
                 }}
               >
-                ◈ {planet.name.toUpperCase()}
+                <span
+                  aria-hidden="true"
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: planet.color, boxShadow: `0 0 10px ${planet.color}` }}
+                />
+                {planet.name.toUpperCase()}
               </span>
               <span
+                className="hidden sm:inline-block rounded-md px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[#CBD5E1]"
                 style={{
-                  fontSize: '.55rem',
-                  letterSpacing: '.15em',
-                  color: `rgba(${pc},.5)`,
-                  border: `1px solid rgba(${pc},.3)`,
-                  padding: '2px 8px',
-                  borderRadius: 2,
+                  border: `1px solid rgba(${pc},.35)`,
+                  background: `rgba(${pc},.1)`,
                 }}
               >
-                TABLERO CUÁNTICO
+                Tablero cuántico
               </span>
             </div>
           </div>
-          <div style={{ fontSize: '.6rem', letterSpacing: '.2em', color: `rgba(${pc},.4)` }}>
-            {user ? `JUGADOR: ${user.name.toUpperCase()}` : 'SIN SESIÓN'}
-            &nbsp;|&nbsp; CASILLA {currentPos + 1} / 20
+          <div className="text-xs font-semibold tracking-wider text-[#CBD5E1] tabular-nums">
+            {user ? `Jugador: ${user.name}` : 'Sin sesión'} · Casilla {currentPos + 1} / 20
           </div>
         </div>
       </header>

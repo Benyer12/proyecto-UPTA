@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 export type LiquidGlassToastVariant =
   | 'activated'
@@ -238,6 +238,7 @@ export default function LiquidGlassToast({
   toast: LiquidGlassToastData | null;
   onClose: () => void;
 }) {
+  const prefersReducedMotion = useReducedMotion();
   const durationMs = toast?.durationMs ?? (toast?.variant === 'blocked' ? 6800 : 4800);
 
   useEffect(() => {
@@ -281,21 +282,23 @@ export default function LiquidGlassToast({
               }}
             >
               {/* Reflejo especular óptico en movimiento */}
-              <motion.div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/2 -skew-x-12"
-                style={{
-                  background:
-                    'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.14) 50%, transparent 100%)',
-                }}
-                animate={{ x: ['-40%', '310%'] }}
-                transition={{
-                  duration: 3.6,
-                  repeat: Infinity,
-                  repeatDelay: 1.4,
-                  ease: 'easeInOut',
-                }}
-              />
+              {!prefersReducedMotion && (
+                <motion.div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/2 -skew-x-12"
+                  style={{
+                    background:
+                      'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.14) 50%, transparent 100%)',
+                  }}
+                  animate={{ x: ['-40%', '310%'] }}
+                  transition={{
+                    duration: 3.6,
+                    repeat: Infinity,
+                    repeatDelay: 1.4,
+                    ease: 'easeInOut',
+                  }}
+                />
+              )}
 
               {/* Línea lateral de estado */}
               <div
@@ -376,7 +379,7 @@ export default function LiquidGlassToast({
                   type="button"
                   onClick={onClose}
                   aria-label="Cerrar notificación"
-                  className="shrink-0 w-7 h-7 rounded-xl flex items-center justify-center text-slate-300/80 hover:text-white hover:bg-white/12 transition-colors cursor-pointer"
+                  className="shrink-0 min-w-[36px] min-h-[36px] rounded-xl flex items-center justify-center text-slate-200 hover:text-white hover:bg-white/12 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#67E8F9]"
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                     <path
