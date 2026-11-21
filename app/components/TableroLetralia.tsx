@@ -637,23 +637,24 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
     <div
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
-        background: 'linear-gradient(180deg, #3B5284 0%, #2D406B 55%, #1E293B 100%)',
+        background:
+          'radial-gradient(ellipse at 42% 38%, #475F9B 0%, #2E406E 54%, #1A2442 100%)',
       }}
     >
       {/* ════════════════════ ÁREA PRINCIPAL DEL MAPA ASTRAL (IZQUIERDA/CENTRO) ════════════════════ */}
       <div className="relative flex-1 h-[62vh] lg:h-full overflow-hidden flex items-center justify-center">
         {/* ── Botón Flotante Superior Izquierda: Volver al Mapa ── */}
-        <div className="absolute top-3 left-3 z-30 flex items-center">
+        <div className="absolute top-3.5 left-3.5 z-30 flex items-center">
           <motion.button
             type="button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full font-extrabold text-xs sm:text-sm text-[#1E1B4B] shadow-md cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full font-extrabold text-xs sm:text-sm text-[#1E1B4B] cursor-pointer transition-shadow"
             style={{
-              background: 'linear-gradient(180deg, #FDF6E3 0%, #EAD7B7 100%)',
-              border: '2px solid #8C6D53',
-              boxShadow: '0 3px 0 #6E543C',
+              background: 'linear-gradient(180deg, #FFFDF7 0%, #F7E8CA 70%, #EAD3AB 100%)',
+              border: '2px solid #9A7B56',
+              boxShadow: '0 3px 0 #6E543C, 0 8px 20px rgba(15, 23, 42, 0.35), inset 0 1px 0 #FFFFFF',
             }}
           >
             <span>←</span>
@@ -667,25 +668,27 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
             <div
               className="hidden sm:flex h-8 w-10 items-center justify-center rounded-bl-xl border-b-2 border-l-2 border-[#8B7CC0]"
               style={{
-                background: 'linear-gradient(180deg, #DDD6FE 0%, #C4B5FD 100%)',
+                background: 'linear-gradient(180deg, #EDE9FE 0%, #C4B5FD 100%)',
                 transform: 'skewX(18deg)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.75)',
               }}
             >
-              <span className="text-[10px] text-white" style={{ transform: 'skewX(-18deg)' }}>
+              <span className="text-[11px] text-white drop-shadow" style={{ transform: 'skewX(-18deg)' }}>
                 ✦
               </span>
             </div>
 
             <div
-              className="px-6 sm:px-8 py-1.5 rounded-b-2xl border-x-2 border-b-2 border-[#9A7B56] shadow-lg flex items-center gap-2"
+              className="px-7 sm:px-9 py-1.5 rounded-b-2xl border-x-2 border-b-2 border-[#9A7B56] flex items-center gap-2.5"
               style={{
-                background: 'linear-gradient(180deg, #FDF6E3 0%, #F2DEC0 100%)',
+                background: 'linear-gradient(180deg, #FFFDF7 0%, #F6E4C4 100%)',
+                boxShadow: '0 4px 0 #7C6143, 0 10px 24px rgba(15, 23, 42, 0.4), inset 0 1px 0 #FFFFFF',
               }}
             >
-              <span className="text-xs sm:text-sm font-black tracking-widest text-[#2E2546]">
-                TURNO
+              <span className="text-xs sm:text-sm font-black tracking-[0.2em] text-[#2E2546]">
+                TURNO {turno}
               </span>
-              <span className="w-5 h-5 rounded-full bg-[#E2C8A4] border border-[#9A7B56] flex items-center justify-center text-xs font-black text-[#2E2546]">
+              <span className="w-5 h-5 rounded-full bg-[#EAD2AE] border border-[#9A7B56] flex items-center justify-center text-xs font-black text-[#2E2546] shadow-inner">
                 ↻
               </span>
             </div>
@@ -693,17 +696,18 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
             <div
               className="hidden sm:flex h-8 w-10 items-center justify-center rounded-br-xl border-b-2 border-r-2 border-[#8B7CC0]"
               style={{
-                background: 'linear-gradient(180deg, #DDD6FE 0%, #C4B5FD 100%)',
+                background: 'linear-gradient(180deg, #EDE9FE 0%, #C4B5FD 100%)',
                 transform: 'skewX(-18deg)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.75)',
               }}
             >
-              <span className="text-[10px] text-white" style={{ transform: 'skewX(18deg)' }}>
+              <span className="text-[11px] text-white drop-shadow" style={{ transform: 'skewX(18deg)' }}>
                 ✦
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 mt-1.5">
+          <div className="flex items-center gap-1.5 mt-2">
             {[0, 1, 2, 3].map((i) => {
               const activo = (turno - 1) % 4 === i;
               return (
@@ -711,9 +715,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                   key={i}
                   className="w-2 h-2 rounded-full transition-all"
                   style={{
-                    background: activo ? '#FDBA74' : '#CBD5E1',
-                    boxShadow: activo ? '0 0 8px #FDBA74' : 'none',
-                    transform: activo ? 'scale(1.25)' : 'scale(1)',
+                    background: activo ? '#FDBA74' : 'rgba(226, 232, 240, 0.65)',
+                    boxShadow: activo ? '0 0 10px #FDBA74' : 'none',
+                    transform: activo ? 'scale(1.3)' : 'scale(1)',
                   }}
                 />
               );
@@ -740,30 +744,40 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         </div>
 
         {/* ── Banner de aviso/guía inferior sobre el mapa ── */}
-        <AnimatePresence mode="wait">
-          {avisoFlotante && (
-            <motion.div
-              key={avisoFlotante}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 12 }}
-              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 max-w-[92%] sm:max-w-lg px-4 py-2 rounded-full bg-[#283556]/92 border-2 border-[#A5B4FC] backdrop-blur-md shadow-xl flex items-center gap-2 text-xs sm:text-sm font-bold text-[#FDF6E3] text-center"
-            >
-              <span className="text-sky-300">✦</span>
-              <span>{avisoFlotante}</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="pointer-events-none absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 w-max max-w-[92%] sm:max-w-lg">
+          <AnimatePresence mode="wait">
+            {avisoFlotante && (
+              <motion.div
+                key={avisoFlotante}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="px-5 py-2 rounded-full backdrop-blur-md flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#FDF6E3] text-center"
+                style={{
+                  background:
+                    'linear-gradient(135deg, rgba(35, 47, 82, 0.92) 0%, rgba(49, 46, 129, 0.88) 100%)',
+                  border: '2px solid rgba(196, 181, 253, 0.8)',
+                  boxShadow:
+                    '0 10px 28px rgba(15, 23, 42, 0.55), 0 0 18px rgba(167, 139, 250, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.35)',
+                }}
+              >
+                <span className="text-[#7DD3FC]">✦</span>
+                <span>{avisoFlotante}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* ════════════════════ HUD ESPACIAL LATERAL DERECHO ════════════════════ */}
-      <aside className="relative z-30 w-full lg:w-[330px] xl:w-[350px] lg:h-full p-2 sm:p-3 flex flex-col justify-center shrink-0">
+      <aside className="relative z-30 w-full lg:w-[334px] xl:w-[354px] lg:h-full p-2 sm:p-3 flex flex-col justify-center shrink-0">
         <div
-          className="relative w-full h-full max-h-[820px] rounded-[28px] p-3.5 sm:p-4 flex flex-col justify-between shadow-[0_16px_50px_rgba(15,23,42,0.6)] overflow-y-auto"
+          className="relative w-full h-full max-h-[830px] rounded-[30px] p-3.5 sm:p-4 flex flex-col justify-between overflow-y-auto"
           style={{
-            background: 'linear-gradient(180deg, #EDE9FE 0%, #E2DCFA 55%, #D7CFF4 100%)',
-            border: '3px solid #B8B0DC',
-            boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.75), 0 16px 40px rgba(15,23,42,0.55)',
+            background: 'linear-gradient(180deg, #F3EFFE 0%, #E5DEFC 52%, #D6CBF7 100%)',
+            border: '3px solid #C4B5FD',
+            boxShadow:
+              'inset 0 2px 3px rgba(255, 255, 255, 0.9), inset 0 -3px 8px rgba(109, 40, 217, 0.14), 0 18px 48px rgba(15, 23, 42, 0.6)',
           }}
         >
           <div className="hidden lg:flex absolute left-1.5 top-1/2 -translate-y-1/2 text-[#7C6BC9] text-xs font-black select-none">
@@ -771,45 +785,71 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
           </div>
 
           {/* ── 1. CABECERA: LETRALIA — ARCHIVO ASTRAL ── */}
-          <div className="text-center pt-0.5 pb-2 border-b-2 border-[#C4B5FD]">
+          <div className="text-center pt-0.5 pb-2.5 border-b-2 border-[#C4B5FD]/80">
             <h1
               className="text-2xl sm:text-3xl font-black tracking-wider leading-none select-none"
               style={{
-                color: '#DDD6FE',
+                color: '#EDE9FE',
                 WebkitTextStroke: '1.5px #312E81',
-                textShadow: '0 3px 0 #312E81, 0 5px 10px rgba(49,46,129,0.28)',
+                textShadow: '0 3px 0 #312E81, 0 5px 12px rgba(49, 46, 129, 0.32)',
                 fontFamily: 'Georgia, "Times New Roman", serif',
               }}
             >
               LETRALIA
             </h1>
-            <p className="mt-1 text-[11px] font-black tracking-[0.22em] text-[#312E81] uppercase">
+            <p className="mt-1 text-[11px] font-black tracking-[0.24em] text-[#312E81] uppercase">
               ARCHIVO ASTRAL
             </p>
-            <div className="mt-1.5 inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#DDD6FE] border border-[#A78BFA] text-[11px] font-extrabold text-[#1E1B4B]">
-              <span>◈</span>
+            <div
+              className="mt-1.5 inline-flex items-center gap-1.5 px-3.5 py-0.5 rounded-full text-[11px] font-extrabold text-[#1E1B4B]"
+              style={{
+                background: 'linear-gradient(180deg, #F5F3FF 0%, #DDD6FE 100%)',
+                border: '1.5px solid #A78BFA',
+                boxShadow: 'inset 0 1px 0 #FFFFFF, 0 2px 6px rgba(109, 40, 217, 0.12)',
+              }}
+            >
+              <span className="text-[#6D28D9]">◈</span>
               <span>{nombreTramoActual}</span>
             </div>
           </div>
 
-          {/* ── 2. CUENCO DEL DADO 3D AMIGABLE ── */}
+          {/* ── 2. CUENCO DEL DADO 3D ASTRAL ── */}
           <div
-            className="relative my-2 py-3 rounded-2xl flex flex-col items-center justify-center overflow-hidden shadow-inner"
+            className="relative my-2 py-3.5 rounded-2xl flex flex-col items-center justify-center overflow-hidden"
             style={{
-              background: 'linear-gradient(180deg, #6C82B8 0%, #8FA3D4 55%, #B8C4E8 100%)',
-              border: '2px solid #9FAEE0',
-              boxShadow: 'inset 0 4px 14px rgba(30, 41, 59, 0.35)',
+              background:
+                'radial-gradient(circle at 50% 50%, #9EB2E2 0%, #748BC2 58%, #576CA4 100%)',
+              border: '2.5px solid #B6C5EE',
+              boxShadow:
+                'inset 0 4px 16px rgba(30, 41, 59, 0.38), 0 4px 12px rgba(49, 46, 129, 0.16)',
             }}
           >
-            <span className="pointer-events-none absolute top-2 left-3 text-white/70 text-xs">✦</span>
-            <span className="pointer-events-none absolute bottom-2 right-3 text-white/70 text-xs">★</span>
+            {/* Halo luminoso detrás del dado */}
+            <div
+              className="pointer-events-none absolute w-28 h-28 rounded-full blur-xl opacity-65"
+              style={{
+                background: 'radial-gradient(circle, #EDE9FE 0%, transparent 70%)',
+              }}
+            />
+            <span className="pointer-events-none absolute top-2 left-3.5 text-white/85 text-xs drop-shadow">
+              ✦
+            </span>
+            <span className="pointer-events-none absolute top-2.5 right-4 text-amber-200/80 text-[10px]">
+              ★
+            </span>
+            <span className="pointer-events-none absolute bottom-2 left-4 text-sky-100/75 text-[10px]">
+              ✧
+            </span>
+            <span className="pointer-events-none absolute bottom-2 right-3.5 text-white/85 text-xs drop-shadow">
+              ✦
+            </span>
             <div
               onClick={handleLanzarDado}
-              className={
+              className={`relative z-10 ${
                 rodandoDado || caminando || eligiendoRama
                   ? 'cursor-not-allowed'
                   : 'cursor-pointer'
-              }
+              }`}
               title="Haz clic para lanzar el dado"
             >
               <Dado3D
@@ -817,7 +857,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                 rolling={rodandoDado}
                 result={resultadoDado}
                 onRollComplete={handleDadoCompletado}
-                faceColor="#EDE9FE"
+                faceColor="#F5F3FF"
                 borderColor="#A78BFA"
                 pipColor="#312E81"
               />
@@ -826,14 +866,16 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
 
           {/* ── 3. CUERPO DE PERGAMINO: PROGRESO + 4 RANURAS DE SÍLABAS CLAVE ── */}
           <div
-            className="relative rounded-2xl p-3 sm:p-3.5 my-1 shadow-sm"
+            className="relative rounded-2xl p-3 sm:p-3.5 my-1"
             style={{
-              background: 'linear-gradient(180deg, #FBF3E0 0%, #F4E4C6 100%)',
-              border: '2px solid #D2BA93',
+              background: 'linear-gradient(180deg, #FFFDF7 0%, #FBF1DC 55%, #F3E2C3 100%)',
+              border: '2.5px solid #D2B88F',
+              boxShadow:
+                'inset 0 1px 0 #FFFFFF, 0 6px 16px rgba(92, 68, 40, 0.14)',
             }}
           >
-            <span className="hidden sm:block absolute -left-1.5 top-8 w-3 h-3 rotate-45 bg-[#E2DCFA] border-r-2 border-t-2 border-[#D2BA93]" />
-            <span className="hidden sm:block absolute -right-1.5 top-16 w-3 h-3 rotate-45 bg-[#E2DCFA] border-l-2 border-b-2 border-[#D2BA93]" />
+            <span className="hidden sm:block absolute -left-1.5 top-8 w-3 h-3 rotate-45 bg-[#E5DEFC] border-r-2 border-t-2 border-[#D2B88F]" />
+            <span className="hidden sm:block absolute -right-1.5 top-16 w-3 h-3 rotate-45 bg-[#E5DEFC] border-l-2 border-b-2 border-[#D2B88F]" />
 
             <div className="mb-3">
               <div className="flex items-center justify-between mb-1">
@@ -844,7 +886,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                   {progresoPct}% ({indiceEfectivo}/{TOTAL_RECORRIDO})
                 </span>
               </div>
-              <div className="relative h-5 rounded-full bg-[#DFCCA9] border-2 border-[#8C6D53] p-0.5 shadow-inner">
+              <div className="relative h-5 rounded-full bg-[#E2CEAA] border-2 border-[#8C6D53] p-0.5 shadow-inner">
                 <motion.div
                   className="h-full rounded-full"
                   initial={{ width: '0%' }}
@@ -852,7 +894,8 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                   transition={{ duration: 0.4, ease: 'easeOut' }}
                   style={{
                     background:
-                      'linear-gradient(90deg, #C4B5FD 0%, #F9A8D4 55%, #FDE68A 100%)',
+                      'linear-gradient(90deg, #A78BFA 0%, #F472B6 52%, #FBBF24 100%)',
+                    boxShadow: '0 0 8px rgba(244, 114, 182, 0.45)',
                   }}
                 />
                 {[31, 68, 96].map((posPct, idx) => {
@@ -863,7 +906,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                       className="absolute -bottom-2 -translate-x-1/2 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shadow"
                       style={{
                         left: `${posPct}%`,
-                        background: alcanzada ? '#FDE68A' : '#E2D5EE',
+                        background: alcanzada ? '#FDE68A' : '#EDE9FE',
                         color: alcanzada ? '#92400E' : '#6D5BA8',
                         border: '1.5px solid #6D5BA8',
                       }}
@@ -880,7 +923,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                 <span className="text-xs font-black tracking-wider text-[#2E2546] uppercase">
                   SÍLABAS CLAVE
                 </span>
-                <span className="text-[11px] font-extrabold text-[#065F46] bg-[#D1FAE5] px-2 py-0.5 rounded-full border border-[#6EE7B7]">
+                <span className="text-[11px] font-extrabold text-[#065F46] bg-[#D1FAE5] px-2.5 py-0.5 rounded-full border border-[#34D399] shadow-2xs">
                   {cantidadSilabas}/4 Cristales
                 </span>
               </div>
@@ -895,20 +938,20 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                       className="relative rounded-xl p-1.5 flex flex-col items-center justify-between min-h-[76px] transition-all"
                       style={{
                         background: obtenida
-                          ? 'linear-gradient(180deg, #FFFDF9 0%, #F7E8CA 100%)'
-                          : '#EAD8B8',
+                          ? 'linear-gradient(180deg, #FFFFFF 0%, #FEF3C7 100%)'
+                          : 'linear-gradient(180deg, #EFE0C4 0%, #E4D0AE 100%)',
                         border: obtenida ? '2px solid #38BDF8' : '2px solid #C8B28E',
                         boxShadow: obtenida
-                          ? '0 0 14px rgba(125, 211, 252, 0.55), inset 0 0 8px rgba(110, 231, 183, 0.35)'
-                          : 'inset 0 2px 4px rgba(0,0,0,0.08)',
+                          ? '0 0 14px rgba(56, 189, 248, 0.45), inset 0 1px 0 #FFFFFF'
+                          : 'inset 0 2px 4px rgba(0, 0, 0, 0.08)',
                       }}
                     >
                       <IconoCristal indice={idx} activo={obtenida} />
                       <span
                         className={`mt-0.5 text-xs font-black tracking-wide px-1.5 py-0.5 rounded ${
                           obtenida
-                            ? 'bg-indigo-950 text-[#FDF6E3]'
-                            : 'text-[#8C6D53]/70'
+                            ? 'bg-[#312E81] text-[#FDF6E3] shadow-2xs'
+                            : 'text-[#8C6D53]/75'
                         }`}
                       >
                         {obtenida ? sil : `?`}
@@ -919,22 +962,24 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               </div>
 
               <div
-                className="mt-2.5 rounded-xl px-3 py-2 flex items-center justify-between border-2 transition-all"
+                className="mt-2.5 rounded-xl px-3 py-2 flex items-center justify-between gap-2 border-2 transition-all"
                 style={{
                   background: santuarioAbierto
                     ? 'linear-gradient(90deg, #D1FAE5 0%, #E0F2FE 100%)'
-                    : '#EFE2C8',
+                    : 'linear-gradient(180deg, #F5E8CE 0%, #EAD8B8 100%)',
                   borderColor: santuarioAbierto ? '#34D399' : '#D5C3A1',
-                  boxShadow: santuarioAbierto ? '0 0 16px rgba(110, 231, 183, 0.6)' : 'none',
+                  boxShadow: santuarioAbierto
+                    ? '0 0 16px rgba(52, 211, 153, 0.5)'
+                    : 'inset 0 1px 0 rgba(255,255,255,0.6)',
                 }}
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-base">{santuarioAbierto ? '🗝️' : '🔒'}</span>
-                  <div className="leading-tight">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-base shrink-0">{santuarioAbierto ? '🗝️' : '🔒'}</span>
+                  <div className="leading-tight min-w-0">
                     <p className="text-[11px] font-black uppercase tracking-wider text-[#1E1B4B]">
                       {santuarioAbierto ? '¡Llave del Guardián Activa!' : 'Llave del Santuario'}
                     </p>
-                    <p className="text-xs font-extrabold text-[#4C1D95]">
+                    <p className="text-[11px] font-extrabold text-[#4C1D95] truncate">
                       {santuarioAbierto
                         ? palabraActual.silabas.join(' · ')
                         : 'Reúne las 4 sílabas en el camino'}
@@ -942,8 +987,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                   </div>
                 </div>
                 {estrellasVistaPrevia > 0 && (
-                  <span className="text-xs font-black text-amber-900 bg-amber-200 border border-amber-400 px-2 py-0.5 rounded-full">
-                    ⭐ {estrellasVistaPrevia}
+                  <span className="inline-flex items-center gap-1 whitespace-nowrap shrink-0 text-xs font-black text-amber-950 bg-amber-200 border border-amber-400 px-2.5 py-0.5 rounded-full shadow-2xs">
+                    <span>⭐</span>
+                    <span>{estrellasVistaPrevia}</span>
                   </span>
                 )}
               </div>
@@ -964,9 +1010,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               disabled={rodandoDado || caminando || eligiendoRama}
               className="w-full py-3 rounded-2xl font-black text-sm sm:text-base tracking-widest uppercase transition-all cursor-pointer disabled:opacity-55 disabled:cursor-not-allowed"
               style={{
-                background: 'linear-gradient(180deg, #F9E7CE 0%, #E7C69E 100%)',
+                background: 'linear-gradient(180deg, #FFF5E4 0%, #F6DCA9 52%, #E5BE83 100%)',
                 border: '2.5px solid #6E5648',
-                boxShadow: '0 4px 0 #6E5648',
+                boxShadow: '0 4px 0 #6E5648, inset 0 1px 0 #FFFFFF',
                 color: '#2E2546',
               }}
             >
@@ -986,9 +1032,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               onClick={() => setMostrarCodice(true)}
               className="w-full py-2.5 rounded-2xl font-black text-xs sm:text-sm tracking-widest uppercase transition-all cursor-pointer"
               style={{
-                background: 'linear-gradient(180deg, #E5DEFF 0%, #C4B5FD 100%)',
+                background: 'linear-gradient(180deg, #F3EFFE 0%, #DDD6FE 52%, #C4B5FD 100%)',
                 border: '2.5px solid #62519E',
-                boxShadow: '0 4px 0 #62519E',
+                boxShadow: '0 4px 0 #62519E, inset 0 1px 0 #FFFFFF',
                 color: '#2E2546',
               }}
             >

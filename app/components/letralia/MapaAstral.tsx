@@ -95,7 +95,7 @@ function Isla({ cfg }: { cfg: IslaCfg }) {
   const fondo: Pt[] = [];
   const M = 11;
   for (let j = 0; j <= M; j++) {
-    const t = 1 - j / M; // de derecha a izquierda no: inferior termina a la izquierda → vamos de izq a der
+    const t = 1 - j / M;
     const tt = 1 - t;
     const x = cx - rx * 0.9 + tt * rx * 1.8;
     const base = Math.pow(Math.sin(Math.PI * (0.06 + 0.88 * tt)), 1.3);
@@ -112,7 +112,10 @@ function Isla({ cfg }: { cfg: IslaCfg }) {
   const estratos = [0.22, 0.42, 0.62].map((k) =>
     inferior
       .filter((_, i) => i % 2 === 0)
-      .map((p, i) => `${i === 0 ? 'M' : 'L'}${(cx + (p.x - cx) * (1 - k * 0.22)).toFixed(1)} ${(p.y + prof * k * 0.55).toFixed(1)}`)
+      .map(
+        (p, i) =>
+          `${i === 0 ? 'M' : 'L'}${(cx + (p.x - cx) * (1 - k * 0.22)).toFixed(1)} ${(p.y + prof * k * 0.55).toFixed(1)}`,
+      )
       .join(' '),
   );
   const superficie = cerradoSuave(top);
@@ -120,19 +123,53 @@ function Isla({ cfg }: { cfg: IslaCfg }) {
   const motas = Array.from({ length: 7 }, () => ({
     x: cx + (r() - 0.5) * rx * 1.3,
     y: cy + (r() - 0.5) * ry * 1.1,
-    rr: 2 + r() * 5,
+    rr: 2.2 + r() * 5.2,
   }));
 
   return (
     <g>
+      {/* Halo suave bajo la isla */}
+      <ellipse
+        cx={cx}
+        cy={cy + prof * 0.58}
+        rx={rx * 0.78}
+        ry={ry * 0.55}
+        fill={estilo === 'lavanda' ? '#A78BFA' : '#6EE7B7'}
+        opacity={0.12}
+      />
       <path d={acantilado} fill={estilo === 'lavanda' ? 'url(#acantiladoLav)' : 'url(#acantiladoArena)'} />
       {estratos.map((d, i) => (
-        <path key={i} d={d} stroke={estilo === 'lavanda' ? '#3F3873' : '#5E463C'} strokeOpacity={0.22} strokeWidth={1.4} fill="none" />
+        <path
+          key={i}
+          d={d}
+          stroke={estilo === 'lavanda' ? '#4C1D95' : '#5E463C'}
+          strokeOpacity={0.26}
+          strokeWidth={1.5}
+          fill="none"
+        />
       ))}
-      <path d={superficie} transform="translate(0 5)" fill={estilo === 'lavanda' ? '#9B8BD6' : '#5FBF9A'} />
-      <path d={superficie} fill={estilo === 'lavanda' ? 'url(#cespedLav)' : 'url(#cespedMenta)'} stroke="#FFFFFF" strokeOpacity={0.35} strokeWidth={1.2} />
+      <path
+        d={superficie}
+        transform="translate(0 5.5)"
+        fill={estilo === 'lavanda' ? '#917ED4' : '#4FB68E'}
+      />
+      <path
+        d={superficie}
+        fill={estilo === 'lavanda' ? 'url(#cespedLav)' : 'url(#cespedMenta)'}
+        stroke="#FFFFFF"
+        strokeOpacity={0.55}
+        strokeWidth={1.5}
+      />
       {motas.map((m, i) => (
-        <ellipse key={i} cx={m.x} cy={m.y} rx={m.rr} ry={m.rr * 0.45} fill="#FFFFFF" opacity={0.18} />
+        <ellipse
+          key={i}
+          cx={m.x}
+          cy={m.y}
+          rx={m.rr}
+          ry={m.rr * 0.45}
+          fill="#FFFFFF"
+          opacity={0.24}
+        />
       ))}
     </g>
   );
@@ -143,14 +180,19 @@ function Isla({ cfg }: { cfg: IslaCfg }) {
 function Columna({ x, y, h, rota = false }: { x: number; y: number; h: number; rota?: boolean }) {
   return (
     <g transform={`translate(${x} ${y})`}>
-      <ellipse cx={0} cy={2} rx={15} ry={4.5} fill="#2E2A5A" opacity={0.25} />
-      <rect x={-12} y={-7} width={24} height={7} rx={2} fill="#D8CEF6" stroke="#8E80C4" strokeWidth={1} />
-      <rect x={-8.5} y={-7 - h} width={17} height={h} fill="url(#columnaGrad)" stroke="#8E80C4" strokeWidth={1} />
-      <path d={`M-3 -9 V${-5 - h} M3 -9 V${-5 - h}`} stroke="#9F92D2" strokeWidth={1} opacity={0.7} />
+      <ellipse cx={0} cy={2} rx={15} ry={4.5} fill="#1E1B4B" opacity={0.28} />
+      <rect x={-12} y={-7} width={24} height={7} rx={2} fill="#E5DEFF" stroke="#8B7CC0" strokeWidth={1.1} />
+      <rect x={-8.5} y={-7 - h} width={17} height={h} fill="url(#columnaGrad)" stroke="#8B7CC0" strokeWidth={1.1} />
+      <path d={`M-3 -9 V${-5 - h} M3 -9 V${-5 - h}`} stroke="#9F92D2" strokeWidth={1.1} opacity={0.75} />
       {!rota ? (
-        <rect x={-12} y={-14 - h} width={24} height={7} rx={2} fill="#E6DEFA" stroke="#8E80C4" strokeWidth={1} />
+        <rect x={-12.5} y={-14 - h} width={25} height={7} rx={2} fill="#F3EFFE" stroke="#8B7CC0" strokeWidth={1.1} />
       ) : (
-        <path d={`M-8.5 ${-7 - h} l5 -5 l4 4 l3 -6 l4.5 7 Z`} fill="#CFC4F2" stroke="#8E80C4" strokeWidth={1} />
+        <path
+          d={`M-8.5 ${-7 - h} l5 -5 l4 4 l3 -6 l4.5 7 Z`}
+          fill="#DDD6FE"
+          stroke="#8B7CC0"
+          strokeWidth={1.1}
+        />
       )}
     </g>
   );
@@ -158,7 +200,13 @@ function Columna({ x, y, h, rota = false }: { x: number; y: number; h: number; r
 
 function Coral({ x, y, s = 1, color = '#F99A84' }: { x: number; y: number; s?: number; color?: string }) {
   return (
-    <g transform={`translate(${x} ${y}) scale(${s})`} stroke={color} strokeWidth={2.4} strokeLinecap="round" fill="none">
+    <g
+      transform={`translate(${x} ${y}) scale(${s})`}
+      stroke={color}
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      fill="none"
+    >
       <path d="M0 0 C-1 -8 -5 -12 -8 -19" />
       <path d="M0 0 C1 -9 3 -15 2 -23" />
       <path d="M1 -11 C4 -13 7 -14 10 -18" />
@@ -167,12 +215,34 @@ function Coral({ x, y, s = 1, color = '#F99A84' }: { x: number; y: number; s?: n
   );
 }
 
-function CristalDeco({ x, y, s = 1, color = '#6EE7B7' }: { x: number; y: number; s?: number; color?: string }) {
+function CristalDeco({
+  x,
+  y,
+  s = 1,
+  color = '#6EE7B7',
+}: {
+  x: number;
+  y: number;
+  s?: number;
+  color?: string;
+}) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`}>
-      <polygon points="0,-16 6,-5 4,3 -4,3 -6,-5" fill={color} stroke="#FFFFFF" strokeOpacity={0.6} strokeWidth={0.8} />
-      <polygon points="0,-16 6,-5 0,-3" fill="#FFFFFF" opacity={0.45} />
-      <polygon points="9,-8 12,-2 11,3 7,3 6,-2" fill={color} opacity={0.85} />
+      <polygon
+        points="0,-17 6.5,-5 4.2,3 -4.2,3 -6.5,-5"
+        fill={color}
+        stroke="#FFFFFF"
+        strokeOpacity={0.75}
+        strokeWidth={1}
+      />
+      <polygon points="0,-17 6.5,-5 0,-3" fill="#FFFFFF" opacity={0.55} />
+      <polygon
+        points="9,-8 12.5,-2 11,3 7,3 6,-2"
+        fill={color}
+        stroke="#FFFFFF"
+        strokeOpacity={0.5}
+        strokeWidth={0.7}
+      />
     </g>
   );
 }
@@ -180,7 +250,7 @@ function CristalDeco({ x, y, s = 1, color = '#6EE7B7' }: { x: number; y: number;
 function Nube({ x, y, s, o = 1 }: { x: number; y: number; s: number; o?: number }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`} opacity={o}>
-      <ellipse cx={0} cy={22} rx={120} ry={26} fill="#BFCBEA" opacity={0.55} />
+      <ellipse cx={0} cy={22} rx={122} ry={26} fill="#B4C3E8" opacity={0.55} />
       {[
         [-78, 8, 34],
         [-40, -14, 46],
@@ -196,14 +266,33 @@ function Nube({ x, y, s, o = 1 }: { x: number; y: number; s: number; o?: number 
   );
 }
 
-function Roca({ x, y, s, color, dur }: { x: number; y: number; s: number; color: 'arena' | 'lav'; dur: number }) {
-  const top = color === 'arena' ? '#E2C3A2' : '#CABEF0';
-  const lado = color === 'arena' ? '#A9826A' : '#8C7DC4';
+function Roca({
+  x,
+  y,
+  s,
+  color,
+  dur,
+}: {
+  x: number;
+  y: number;
+  s: number;
+  color: 'arena' | 'lav';
+  dur: number;
+}) {
+  const top = color === 'arena' ? '#EAD0B3' : '#DDD6FE';
+  const lado = color === 'arena' ? '#B28A70' : '#9685D0';
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`}>
-      <animateTransform attributeName="transform" type="translate" additive="sum" values="0 0;0 -5;0 0" dur={`${dur}s`} repeatCount="indefinite" />
+      <animateTransform
+        attributeName="transform"
+        type="translate"
+        additive="sum"
+        values="0 0;0 -5;0 0"
+        dur={`${dur}s`}
+        repeatCount="indefinite"
+      />
       <polygon points="-9,0 -3,-6 7,-5 10,1 3,9 -6,7" fill={lado} />
-      <polygon points="-9,0 -3,-6 7,-5 10,1 1,3" fill={top} />
+      <polygon points="-9,0 -3,-6 7,-5 10,1 1,3" fill={top} stroke="#FFFFFF" strokeOpacity={0.35} strokeWidth={0.6} />
     </g>
   );
 }
@@ -234,20 +323,20 @@ const CONSTELACIONES: Pt[][] = [
     { x: 722, y: 460 },
   ],
   [
-    { x: 690, y: 40 },
-    { x: 722, y: 26 },
-    { x: 760, y: 34 },
+    { x: 650, y: 42 },
+    { x: 688, y: 26 },
+    { x: 726, y: 36 },
   ],
 ];
 
-/** Fondo estático: estrellas, constelaciones, nubes, islas y ruinas. Memoizado. */
+/** Fondo enriquecido: nebulosas astrales, planeta anillado de Letralia, cometa, estrellas, constelaciones, nubes, islas y ruinas. */
 const DecoracionFondo = memo(function DecoracionFondo() {
   const r = aleatorio(42);
-  const estrellas = Array.from({ length: 70 }, (_, i) => ({
+  const estrellas = Array.from({ length: 82 }, (_, i) => ({
     x: r() * VIEW_W,
-    y: r() * VIEW_H * 0.9,
-    rr: 0.6 + r() * 1.4,
-    tw: i % 4 === 0,
+    y: r() * VIEW_H * 0.92,
+    rr: 0.7 + r() * 1.5,
+    tw: i % 3 === 0,
     dur: 2 + r() * 3,
   }));
   const rocas = [
@@ -267,32 +356,90 @@ const DecoracionFondo = memo(function DecoracionFondo() {
 
   return (
     <g>
-      {/* Nebulosas suaves */}
-      <ellipse cx={300} cy={150} rx={260} ry={120} fill="#A5B4FC" opacity={0.08} />
-      <ellipse cx={720} cy={420} rx={300} ry={160} fill="#C4B5FD" opacity={0.07} />
+      {/* Nebulosas astrales de fondo */}
+      <ellipse cx={280} cy={145} rx={290} ry={135} fill="#C4B5FD" opacity={0.14} />
+      <ellipse cx={730} cy={410} rx={320} ry={175} fill="#A5B4FC" opacity={0.12} />
+      <ellipse cx={500} cy={280} rx={240} ry={120} fill="#6EE7B7" opacity={0.07} />
+      <ellipse cx={840} cy={130} rx={190} ry={95} fill="#FDE68A" opacity={0.10} />
 
-      {/* Órbita decorativa */}
-      <ellipse cx={120} cy={96} rx={100} ry={36} transform="rotate(-18 120 96)" fill="none" stroke="#E0E7FF" strokeOpacity={0.35} strokeWidth={1} />
-      <circle r={6} fill="#E0E7FF" opacity={0.85}>
-        <animateMotion dur="26s" repeatCount="indefinite" path="M20 96 a100 36 0 1 0 200 0 a100 36 0 1 0 -200 0" />
-      </circle>
+      {/* Planeta / Luna Astral Anillada en el cielo superior izquierdo */}
+      <g transform="translate(122 86)">
+        <circle r={44} fill="#C4B5FD" opacity={0.14} />
+        <ellipse
+          rx={84}
+          ry={26}
+          transform="rotate(-17)"
+          fill="none"
+          stroke="#E0E7FF"
+          strokeOpacity={0.45}
+          strokeWidth={1.6}
+        />
+        <ellipse
+          rx={68}
+          ry={20}
+          transform="rotate(-17)"
+          fill="none"
+          stroke="#FDE68A"
+          strokeOpacity={0.38}
+          strokeWidth={1.1}
+          strokeDasharray="6 5"
+        />
+        <circle r={24} fill="url(#lunaAstralGrad)" stroke="#F5F3FF" strokeOpacity={0.65} strokeWidth={1.2} />
+        <circle cx={-7} cy={-6} r={4.5} fill="#FFFFFF" opacity={0.35} />
+        <circle cx={8} cy={5} r={3.2} fill="#A78BFA" opacity={0.35} />
+        <circle r={5.5} fill="#FDE68A" opacity={0.9}>
+          <animateMotion
+            dur="24s"
+            repeatCount="indefinite"
+            path="M-84 0 a84 26 0 1 0 168 0 a84 26 0 1 0 -168 0"
+          />
+        </circle>
+      </g>
+
+      {/* Cometa de tinta dorada en el cielo superior */}
+      <g transform="translate(565 56) rotate(-16)">
+        <path
+          d="M0 0 L72 -4 L72 4 Z"
+          fill="url(#cometaLetraliaGrad)"
+          opacity={0.55}
+        />
+        <circle cx={0} cy={0} r={3.5} fill="#FEF9C3" />
+        <circle cx={0} cy={0} r={7} fill="#FDE68A" opacity={0.35} />
+      </g>
 
       {/* Estrellas */}
       {estrellas.map((e, i) => (
-        <circle key={i} cx={e.x} cy={e.y} r={e.rr} fill="#F8FAFF" opacity={0.75}>
-          {e.tw && <animate attributeName="opacity" values="0.2;1;0.2" dur={`${e.dur}s`} repeatCount="indefinite" />}
+        <circle key={i} cx={e.x} cy={e.y} r={e.rr} fill="#F8FAFF" opacity={0.82}>
+          {e.tw && (
+            <animate
+              attributeName="opacity"
+              values="0.25;1;0.25"
+              dur={`${e.dur}s`}
+              repeatCount="indefinite"
+            />
+          )}
         </circle>
       ))}
       {[
-        [40, 150],
+        [44, 152],
         [430, 300],
-        [640, 26],
-        [900, 380],
-        [330, 410],
+        [640, 28],
+        [905, 378],
+        [332, 412],
+        [755, 225],
+        [205, 62],
       ].map(([x, y], i) => (
-        <g key={i} transform={`translate(${x} ${y})`} opacity={0.9}>
-          <path d="M0 -7 L1.6 -1.6 L7 0 L1.6 1.6 L0 7 L-1.6 1.6 L-7 0 L-1.6 -1.6 Z" fill="#FFF7D6">
-            <animate attributeName="opacity" values="0.4;1;0.4" dur={`${2.5 + i * 0.6}s`} repeatCount="indefinite" />
+        <g key={i} transform={`translate(${x} ${y})`} opacity={0.95}>
+          <path
+            d="M0 -8 L1.8 -1.8 L8 0 L1.8 1.8 L0 8 L-1.8 1.8 L-8 0 L-1.8 -1.8 Z"
+            fill="#FEF3C7"
+          >
+            <animate
+              attributeName="opacity"
+              values="0.4;1;0.4"
+              dur={`${2.4 + i * 0.5}s`}
+              repeatCount="indefinite"
+            />
           </path>
         </g>
       ))}
@@ -300,18 +447,25 @@ const DecoracionFondo = memo(function DecoracionFondo() {
       {/* Constelaciones */}
       {CONSTELACIONES.map((c, i) => (
         <g key={i}>
-          <path d={polilineaD(c)} stroke="#E0E7FF" strokeOpacity={0.4} strokeWidth={1} fill="none" />
+          <path
+            d={polilineaD(c)}
+            stroke="#E0E7FF"
+            strokeOpacity={0.52}
+            strokeWidth={1.2}
+            strokeDasharray="3 3"
+            fill="none"
+          />
           {c.map((p, j) => (
-            <circle key={j} cx={p.x} cy={p.y} r={2} fill="#F1F5FF" opacity={0.85} />
+            <circle key={j} cx={p.x} cy={p.y} r={2.4} fill="#FEF9C3" opacity={0.92} />
           ))}
         </g>
       ))}
 
       {/* Nubes traseras */}
-      <Nube x={70} y={430} s={0.9} o={0.9} />
+      <Nube x={70} y={430} s={0.9} o={0.92} />
       <Nube x={960} y={560} s={1.25} />
       <Nube x={20} y={630} s={1.1} />
-      <Nube x={500} y={672} s={0.9} o={0.85} />
+      <Nube x={500} y={672} s={0.9} o={0.88} />
 
       {/* Rocas flotantes */}
       {rocas.map((k, i) => (
@@ -326,30 +480,50 @@ const DecoracionFondo = memo(function DecoracionFondo() {
       {/* Ruinas del Santuario */}
       <Columna x={806} y={92} h={58} />
       <Columna x={866} y={70} h={64} />
-      <rect x={790} y={6} width={92} height={13} rx={3} transform="rotate(-12 836 12)" fill="#E6DEFA" stroke="#8E80C4" strokeWidth={1.2} />
+      <rect
+        x={790}
+        y={6}
+        width={92}
+        height={13}
+        rx={3}
+        transform="rotate(-12 836 12)"
+        fill="#EDE9FE"
+        stroke="#8B7CC0"
+        strokeWidth={1.3}
+      />
       <Columna x={938} y={96} h={46} rota />
       <Columna x={918} y={140} h={22} rota />
-      <CristalDeco x={780} y={136} s={1.1} color="#6EE7B7" />
-      <CristalDeco x={952} y={150} s={0.9} color="#C4B5FD" />
+      <CristalDeco x={780} y={136} s={1.15} color="#6EE7B7" />
+      <CristalDeco x={952} y={150} s={0.95} color="#C4B5FD" />
       <Coral x={962} y={118} s={1.1} />
       <Coral x={770} y={104} s={0.8} color="#FDBA74" />
 
       {/* Ruinas del inicio */}
       <Columna x={30} y={548} h={70} />
       <Columna x={92} y={530} h={52} rota />
-      <rect x={6} y={460} width={70} height={12} rx={3} transform="rotate(-6 40 466)" fill="#E6DEFA" stroke="#8E80C4" strokeWidth={1.2} />
+      <rect
+        x={6}
+        y={460}
+        width={70}
+        height={12}
+        rx={3}
+        transform="rotate(-6 40 466)"
+        fill="#EDE9FE"
+        stroke="#8B7CC0"
+        strokeWidth={1.3}
+      />
       <Coral x={56} y={600} s={1.2} />
       <Coral x={238} y={600} s={0.9} color="#FDBA74" />
-      <CristalDeco x={262} y={580} s={0.9} color="#C4B5FD" />
+      <CristalDeco x={262} y={580} s={0.95} color="#C4B5FD" />
 
       {/* Escalinata del inicio */}
       {Array.from({ length: 5 }, (_, k) => (
         <g key={k}>
           <polygon
             points={`${150 + k * 6},${604 + k * 9} ${210 + k * 6},${602 + k * 9} ${214 + k * 6},${608 + k * 9} ${154 + k * 6},${610 + k * 9}`}
-            fill="#D9CDF6"
-            stroke="#8E80C4"
-            strokeWidth={0.8}
+            fill="#E5DEFF"
+            stroke="#8B7CC0"
+            strokeWidth={0.9}
           />
           <rect x={154 + k * 6} y={610 + k * 9} width={60} height={3} fill="#9E8FD2" />
         </g>
@@ -358,20 +532,37 @@ const DecoracionFondo = memo(function DecoracionFondo() {
       {/* Detalles de islas intermedias */}
       <Columna x={214} y={286} h={30} rota />
       <Coral x={270} y={320} s={0.9} />
-      <CristalDeco x={520} y={150} s={1} color="#C4B5FD" />
+      <CristalDeco x={520} y={150} s={1.05} color="#C4B5FD" />
       <Coral x={430} y={156} s={0.8} color="#FDBA74" />
-      <CristalDeco x={628} y={330} s={1} color="#6EE7B7" />
+      <CristalDeco x={628} y={330} s={1.05} color="#6EE7B7" />
       <Coral x={836} y={444} s={1} />
-      <CristalDeco x={772} y={452} s={0.9} color="#C4B5FD" />
+      <CristalDeco x={772} y={452} s={0.95} color="#C4B5FD" />
       <Coral x={662} y={560} s={0.9} color="#FDBA74" />
-      <CristalDeco x={110} y={160} s={0.9} color="#6EE7B7" />
+      <CristalDeco x={110} y={160} s={0.95} color="#6EE7B7" />
       <Coral x={140} y={156} s={0.8} />
 
       {/* Pergamino enrollado del inicio */}
       <g transform={`translate(${ORIGEN_S.x - 18} ${ORIGEN_S.y + 4}) rotate(-12)`}>
-        <rect x={-6} y={-16} width={14} height={36} rx={7} fill="#F4E8CC" stroke="#CDB68E" strokeWidth={1.2} />
-        <ellipse cx={1} cy={-16} rx={7} ry={3.5} fill="#FDF6E3" stroke="#CDB68E" strokeWidth={1} />
-        <path d="M-2 -16 a3 1.6 0 1 0 6 0" stroke="#CDB68E" fill="none" strokeWidth={0.8} />
+        <rect
+          x={-6}
+          y={-16}
+          width={14}
+          height={36}
+          rx={7}
+          fill="#F7EBD2"
+          stroke="#C8AE82"
+          strokeWidth={1.3}
+        />
+        <ellipse
+          cx={1}
+          cy={-16}
+          rx={7}
+          ry={3.5}
+          fill="#FFFDF7"
+          stroke="#C8AE82"
+          strokeWidth={1.1}
+        />
+        <path d="M-2 -16 a3 1.6 0 1 0 6 0" stroke="#C8AE82" fill="none" strokeWidth={0.9} />
       </g>
     </g>
   );
@@ -379,11 +570,11 @@ const DecoracionFondo = memo(function DecoracionFondo() {
 
 /* ════════════════════════ Casillas ════════════════════════ */
 
-const COLOR_HEX: Record<string, { top: string; lado: string; brillo: string }> = {
-  lavanda: { top: '#C4B5FD', lado: '#8F7BE0', brillo: '#EDE9FE' },
-  menta: { top: '#6EE7B7', lado: '#2FB584', brillo: '#D1FAE5' },
-  coral: { top: '#FDA4AF', lado: '#E5788A', brillo: '#FFE4E6' },
-  portal: { top: '#A5F3D0', lado: '#5BBF9C', brillo: '#F0FDF4' },
+const COLOR_HEX: Record<string, { top: string; lado: string; brillo: string; borde: string }> = {
+  lavanda: { top: '#C4B5FD', lado: '#7C65D6', brillo: '#F5F3FF', borde: '#DDD6FE' },
+  menta: { top: '#6EE7B7', lado: '#1EA97C', brillo: '#ECFDF5', borde: '#A7F3D0' },
+  coral: { top: '#FDA4AF', lado: '#E15B72', brillo: '#FFF1F2', borde: '#FECDD3' },
+  portal: { top: '#6EE7B7', lado: '#10B981', brillo: '#F0FDF4', borde: '#D1FAE5' },
 };
 
 function colorCasilla(c: Casilla) {
@@ -421,21 +612,63 @@ function CasillaSVG({
 
   if (c.tipo === 'glifo') {
     return (
-      <g opacity={atenuada ? 0.42 : 1}>
+      <g opacity={atenuada ? 0.44 : 1}>
         <Suelo dy={0}>
-          <rect transform={t} x={-L / 2} y={-W / 2} width={L} height={W} rx={5} fill="#CDB68E" />
+          <rect transform={t} x={-L / 2} y={-W / 2} width={L} height={W} rx={5.5} fill="#BFA47A" />
         </Suelo>
         <Suelo dy={-2}>
-          <rect transform={t} x={-L / 2} y={-W / 2} width={L} height={W} rx={5} fill="#D9C49A" />
+          <rect transform={t} x={-L / 2} y={-W / 2} width={L} height={W} rx={5.5} fill="#D5BC90" />
         </Suelo>
         <Suelo dy={-4}>
           <g transform={t}>
-            <rect x={-L / 2} y={-W / 2} width={L} height={W} rx={5} fill="#FDF6E3" stroke="#E6D5B8" strokeWidth={1.5} />
-            <rect x={-L / 2 + 4} y={-W / 2 + 4} width={L - 8} height={W - 8} rx={3} fill="none" stroke="#EFE3C8" strokeWidth={1} />
-            {visitada && <rect x={-L / 2} y={-W / 2} width={L} height={W} rx={5} fill="url(#tintaLosa)" opacity={0.5} />}
+            <rect
+              x={-L / 2}
+              y={-W / 2}
+              width={L}
+              height={W}
+              rx={5.5}
+              fill="#FFFDF7"
+              stroke="#E2CFA8"
+              strokeWidth={1.6}
+            />
+            <rect
+              x={-L / 2 + 3.5}
+              y={-W / 2 + 3.5}
+              width={L - 7}
+              height={W - 7}
+              rx={3.5}
+              fill="none"
+              stroke="#EFE2C6"
+              strokeWidth={1.1}
+            />
+            {visitada && (
+              <rect
+                x={-L / 2}
+                y={-W / 2}
+                width={L}
+                height={W}
+                rx={5.5}
+                fill="url(#tintaLosa)"
+                opacity={0.48}
+              />
+            )}
             {activa && (
-              <rect x={-L / 2 - 2} y={-W / 2 - 2} width={L + 4} height={W + 4} rx={6} fill="none" stroke="#7DD3FC" strokeWidth={3}>
-                <animate attributeName="stroke-opacity" values="1;0.35;1" dur="1.4s" repeatCount="indefinite" />
+              <rect
+                x={-L / 2 - 2}
+                y={-W / 2 - 2}
+                width={L + 4}
+                height={W + 4}
+                rx={6.5}
+                fill="none"
+                stroke="#7DD3FC"
+                strokeWidth={3.2}
+              >
+                <animate
+                  attributeName="stroke-opacity"
+                  values="1;0.35;1"
+                  dur="1.4s"
+                  repeatCount="indefinite"
+                />
               </rect>
             )}
           </g>
@@ -446,8 +679,8 @@ function CasillaSVG({
           dominantBaseline="central"
           fontSize={21}
           fontWeight={800}
-          fill={visitada ? '#6D5BA8' : '#8B7CC0'}
-          opacity={0.9}
+          fill={visitada ? '#5B21B6' : '#7C6BC9'}
+          opacity={0.95}
           style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
         >
           {c.glifo}
@@ -458,22 +691,33 @@ function CasillaSVG({
 
   if (c.tipo === 'encrucijada') {
     return (
-      <g opacity={atenuada ? 0.42 : 1}>
+      <g opacity={atenuada ? 0.44 : 1}>
         {[0, -2, -4].map((dy) => (
           <Suelo key={dy} dy={dy}>
-            <circle cx={c.g.x} cy={c.g.y} r={33} fill="#7FB4D6" />
+            <circle cx={c.g.x} cy={c.g.y} r={34} fill="#6CA7CE" />
           </Suelo>
         ))}
         <Suelo dy={-6}>
           <g transform={`translate(${c.g.x} ${c.g.y})`}>
-            <circle r={33} fill="#E0F2FE" stroke="#7DD3FC" strokeWidth={2} />
-            <circle r={25} fill="none" stroke="#A5B4FC" strokeWidth={1.2} strokeDasharray="3 4" />
-            <path d="M0 -22 L5 -5 L22 0 L5 5 L0 22 L-5 5 L-22 0 L-5 -5 Z" fill="#C4B5FD" stroke="#8B7CC0" strokeWidth={1} />
-            <circle r={4} fill="#FDBA74" />
-            {visitada && <circle r={33} fill="url(#tintaLosa)" opacity={0.35} />}
+            <circle r={34} fill="#E0F2FE" stroke="#7DD3FC" strokeWidth={2.4} />
+            <circle r={26} fill="none" stroke="#818CF8" strokeWidth={1.4} strokeDasharray="3 4" />
+            <path
+              d="M0 -23 L5.5 -5.5 L23 0 L5.5 5.5 L0 23 L-5.5 5.5 L-23 0 L-5.5 -5.5 Z"
+              fill="#C4B5FD"
+              stroke="#6D28D9"
+              strokeOpacity={0.75}
+              strokeWidth={1.2}
+            />
+            <circle r={5} fill="#FDBA74" stroke="#FFFFFF" strokeWidth={1} />
+            {visitada && <circle r={34} fill="url(#tintaLosa)" opacity={0.32} />}
             {activa && (
-              <circle r={36} fill="none" stroke="#7DD3FC" strokeWidth={3}>
-                <animate attributeName="stroke-opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite" />
+              <circle r={37} fill="none" stroke="#7DD3FC" strokeWidth={3.2}>
+                <animate
+                  attributeName="stroke-opacity"
+                  values="1;0.3;1"
+                  dur="1.4s"
+                  repeatCount="indefinite"
+                />
               </circle>
             )}
           </g>
@@ -482,14 +726,14 @@ function CasillaSVG({
     );
   }
 
-  if (c.tipo === 'boss') return null; // se dibuja aparte
+  if (c.tipo === 'boss') return null;
 
-  // Hexágonos: cristal, tormenta, portal
+  // Hexágonos 3D: cristal, tormenta, portal
   const col = colorCasilla(c);
   const R = c.tipo === 'portal' ? RADIO_HEX + 5 : RADIO_HEX;
   const pts = hexPuntos(R);
   return (
-    <g opacity={atenuada ? 0.42 : 1}>
+    <g opacity={atenuada ? 0.44 : 1}>
       {[0, -2, -4, -6].map((dy) => (
         <Suelo key={dy} dy={dy}>
           <polygon transform={t} points={pts} fill={col.lado} />
@@ -497,48 +741,118 @@ function CasillaSVG({
       ))}
       <Suelo dy={-8}>
         <g transform={t}>
-          <polygon points={pts} fill={col.top} stroke={col.brillo} strokeWidth={2} strokeLinejoin="round" />
-          <polygon points={hexPuntos(R - 7)} fill="none" stroke="#FFFFFF" strokeOpacity={0.55} strokeWidth={1.3} />
-          {visitada && <polygon points={pts} fill="url(#tintaLosa)" opacity={0.35} />}
+          <polygon
+            points={pts}
+            fill={col.top}
+            stroke={col.brillo}
+            strokeWidth={2.2}
+            strokeLinejoin="round"
+          />
+          <polygon
+            points={hexPuntos(R - 6.5)}
+            fill="none"
+            stroke="#FFFFFF"
+            strokeOpacity={0.72}
+            strokeWidth={1.5}
+          />
+          {visitada && <polygon points={pts} fill="url(#tintaLosa)" opacity={0.32} />}
           {activa && (
-            <polygon points={hexPuntos(R + 3)} fill="none" stroke="#7DD3FC" strokeWidth={3}>
-              <animate attributeName="stroke-opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite" />
+            <polygon points={hexPuntos(R + 3.5)} fill="none" stroke="#7DD3FC" strokeWidth={3.2}>
+              <animate
+                attributeName="stroke-opacity"
+                values="1;0.3;1"
+                dur="1.4s"
+                repeatCount="indefinite"
+              />
             </polygon>
           )}
         </g>
       </Suelo>
-      {/* Icono superior y glifo tallado (en pantalla) */}
+      {/* Glifo tallado con alta legibilidad */}
       <text
         transform={`translate(${c.s.x.toFixed(1)} ${(c.s.y - 8).toFixed(1)}) skewX(-14) scale(1 0.68)`}
         textAnchor="middle"
         dominantBaseline="central"
         fontSize={18}
         fontWeight={900}
-        fill={c.tipo === 'tormenta' ? '#9F1239' : c.tipo === 'portal' || c.indice === 6 ? '#065F46' : '#4C1D95'}
-        opacity={0.78}
+        fill={
+          c.tipo === 'tormenta'
+            ? '#881337'
+            : c.tipo === 'portal' || c.indice === 6
+              ? '#064E3B'
+              : '#3B0764'
+        }
+        opacity={0.85}
         style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
       >
         {c.glifo}
       </text>
       <g transform={`translate(${c.s.x.toFixed(1)} ${(c.s.y - 8).toFixed(1)})`}>
         {c.tipo === 'tormenta' && (
-          <g transform="translate(14 -10) scale(0.75)">
-            <circle cx={0} cy={0} r={7} fill="#FFE4E6" stroke="#E11D48" strokeOpacity={0.7} strokeWidth={1.4} />
-            <path d="M-4 -2 L2 2 M-2 -5 L4 -1" stroke="#9F1239" strokeWidth={1.6} strokeLinecap="round" />
+          <g transform="translate(14 -10) scale(0.78)">
+            <circle
+              cx={0}
+              cy={0}
+              r={7.5}
+              fill="#FFF1F2"
+              stroke="#E11D48"
+              strokeOpacity={0.8}
+              strokeWidth={1.5}
+            />
+            <path
+              d="M-4 -2 L2 2 M-2 -5 L4 -1"
+              stroke="#9F1239"
+              strokeWidth={1.7}
+              strokeLinecap="round"
+            />
           </g>
         )}
         {c.tipo === 'cristal' && (
-          <g opacity={completada ? 0.55 : 1} transform="translate(15 -4)">
-            <animateTransform attributeName="transform" type="translate" values="15 -10;15 -15;15 -10" dur="2.4s" repeatCount="indefinite" />
-            <polygon points="0,-9 5,-1 3,6 -3,6 -5,-1" fill={c.indice === 6 ? '#6EE7B7' : '#C4B5FD'} stroke="#FFFFFF" strokeWidth={1.1} />
-            <polygon points="0,-9 5,-1 0,0" fill="#FFFFFF" opacity={0.65} />
-            {completada && <path d="M-3 0 L-1 2.5 L4 -3" stroke="#065F46" strokeWidth={1.8} fill="none" strokeLinecap="round" />}
+          <g opacity={completada ? 0.6 : 1} transform="translate(15 -4)">
+            <animateTransform
+              attributeName="transform"
+              type="translate"
+              values="15 -10;15 -15;15 -10"
+              dur="2.4s"
+              repeatCount="indefinite"
+            />
+            <polygon
+              points="0,-9.5 5.5,-1 3.2,6.5 -3.2,6.5 -5.5,-1"
+              fill={c.indice === 6 ? '#6EE7B7' : '#C4B5FD'}
+              stroke="#FFFFFF"
+              strokeWidth={1.2}
+            />
+            <polygon points="0,-9.5 5.5,-1 0,0" fill="#FFFFFF" opacity={0.7} />
+            {completada && (
+              <path
+                d="M-3 0 L-1 2.5 L4 -3"
+                stroke="#065F46"
+                strokeWidth={1.9}
+                fill="none"
+                strokeLinecap="round"
+              />
+            )}
           </g>
         )}
         {c.tipo === 'portal' && (
-          <g opacity={completada ? 0.5 : 1}>
-            <ellipse cx={0} cy={0} rx={17} ry={10} fill="none" stroke="#FFFFFF" strokeWidth={2} strokeDasharray="5 4">
-              <animateTransform attributeName="transform" type="rotate" values="0;360" dur="6s" repeatCount="indefinite" />
+          <g opacity={completada ? 0.55 : 1}>
+            <ellipse
+              cx={0}
+              cy={0}
+              rx={17}
+              ry={10}
+              fill="none"
+              stroke="#FFFFFF"
+              strokeWidth={2.2}
+              strokeDasharray="5 4"
+            >
+              <animateTransform
+                attributeName="transform"
+                type="rotate"
+                values="0;360"
+                dur="6s"
+                repeatCount="indefinite"
+              />
             </ellipse>
           </g>
         )}
@@ -547,49 +861,106 @@ function CasillaSVG({
   );
 }
 
-function SantuarioBoss({ activa, abierto, atenuada }: { activa: boolean; abierto: boolean; atenuada: boolean }) {
+function SantuarioBoss({
+  activa,
+  abierto,
+  atenuada,
+}: {
+  activa: boolean;
+  abierto: boolean;
+  atenuada: boolean;
+}) {
   const g = CASILLA_BOSS.g;
   return (
     <g opacity={atenuada ? 0.6 : 1}>
       {[0, -3, -6, -9].map((dy) => (
         <Suelo key={dy} dy={dy}>
-          <circle cx={g.x} cy={g.y} r={50} fill="#8F7BE0" />
+          <circle cx={g.x} cy={g.y} r={52} fill="#7E69D6" />
         </Suelo>
       ))}
       <Suelo dy={-12}>
         <g transform={`translate(${g.x} ${g.y})`}>
-          <circle r={50} fill="url(#bossSuelo)" stroke="#EDE9FE" strokeWidth={2.5} />
-          <circle r={40} fill="none" stroke="#FFFFFF" strokeOpacity={0.6} strokeWidth={1.4} strokeDasharray="6 5" />
+          <circle r={52} fill="url(#bossSuelo)" stroke="#FFFFFF" strokeWidth={2.8} />
+          <circle
+            r={42}
+            fill="none"
+            stroke="#6D28D9"
+            strokeOpacity={0.35}
+            strokeWidth={1.6}
+            strokeDasharray="6 5"
+          />
+          <circle
+            r={30}
+            fill="none"
+            stroke="#FFFFFF"
+            strokeOpacity={0.75}
+            strokeWidth={1.5}
+          />
           <g>
-            <animateTransform attributeName="transform" type="rotate" values="0;360" dur={abierto ? '5s' : '14s'} repeatCount="indefinite" />
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              values="0;360"
+              dur={abierto ? '5s' : '14s'}
+              repeatCount="indefinite"
+            />
             {[0, 120, 240].map((a) => (
               <path
                 key={a}
                 transform={`rotate(${a})`}
                 d="M0 0 C8 -6 18 -4 24 6 C18 0 10 0 4 6"
-                fill={abierto ? '#7DD3FC' : '#C4B5FD'}
-                opacity={0.85}
+                fill={abierto ? '#38BDF8' : '#8B5CF6'}
+                opacity={0.75}
               />
             ))}
           </g>
-          <circle r={6} fill="#FDF6E3" />
+          <circle r={7} fill="#FEF3C7" stroke="#F59E0B" strokeWidth={1.2} />
           {activa && (
-            <circle r={54} fill="none" stroke="#7DD3FC" strokeWidth={3}>
-              <animate attributeName="stroke-opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite" />
+            <circle r={56} fill="none" stroke="#7DD3FC" strokeWidth={3.5}>
+              <animate
+                attributeName="stroke-opacity"
+                values="1;0.3;1"
+                dur="1.4s"
+                repeatCount="indefinite"
+              />
             </circle>
           )}
         </g>
       </Suelo>
+
       {/* Gema flotante del Guardián */}
-      <g transform={`translate(${BOSS_S.x} ${BOSS_S.y - 46})`}>
-        <animateTransform attributeName="transform" type="translate" additive="sum" values="0 0;0 -6;0 0" dur="3s" repeatCount="indefinite" />
-        <circle r={20} fill={abierto ? '#7DD3FC' : '#C4B5FD'} opacity={0.25} filter="url(#halo)" />
-        <polygon points="0,-18 11,-4 6,14 -6,14 -11,-4" fill={abierto ? '#BAE6FD' : '#DDD6FE'} stroke="#FFFFFF" strokeWidth={1.5} />
-        <polygon points="0,-18 11,-4 0,-1" fill="#FFFFFF" opacity={0.6} />
+      <g transform={`translate(${BOSS_S.x} ${BOSS_S.y - 48})`}>
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          additive="sum"
+          values="0 0;0 -6;0 0"
+          dur="3s"
+          repeatCount="indefinite"
+        />
+        <circle
+          r={22}
+          fill={abierto ? '#7DD3FC' : '#C4B5FD'}
+          opacity={0.32}
+          filter="url(#halo)"
+        />
+        <polygon
+          points="0,-19 12,-4 6.5,15 -6.5,15 -12,-4"
+          fill={abierto ? '#BAE6FD' : '#EDE9FE'}
+          stroke="#FFFFFF"
+          strokeWidth={1.8}
+        />
+        <polygon points="0,-19 12,-4 0,-1" fill="#FFFFFF" opacity={0.7} />
         {!abierto && (
           <g transform="translate(0 2)">
-            <rect x={-5} y={-1} width={10} height={8} rx={1.5} fill="#4C1D95" opacity={0.8} />
-            <path d="M-3 -1 v-3 a3 3 0 0 1 6 0 v3" stroke="#4C1D95" strokeWidth={1.6} fill="none" opacity={0.8} />
+            <rect x={-5} y={-1} width={10} height={8} rx={1.5} fill="#4C1D95" opacity={0.88} />
+            <path
+              d="M-3 -1 v-3 a3 3 0 0 1 6 0 v3"
+              stroke="#4C1D95"
+              strokeWidth={1.7}
+              fill="none"
+              opacity={0.88}
+            />
           </g>
         )}
       </g>
@@ -604,7 +975,7 @@ function FlechasEncrucijada({ onElegir }: { onElegir: (r: Rama) => void }) {
   const ramas: Rama[] = ['left', 'center', 'right'];
   return (
     <g>
-      <circle cx={centro.x} cy={centro.y - 6} r={70} fill="#7DD3FC" opacity={0.12}>
+      <circle cx={centro.x} cy={centro.y - 6} r={70} fill="#7DD3FC" opacity={0.14}>
         <animate attributeName="r" values="60;78;60" dur="2.4s" repeatCount="indefinite" />
       </circle>
       {ramas.map((rama, i) => {
@@ -632,7 +1003,14 @@ function FlechasEncrucijada({ onElegir }: { onElegir: (r: Rama) => void }) {
           >
             <g transform={`translate(${px.toFixed(1)} ${py.toFixed(1)})`}>
               <g transform={`rotate(${ang.toFixed(1)})`}>
-                <animateTransform attributeName="transform" type="translate" additive="sum" values="0 0;7 0;0 0" dur="1.2s" repeatCount="indefinite" />
+                <animateTransform
+                  attributeName="transform"
+                  type="translate"
+                  additive="sum"
+                  values="0 0;7 0;0 0"
+                  dur="1.2s"
+                  repeatCount="indefinite"
+                />
                 <path
                   d="M-20 -9 L3 -9 L3 -18 L24 0 L3 18 L3 9 L-20 9 Z"
                   fill={info.color}
@@ -640,11 +1018,36 @@ function FlechasEncrucijada({ onElegir }: { onElegir: (r: Rama) => void }) {
                   strokeWidth={2.4}
                   strokeLinejoin="round"
                 />
-                <path d="M-16 -5 L5 -5 L5 -11 L17 -1" stroke="#FFFFFF" strokeOpacity={0.75} strokeWidth={2} fill="none" strokeLinejoin="round" strokeLinecap="round" />
+                <path
+                  d="M-16 -5 L5 -5 L5 -11 L17 -1"
+                  stroke="#FFFFFF"
+                  strokeOpacity={0.8}
+                  strokeWidth={2}
+                  fill="none"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
               </g>
               <g transform={`translate(0 ${etiquetaY})`}>
-                <rect x={-66} y={-12} width={132} height={24} rx={12} fill="#283556" fillOpacity={0.92} stroke={info.color} strokeWidth={1.6} />
-                <text textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={800} fill="#F8FAFC" letterSpacing={0.4}>
+                <rect
+                  x={-68}
+                  y={-12}
+                  width={136}
+                  height={24}
+                  rx={12}
+                  fill="#1E1B4B"
+                  fillOpacity={0.92}
+                  stroke={info.color}
+                  strokeWidth={1.8}
+                />
+                <text
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={11}
+                  fontWeight={800}
+                  fill="#FFFFFF"
+                  letterSpacing={0.4}
+                >
                   {info.corto}
                 </text>
               </g>
@@ -674,7 +1077,9 @@ export interface MapaAstralProps {
   santuarioAbierto: boolean;
 }
 
-const ORDEN_CASILLAS = [...TODAS_LAS_CASILLAS].filter((c) => c.tipo !== 'boss').sort((a, b) => a.s.y - b.s.y);
+const ORDEN_CASILLAS = [...TODAS_LAS_CASILLAS]
+  .filter((c) => c.tipo !== 'boss')
+  .sort((a, b) => a.s.y - b.s.y);
 
 export default function MapaAstral({
   rama,
@@ -697,43 +1102,59 @@ export default function MapaAstral({
   const finRastro = rastroG[rastroG.length - 1];
 
   return (
-    <svg viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="xMidYMid meet" className="w-full h-full select-none" role="img" aria-label="Mapa del Archivo Astral de Letralia">
+    <svg
+      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+      preserveAspectRatio="xMidYMid meet"
+      className="w-full h-full select-none"
+      role="img"
+      aria-label="Mapa del Archivo Astral de Letralia"
+    >
       <defs>
+        <radialGradient id="lunaAstralGrad" cx="35%" cy="32%" r="70%">
+          <stop offset="0%" stopColor="#FFFDF7" />
+          <stop offset="48%" stopColor="#DDD6FE" />
+          <stop offset="100%" stopColor="#7C65D6" />
+        </radialGradient>
+        <linearGradient id="cometaLetraliaGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#FEF08A" stopOpacity={0.95} />
+          <stop offset="45%" stopColor="#C4B5FD" stopOpacity={0.45} />
+          <stop offset="100%" stopColor="#C4B5FD" stopOpacity={0} />
+        </linearGradient>
         <linearGradient id="acantiladoLav" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#A699DA" />
-          <stop offset="45%" stopColor="#7466AE" />
-          <stop offset="100%" stopColor="#433C7A" stopOpacity={0.9} />
+          <stop offset="0%" stopColor="#B1A3E6" />
+          <stop offset="45%" stopColor="#7C6DC0" />
+          <stop offset="100%" stopColor="#433878" stopOpacity={0.92} />
         </linearGradient>
         <linearGradient id="acantiladoArena" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#DDB998" />
-          <stop offset="50%" stopColor="#A9826A" />
-          <stop offset="100%" stopColor="#6E5248" stopOpacity={0.9} />
+          <stop offset="0%" stopColor="#E6C3A1" />
+          <stop offset="50%" stopColor="#B28A70" />
+          <stop offset="100%" stopColor="#6E5248" stopOpacity={0.92} />
         </linearGradient>
         <radialGradient id="cespedLav" cx="45%" cy="40%" r="70%">
-          <stop offset="0%" stopColor="#EAE2FD" />
-          <stop offset="100%" stopColor="#BBA9EC" />
+          <stop offset="0%" stopColor="#F3EEFF" />
+          <stop offset="100%" stopColor="#C0AEF2" />
         </radialGradient>
         <radialGradient id="cespedMenta" cx="45%" cy="40%" r="70%">
-          <stop offset="0%" stopColor="#D2F7E6" />
-          <stop offset="100%" stopColor="#8AD8B9" />
+          <stop offset="0%" stopColor="#DCFCE7" />
+          <stop offset="100%" stopColor="#86EFAC" />
         </radialGradient>
         <radialGradient id="nubeGrad" cx="45%" cy="35%" r="70%">
           <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="70%" stopColor="#EEF2FF" />
-          <stop offset="100%" stopColor="#D5DEF5" />
+          <stop offset="70%" stopColor="#F1F5FF" />
+          <stop offset="100%" stopColor="#D8E1F8" />
         </radialGradient>
         <linearGradient id="columnaGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#EFE9FD" />
-          <stop offset="60%" stopColor="#CFC3F2" />
-          <stop offset="100%" stopColor="#A698DA" />
+          <stop offset="0%" stopColor="#F5F3FF" />
+          <stop offset="60%" stopColor="#D6CBF8" />
+          <stop offset="100%" stopColor="#A99BE0" />
         </linearGradient>
         <linearGradient id="tintaLosa" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#7DD3FC" />
           <stop offset="100%" stopColor="#FDBA74" />
         </linearGradient>
         <radialGradient id="bossSuelo" cx="50%" cy="50%" r="60%">
-          <stop offset="0%" stopColor="#F5F3FF" />
-          <stop offset="60%" stopColor="#DDD6FE" />
+          <stop offset="0%" stopColor="#FFFFFF" />
+          <stop offset="58%" stopColor="#DDD6FE" />
           <stop offset="100%" stopColor="#A7F3D0" />
         </radialGradient>
         {inicioRastro && finRastro && (
@@ -751,8 +1172,21 @@ export default function MapaAstral({
           </linearGradient>
         )}
         <filter id="acuarela" x="-20%" y="-20%" width="140%" height="140%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="7" result="ruido" />
-          <feDisplacementMap in="SourceGraphic" in2="ruido" scale="12" xChannelSelector="R" yChannelSelector="G" result="desp" />
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.04"
+            numOctaves="2"
+            seed="7"
+            result="ruido"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="ruido"
+            scale="12"
+            xChannelSelector="R"
+            yChannelSelector="G"
+            result="desp"
+          />
           <feGaussianBlur in="desp" stdDeviation="2.4" />
         </filter>
         <filter id="halo" x="-100%" y="-100%" width="300%" height="300%">
@@ -762,20 +1196,48 @@ export default function MapaAstral({
 
       <DecoracionFondo />
 
-      {/* Cintas de pergamino (caminos continuos) */}
+      {/* Cintas de pergamino (caminos continuos con bisel dorado-arena pulcro) */}
       {tramos.map((t) => {
         const d = polilineaD(CINTAS[t]);
         return (
           <g key={t} opacity={atenuar(t) ? 0.42 : 1}>
             {[8, 6, 4, 2].map((dy) => (
               <Suelo key={dy} dy={dy}>
-                <path d={d} stroke="#B89D74" strokeWidth={ANCHO_CAMINO + 2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d={d}
+                  stroke="#B5986D"
+                  strokeWidth={ANCHO_CAMINO + 2}
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </Suelo>
             ))}
             <Suelo>
-              <path d={d} stroke="#D6BF94" strokeWidth={ANCHO_CAMINO + 2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={d} stroke="#F3E7CB" strokeWidth={ANCHO_CAMINO - 2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={d} stroke="#E3D1AC" strokeWidth={ANCHO_CAMINO - 10} fill="none" strokeDasharray="1.4 19" strokeLinejoin="round" />
+              <path
+                d={d}
+                stroke="#D9C298"
+                strokeWidth={ANCHO_CAMINO + 2.5}
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d={d}
+                stroke="#F7ECD3"
+                strokeWidth={ANCHO_CAMINO - 2}
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d={d}
+                stroke="#E4D1AA"
+                strokeWidth={ANCHO_CAMINO - 10}
+                fill="none"
+                strokeDasharray="1.5 19"
+                strokeLinejoin="round"
+              />
             </Suelo>
           </g>
         );
@@ -800,7 +1262,6 @@ export default function MapaAstral({
       {rastroG.length > 1 && (
         <Suelo dy={-5}>
           <g pointerEvents="none">
-            {/* Halo blanco-celeste exterior */}
             <path
               d={polilineaD(rastroG)}
               stroke="#E0F2FE"
@@ -811,7 +1272,6 @@ export default function MapaAstral({
               strokeLinejoin="round"
               filter="url(#acuarela)"
             />
-            {/* Veta celeste acuarela */}
             <path
               d={polilineaD(rastroG)}
               transform="translate(-4 -3)"
@@ -823,7 +1283,6 @@ export default function MapaAstral({
               strokeLinejoin="round"
               filter="url(#acuarela)"
             />
-            {/* Veta coral-durazno acuarela */}
             <path
               d={polilineaD(rastroG)}
               transform="translate(5 4)"
@@ -835,33 +1294,48 @@ export default function MapaAstral({
               strokeLinejoin="round"
               filter="url(#acuarela)"
             />
-            {/* Núcleo de gradiente celeste-coral */}
             <path
               d={polilineaD(rastroG)}
               stroke="url(#rastroGrad)"
               strokeWidth={14}
-              strokeOpacity={0.9}
+              strokeOpacity={0.92}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            {/* Chispas blancas de espuma astral */}
             {rastroG.map((pt, idx) => (
               <g key={idx} transform={`translate(${pt.x} ${pt.y})`}>
-                <circle cx={-10} cy={-6} r={2.2} fill="#FFFFFF" opacity={0.85} />
-                <circle cx={9} cy={7} r={1.8} fill="#FFF7ED" opacity={0.8} />
-                <circle cx={2} cy={-11} r={1.4} fill="#E0F2FE" opacity={0.9} />
+                <circle cx={-10} cy={-6} r={2.2} fill="#FFFFFF" opacity={0.88} />
+                <circle cx={9} cy={7} r={1.8} fill="#FFF7ED" opacity={0.82} />
+                <circle cx={2} cy={-11} r={1.4} fill="#E0F2FE" opacity={0.92} />
               </g>
             ))}
           </g>
         </Suelo>
       )}
 
-      {/* Etiqueta del Santuario */}
-      <g transform={`translate(${BOSS_S.x} ${BOSS_S.y + 44})`}>
-        <rect x={-62} y={-10} width={124} height={20} rx={10} fill="#283556" fillOpacity={0.85} stroke="#A5B4FC" strokeWidth={1.2} />
-        <text textAnchor="middle" dominantBaseline="central" fontSize={9.5} fontWeight={800} letterSpacing={1} fill="#EDE9FE">
-          SANTUARIO DEL GUARDIÁN
+      {/* Etiqueta del Santuario (ubicada encima de la gema para no solapar la casilla Σ) */}
+      <g transform={`translate(${BOSS_S.x + 12} ${BOSS_S.y - 78})`}>
+        <rect
+          x={-72}
+          y={-11}
+          width={144}
+          height={22}
+          rx={11}
+          fill="#231E4A"
+          fillOpacity={0.9}
+          stroke="#C4B5FD"
+          strokeWidth={1.5}
+        />
+        <text
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={9.5}
+          fontWeight={900}
+          letterSpacing={1.1}
+          fill="#FDF6E3"
+        >
+          ✦ SANTUARIO DEL GUARDIÁN
         </text>
       </g>
 
@@ -871,7 +1345,12 @@ export default function MapaAstral({
         animate={{ x: posS.x, y: posS.y - 6 }}
         transition={{ type: 'tween', duration: 0.36, ease: 'easeInOut' }}
       >
-        <motion.g key={saltoKey} initial={{ y: 0 }} animate={{ y: saltoKey > 0 ? [0, -14, 0] : 0 }} transition={{ duration: 0.36, ease: 'easeOut' }}>
+        <motion.g
+          key={saltoKey}
+          initial={{ y: 0 }}
+          animate={{ y: saltoKey > 0 ? [0, -14, 0] : 0 }}
+          transition={{ duration: 0.36, ease: 'easeOut' }}
+        >
           <g transform="scale(1.18)">
             <ElViajero caminando={caminando} mirando={mirando} />
           </g>
@@ -883,4 +1362,3 @@ export default function MapaAstral({
     </svg>
   );
 }
-
