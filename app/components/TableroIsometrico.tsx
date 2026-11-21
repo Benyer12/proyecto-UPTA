@@ -35,10 +35,10 @@ const TOTAL = 20;
 const BONUS_JEFE_FINAL = 4;
 
 const OPERADORES_NUCLEO: { op: '+' | '−' | '×' | '÷'; nombre: string; color: string; glow: string }[] = [
-  { op: '+', nombre: 'Adición', color: '#FBBF24', glow: 'rgba(251, 191, 36, 0.7)' },
-  { op: '−', nombre: 'Sustracción', color: '#F59E0B', glow: 'rgba(245, 158, 11, 0.7)' },
-  { op: '×', nombre: 'Producto', color: '#00F0FF', glow: 'rgba(0, 240, 255, 0.75)' },
-  { op: '÷', nombre: 'Cociente', color: '#34D399', glow: 'rgba(52, 211, 153, 0.75)' },
+  { op: '+', nombre: 'Adición', color: '#E2EEFF', glow: 'rgba(226, 238, 255, 0.55)' },
+  { op: '−', nombre: 'Sustracción', color: '#C084FC', glow: 'rgba(192, 132, 252, 0.55)' },
+  { op: '×', nombre: 'Producto', color: '#E879F9', glow: 'rgba(232, 121, 249, 0.55)' },
+  { op: '÷', nombre: 'Cociente', color: '#6EE7B7', glow: 'rgba(110, 231, 183, 0.55)' },
 ];
 
 const CONDICIONES_TRAMPA: {
@@ -123,21 +123,20 @@ function CapsulaNucleo({
 }) {
   return (
     <motion.div
-      animate={activo ? { scale: [1, 1.07, 1] } : undefined}
-      className="relative h-[78px] rounded-full p-1 flex flex-col items-center justify-between transition-all"
+      animate={activo ? { scale: [1, 1.05, 1] } : undefined}
+      className="relative h-[76px] rounded-2xl p-1.5 flex flex-col items-center justify-between transition-all liquid-glass-pill"
       style={{
         background: activo
-          ? 'linear-gradient(180deg, #163C63 0%, #091D34 50%, #123254 100%)'
-          : 'linear-gradient(180deg, #0B1B2E 0%, #06101E 100%)',
-        border: activo ? `2px solid ${color}` : '1.5px solid #1E3A5F',
-        boxShadow: activo ? `0 0 16px ${glow}, inset 0 0 10px ${glow}` : 'inset 0 2px 6px rgba(0,0,0,0.6)',
+          ? `linear-gradient(165deg, ${color}24 0%, rgba(16, 24, 52, 0.78) 100%)`
+          : 'linear-gradient(165deg, rgba(255,255,255,0.04) 0%, rgba(7, 11, 24, 0.72) 100%)',
+        borderColor: activo ? `${color}75` : 'rgba(147, 197, 253, 0.14)',
+        boxShadow: activo ? `0 0 18px ${glow}` : 'inset 0 2px 6px rgba(0,0,0,0.45)',
       }}
     >
       <div
-        className="w-7 h-2.5 rounded-t-full border-b"
+        className="w-6 h-1.5 rounded-full"
         style={{
-          background: activo ? color : '#1E293B',
-          borderColor: activo ? '#FFFFFF' : '#334155',
+          background: activo ? color : 'rgba(148, 163, 184, 0.22)',
           opacity: activo ? 0.9 : 0.45,
         }}
       />
@@ -146,21 +145,20 @@ function CapsulaNucleo({
         className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-lg transition-all"
         style={{
           background: activo
-            ? `radial-gradient(circle, ${color}33 0%, rgba(8,47,73,0.9) 100%)`
-            : 'rgba(15, 23, 42, 0.7)',
-          border: activo ? `1.5px solid ${color}` : '1px solid #334155',
-          color: activo ? color : '#475569',
-          textShadow: activo ? `0 0 8px ${color}` : 'none',
+            ? `radial-gradient(circle, ${color}28 0%, rgba(12, 18, 40, 0.85) 100%)`
+            : 'rgba(10, 15, 32, 0.65)',
+          border: activo ? `1.5px solid ${color}88` : '1px solid rgba(148, 163, 184, 0.16)',
+          color: activo ? color : '#64748B',
+          textShadow: activo ? `0 0 10px ${color}` : 'none',
         }}
       >
         {activo ? operador : '?'}
       </div>
 
       <div
-        className="w-7 h-2.5 rounded-b-full border-t"
+        className="w-6 h-1.5 rounded-full"
         style={{
-          background: activo ? color : '#1E293B',
-          borderColor: activo ? '#FFFFFF' : '#334155',
+          background: activo ? color : 'rgba(148, 163, 184, 0.22)',
           opacity: activo ? 0.9 : 0.45,
         }}
       />
@@ -648,68 +646,42 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     <div
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
-        background: 'linear-gradient(180deg, #071326 0%, #0C213B 55%, #08182E 100%)',
+        background:
+          'radial-gradient(ellipse at 25% 20%, #111A3A 0%, #070C1F 52%, #030611 100%)',
       }}
     >
       {/* ════════════════════ ESCENARIO PRINCIPAL: MONTAÑA CUÁNTICA (IZQUIERDA / CENTRO) ════════════════════ */}
       <div className="relative flex-1 h-[62vh] lg:h-full overflow-hidden flex items-center justify-center">
-        {/* ── Arriba a la Izquierda: Botón Cápsula "← Mapa" ── */}
-        <div className="absolute top-3 left-3 z-30 flex items-center">
-          <motion.button
+        {/* ── Arriba a la Izquierda: Botón Cápsula Liquid Glass "← Mapa" ── */}
+        <div className="absolute top-3.5 left-4 z-30 flex items-center">
+          <button
             type="button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full font-extrabold text-xs sm:text-sm text-[#E0F2FE] shadow-lg cursor-pointer"
-            style={{
-              background: 'linear-gradient(180deg, #123258 0%, #0A1E38 100%)',
-              border: '2px solid #38BDF8',
-              boxShadow: '0 0 15px rgba(0, 229, 255, 0.35)',
-            }}
+            className="liquid-glass-pill flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-xs sm:text-sm text-[#E2EEFF] hover:text-white cursor-pointer"
           >
-            <span>←</span>
+            <span className="text-[#93C5FD]">←</span>
             <span>Mapa</span>
-          </motion.button>
+          </button>
         </div>
 
-        {/* ── Arriba al Centro: Banderín Trapezoidal "◀ SALTO CUÁNTICO ▶" ── */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 flex items-start pointer-events-none">
+        {/* ── Arriba al Centro: Píldora Liquid Glass Elegante "✦ SALTO CUÁNTICO ✦" ── */}
+        <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center pointer-events-none">
           <div
-            className="hidden sm:flex h-9 w-11 items-center justify-center rounded-bl-xl border-b-2 border-l-2 border-[#00F0FF]"
+            className="liquid-glass-pill px-6 sm:px-8 py-2 rounded-2xl flex items-center gap-3"
             style={{
-              background: 'linear-gradient(180deg, #102C4E 0%, #091A32 100%)',
-              transform: 'skewX(20deg)',
+              background:
+                'linear-gradient(135deg, rgba(147, 197, 253, 0.16) 0%, rgba(168, 85, 247, 0.16) 50%, rgba(52, 211, 153, 0.14) 100%)',
+              borderColor: 'rgba(226, 238, 255, 0.28)',
             }}
           >
-            <span className="text-[11px] text-[#FBBF24]" style={{ transform: 'skewX(-20deg)' }}>
-              ◀
-            </span>
-          </div>
-
-          <div
-            className="px-6 sm:px-9 py-1.5 rounded-b-2xl border-x-2 border-b-2 border-[#FEF08A] shadow-[0_6px_24px_rgba(245,158,11,0.45)] flex items-center gap-2"
-            style={{
-              background: 'linear-gradient(180deg, #FDE68A 0%, #F59E0B 55%, #B45309 100%)',
-            }}
-          >
+            <span className="text-xs text-[#6EE7B7]">✦</span>
             <span
-              className="text-xs sm:text-sm font-black tracking-[0.18em] text-[#0F172A] uppercase"
+              className="text-xs sm:text-sm font-black tracking-[0.22em] text-[#F0F6FF] uppercase"
               style={{ fontFamily: "'Orbitron', sans-serif" }}
             >
               SALTO CUÁNTICO
             </span>
-          </div>
-
-          <div
-            className="hidden sm:flex h-9 w-11 items-center justify-center rounded-br-xl border-b-2 border-r-2 border-[#00F0FF]"
-            style={{
-              background: 'linear-gradient(180deg, #102C4E 0%, #091A32 100%)',
-              transform: 'skewX(-20deg)',
-            }}
-          >
-            <span className="text-[11px] text-[#FBBF24]" style={{ transform: 'skewX(20deg)' }}>
-              ▶
-            </span>
+            <span className="text-xs text-[#C084FC]">✦</span>
           </div>
         </div>
 
@@ -722,67 +694,70 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
           />
         </div>
 
-        {/* ── Abajo al Centro: Píldora Flotante de Instrucciones ── */}
+        {/* ── Abajo al Centro: Píldora Flotante de Instrucciones en Liquid Glass ── */}
         <AnimatePresence mode="wait">
           <motion.div
             key={avisoFlotante}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 max-w-[92%] sm:max-w-lg px-5 py-2 rounded-full bg-[#091D36]/92 border-2 border-[#00E5FF]/80 backdrop-blur-md shadow-[0_0_24px_rgba(0,229,255,0.3)] flex items-center gap-2 text-xs sm:text-sm font-bold text-[#E0F2FE] text-center"
+            className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 max-w-[92%] sm:max-w-lg px-6 py-2.5 rounded-2xl liquid-glass-pill flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#E2EEFF] text-center"
+            style={{
+              background: 'linear-gradient(135deg, rgba(15, 23, 52, 0.84) 0%, rgba(9, 14, 34, 0.9) 100%)',
+              borderColor: 'rgba(191, 219, 254, 0.28)',
+            }}
           >
-            <span className="text-[#00F0FF]">✦</span>
+            <span className="text-[#6EE7B7]">✦</span>
             <span>{avisoFlotante}</span>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* ════════════════════ HUD LATERAL DERECHO ════════════════════ */}
-      <aside className="relative z-30 w-full lg:w-[330px] xl:w-[350px] lg:h-full p-2 sm:p-3 flex flex-col justify-center shrink-0">
+      {/* ════════════════════ HUD LATERAL DERECHO EN LIQUID GLASS ════════════════════ */}
+      <aside className="relative z-30 w-full lg:w-[335px] xl:w-[355px] lg:h-full p-2.5 sm:p-3.5 flex flex-col justify-center shrink-0">
         <div
-          className="relative w-full h-full max-h-[820px] rounded-[28px] p-3.5 sm:p-4 flex flex-col justify-between overflow-y-auto"
+          className="relative w-full h-full max-h-[820px] rounded-3xl liquid-glass liquid-glass-panel p-4 sm:p-5 flex flex-col justify-between overflow-y-auto"
           style={{
-            background: 'linear-gradient(180deg, rgba(13, 35, 64, 0.94) 0%, rgba(8, 22, 42, 0.96) 100%)',
-            border: '2.5px solid #00E5FF',
-            boxShadow:
-              'inset 0 0 25px rgba(0, 229, 255, 0.18), 0 0 35px rgba(0, 229, 255, 0.25)',
+            background:
+              'linear-gradient(165deg, rgba(22, 32, 70, 0.68) 0%, rgba(11, 17, 38, 0.82) 55%, rgba(6, 10, 24, 0.9) 100%)',
+            borderColor: 'rgba(191, 219, 254, 0.24)',
           }}
         >
           {/* ── 1. CABECERA: NUMÉRIX — TABLERO CUÁNTICO ── */}
-          <div className="text-center pt-0.5 pb-2.5 border-b border-[#00E5FF]/40">
+          <div className="text-center pt-0.5 pb-3 border-b border-white/10">
             <h1
               className="text-2xl sm:text-3xl font-black tracking-wider leading-none select-none"
               style={{
-                color: '#0E3A5F',
-                WebkitTextStroke: '1.8px #00F0FF',
-                textShadow: '0 0 18px rgba(0, 240, 255, 0.65)',
+                background: 'linear-gradient(135deg, #F0F6FF 0%, #BFDBFE 45%, #C4B5FD 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                filter: 'drop-shadow(0 2px 14px rgba(147, 197, 253, 0.28))',
                 fontFamily: "'Orbitron', sans-serif",
               }}
             >
               NUMÉRIX
             </h1>
-            <p className="mt-1.5 text-[11px] font-extrabold tracking-[0.22em] text-[#BAE6FD] uppercase">
+            <p className="mt-1.5 text-[10px] font-bold tracking-[0.26em] text-[#93C5FD]/90 uppercase">
               TABLERO CUÁNTICO
             </p>
           </div>
 
-          {/* ── 2. CAJA DEL DADO 3D CUÁNTICO HOLOGRÁFICO ── */}
+          {/* ── 2. CAJA DEL DADO 3D CUÁNTICO EN CÁPSULA LIQUID GLASS ── */}
           <div
-            className="relative my-2 py-4 rounded-2xl flex flex-col items-center justify-center overflow-hidden"
+            className="relative my-2.5 py-4 rounded-2xl liquid-glass-pill flex flex-col items-center justify-center overflow-hidden"
             style={{
               background:
-                'radial-gradient(circle at 50% 50%, #103A60 0%, #081F38 65%, #051324 100%)',
-              border: '2px solid rgba(0, 240, 255, 0.55)',
-              boxShadow: 'inset 0 0 30px rgba(0, 240, 255, 0.25)',
+                'radial-gradient(circle at 50% 50%, rgba(49, 46, 129, 0.42) 0%, rgba(15, 23, 52, 0.72) 70%, rgba(7, 11, 26, 0.88) 100%)',
+              borderColor: 'rgba(196, 181, 253, 0.28)',
             }}
           >
-            <span className="pointer-events-none absolute top-2 left-3 text-[#00F0FF] text-sm">✦</span>
-            <span className="pointer-events-none absolute bottom-2 right-3 text-[#00F0FF] text-sm">✦</span>
+            <span className="pointer-events-none absolute top-2.5 left-3.5 text-[#C4B5FD]/70 text-xs">✦</span>
+            <span className="pointer-events-none absolute bottom-2.5 right-3.5 text-[#6EE7B7]/70 text-xs">✦</span>
 
             <div
-              className="pointer-events-none absolute bottom-2 w-28 h-5 rounded-full opacity-65"
+              className="pointer-events-none absolute bottom-2 w-28 h-5 rounded-full opacity-45"
               style={{
-                background: 'radial-gradient(ellipse, #00F0FF 0%, transparent 75%)',
+                background: 'radial-gradient(ellipse, #A855F7 0%, transparent 75%)',
               }}
             />
 
@@ -800,40 +775,41 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 rolling={rolling}
                 result={diceResult}
                 onRollComplete={handleRollComplete}
-                faceColor="#083344"
-                borderColor="#00F0FF"
-                pipColor="#67E8F9"
+                faceColor="#152046"
+                borderColor="#BFDBFE"
+                pipColor="#E2EEFF"
               />
             </div>
           </div>
 
-          {/* ── 3. PANEL DE TELEMETRÍA: PROGRESO + 4 NÚCLEOS CUÁNTICOS + LLAVE DEL GUARDIÁN ── */}
+          {/* ── 3. PANEL DE TELEMETRÍA EN CÁPSULA LIQUID GLASS ── */}
           <div
-            className="relative rounded-2xl p-3 sm:p-3.5 my-1"
+            className="relative rounded-2xl liquid-glass p-3.5 sm:p-4 my-1"
             style={{
-              background: 'linear-gradient(180deg, #0D2644 0%, #081A30 100%)',
-              border: '1.5px solid rgba(0, 229, 255, 0.45)',
+              background:
+                'linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(12, 18, 40, 0.65) 100%)',
+              borderColor: 'rgba(191, 219, 254, 0.18)',
             }}
           >
             <div className="mb-3.5">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-black tracking-wider text-[#BAE6FD] uppercase">
+                <span className="text-[11px] font-bold tracking-[0.18em] text-[#E2EEFF] uppercase">
                   PROGRESO
                 </span>
-                <span className="text-xs font-black text-[#00F0FF]">
+                <span className="text-xs font-black text-[#93C5FD]">
                   {progresoPct}% ({pos + 1}/{TOTAL})
                 </span>
               </div>
 
-              <div className="relative h-5 rounded-full bg-[#051324] border-2 border-[#00E5FF]/60 p-0.5 shadow-inner">
+              <div className="relative h-4 rounded-full bg-[#060A18]/90 border border-white/15 p-0.5 shadow-inner">
                 <motion.div
                   className="h-full rounded-full"
                   initial={{ width: '5%' }}
                   animate={{ width: `${Math.max(6, progresoPct)}%` }}
                   transition={{ duration: 0.4, ease: 'easeOut' }}
                   style={{
-                    background: 'linear-gradient(90deg, #0284C7 0%, #00F0FF 65%, #6EE7B7 100%)',
-                    boxShadow: '0 0 12px #00F0FF',
+                    background: 'linear-gradient(90deg, #6366F1 0%, #A855F7 50%, #34D399 100%)',
+                    boxShadow: '0 0 12px rgba(168, 85, 247, 0.5)',
                   }}
                 />
                 {[32, 66, 95].map((pct, idx) => {
@@ -844,10 +820,10 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                       className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black"
                       style={{
                         left: `${pct}%`,
-                        background: alcanzada ? '#FBBF24' : '#0B223D',
-                        color: alcanzada ? '#0F172A' : '#38BDF8',
-                        border: alcanzada ? '1.5px solid #FEF08A' : '1.5px solid #00E5FF',
-                        boxShadow: alcanzada ? '0 0 10px #FBBF24' : 'none',
+                        background: alcanzada ? '#34D399' : '#0F1734',
+                        color: alcanzada ? '#042F2E' : '#93C5FD',
+                        border: alcanzada ? '1.5px solid #A7F3D0' : '1px solid rgba(147, 197, 253, 0.35)',
+                        boxShadow: alcanzada ? '0 0 10px rgba(52, 211, 153, 0.6)' : 'none',
                       }}
                     >
                       ★
@@ -858,11 +834,11 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             </div>
 
             <div className="mt-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-black tracking-wider text-[#BAE6FD] uppercase">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="text-[11px] font-bold tracking-[0.16em] text-[#E2EEFF] uppercase">
                   NÚCLEOS CUÁNTICOS
                 </span>
-                <span className="text-[10px] font-extrabold text-[#00F0FF] bg-[#06182C] px-2.5 py-0.5 rounded-full border border-[#00E5FF]/50">
+                <span className="text-[10px] font-bold text-[#C4B5FD] liquid-glass-pill px-2.5 py-0.5 rounded-full">
                   {nucleosActivosCount}/4 Cristales
                 </span>
               </div>
@@ -880,22 +856,21 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               </div>
 
               <div
-                className="mt-3 rounded-xl px-3 py-2.5 flex items-center justify-between border transition-all"
+                className="mt-3 rounded-xl px-3.5 py-2.5 flex items-center justify-between liquid-glass-pill transition-all"
                 style={{
                   background: llaveLista
-                    ? 'linear-gradient(90deg, rgba(16,185,129,0.22) 0%, rgba(0,240,255,0.22) 100%)'
-                    : 'rgba(6, 18, 34, 0.85)',
-                  borderColor: llaveLista ? '#00F0FF' : 'rgba(56, 189, 248, 0.35)',
-                  boxShadow: llaveLista ? '0 0 16px rgba(0, 240, 255, 0.35)' : 'none',
+                    ? 'linear-gradient(90deg, rgba(16,185,129,0.22) 0%, rgba(168,85,247,0.22) 100%)'
+                    : 'rgba(8, 13, 30, 0.68)',
+                  borderColor: llaveLista ? 'rgba(110, 231, 183, 0.55)' : 'rgba(191, 219, 254, 0.16)',
                 }}
               >
                 <div className="flex items-center gap-2.5">
                   <span className="text-base">{llaveLista ? '🗝️' : '🔒'}</span>
                   <div className="leading-tight">
-                    <p className="text-[11px] font-black uppercase tracking-wider text-white">
+                    <p className="text-[11px] font-black uppercase tracking-wider text-[#F0F6FF]">
                       LLAVE DEL GUARDIÁN
                     </p>
-                    <p className="text-[11px] font-semibold text-cyan-200/80">
+                    <p className="text-[11px] font-medium text-[#93C5FD]/85">
                       {llaveLista
                         ? '¡4 núcleos listos para el Núcleo Armilar!'
                         : 'Reúne los 4 núcleos en el camino'}
@@ -903,7 +878,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                   </div>
                 </div>
                 {stars > 0 && (
-                  <span className="text-xs font-black text-amber-300 bg-amber-400/15 border border-amber-300/40 px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-black text-emerald-200 bg-emerald-400/15 border border-emerald-300/40 px-2 py-0.5 rounded-full">
                     ⭐ {stars}
                   </span>
                 )}
@@ -911,20 +886,17 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             </div>
           </div>
 
-          {/* ── 4. DOS BOTONES GRANDES INFERIORES ── */}
+          {/* ── 4. DOS BOTONES GRANDES INFERIORES EN LIQUID GLASS ── */}
           <div className="flex flex-col gap-2.5 mt-2">
-            <motion.button
+            <button
               type="button"
-              whileHover={rolling || caminando || modalAbierto ? undefined : { scale: 1.02, y: -1 }}
-              whileTap={rolling || caminando || modalAbierto ? undefined : { scale: 0.97 }}
               onClick={handleIniciarSalto}
               disabled={rolling || caminando || modalAbierto}
-              className="w-full py-3 rounded-2xl font-black text-sm sm:text-base tracking-widest uppercase transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-2xl font-black text-sm tracking-[0.18em] uppercase transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 liquid-glass-btn text-white"
               style={{
-                background: 'linear-gradient(180deg, #FEF08A 0%, #F59E0B 55%, #B45309 100%)',
-                border: '2px solid #FEF9C3',
-                boxShadow: '0 4px 0 #78350F, 0 0 20px rgba(245, 158, 11, 0.4)',
-                color: '#0F172A',
+                background:
+                  'linear-gradient(135deg, rgba(99, 102, 241, 0.55) 0%, rgba(168, 85, 247, 0.45) 50%, rgba(16, 185, 129, 0.42) 100%)',
+                borderColor: 'rgba(226, 238, 255, 0.45)',
               }}
             >
               <span>🎲</span>
@@ -935,24 +907,16 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                     ? 'SALTANDO...'
                     : 'INICIAR SALTO'}
               </span>
-            </motion.button>
+            </button>
 
-            <motion.button
+            <button
               type="button"
-              whileHover={{ scale: 1.02, y: -1 }}
-              whileTap={{ scale: 0.97 }}
               onClick={() => setMostrarGuia(true)}
-              className="w-full py-2.5 rounded-2xl font-black text-xs sm:text-sm tracking-widest uppercase transition-all cursor-pointer flex items-center justify-center gap-2"
-              style={{
-                background: 'linear-gradient(180deg, #10365C 0%, #081E36 100%)',
-                border: '2px solid #00E5FF',
-                boxShadow: '0 4px 0 #061527, 0 0 14px rgba(0, 229, 255, 0.25)',
-                color: '#E0F2FE',
-              }}
+              className="w-full py-2.5 rounded-2xl font-bold text-xs tracking-[0.18em] uppercase transition-all cursor-pointer flex items-center justify-center gap-2 liquid-glass-pill text-[#E2EEFF] hover:text-white"
             >
               <span>📐</span>
               <span>FÓRMULAS Y GUÍA</span>
-            </motion.button>
+            </button>
           </div>
         </div>
       </aside>
@@ -1031,57 +995,57 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 12 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg rounded-3xl p-6 bg-[#0B213D] border-2 border-[#00F0FF] text-[#E0F2FE] shadow-[0_0_50px_rgba(0,240,255,0.3)]"
+              className="w-full max-w-lg rounded-3xl p-6 liquid-glass-modal text-[#E2EEFF]"
             >
-              <div className="flex items-center justify-between border-b border-[#00E5FF]/30 pb-3 mb-4">
-                <h3 className="text-lg sm:text-xl font-black tracking-wider text-[#00F0FF]">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+                <h3 className="text-lg sm:text-xl font-black tracking-wider text-[#F0F6FF]">
                   📐 Manual Cuántico de Numérix
                 </h3>
                 <button
                   type="button"
                   onClick={() => setMostrarGuia(false)}
-                  className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-400 font-black text-cyan-200 cursor-pointer"
+                  className="w-8 h-8 rounded-xl liquid-glass-pill font-black text-slate-200 hover:text-white cursor-pointer"
                 >
                   ✕
                 </button>
               </div>
 
               <div className="space-y-3 text-xs sm:text-sm">
-                <div className="p-3 rounded-xl bg-[#071629] border border-cyan-400/40">
-                  <p className="font-black text-cyan-300 mb-0.5">◈ Cubos de Cristal Cian (Cálculo):</p>
-                  <p className="text-slate-200">
+                <div className="p-3.5 rounded-2xl liquid-glass-pill">
+                  <p className="font-black text-[#BFDBFE] mb-0.5">◈ Cubos Azul Crema (Cálculo):</p>
+                  <p className="text-slate-200/90">
                     Activan la <strong>Cámara de Cálculo Cuántico</strong> con retos de suma, resta,
                     multiplicación y división exacta.
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#071629] border border-amber-400/50">
-                  <p className="font-black text-amber-300 mb-0.5">
-                    ★ Cubos Dorados (Casillas 04, 08, 12 y 16 — Propulsión):
+                <div className="p-3.5 rounded-2xl liquid-glass-pill">
+                  <p className="font-black text-emerald-300 mb-0.5">
+                    ★ Cubos Esmeralda (Casillas 04, 08, 12 y 16 — Propulsión):
                   </p>
-                  <p className="text-slate-200">
+                  <p className="text-slate-200/90">
                     Ordena los 4 cubos de menor a mayor en el <strong>Reactor de Propulsión</strong>{' '}
                     para avanzar <strong>+2 casillas</strong> y encender uno de los{' '}
                     <strong>4 Núcleos Cuánticos</strong>.
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#071629] border border-rose-400/50">
-                  <p className="font-black text-rose-300 mb-0.5">
-                    ⚠️ Cubos Coral (Casillas 06, 10 y 14 — Alerta de Impacto):
+                <div className="p-3.5 rounded-2xl liquid-glass-pill">
+                  <p className="font-black text-fuchsia-300 mb-0.5">
+                    ⚠️ Cubos Magenta/Morado (Casillas 06, 10 y 14 — Alerta de Impacto):
                   </p>
-                  <p className="text-slate-200">
+                  <p className="text-slate-200/90">
                     Dispara con el cañón al asteroide que cumpla la condición (Par, Impar o Múltiplo)
                     para activar el escudo y evitar retroceder 2 casillas.
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#071629] border border-emerald-400/50">
-                  <p className="font-black text-emerald-300 mb-0.5">
+                <div className="p-3.5 rounded-2xl liquid-glass-pill">
+                  <p className="font-black text-purple-300 mb-0.5">
                     🌐 Cima Casilla 20 (Guardián del Nivel — Núcleo Armilar):
                   </p>
-                  <p className="text-slate-200">
-                    Resuelve las 3 fases para alinear los 3 anillos de la Esfera Armilar Dorada y
+                  <p className="text-slate-200/90">
+                    Resuelve las 3 fases para alinear los 3 anillos de la Esfera Armilar y
                     obtener la bonificación fija de <strong>+4 estrellas</strong>.
                   </p>
                 </div>
@@ -1091,7 +1055,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 <button
                   type="button"
                   onClick={() => setMostrarGuia(false)}
-                  className="px-6 py-2 rounded-xl bg-gradient-to-b from-[#FEF08A] to-[#F59E0B] text-[#0F172A] font-black text-xs uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl liquid-glass-btn text-white font-black text-xs uppercase tracking-wider cursor-pointer"
                 >
                   Entendido
                 </button>
@@ -1113,7 +1077,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             <motion.div
               initial={{ scale: 0.86, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              className="w-full max-w-lg rounded-[32px] p-6 sm:p-8 text-center bg-[#0B213D] border-3 border-[#00F0FF] text-white shadow-[0_0_80px_rgba(0,240,255,0.4)]"
+              className="w-full max-w-lg rounded-3xl p-6 sm:p-8 text-center liquid-glass-modal text-white"
             >
               <div className="flex justify-center gap-3 mb-3">
                 {[0, 1, 2].map((i) => (
@@ -1122,44 +1086,44 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                     initial={{ scale: 0, rotate: -25 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ delay: 0.15 + i * 0.15, type: 'spring', stiffness: 300 }}
-                    className="text-4xl sm:text-5xl drop-shadow-[0_0_14px_rgba(251,191,36,0.8)]"
+                    className="text-4xl sm:text-5xl drop-shadow-[0_0_14px_rgba(110,231,183,0.75)]"
                   >
                     ⭐
                   </motion.span>
                 ))}
               </div>
 
-              <span className="inline-block px-4 py-1 rounded-full bg-cyan-500/20 border border-cyan-300 text-xs font-black uppercase tracking-widest text-cyan-200 mb-2">
+              <span className="inline-block px-4 py-1 rounded-full liquid-glass-pill text-xs font-black uppercase tracking-widest text-[#C4B5FD] mb-2">
                 ¡Núcleo Armilar Restaurado!
               </span>
 
               <h2
-                className="text-2xl sm:text-3xl font-black text-[#FEF08A] mb-2"
+                className="text-2xl sm:text-3xl font-black text-[#F0F6FF] mb-2"
                 style={{ fontFamily: "'Orbitron', sans-serif" }}
               >
                 ¡VICTORIA EN NUMÉRIX!
               </h2>
-              <p className="text-sm sm:text-base text-cyan-100/85 mb-4">
-                Alineaste los 3 anillos de la Esfera Armilar Dorada y activaste los 4 Núcleos
+              <p className="text-sm sm:text-base text-[#BFDBFE]/90 mb-4">
+                Alineaste los 3 anillos de la Esfera Armilar y activaste los 4 Núcleos
                 Cuánticos de la montaña.
               </p>
 
               {/* Desglose de Estrellas según reglas de negocio */}
-              <div className="bg-[#071629] border border-cyan-400/40 rounded-2xl p-3.5 mb-5 text-xs sm:text-sm space-y-1">
-                <div className="flex justify-between text-cyan-100">
+              <div className="liquid-glass-pill rounded-2xl p-4 mb-5 text-xs sm:text-sm space-y-1.5">
+                <div className="flex justify-between text-[#E2EEFF]">
                   <span>
                     Preguntas Regulares (
                     {totalPreguntas > 0 ? Math.round((aciertos / totalPreguntas) * 100) : 100}% aciertos):
                   </span>
-                  <span className="font-black text-amber-300">+{estrellasRegularesFinal} ⭐</span>
+                  <span className="font-black text-emerald-300">+{estrellasRegularesFinal} ⭐</span>
                 </div>
-                <div className="flex justify-between text-cyan-100">
+                <div className="flex justify-between text-[#E2EEFF]">
                   <span>Bonificación Jefe Final:</span>
-                  <span className="font-black text-cyan-300">+{BONUS_JEFE_FINAL} ⭐</span>
+                  <span className="font-black text-purple-300">+{BONUS_JEFE_FINAL} ⭐</span>
                 </div>
-                <div className="border-t border-cyan-500/30 pt-1.5 mt-1.5 flex justify-between text-base font-black text-[#FEF08A]">
+                <div className="border-t border-white/10 pt-1.5 mt-1.5 flex justify-between text-base font-black text-[#F0F6FF]">
                   <span>Estrellas Totales del Nivel:</span>
-                  <span>⭐ {stars}</span>
+                  <span className="text-emerald-300">⭐ {stars}</span>
                 </div>
               </div>
 
@@ -1167,7 +1131,8 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 {OPERADORES_NUCLEO.map((n) => (
                   <span
                     key={n.op}
-                    className="w-12 h-12 rounded-2xl bg-[#071629] border-2 border-[#FBBF24] flex items-center justify-center font-black text-xl text-[#FEF08A] shadow-[0_0_15px_rgba(251,191,36,0.45)]"
+                    className="w-12 h-12 rounded-2xl liquid-glass-pill flex items-center justify-center font-black text-xl"
+                    style={{ color: n.color, borderColor: `${n.color}66` }}
                   >
                     {n.op}
                   </span>
@@ -1178,7 +1143,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 <button
                   type="button"
                   onClick={handleRestart}
-                  className="px-6 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-b from-[#FEF08A] to-[#F59E0B] border-2 border-white text-[#0F172A] shadow-lg cursor-pointer"
+                  className="px-6 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider liquid-glass-pill text-[#E2EEFF] hover:text-white cursor-pointer"
                 >
                   🔄 Jugar de Nuevo
                 </button>
@@ -1186,7 +1151,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                   type="button"
                   disabled={guardandoBD}
                   onClick={handleIrAlDashboard}
-                  className="px-6 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-b from-[#12365E] to-[#091E38] border-2 border-[#00F0FF] text-[#E0F2FE] shadow-lg cursor-pointer disabled:opacity-50"
+                  className="px-6 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider liquid-glass-btn text-white cursor-pointer disabled:opacity-50"
                 >
                   {guardandoBD ? 'Guardando...' : '🚀 Ir al Dashboard'}
                 </button>
