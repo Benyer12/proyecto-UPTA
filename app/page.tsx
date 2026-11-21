@@ -106,8 +106,8 @@ const PLANETAS_MUESTRA = [
     frase: 'Supera retos de sumas, restas, multiplicaciones y divisiones entre asteroides.',
     detalle: 'Tablero espacial de 20 casillas y misiones cuánticas',
     accent: '#67E8F9',
-    border: 'rgba(0, 245, 255, 0.28)',
-    bgClass: 'bg-[#041522]/[0.76]',
+    border: 'rgba(103, 232, 249, 0.36)',
+    bgClass: 'bg-[#031524]/[0.34]',
   },
   {
     nombre: 'Letralia',
@@ -115,8 +115,8 @@ const PLANETAS_MUESTRA = [
     frase: 'Descifra palabras, lectura comprensiva y acertijos en una galaxia llena de historias.',
     detalle: 'Mapa astral con altares de decodificación',
     accent: '#D8B4FE',
-    border: 'rgba(191, 64, 255, 0.3)',
-    bgClass: 'bg-[#150826]/[0.76]',
+    border: 'rgba(216, 180, 254, 0.38)',
+    bgClass: 'bg-[#160726]/[0.36]',
   },
   {
     nombre: 'Naturae',
@@ -124,8 +124,8 @@ const PLANETAS_MUESTRA = [
     frase: 'Descubre cómo funciona la naturaleza, los ecosistemas y los misterios del universo.',
     detalle: 'Exploración científica guiada paso a paso',
     accent: '#6EE7B7',
-    border: 'rgba(0, 255, 136, 0.28)',
-    bgClass: 'bg-[#041B14]/[0.76]',
+    border: 'rgba(110, 231, 183, 0.36)',
+    bgClass: 'bg-[#031B14]/[0.34]',
   },
 ];
 
@@ -244,9 +244,11 @@ export default function Home() {
                 </Link>
 
                 <LiquidGlass
-                  blur={4}
-                  refraction={12}
-                  className="inline-flex rounded-full bg-[#070b18]/[0.68] border-white/[0.15]"
+                  blur={2}
+                  refraction={18}
+                  bezel={0.4}
+                  saturation={1.65}
+                  className="inline-flex rounded-full bg-white/[0.045] border-white/[0.16]"
                 >
                   <Link
                     href="/how-to-play"
@@ -267,11 +269,15 @@ export default function Home() {
             className="relative flex items-center justify-center"
           >
             <LiquidGlass
-              blur={6}
-              refraction={14}
-              bezel={0.26}
-              saturation={1.45}
-              className="w-full max-w-[530px] rounded-3xl bg-[#070c1c]/[0.76] border-white/[0.13] p-6 sm:p-7"
+              blur={2}
+              refraction={24}
+              bezel={0.38}
+              saturation={1.68}
+              className="w-full max-w-[530px] rounded-3xl bg-[#050a18]/[0.36] border-white/[0.16] p-6 sm:p-7 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_28px_-12px_rgba(180,220,255,0.18),0_26px_76px_-30px_rgba(0,0,0,0.78)]"
+              style={{
+                backgroundImage:
+                  'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.22) 100%)',
+              }}
             >
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-1.5" aria-hidden="true">
@@ -372,12 +378,16 @@ export default function Home() {
               transition={{ duration: 0.42, delay: i * 0.08 }}
             >
               <LiquidGlass
-                blur={6}
-                refraction={14}
-                bezel={0.24}
-                saturation={1.45}
-                className={`h-full rounded-3xl ${planeta.bgClass} p-6 flex flex-col items-center text-center justify-between gap-5`}
-                style={{ borderColor: planeta.border }}
+                blur={2}
+                refraction={24}
+                bezel={0.38}
+                saturation={1.68}
+                className={`h-full rounded-3xl ${planeta.bgClass} p-6 flex flex-col items-center text-center justify-between gap-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_28px_-12px_rgba(180,220,255,0.18),0_26px_76px_-30px_rgba(0,0,0,0.78)]`}
+                style={{
+                  borderColor: planeta.border,
+                  backgroundImage:
+                    'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.22) 100%)',
+                }}
               >
                 <div className="w-full space-y-4">
                   <div className="flex items-center justify-between">
@@ -440,48 +450,60 @@ export default function Home() {
 
         <div className="grid gap-4 sm:grid-cols-3">
           {PASOS_DIDACTICOS.map((item) => (
-            <div
+            <LiquidGlass
               key={item.code}
-              className="rounded-2xl border border-white/12 bg-[#070b18]/[0.72] backdrop-blur-md p-6 space-y-3"
+              blur={2}
+              refraction={20}
+              bezel={0.36}
+              saturation={1.62}
+              className="rounded-2xl bg-[#050a18]/[0.36] border-white/[0.14] p-6 space-y-3 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.28),inset_0_-12px_22px_-12px_rgba(180,220,255,0.14)]"
             >
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl border border-white/12 bg-white/[0.05] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl border border-white/14 bg-white/[0.06] flex items-center justify-center">
                   <StepBadgeIcon code={item.code} color={item.accent} />
                 </div>
-                <span className="font-mono text-xs tracking-[0.2em] text-white/40">
+                <span className="font-mono text-xs tracking-[0.2em] text-white/45">
                   {item.code}
                 </span>
               </div>
               <h3 className="text-base font-bold tracking-tight text-white">{item.title}</h3>
-              <p className="text-xs sm:text-[13px] leading-relaxed text-white/65">
+              <p className="text-xs sm:text-[13px] leading-relaxed text-white/70">
                 {item.description}
               </p>
-            </div>
+            </LiquidGlass>
           ))}
         </div>
       </section>
 
       {/* ════════════════════ PIE DE PÁGINA ════════════════════ */}
       <footer className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 pb-12">
-        <div className="rounded-2xl border border-white/10 bg-[#070b18]/[0.72] backdrop-blur-md px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-0.5">
-            <div className="text-sm font-semibold text-white">Universo del Conocimiento</div>
-            <p className="text-xs text-white/50">
-              Plataforma educativa gamificada de primaria · Matemáticas, Lenguaje y Ciencias
-            </p>
+        <LiquidGlass
+          blur={2}
+          refraction={18}
+          bezel={0.34}
+          saturation={1.6}
+          className="rounded-2xl bg-[#050a18]/[0.34] border-white/[0.14] px-6 py-5"
+        >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <div className="text-sm font-semibold text-white">Universo del Conocimiento</div>
+              <p className="text-xs text-white/55">
+                Plataforma educativa gamificada de primaria · Matemáticas, Lenguaje y Ciencias
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-5 text-xs text-white/75">
+              <Link href="/about" className="hover:text-white transition-colors">
+                Acerca de
+              </Link>
+              <Link href="/how-to-play" className="hover:text-white transition-colors">
+                Cómo jugar
+              </Link>
+              <Link href="/dashboard" className="hover:text-white transition-colors">
+                Mi espacio
+              </Link>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-5 text-xs text-white/70">
-            <Link href="/about" className="hover:text-white transition-colors">
-              Acerca de
-            </Link>
-            <Link href="/how-to-play" className="hover:text-white transition-colors">
-              Cómo jugar
-            </Link>
-            <Link href="/dashboard" className="hover:text-white transition-colors">
-              Mi espacio
-            </Link>
-          </div>
-        </div>
+        </LiquidGlass>
       </footer>
     </div>
   );

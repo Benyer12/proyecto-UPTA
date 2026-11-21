@@ -217,16 +217,18 @@ export default function HowToPlayPage() {
     <div className="relative min-h-screen">
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-12 pb-24 space-y-10 sm:space-y-12">
         {/* Encabezado asimétrico en Liquid Glass */}
-        <section className="liquid-glass liquid-glass-panel rounded-2xl p-6 sm:p-9">
+        <LiquidGlass
+          blur={2}
+          refraction={22}
+          bezel={0.36}
+          saturation={1.65}
+          className="rounded-3xl bg-[#050a18]/[0.36] border-white/[0.15] p-6 sm:p-9 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.32),inset_0_-14px_26px_-12px_rgba(180,220,255,0.16)]"
+        >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7 space-y-4">
-              <LiquidGlass
-                blur={4}
-                refraction={10}
-                className="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-[0.18em] text-[#67E8F9]"
-              >
+              <span className="inline-flex items-center rounded-full border border-[#67E8F9]/35 bg-white/[0.05] px-3.5 py-1 text-xs font-bold uppercase tracking-[0.18em] text-[#67E8F9]">
                 Guía de exploración
-              </LiquidGlass>
+              </span>
               <h1 className="text-3xl sm:text-5xl font-black tracking-tight cosmic-title leading-tight">
                 Cómo jugar una misión
               </h1>
@@ -236,15 +238,21 @@ export default function HowToPlayPage() {
               </p>
             </div>
             <div className="lg:col-span-5">
-              <div className="rounded-xl liquid-glass-inset p-4">
+              <div className="rounded-xl border border-white/12 bg-white/[0.04] p-4">
                 <BoardFlowDiagram />
               </div>
             </div>
           </div>
-        </section>
+        </LiquidGlass>
 
         {/* Mecánicas y Reglas */}
-        <section className="liquid-glass liquid-glass-panel rounded-2xl p-6 sm:p-8 space-y-6">
+        <LiquidGlass
+          blur={2}
+          refraction={22}
+          bezel={0.34}
+          saturation={1.65}
+          className="rounded-3xl bg-[#050a18]/[0.38] border-white/[0.15] p-6 sm:p-8 space-y-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)]"
+        >
           <div className="flex flex-wrap items-end justify-between gap-3 pb-4 border-b border-white/10">
             <div>
               <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#67E8F9] block">
@@ -290,10 +298,16 @@ export default function HowToPlayPage() {
               </article>
             ))}
           </div>
-        </section>
+        </LiquidGlass>
 
         {/* Flujo del juego: 6 pasos en secuencia ordenada */}
-        <section className="liquid-glass liquid-glass-panel rounded-2xl p-6 sm:p-8 space-y-6">
+        <LiquidGlass
+          blur={2}
+          refraction={22}
+          bezel={0.34}
+          saturation={1.65}
+          className="rounded-3xl bg-[#050a18]/[0.38] border-white/[0.15] p-6 sm:p-8 space-y-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)]"
+        >
           <div className="space-y-1">
             <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#94A3B8] block">
               Secuencia completa
@@ -316,10 +330,16 @@ export default function HowToPlayPage() {
               </li>
             ))}
           </ol>
-        </section>
+        </LiquidGlass>
 
         {/* Roles en la Plataforma */}
-        <section className="liquid-glass liquid-glass-panel rounded-2xl p-6 sm:p-8 space-y-6">
+        <LiquidGlass
+          blur={2}
+          refraction={22}
+          bezel={0.34}
+          saturation={1.65}
+          className="rounded-3xl bg-[#050a18]/[0.38] border-white/[0.15] p-6 sm:p-8 space-y-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)]"
+        >
           <div className="space-y-1">
             <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#94A3B8] block">
               Perfiles de acceso
@@ -360,7 +380,7 @@ export default function HowToPlayPage() {
               </article>
             ))}
           </div>
-        </section>
+        </LiquidGlass>
 
         <div className="flex justify-center pt-2">
           <Link

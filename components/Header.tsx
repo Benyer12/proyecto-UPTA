@@ -538,11 +538,11 @@ export default function Header() {
       {/* Barra flotante Liquid Glass estilo glasscn (píldora suspendida con refracción SVG) */}
       <div className="mx-auto max-w-5xl pointer-events-auto">
         <LiquidGlass
-          blur={4}
-          refraction={14}
-          bezel={0.34}
-          saturation={1.45}
-          className="h-13 rounded-full bg-[#060916]/[0.62] border-white/[0.14] px-3 sm:px-4"
+          blur={2}
+          refraction={20}
+          bezel={0.4}
+          saturation={1.65}
+          className="h-13 rounded-full bg-[#050814]/[0.34] border-white/[0.16] px-3 sm:px-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3),inset_0_-10px_20px_-10px_rgba(180,220,255,0.16),0_18px_48px_-22px_rgba(0,0,0,0.75)]"
         >
           <div className="h-full flex items-center justify-between gap-3">
             <Link

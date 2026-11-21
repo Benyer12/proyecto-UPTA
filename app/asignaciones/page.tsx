@@ -214,9 +214,11 @@ export default function AsignacionesPage() {
           </div>
 
           <LiquidGlass
-            blur={6}
-            refraction={12}
-            className="rounded-2xl bg-[#070c1b]/[0.76] border-white/[0.12] self-start md:self-auto shrink-0"
+            blur={2}
+            refraction={20}
+            bezel={0.36}
+            saturation={1.65}
+            className="rounded-2xl bg-[#050a18]/[0.38] border-white/[0.15] self-start md:self-auto shrink-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)]"
           >
             <div className="grid grid-cols-3 divide-x divide-white/10">
               <div className="px-4 py-3 text-center">
@@ -262,10 +264,11 @@ export default function AsignacionesPage() {
             {/* Panel Izquierdo: Lista de Tutores */}
             <section aria-labelledby="select-tutor-heading" className="lg:col-span-4">
               <LiquidGlass
-                blur={8}
-                refraction={12}
-                bezel={0.22}
-                className="rounded-3xl bg-[#070c1b]/[0.78] border-white/[0.12]"
+                blur={2.5}
+                refraction={20}
+                bezel={0.32}
+                saturation={1.62}
+                className="rounded-3xl bg-[#050a18]/[0.44] border-white/[0.15] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3),inset_0_-14px_28px_-12px_rgba(180,220,255,0.14)]"
               >
                 <div className="px-5 py-4 border-b border-white/[0.08] bg-white/[0.02]">
                   <h2
@@ -323,10 +326,11 @@ export default function AsignacionesPage() {
             {/* Panel Derecho: Estudiantes para el tutor seleccionado */}
             <section aria-labelledby="students-for-tutor-heading" className="lg:col-span-8">
               <LiquidGlass
-                blur={8}
-                refraction={12}
-                bezel={0.22}
-                className="rounded-3xl bg-[#070c1b]/[0.78] border-white/[0.12]"
+                blur={2.5}
+                refraction={20}
+                bezel={0.32}
+                saturation={1.62}
+                className="rounded-3xl bg-[#050a18]/[0.44] border-white/[0.15] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3),inset_0_-14px_28px_-12px_rgba(180,220,255,0.14)]"
               >
                 <div className="px-5 sm:px-6 py-4 border-b border-white/[0.08] bg-white/[0.02] flex items-center justify-between gap-2">
                   <h2

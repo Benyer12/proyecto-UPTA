@@ -12,8 +12,8 @@ const planetasInfo = [
     materia: 'Matemáticas',
     desc: 'Números, operaciones, geometría y razonamiento lógico transformados en misiones espaciales paso a paso.',
     accent: '#67E8F9',
-    border: 'rgba(0, 245, 255, 0.34)',
-    bgClass: 'bg-[#041724]/[0.82]',
+    border: 'rgba(103, 232, 249, 0.36)',
+    bgClass: 'bg-[#031524]/[0.34]',
     badge: '6 niveles · 2 cursos',
   },
   {
@@ -22,8 +22,8 @@ const planetasInfo = [
     materia: 'Lenguas',
     desc: 'Gramática, vocabulario, ortografía y comprensión lectora con acertijos y aventuras llenas de imaginación.',
     accent: '#D8B4FE',
-    border: 'rgba(191, 64, 255, 0.36)',
-    bgClass: 'bg-[#160828]/[0.82]',
+    border: 'rgba(216, 180, 254, 0.38)',
+    bgClass: 'bg-[#160726]/[0.36]',
     badge: '3 niveles · 1 curso',
   },
   {
@@ -32,8 +32,8 @@ const planetasInfo = [
     materia: 'Ciencias',
     desc: 'Seres vivos, ecosistemas, energía y secretos del universo en recorridos llenos de descubrimientos.',
     accent: '#6EE7B7',
-    border: 'rgba(0, 255, 136, 0.34)',
-    bgClass: 'bg-[#041C14]/[0.82]',
+    border: 'rgba(110, 231, 183, 0.36)',
+    bgClass: 'bg-[#031B14]/[0.34]',
     badge: '3 niveles · 1 curso',
   },
 ];
@@ -44,24 +44,24 @@ const PILARES = [
     label: 'Modo Offline y Online',
     desc: 'Guarda tus estrellas en el dispositivo y sincronízalas en la nube para no perder nunca tu aventura.',
     accent: '#67E8F9',
-    cardBg: 'bg-[#041724]/[0.78]',
-    border: 'rgba(103, 232, 249, 0.3)',
+    cardBg: 'bg-[#031524]/[0.34]',
+    border: 'rgba(103, 232, 249, 0.34)',
   },
   {
     id: 'safe',
     label: 'Aprendizaje sin castigos',
     desc: 'Equivocarse te da pistas útiles y una nueva oportunidad. ¡Aquí cada intento cuenta para aprender!',
     accent: '#6EE7B7',
-    cardBg: 'bg-[#041B14]/[0.78]',
-    border: 'rgba(110, 231, 183, 0.3)',
+    cardBg: 'bg-[#031B14]/[0.34]',
+    border: 'rgba(110, 231, 183, 0.34)',
   },
   {
     id: 'age',
     label: 'Primaria de 10 a 12 años',
     desc: 'Retos coloridos, lecturas claras y mecánicas de juego pensadas especialmente para estudiantes de primaria.',
     accent: '#FDE68A',
-    cardBg: 'bg-[#1C1405]/[0.78]',
-    border: 'rgba(253, 230, 138, 0.3)',
+    cardBg: 'bg-[#1C1405]/[0.36]',
+    border: 'rgba(253, 230, 138, 0.34)',
   },
 ] as const;
 
@@ -185,11 +185,11 @@ export default function AboutPage() {
           transition={{ duration: 0.45 }}
         >
           <LiquidGlass
-            blur={8}
-            refraction={14}
-            bezel={0.24}
-            saturation={1.5}
-            className="rounded-3xl bg-[#070d1f]/[0.82] border-white/[0.14] p-6 sm:p-9"
+            blur={2}
+            refraction={24}
+            bezel={0.36}
+            saturation={1.68}
+            className="rounded-3xl bg-[#050a18]/[0.36] border-white/[0.16] p-6 sm:p-9 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_28px_-12px_rgba(180,220,255,0.18),0_26px_76px_-30px_rgba(0,0,0,0.78)]"
           >
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               <div className="lg:col-span-6 space-y-5">
@@ -246,11 +246,12 @@ export default function AboutPage() {
 
           <div className="grid md:grid-cols-2 gap-5">
             <LiquidGlass
-              blur={8}
-              refraction={12}
-              bezel={0.24}
-              className="rounded-3xl bg-[#041724]/[0.80] p-6 sm:p-7 space-y-3"
-              style={{ borderColor: 'rgba(103, 232, 249, 0.3)' }}
+              blur={2}
+              refraction={22}
+              bezel={0.36}
+              saturation={1.65}
+              className="rounded-3xl bg-[#031524]/[0.36] p-6 sm:p-7 space-y-3 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3),inset_0_-12px_24px_-12px_rgba(103,232,249,0.16)]"
+              style={{ borderColor: 'rgba(103, 232, 249, 0.34)' }}
             >
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl border border-[#67E8F9]/40 bg-[#00F5FF]/12 flex items-center justify-center text-[#67E8F9] shrink-0">
@@ -276,11 +277,12 @@ export default function AboutPage() {
             </LiquidGlass>
 
             <LiquidGlass
-              blur={8}
-              refraction={12}
-              bezel={0.24}
-              className="rounded-3xl bg-[#160828]/[0.80] p-6 sm:p-7 space-y-3"
-              style={{ borderColor: 'rgba(216, 180, 254, 0.32)' }}
+              blur={2}
+              refraction={22}
+              bezel={0.36}
+              saturation={1.65}
+              className="rounded-3xl bg-[#160726]/[0.36] p-6 sm:p-7 space-y-3 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3),inset_0_-12px_24px_-12px_rgba(216,180,254,0.16)]"
+              style={{ borderColor: 'rgba(216, 180, 254, 0.36)' }}
             >
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl border border-[#D8B4FE]/40 bg-[#BF40FF]/15 flex items-center justify-center text-[#D8B4FE] shrink-0">
@@ -307,22 +309,26 @@ export default function AboutPage() {
 
           <div className="grid sm:grid-cols-3 gap-4">
             {PILARES.map((pilar) => (
-              <div
+              <LiquidGlass
                 key={pilar.label}
-                className={`rounded-2xl border ${pilar.cardBg} backdrop-blur-md p-5 flex items-start gap-3.5`}
+                blur={2}
+                refraction={20}
+                bezel={0.36}
+                saturation={1.62}
+                className={`rounded-2xl ${pilar.cardBg} p-5 flex items-start gap-3.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.28)]`}
                 style={{ borderColor: pilar.border }}
               >
                 <div
-                  className="w-11 h-11 rounded-xl border bg-white/[0.05] flex items-center justify-center shrink-0"
+                  className="w-11 h-11 rounded-xl border bg-white/[0.06] flex items-center justify-center shrink-0"
                   style={{ borderColor: pilar.border }}
                 >
                   <PillarIcon id={pilar.id} color={pilar.accent} />
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-white">{pilar.label}</h3>
-                  <p className="text-xs text-white/70 leading-relaxed">{pilar.desc}</p>
+                  <p className="text-xs text-white/75 leading-relaxed">{pilar.desc}</p>
                 </div>
-              </div>
+              </LiquidGlass>
             ))}
           </div>
         </section>
@@ -342,11 +348,16 @@ export default function AboutPage() {
             {planetasInfo.map((p) => (
               <LiquidGlass
                 key={p.nombre}
-                blur={8}
-                refraction={14}
-                bezel={0.24}
-                className={`rounded-3xl ${p.bgClass} p-6 flex flex-col items-center text-center justify-between gap-5`}
-                style={{ borderColor: p.border }}
+                blur={2}
+                refraction={24}
+                bezel={0.38}
+                saturation={1.68}
+                className={`rounded-3xl ${p.bgClass} p-6 flex flex-col items-center text-center justify-between gap-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_28px_-12px_rgba(180,220,255,0.18),0_26px_76px_-30px_rgba(0,0,0,0.78)]`}
+                style={{
+                  borderColor: p.border,
+                  backgroundImage:
+                    'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.22) 100%)',
+                }}
               >
                 <div className="w-full space-y-4">
                   <div className="flex items-center justify-between">
