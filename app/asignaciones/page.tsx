@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../lib/auth-store';
 import { supabase } from '../../lib/supabase';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
+import RoleAvatar from '../../components/RoleAvatar';
 
 interface Usuario {
   id: string;
@@ -296,20 +297,23 @@ export default function AsignacionesPage() {
                           activo ? 'bg-white/[0.09]' : 'hover:bg-white/[0.04]'
                         }`}
                       >
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span
-                              aria-hidden="true"
-                              className={`w-2 h-2 rounded-full shrink-0 ${
-                                activo ? 'bg-[#67E8F9]' : 'bg-white/25'
-                              }`}
-                            />
-                            <span className="text-sm font-semibold text-white truncate">
-                              {t.nombre}
-                            </span>
-                          </div>
-                          <div className="text-xs text-white/45 mt-0.5 pl-4 truncate">
-                            @{t.usuario}
+                        <div className="flex items-center gap-3 min-w-0">
+                          <RoleAvatar role="tutor" name={t.nombre || t.usuario} size={38} />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span
+                                aria-hidden="true"
+                                className={`w-2 h-2 rounded-full shrink-0 ${
+                                  activo ? 'bg-[#67E8F9]' : 'bg-white/25'
+                                }`}
+                              />
+                              <span className="text-sm font-semibold text-white truncate">
+                                {t.nombre}
+                              </span>
+                            </div>
+                            <div className="text-xs text-white/45 mt-0.5 pl-4 truncate">
+                              @{t.usuario}
+                            </div>
                           </div>
                         </div>
 
@@ -370,45 +374,48 @@ export default function AsignacionesPage() {
                             esDeEsteTutor ? 'bg-emerald-500/[0.06]' : 'hover:bg-white/[0.03]'
                           }`}
                         >
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span
-                                aria-hidden="true"
-                                className={`w-2 h-2 rounded-full shrink-0 ${
-                                  esDeEsteTutor
-                                    ? 'bg-[#6EE7B7]'
-                                    : otroTutor
-                                      ? 'bg-[#FDE68A]'
-                                      : 'bg-white/25'
-                                }`}
-                              />
-                              <span className="text-sm font-semibold text-white">
-                                {est.nombre}
-                              </span>
-                              <span className="text-xs text-white/45">
-                                @{est.usuario}
-                              </span>
-                            </div>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <RoleAvatar role="student" name={est.nombre || est.usuario} size={40} />
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span
+                                  aria-hidden="true"
+                                  className={`w-2 h-2 rounded-full shrink-0 ${
+                                    esDeEsteTutor
+                                      ? 'bg-[#6EE7B7]'
+                                      : otroTutor
+                                        ? 'bg-[#FDE68A]'
+                                        : 'bg-white/25'
+                                  }`}
+                                />
+                                <span className="text-sm font-semibold text-white">
+                                  {est.nombre}
+                                </span>
+                                <span className="text-xs text-white/45">
+                                  @{est.usuario}
+                                </span>
+                              </div>
 
-                            <div className="text-xs mt-1 pl-4">
-                              {esDeEsteTutor ? (
-                                <span className="inline-flex items-center gap-1.5 text-[#6EE7B7] font-medium">
-                                  <IconCheckCircle className="w-3.5 h-3.5 shrink-0" />
-                                  <span>
-                                    Asignado a {tutorActivo?.nombre}
-                                    {relacion?.fecha_asignacion &&
-                                      ` (${new Date(
-                                        relacion.fecha_asignacion
-                                      ).toLocaleDateString()})`}
+                              <div className="text-xs mt-1 pl-4">
+                                {esDeEsteTutor ? (
+                                  <span className="inline-flex items-center gap-1.5 text-[#6EE7B7] font-medium">
+                                    <IconCheckCircle className="w-3.5 h-3.5 shrink-0" />
+                                    <span>
+                                      Asignado a {tutorActivo?.nombre}
+                                      {relacion?.fecha_asignacion &&
+                                        ` (${new Date(
+                                          relacion.fecha_asignacion
+                                        ).toLocaleDateString()})`}
+                                    </span>
                                   </span>
-                                </span>
-                              ) : otroTutor ? (
-                                <span className="text-[#FDE68A]/90">
-                                  Asignado actualmente a: {otroTutor.nombre}
-                                </span>
-                              ) : (
-                                <span className="text-white/40">Sin tutor asignado</span>
-                              )}
+                                ) : otroTutor ? (
+                                  <span className="text-[#FDE68A]/90">
+                                    Asignado actualmente a: {otroTutor.nombre}
+                                  </span>
+                                ) : (
+                                  <span className="text-white/40">Sin tutor asignado</span>
+                                )}
+                              </div>
                             </div>
                           </div>
 

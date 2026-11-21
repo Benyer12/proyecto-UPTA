@@ -9,6 +9,7 @@ import LiquidGlassToast, {
   type LiquidGlassToastData,
 } from '../../components/LiquidGlassToast';
 import { LiquidGlass } from '../../../components/ui/glasscn/liquid-glass';
+import RoleAvatar from '../../../components/RoleAvatar';
 
 type ApprovalRole = 'student' | 'tutor';
 
@@ -288,9 +289,7 @@ export default function AdminPendientesPage() {
                       className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-5 sm:px-6 py-4 hover:bg-white/[0.03] transition-colors"
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="w-10 h-10 rounded-full border border-amber-300/30 bg-amber-400/[0.08] flex items-center justify-center font-semibold text-xs text-[#FEF3C7] shrink-0">
-                          {getInitials(u.nombre, u.usuario)}
-                        </div>
+                        <RoleAvatar role={u.role} name={u.nombre || u.usuario} size={44} />
 
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">

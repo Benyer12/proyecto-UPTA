@@ -8,6 +8,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import PlanetVisual from '../components/PlanetVisual';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
+import RoleAvatar from '../../components/RoleAvatar';
 import { useAuthStore } from '../../lib/auth-store';
 import { useThemeStore } from '../../lib/theme-store';
 import { MOCK_PLANETS, MOCK_PROGRESS } from '../../lib/mock-data';
@@ -296,7 +297,7 @@ function StudentDashboardView({
       >
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
-            <ExplorerAvatarIcon />
+            <RoleAvatar role="student" name={user.name || 'Explorador'} size={50} />
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight truncate">
               ¡Hola, {user.name || 'Explorador'}!
             </h1>

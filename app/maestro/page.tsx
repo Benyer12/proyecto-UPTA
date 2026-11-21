@@ -6,6 +6,7 @@ import { useAuthStore } from '../../lib/auth-store';
 import { supabase } from '../../lib/supabase';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
+import RoleAvatar from '../../components/RoleAvatar';
 
 const PLANET_DATA = [
   {
@@ -190,20 +191,23 @@ export default function MaestroPage() {
           aria-labelledby="tutor-heading"
           className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-7 border-b border-white/10"
         >
-          <div className="space-y-2">
-            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">
-              Panel docente · Seguimiento
+          <div className="flex items-start gap-4">
+            <RoleAvatar role="tutor" name={user.name} size={56} className="mt-1" />
+            <div className="space-y-2">
+              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">
+                Panel docente · Seguimiento
+              </div>
+              <h1
+                id="tutor-heading"
+                className="text-3xl sm:text-4xl font-bold text-white tracking-tight"
+              >
+                Puente de Mando
+              </h1>
+              <p className="text-sm text-white/60 max-w-xl leading-relaxed">
+                Bienvenido, <strong className="text-white font-semibold">{user.name}</strong>.
+                Supervisa el rendimiento, estrellas y niveles completados de tu grupo.
+              </p>
             </div>
-            <h1
-              id="tutor-heading"
-              className="text-3xl sm:text-4xl font-bold text-white tracking-tight"
-            >
-              Puente de Mando
-            </h1>
-            <p className="text-sm text-white/60 max-w-xl leading-relaxed">
-              Bienvenido, <strong className="text-white font-semibold">{user.name}</strong>.
-              Supervisa el rendimiento, estrellas y niveles completados de tu grupo.
-            </p>
           </div>
 
           {/* Selector de tema + Tira de métricas cristalina */}
@@ -295,9 +299,7 @@ export default function MaestroPage() {
                       className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-5 sm:px-6 py-4 hover:bg-white/[0.03] transition-colors"
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="w-10 h-10 rounded-full border border-white/12 bg-white/[0.05] flex items-center justify-center text-white text-xs font-semibold uppercase shrink-0">
-                          {s.nombre ? s.nombre.charAt(0) : 'E'}
-                        </div>
+                        <RoleAvatar role="student" name={s.nombre || s.usuario} size={44} />
                         <div className="min-w-0">
                           <div className="text-sm font-semibold text-white truncate">{s.nombre}</div>
                           <div className="text-xs text-white/50 truncate">

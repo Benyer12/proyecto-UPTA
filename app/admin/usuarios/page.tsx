@@ -10,6 +10,7 @@ import LiquidGlassToast, {
   type LiquidGlassToastVariant,
 } from '../../components/LiquidGlassToast';
 import { LiquidGlass } from '../../../components/ui/glasscn/liquid-glass';
+import RoleAvatar from '../../../components/RoleAvatar';
 
 type EditableRole = 'student' | 'tutor';
 
@@ -640,9 +641,7 @@ export default function AdminUsuariosPage() {
                     }`}
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="w-10 h-10 rounded-full border border-white/12 bg-white/[0.05] flex items-center justify-center font-semibold text-xs text-white shrink-0">
-                        {getInitials(u.nombre, u.usuario)}
-                      </div>
+                      <RoleAvatar role={u.role} name={u.nombre || u.usuario} size={44} />
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
