@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { type PointerEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import PlanetVisual from './components/PlanetVisual';
 import { LiquidGlass } from '../components/ui/glasscn/liquid-glass';
 
 type Point = { x: number; y: number };
@@ -98,38 +99,107 @@ function DraggableCrystalLens() {
   );
 }
 
-const PLATFORM_PILLARS = [
+const PLANETAS_MUESTRA = [
   {
-    code: '01',
-    title: 'Inicia sesión para entrar a tus mundos',
-    description:
-      'Los planetas interactivos y misiones se desbloquean exclusivamente en el panel personal de cada estudiante al iniciar sesión.',
+    nombre: 'Numérix',
+    materia: 'Matemáticas',
+    frase: 'Supera retos de sumas, restas, multiplicaciones y divisiones entre asteroides.',
+    detalle: 'Tablero espacial de 20 casillas y misiones cuánticas',
+    accent: '#67E8F9',
+    border: 'rgba(0, 245, 255, 0.28)',
+    bgClass: 'bg-[#041522]/[0.76]',
   },
   {
-    code: '02',
-    title: 'Aprende mediante tableros sin castigos',
-    description:
-      'Cada desafío combina matemáticas, lenguaje y ciencias con retroalimentación inmediata para aprender a tu propio ritmo.',
+    nombre: 'Letralia',
+    materia: 'Lenguaje',
+    frase: 'Descifra palabras, lectura comprensiva y acertijos en una galaxia llena de historias.',
+    detalle: 'Mapa astral con altares de decodificación',
+    accent: '#D8B4FE',
+    border: 'rgba(191, 64, 255, 0.3)',
+    bgClass: 'bg-[#150826]/[0.76]',
   },
   {
-    code: '03',
-    title: 'Acompañamiento docente en tiempo real',
-    description:
-      'Las estrellas, niveles completados y sesiones se sincronizan automáticamente para que los tutores puedan guiar el avance.',
+    nombre: 'Naturae',
+    materia: 'Ciencias',
+    frase: 'Descubre cómo funciona la naturaleza, los ecosistemas y los misterios del universo.',
+    detalle: 'Exploración científica guiada paso a paso',
+    accent: '#6EE7B7',
+    border: 'rgba(0, 255, 136, 0.28)',
+    bgClass: 'bg-[#041B14]/[0.76]',
   },
 ];
 
-const AREAS = ['Matemáticas', 'Lenguaje', 'Ciencias', 'Estudiantes', 'Tutores'];
+const PASOS_DIDACTICOS = [
+  {
+    code: '01',
+    title: 'Inicia sesión con tu cuenta',
+    description:
+      'Entra con tu usuario de estudiante para abrir tu panel personal con los mapas estelares listos para jugar.',
+    accent: '#67E8F9',
+  },
+  {
+    code: '02',
+    title: 'Elige un planeta y lanza el dado',
+    description:
+      'Avanza por tableros coloridos respondiendo retos cortos y divertidos de matemáticas, lenguaje y ciencias.',
+    accent: '#D8B4FE',
+  },
+  {
+    code: '03',
+    title: 'Gana estrellas sin miedo a fallar',
+    description:
+      'Si te equivocas puedes volver a intentarlo. Cada misión completada suma estrellas a tu progreso en la nube.',
+    accent: '#6EE7B7',
+  },
+];
+
+function StepBadgeIcon({ code, color }: { code: string; color: string }) {
+  if (code === '01') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden="true">
+        <circle cx="12" cy="8.5" r="3.5" stroke={color} strokeWidth="1.7" />
+        <path
+          d="M5.5 19C5.5 15.8 8.4 13.5 12 13.5C15.6 13.5 18.5 15.8 18.5 19"
+          stroke={color}
+          strokeWidth="1.7"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+  if (code === '02') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden="true">
+        <rect x="4" y="4" width="16" height="16" rx="3.5" stroke={color} strokeWidth="1.7" />
+        <circle cx="9" cy="9" r="1.2" fill={color} />
+        <circle cx="15" cy="9" r="1.2" fill={color} />
+        <circle cx="12" cy="12" r="1.2" fill={color} />
+        <circle cx="9" cy="15" r="1.2" fill={color} />
+        <circle cx="15" cy="15" r="1.2" fill={color} />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden="true">
+      <path
+        d="M12 3.2L14.7 8.7L20.8 9.6L16.4 13.9L17.4 20L12 17.1L6.6 20L7.6 13.9L3.2 9.6L9.3 8.7L12 3.2Z"
+        stroke={color}
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 export default function Home() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
     <div className="relative min-h-screen text-white selection:bg-white/25">
-      {/* ════════════════════ HERO EDITORIAL TRANSPARENTE ESTILO GLASSCN ════════════════════ */}
-      <section className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 pt-10 sm:pt-16 pb-16 sm:pb-24">
-        <div className="grid gap-12 lg:grid-cols-[1.05fr_1fr] lg:gap-12 xl:gap-16 items-center">
-          {/* Columna izquierda: Tipografía abierta sobre las partículas + lente arrastrable */}
+      {/* ════════════════════ HERO EDITORIAL + PANEL DIDÁCTICO LIQUID GLASS ════════════════════ */}
+      <section className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 pt-10 sm:pt-16 pb-14 sm:pb-20">
+        <div className="grid gap-10 lg:grid-cols-[1.08fr_1fr] lg:gap-12 xl:gap-16 items-center">
+          {/* Columna izquierda: Tipografía abierta + lente cristalina arrastrable */}
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -139,29 +209,57 @@ export default function Home() {
             <DraggableCrystalLens />
 
             <div className="relative z-10 space-y-5">
-              <div className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-white/55">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-[#070b18]/75 backdrop-blur-md px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-[#67E8F9]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#67E8F9]" aria-hidden="true" />
-                <span>Plataforma educativa · Primaria 10 a 12 años</span>
+                <span>Aventura educativa · 10 a 12 años</span>
               </div>
 
-              <h1 className="text-4xl sm:text-6xl xl:text-[68px] font-black tracking-[-0.03em] leading-[0.98] text-white">
+              <h1 className="text-4xl sm:text-6xl xl:text-[66px] font-black tracking-[-0.03em] leading-[0.98] text-white">
                 UNIVERSO DEL
-                <span className="block text-white/85">CONOCIMIENTO</span>
+                <span className="block bg-gradient-to-r from-white via-[#BAE6FD] to-[#67E8F9] bg-clip-text text-transparent">
+                  CONOCIMIENTO
+                </span>
               </h1>
 
-              <p className="max-w-lg text-[15px] sm:text-base leading-relaxed text-white/65">
-                Aprende matemáticas, lenguaje y ciencias naturales en un entorno interactivo
-                diseñado para despertar la curiosidad y mantener el progreso sincronizado.
+              <p className="max-w-lg text-base sm:text-lg leading-relaxed text-white/75">
+                Aprende matemáticas, lenguaje y ciencias jugando en tableros espaciales. Gana
+                estrellas, supera retos y explora cada mundo a tu propio ritmo.
               </p>
 
-              <p className="max-w-md text-[13px] leading-relaxed text-white/45">
-                Inicia sesión con tu cuenta de estudiante para abrir tu panel personal con todos
-                los mundos, cursos y niveles habilitados.
-              </p>
+              <div className="flex flex-col sm:flex-row gap-3.5 pt-2">
+                <Link
+                  href="/dashboard"
+                  className="min-h-[48px] inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-semibold text-black transition-colors hover:bg-white/90"
+                >
+                  <span>Entrar a mi espacio</span>
+                  <svg viewBox="0 0 16 16" fill="none" className="size-4" aria-hidden="true">
+                    <path
+                      d="M3.5 8H12.5M8.5 4L12.5 8L8.5 12"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </Link>
+
+                <LiquidGlass
+                  blur={4}
+                  refraction={12}
+                  className="inline-flex rounded-full bg-[#070b18]/[0.68] border-white/[0.15]"
+                >
+                  <Link
+                    href="/how-to-play"
+                    className="glance min-h-[48px] inline-flex items-center justify-center px-7 text-sm font-medium text-white hover:bg-white/[0.06] transition-colors rounded-full"
+                  >
+                    Cómo jugar
+                  </Link>
+                </LiquidGlass>
+              </div>
             </div>
           </motion.div>
 
-          {/* Columna derecha: Ventana cristalina ultra-transparente estilo macOS / glasscn */}
+          {/* Columna derecha: Tarjeta didáctica en Liquid Glass con buena opacidad y lectura limpia */}
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -169,225 +267,210 @@ export default function Home() {
             className="relative flex items-center justify-center"
           >
             <LiquidGlass
-              blur={2.5}
-              refraction={16}
-              bezel={0.28}
-              saturation={1.36}
-              className="w-full max-w-[540px] rounded-2xl bg-white/[0.035] border-white/[0.11] p-6 sm:p-8"
+              blur={6}
+              refraction={14}
+              bezel={0.26}
+              saturation={1.45}
+              className="w-full max-w-[530px] rounded-3xl bg-[#070c1c]/[0.76] border-white/[0.13] p-6 sm:p-7"
             >
-              {/* Indicadores de ventana minimalistas */}
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-1.5" aria-hidden="true">
                   <span className="size-2.5 rounded-full bg-[#FF5F56]" />
                   <span className="size-2.5 rounded-full bg-[#FFBD2E]" />
                   <span className="size-2.5 rounded-full bg-[#27C93F]" />
                 </div>
-                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/45">
-                  Resumen del sistema
+                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/55">
+                  Aventura espacial
                 </span>
               </div>
 
-              <div className="space-y-5">
+              <div className="space-y-4">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">
-                    Tu centro de aprendizaje espacial
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                    Aprender nunca fue tan divertido
                   </h2>
-                  <p className="text-sm leading-relaxed text-white/55 mt-1.5">
-                    Acceso organizado por rol con tableros interactivos, metas claras y seguimiento
-                    de estrellas en tiempo real.
+                  <p className="text-sm leading-relaxed text-white/65 mt-1">
+                    Inicia sesión como estudiante para desbloquear tu nave, recorrer los planetas y
+                    coleccionar estrellas en cada materia.
                   </p>
                 </div>
 
-                {/* Campos informativos en cristal ultra-transparente */}
-                <div className="space-y-3.5">
-                  <div>
-                    <div className="text-xs font-medium text-white/75 mb-1.5">Plataforma</div>
-                    <div className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 flex items-center justify-between text-sm text-white">
-                      <span>Universo del Conocimiento</span>
-                      <span className="font-mono text-[11px] text-[#67E8F9]">v2.0</span>
-                    </div>
+                {/* Mini resumen visual didáctico */}
+                <div className="grid grid-cols-3 gap-2.5 pt-1">
+                  <div className="rounded-2xl border border-[#67E8F9]/25 bg-[#041724]/70 p-3.5 text-center">
+                    <div className="text-xl font-black text-[#67E8F9] tabular-nums">3</div>
+                    <div className="text-[11px] font-medium text-white/80 mt-0.5">Planetas</div>
                   </div>
-
-                  <div>
-                    <div className="text-xs font-medium text-white/75 mb-1.5">Acceso a mundos</div>
-                    <Link
-                      href="/dashboard"
-                      className="glance group flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] px-3.5 py-3 transition-colors"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className="size-8 rounded-lg border border-white/12 bg-white/[0.06] flex items-center justify-center text-[#67E8F9] shrink-0">
-                          <svg viewBox="0 0 20 20" fill="none" className="size-4" aria-hidden="true">
-                            <circle cx="10" cy="10" r="6.5" stroke="currentColor" strokeWidth="1.5" />
-                            <ellipse
-                              cx="10"
-                              cy="10"
-                              rx="9"
-                              ry="3.2"
-                              transform="rotate(-20 10 10)"
-                              stroke="currentColor"
-                              strokeWidth="1.2"
-                            />
-                          </svg>
-                        </span>
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium text-white truncate">
-                            Panel exclusivo de estudiantes
-                          </div>
-                          <div className="text-xs text-white/50 truncate">
-                            Inicia sesión para explorar los planetas y guardar estrellas.
-                          </div>
-                        </div>
-                      </div>
-                      <svg
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        className="size-4 text-white/50 group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M3.5 8H12.5M8.5 4L12.5 8L8.5 12"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </Link>
+                  <div className="rounded-2xl border border-[#D8B4FE]/25 bg-[#160828]/70 p-3.5 text-center">
+                    <div className="text-xl font-black text-[#D8B4FE] tabular-nums">12+</div>
+                    <div className="text-[11px] font-medium text-white/80 mt-0.5">Misiones</div>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-3.5">
-                    <div>
-                      <div className="text-xs font-medium text-white/75 mb-1.5">Edades</div>
-                      <div className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 flex items-center text-sm text-white">
-                        10 a 12 años
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs font-medium text-white/75 mb-1.5">Modalidad</div>
-                      <div className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 flex items-center text-sm text-white">
-                        Sin penalización
-                      </div>
-                    </div>
+                  <div className="rounded-2xl border border-[#FDE68A]/25 bg-[#1B1506]/70 p-3.5 text-center">
+                    <div className="text-xl font-black text-[#FDE68A] tabular-nums">100%</div>
+                    <div className="text-[11px] font-medium text-white/80 mt-0.5">Sin castigos</div>
                   </div>
+                </div>
 
-                  <div>
-                    <div className="text-xs font-medium text-white/75 mb-2">Áreas y perfiles</div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {AREAS.map((area) => (
-                        <span
-                          key={area}
-                          className="rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-medium text-white/80"
-                        >
-                          {area}
-                        </span>
-                      ))}
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5 flex items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-semibold text-white">
+                      Listo para despegar
                     </div>
-                    <p className="text-xs text-white/45 mt-2">
-                      Cada estudiante avanza en sus propios tableros con seguimiento de tutores.
+                    <p className="text-xs text-white/55">
+                      Usa <strong className="text-white">Iniciar sesión</strong> arriba para entrar
+                      a tus planetas.
                     </p>
                   </div>
+                  <Link
+                    href="/about"
+                    className="shrink-0 min-h-[38px] inline-flex items-center rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black px-3.5 text-xs font-semibold text-white transition-colors"
+                  >
+                    Saber más
+                  </Link>
                 </div>
               </div>
             </LiquidGlass>
           </motion.div>
         </div>
+      </section>
 
-        {/* Franja inferior de acciones principales separada por hairline */}
-        <div className="mt-12 grid gap-6 border-t border-white/10 pt-8 lg:grid-cols-[1.05fr_1fr] lg:gap-12 xl:gap-16 items-center">
-          <div className="flex flex-col sm:flex-row gap-3.5">
-            <Link
-              href="/dashboard"
-              className="min-h-[48px] inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-semibold text-black transition-colors hover:bg-white/90"
+      {/* ════════════════════ PLANETAS DE MUESTRA (VISUAL DIDÁCTICO PARA NIÑOS) ════════════════════ */}
+      <section
+        aria-labelledby="preview-worlds-heading"
+        className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 pb-16 sm:pb-20 space-y-8"
+      >
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-t border-white/10 pt-12">
+          <div className="space-y-2 max-w-xl">
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#67E8F9]">
+              Vista previa del universo
+            </div>
+            <h2
+              id="preview-worlds-heading"
+              className="text-2xl sm:text-4xl font-bold tracking-tight text-white"
             >
-              <span>Entrar a mi espacio</span>
-              <svg viewBox="0 0 16 16" fill="none" className="size-4" aria-hidden="true">
-                <path
-                  d="M3.5 8H12.5M8.5 4L12.5 8L8.5 12"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </Link>
-
-            <LiquidGlass
-              blur={2.5}
-              refraction={12}
-              className="inline-flex rounded-full bg-white/[0.045] border-white/[0.14]"
-            >
-              <Link
-                href="/how-to-play"
-                className="glance min-h-[48px] inline-flex items-center justify-center px-7 text-sm font-medium text-white hover:bg-white/[0.06] transition-colors rounded-full"
-              >
-                Cómo funciona el juego
-              </Link>
-            </LiquidGlass>
+              Conoce los mundos que te esperan
+            </h2>
+            <p className="text-sm text-white/65 leading-relaxed">
+              Cada planeta es una aventura diferente. Inicia sesión con tu cuenta de estudiante
+              para explorarlos y jugar sus niveles.
+            </p>
           </div>
 
-          <LiquidGlass
-            blur={2.5}
-            refraction={12}
-            className="w-full max-w-[540px] lg:mx-auto rounded-2xl bg-white/[0.03] border-white/[0.10] p-4"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/45">
-                  Acceso guiado
-                </div>
-                <p className="text-xs sm:text-sm text-white/75 mt-1">
-                  Usa el botón <strong className="text-white">Iniciar sesión</strong> en la barra
-                  superior para ingresar o crear tu cuenta.
-                </p>
-              </div>
-              <Link
-                href="/about"
-                className="shrink-0 min-h-[40px] inline-flex items-center rounded-xl border border-white/12 bg-white/[0.05] hover:bg-white/[0.11] px-3.5 text-xs font-medium text-white transition-colors"
+          <span className="self-start md:self-auto inline-flex items-center gap-2 rounded-full border border-white/12 bg-[#070b18]/75 px-4 py-2 font-mono text-[11px] uppercase tracking-wider text-white/70">
+            <span className="size-2 rounded-full bg-[#6EE7B7]" aria-hidden="true" />
+            <span>Jugables en tu panel de estudiante</span>
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {PLANETAS_MUESTRA.map((planeta, i) => (
+            <motion.div
+              key={planeta.nombre}
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.42, delay: i * 0.08 }}
+            >
+              <LiquidGlass
+                blur={6}
+                refraction={14}
+                bezel={0.24}
+                saturation={1.45}
+                className={`h-full rounded-3xl ${planeta.bgClass} p-6 flex flex-col items-center text-center justify-between gap-5`}
+                style={{ borderColor: planeta.border }}
               >
-                Conocer más
-              </Link>
-            </div>
-          </LiquidGlass>
+                <div className="w-full space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em]"
+                      style={{ color: planeta.accent }}
+                    >
+                      {planeta.materia}
+                    </span>
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-white/45">
+                      Muestra
+                    </span>
+                  </div>
+
+                  {/* Figura 3D del planeta */}
+                  <div className="flex items-center justify-center py-1">
+                    <div className="w-40 h-40 flex items-center justify-center">
+                      <div className="scale-[0.86]">
+                        <PlanetVisual name={planeta.nombre} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <h3 className="text-2xl font-black tracking-tight text-white">
+                      {planeta.nombre}
+                    </h3>
+                    <p className="text-sm text-white/75 leading-relaxed">{planeta.frase}</p>
+                  </div>
+                </div>
+
+                <div className="w-full pt-3 border-t border-white/10">
+                  <div
+                    className="rounded-full border px-3.5 py-2 text-xs font-medium"
+                    style={{
+                      borderColor: planeta.border,
+                      color: planeta.accent,
+                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                    }}
+                  >
+                    {planeta.detalle}
+                  </div>
+                </div>
+              </LiquidGlass>
+            </motion.div>
+          ))}
         </div>
       </section>
 
-      {/* ════════════════════ CÓMO FUNCIONA (3 PASOS ARQUITECTÓNICOS SIN PLANETAS) ════════════════════ */}
-      <section className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 pb-20 space-y-8">
-        <div className="max-w-xl space-y-2">
-          <div className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/45">
-            Experiencia de aprendizaje
+      {/* ════════════════════ 3 PASOS DIDÁCTICOS ════════════════════ */}
+      <section className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 pb-16 space-y-7">
+        <div className="max-w-xl space-y-1.5">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">
+            Así de fácil empiezas
           </div>
-          <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white">
-            Un sistema pensado para avanzar con claridad
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            Tu recorrido en 3 pasos
           </h2>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          {PLATFORM_PILLARS.map((item) => (
+          {PASOS_DIDACTICOS.map((item) => (
             <div
               key={item.code}
-              className="rounded-2xl border border-white/[0.08] bg-white/[0.025] backdrop-blur-[4px] p-6 space-y-3 transition-colors hover:border-white/[0.16] hover:bg-white/[0.04]"
+              className="rounded-2xl border border-white/12 bg-[#070b18]/[0.72] backdrop-blur-md p-6 space-y-3"
             >
-              <div className="font-mono text-[11px] tracking-[0.22em] text-white/45">
-                {item.code}
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 rounded-xl border border-white/12 bg-white/[0.05] flex items-center justify-center">
+                  <StepBadgeIcon code={item.code} color={item.accent} />
+                </div>
+                <span className="font-mono text-xs tracking-[0.2em] text-white/40">
+                  {item.code}
+                </span>
               </div>
-              <h3 className="text-base font-semibold tracking-tight text-white">{item.title}</h3>
-              <p className="text-[13px] leading-relaxed text-white/55">{item.description}</p>
+              <h3 className="text-base font-bold tracking-tight text-white">{item.title}</h3>
+              <p className="text-xs sm:text-[13px] leading-relaxed text-white/65">
+                {item.description}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ════════════════════ PIE DE PÁGINA MINIMALISTA EN CRISTAL ════════════════════ */}
+      {/* ════════════════════ PIE DE PÁGINA ════════════════════ */}
       <footer className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 pb-12">
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-[3px] px-6 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-1">
+        <div className="rounded-2xl border border-white/10 bg-[#070b18]/[0.72] backdrop-blur-md px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-0.5">
             <div className="text-sm font-semibold text-white">Universo del Conocimiento</div>
-            <p className="text-xs text-white/45">
+            <p className="text-xs text-white/50">
               Plataforma educativa gamificada de primaria · Matemáticas, Lenguaje y Ciencias
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-5 text-xs text-white/65">
+          <div className="flex flex-wrap items-center gap-5 text-xs text-white/70">
             <Link href="/about" className="hover:text-white transition-colors">
               Acerca de
             </Link>

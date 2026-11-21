@@ -200,10 +200,10 @@ export default function AdminPendientesPage() {
 
         {/* Hoja cristalina unificada con buscador integrado */}
         <LiquidGlass
-          blur={3}
+          blur={8}
           refraction={12}
           bezel={0.22}
-          className="rounded-3xl bg-white/[0.03] border-white/[0.10]"
+          className="rounded-3xl bg-[#070c1b]/[0.78] border-white/[0.12]"
         >
           {pendientes.length > 0 && (
             <div className="px-5 py-3.5 border-b border-white/[0.08] bg-white/[0.02] flex items-center gap-3">

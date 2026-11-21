@@ -598,10 +598,10 @@ export default function PlanetaPage() {
           className="mb-10"
         >
           <LiquidGlass
-            blur={3}
+            blur={8}
             refraction={14}
             bezel={0.26}
-            className="rounded-3xl bg-white/[0.03] border-white/[0.10] p-6 sm:p-8"
+            className="rounded-3xl bg-[#070c1b]/[0.78] border-white/[0.12] p-6 sm:p-8"
           >
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
               <motion.div

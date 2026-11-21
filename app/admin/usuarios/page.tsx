@@ -471,9 +471,9 @@ export default function AdminUsuariosPage() {
 
           <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
             <LiquidGlass
-              blur={2.5}
+              blur={6}
               refraction={12}
-              className="rounded-2xl bg-white/[0.035] border-white/[0.10]"
+              className="rounded-2xl bg-[#070c1b]/[0.76] border-white/[0.12]"
             >
               <div className="grid grid-cols-4 divide-x divide-white/10">
                 <div className="px-3.5 py-2.5 text-center">
@@ -510,10 +510,10 @@ export default function AdminUsuariosPage() {
 
         {/* Hoja cristalina unificada con barra de búsqueda y filtros integrados */}
         <LiquidGlass
-          blur={3}
+          blur={8}
           refraction={12}
           bezel={0.22}
-          className="rounded-3xl bg-white/[0.03] border-white/[0.10]"
+          className="rounded-3xl bg-[#070c1b]/[0.78] border-white/[0.12]"
         >
           {/* Barra superior de búsqueda y filtros */}
           <div className="p-4 sm:px-6 border-b border-white/[0.08] bg-white/[0.02] flex flex-col lg:flex-row lg:items-center justify-between gap-3">

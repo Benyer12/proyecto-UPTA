@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -9,7 +9,7 @@ import PlanetVisual from '../components/PlanetVisual';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import { useAuthStore } from '../../lib/auth-store';
 import { MOCK_PLANETS, MOCK_PROGRESS } from '../../lib/mock-data';
-import type { Course, Level, Planet, StudentProgress } from '../../shared/types';
+import type { Planet, StudentProgress } from '../../shared/types';
 
 interface ProgressFetchResult {
   progressMap: Record<number, StudentProgress>;
@@ -62,74 +62,116 @@ async function obtenerProgresoDelEstudiante(userId: string): Promise<ProgressFet
   }
 }
 
-interface PlanetPalette {
-  accent: string;
-  textAccent: string;
+interface PlanetTheme {
   discipline: string;
+  accent: string;
+  border: string;
+  cardBg: string;
+  btnBg: string;
+  btnBorder: string;
 }
 
-function getPlanetPalette(name: string): PlanetPalette {
+function getPlanetTheme(name: string): PlanetTheme {
   if (name.includes('Numérix')) {
     return {
-      accent: '#00F5FF',
-      textAccent: '#67E8F9',
-      discipline: 'Matemáticas',
+      discipline: 'MATEMÁTICAS',
+      accent: '#67E8F9',
+      border: 'rgba(0, 245, 255, 0.3)',
+      cardBg: 'bg-[#041724]/[0.82]',
+      btnBg: 'rgba(0, 245, 255, 0.14)',
+      btnBorder: 'rgba(103, 232, 249, 0.45)',
     };
   }
   if (name.includes('Letralia')) {
     return {
-      accent: '#BF40FF',
-      textAccent: '#D8B4FE',
-      discipline: 'Lenguaje',
+      discipline: 'LENGUAS',
+      accent: '#D8B4FE',
+      border: 'rgba(191, 64, 255, 0.34)',
+      cardBg: 'bg-[#160828]/[0.82]',
+      btnBg: 'rgba(191, 64, 255, 0.16)',
+      btnBorder: 'rgba(216, 180, 254, 0.45)',
     };
   }
   return {
-    accent: '#00FF88',
-    textAccent: '#6EE7B7',
-    discipline: 'Ciencias',
+    discipline: 'CIENCIAS',
+    accent: '#6EE7B7',
+    border: 'rgba(0, 255, 136, 0.3)',
+    cardBg: 'bg-[#041C14]/[0.82]',
+    btnBg: 'rgba(0, 255, 136, 0.14)',
+    btnBorder: 'rgba(110, 231, 183, 0.45)',
   };
 }
 
-function getPlanetStats(planet: Planet, progress: Record<number, StudentProgress>) {
-  const allLevels = planet.courses.flatMap((c) => c.levels);
-  const totalLevels = allLevels.length;
-  const completedLevels = allLevels.filter((lvl) => progress[lvl.id]?.status === 'completed').length;
-  const unlockedLevels = allLevels.filter(
-    (lvl) => progress[lvl.id]?.status === 'unlocked' || progress[lvl.id]?.status === 'completed',
-  ).length;
-  const planetStars = allLevels.reduce((acc, lvl) => acc + (progress[lvl.id]?.stars || 0), 0);
-  const percent = totalLevels > 0 ? Math.round((completedLevels / totalLevels) * 100) : 0;
-
-  let nextLevel: { course: Course; level: Level } | null = null;
-  for (const course of planet.courses) {
-    for (const level of course.levels) {
-      const st = progress[level.id]?.status;
-      if (st === 'unlocked') {
-        nextLevel = { course, level };
-        break;
-      }
-    }
-    if (nextLevel) break;
-  }
-
-  return {
-    totalLevels,
-    completedLevels,
-    unlockedLevels,
-    planetStars,
-    percent,
-    nextLevel,
-  };
+function ExplorerAvatarIcon() {
+  return (
+    <div
+      className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 border border-[#67E8F9]/45"
+      style={{
+        background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
+        boxShadow: '0 0 22px rgba(14, 165, 233, 0.42)',
+      }}
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white">
+        <circle cx="12" cy="9.5" r="4.2" stroke="currentColor" strokeWidth="1.8" />
+        <path
+          d="M9.5 9.2C10.2 8.4 13.8 8.4 14.5 9.2"
+          stroke="#BAE6FD"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M6.2 19.2C6.8 16.2 9.1 14.5 12 14.5C14.9 14.5 17.2 16.2 17.8 19.2"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+      </svg>
+    </div>
+  );
 }
 
-function IconStar({ className = 'w-4 h-4' }: { className?: string }) {
+function IconStar({ className = 'w-6 h-6' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
       <path
         d="M12 2.8L14.85 8.56L21.2 9.48L16.6 13.96L17.68 20.28L12 17.3L6.32 20.28L7.4 13.96L2.8 9.48L9.15 8.56L12 2.8Z"
-        fill="#FDE68A"
+        fill="#FACC15"
         stroke="#F59E0B"
         strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconExplore({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className={className} aria-hidden="true">
+      <path
+        d="M10 2.8C12.8 4.4 14.6 7.4 14.6 10.8L16.8 13L15.4 14.4L13.1 13.5H6.9L4.6 14.4L3.2 13L5.4 10.8C5.4 7.4 7.2 4.4 10 2.8Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="10" cy="8.8" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IconChevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+      aria-hidden="true"
+    >
+      <path
+        d="M4 6L8 10L12 6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
     </svg>
@@ -171,26 +213,7 @@ function IconLevelState({ state }: { state: 'completed' | 'unlocked' | 'locked' 
   );
 }
 
-function IconChevron({ open }: { open: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 16 16"
-      fill="none"
-      className={`w-4 h-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-      aria-hidden="true"
-    >
-      <path
-        d="M4 6.25L8 10.25L12 6.25"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-/* ════════════════════════ PANEL EXCLUSIVO DEL ESTUDIANTE (MUNDOS Y PROGRESO) ════════════════════════ */
+/* ════════════════════════ PANEL LIMPIO Y DIDÁCTICO DEL ESTUDIANTE ════════════════════════ */
 
 function StudentDashboardView({
   planets,
@@ -212,316 +235,133 @@ function StudentDashboardView({
   const prefersReducedMotion = useReducedMotion();
   const [expandedPlanetId, setExpandedPlanetId] = useState<number | null>(null);
 
-  const summary = useMemo(() => {
-    const allLevels = planets.flatMap((p) => p.courses.flatMap((c) => c.levels));
-    const totalLevels = allLevels.length;
-    const completedLevels = allLevels.filter(
-      (lvl) => progress[lvl.id]?.status === 'completed',
-    ).length;
-    const planetsStarted = planets.filter((p) => {
-      const levels = p.courses.flatMap((c) => c.levels);
-      return levels.some((lvl) => progress[lvl.id]?.status === 'completed');
-    }).length;
-    const overallPct = totalLevels > 0 ? Math.round((completedLevels / totalLevels) * 100) : 0;
-
-    let activeMission: { planet: Planet; course: Course; level: Level } | null = null;
-    for (const planet of planets) {
-      const st = getPlanetStats(planet, progress);
-      if (st.completedLevels > 0 && st.nextLevel) {
-        activeMission = { planet, course: st.nextLevel.course, level: st.nextLevel.level };
-        break;
-      }
-    }
-    if (!activeMission) {
-      for (const planet of planets) {
-        const st = getPlanetStats(planet, progress);
-        if (st.nextLevel) {
-          activeMission = { planet, course: st.nextLevel.course, level: st.nextLevel.level };
-          break;
-        }
-      }
-    }
-
-    const featuredPlanet = activeMission?.planet ?? planets[0];
-
-    return {
-      totalLevels,
-      completedLevels,
-      planetsStarted,
-      overallPct,
-      activeMission,
-      featuredPlanet,
-    };
-  }, [planets, progress]);
-
   return (
-    <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-8 sm:py-12 space-y-10">
-      {/* Alerta de error de sincronización */}
+    <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6 sm:py-10 space-y-10">
+      {/* Alerta de sincronización solo si hay error */}
       {progressError && (
         <div
           role="alert"
-          className="rounded-2xl border border-rose-400/35 bg-rose-500/[0.08] backdrop-blur-[6px] px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          className="rounded-2xl border border-rose-400/40 bg-[#1B0B16]/90 px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
         >
-          <div className="space-y-0.5">
-            <p className="text-sm font-semibold text-rose-100">
-              No se pudo actualizar tu progreso guardado
-            </p>
-            <p className="text-xs text-rose-200/80">
-              {progressError} Se muestran los niveles iniciales disponibles mientras reconectamos.
-            </p>
-          </div>
+          <p className="text-xs sm:text-sm text-rose-100 font-medium">{progressError}</p>
           <button
             type="button"
             onClick={onRetry}
-            className="min-h-[40px] px-4 py-2 rounded-full border border-rose-300/40 bg-rose-500/15 hover:bg-rose-500/25 text-xs font-semibold text-white cursor-pointer transition-colors shrink-0"
+            className="min-h-[38px] px-4 py-1.5 rounded-full border border-rose-300/45 bg-rose-500/20 hover:bg-rose-500/30 text-xs font-semibold text-white cursor-pointer shrink-0"
           >
             Reintentar
           </button>
         </div>
       )}
 
-      {/* 1. CABECERA ARQUITECTÓNICA ABIERTA (SIN CAJA GRIS PESADA) + TELEMETRÍA EN CRISTAL */}
-      <section
-        aria-labelledby="dashboard-heading"
-        className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8 border-b border-white/10"
+      {/* 1. BARRA DE SALUDO LIMPIA EN LIQUID GLASS (ESTILO CLÁSICO FAVORITO + MAYOR OPACIDAD) */}
+      <LiquidGlass
+        blur={8}
+        refraction={12}
+        bezel={0.28}
+        saturation={1.45}
+        className="rounded-3xl bg-[#070d1f]/[0.82] border-white/[0.13] px-5 sm:px-7 py-4 sm:py-5"
       >
-        <div className="space-y-2.5">
-          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">
-            Mi universo · {user.usuario ? `@${user.usuario}` : 'Estudiante'}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0">
+            <ExplorerAvatarIcon />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight truncate">
+              ¡Hola, {user.name || 'Explorador'}!
+            </h1>
           </div>
-          <h1
-            id="dashboard-heading"
-            className="text-3xl sm:text-5xl font-black tracking-[-0.02em] text-white leading-tight"
-          >
-            Hola, {user.name || 'Explorador'}
-          </h1>
-          <p className="text-sm sm:text-[15px] text-white/60 max-w-xl leading-relaxed">
-            Selecciona cualquiera de tus mundos para avanzar por cursos y acumular estrellas.
-          </p>
-        </div>
 
-        {/* Franja de telemetría real en cristal ultra-transparente */}
-        <LiquidGlass
-          blur={2.5}
-          refraction={14}
-          bezel={0.3}
-          className="rounded-2xl bg-white/[0.035] border-white/[0.10] shrink-0"
-        >
-          <div className="grid grid-cols-4 divide-x divide-white/10">
-            <div className="px-4 sm:px-5 py-3.5">
-              <div className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-white/45">
-                <IconStar className="w-3.5 h-3.5 shrink-0" />
-                <span>Estrellas</span>
+          <div className="inline-flex items-center gap-3 rounded-full border border-white/14 bg-[#0B1328]/85 px-4 sm:px-5 py-2 shrink-0">
+            <IconStar className="w-6 h-6 shrink-0" />
+            <div className="leading-tight">
+              <div className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">
+                Estrellas
               </div>
-              <div className="text-lg sm:text-xl font-bold text-[#FDE68A] mt-0.5 tabular-nums">
+              <div className="text-lg sm:text-xl font-black text-white tabular-nums">
                 {loadingProgress ? '...' : totalStars}
               </div>
             </div>
-
-            <div className="px-4 sm:px-5 py-3.5">
-              <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
-                Niveles
-              </div>
-              <div className="text-lg sm:text-xl font-bold text-white mt-0.5 tabular-nums">
-                {loadingProgress ? '...' : `${summary.completedLevels}/${summary.totalLevels}`}
-              </div>
-            </div>
-
-            <div className="px-4 sm:px-5 py-3.5">
-              <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
-                Mundos
-              </div>
-              <div className="text-lg sm:text-xl font-bold text-white mt-0.5 tabular-nums">
-                {loadingProgress ? '...' : `${summary.planetsStarted}/${planets.length}`}
-              </div>
-            </div>
-
-            <div className="px-4 sm:px-5 py-3.5">
-              <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
-                Avance
-              </div>
-              <div className="text-lg sm:text-xl font-bold text-[#67E8F9] mt-0.5 tabular-nums">
-                {loadingProgress ? '...' : `${summary.overallPct}%`}
-              </div>
-            </div>
-          </div>
-        </LiquidGlass>
-      </section>
-
-      {/* 2. BARRA DE SIGUIENTE MISIÓN ACTIVA EN LIQUID GLASS CRISTALINO */}
-      <LiquidGlass
-        blur={2.5}
-        refraction={12}
-        bezel={0.28}
-        className="rounded-2xl bg-white/[0.035] border-white/[0.11] p-5 sm:p-6"
-      >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#67E8F9]">
-              Siguiente misión sugerida
-            </div>
-            {summary.activeMission ? (
-              <p className="text-sm sm:text-base text-white/80">
-                <strong className="text-white font-semibold">
-                  {summary.activeMission.planet.name}
-                </strong>{' '}
-                · {summary.activeMission.course.name} ({summary.activeMission.level.name})
-              </p>
-            ) : (
-              <p className="text-sm sm:text-base text-white/80">
-                Completaste los niveles habilitados. Puedes repetir cualquier reto para sumar más
-                estrellas.
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            {summary.activeMission ? (
-              <>
-                <Link
-                  href={`/juego/${summary.activeMission.planet.id}/${summary.activeMission.level.id}`}
-                  className="min-h-[44px] inline-flex items-center justify-center rounded-full bg-white hover:bg-white/90 text-black text-xs sm:text-sm font-semibold px-6 transition-colors"
-                >
-                  {summary.completedLevels === 0 ? 'Iniciar primera misión' : 'Continuar misión'}
-                </Link>
-                <Link
-                  href={`/planeta/${summary.activeMission.planet.id}`}
-                  className="glance min-h-[44px] inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.05] hover:bg-white/[0.11] text-white text-xs sm:text-sm font-medium px-5 transition-colors"
-                >
-                  Ver ruta de {summary.activeMission.planet.name}
-                </Link>
-              </>
-            ) : (
-              <Link
-                href={`/planeta/${summary.featuredPlanet.id}`}
-                className="min-h-[44px] inline-flex items-center justify-center rounded-full bg-white hover:bg-white/90 text-black text-xs sm:text-sm font-semibold px-6 transition-colors"
-              >
-                Repasar {summary.featuredPlanet.name}
-              </Link>
-            )}
           </div>
         </div>
       </LiquidGlass>
 
-      {/* 3. LOS 3 PLANETAS (EXCLUSIVOS DEL DASHBOARD DEL ESTUDIANTE) EN CRISTAL ULTRA-TRANSPARENTE */}
-      <section aria-labelledby="worlds-heading" className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/45 mb-1">
-              Mundos activos
-            </div>
-            <h2 id="worlds-heading" className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              Explora tus planetas
-            </h2>
-          </div>
-          <p className="font-mono text-xs text-white/45">
-            {planets.length} mundos disponibles en tu cuenta
-          </p>
-        </div>
+      {/* 2. ENCABEZADO CENTRAL LIMPIO */}
+      <div className="text-center space-y-2 pt-1">
+        <h2 className="text-3xl sm:text-5xl font-black tracking-wide uppercase bg-gradient-to-b from-white via-[#BAE6FD] to-[#7DD3FC] bg-clip-text text-transparent">
+          MAPAS ESTELARES
+        </h2>
+        <p className="text-sm sm:text-base text-white/75 font-medium">
+          Selecciona un planeta para comenzar tu misión
+        </p>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* 3. TARJETAS DE LOS 3 PLANETAS (LIMPIAS, CON MAYOR OPACIDAD Y LIQUID GLASS MODERNO) */}
+      <section aria-label="Planetas disponibles">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {planets.map((planet) => {
-            const palette = getPlanetPalette(planet.name);
-            const stats = getPlanetStats(planet, progress);
+            const theme = getPlanetTheme(planet.name);
             const isExpanded = expandedPlanetId === planet.id;
             const panelId = `planet-courses-${planet.id}`;
 
             return (
               <LiquidGlass
                 key={planet.id}
-                blur={3}
+                blur={8}
                 refraction={14}
-                bezel={0.26}
-                className="rounded-3xl bg-white/[0.03] border-white/[0.10] flex flex-col justify-between p-6"
+                bezel={0.24}
+                saturation={1.45}
+                className={`rounded-3xl ${theme.cardBg} p-6 sm:p-7 flex flex-col justify-between`}
+                style={{ borderColor: theme.border }}
               >
                 <article
                   aria-labelledby={`planet-title-${planet.id}`}
-                  className="flex flex-col justify-between h-full gap-6"
+                  className="flex flex-col items-center text-center h-full justify-between gap-6"
                 >
-                  <div className="space-y-5">
-                    {/* Fila superior: disciplina + estrellas */}
-                    <div className="flex items-center justify-between gap-2">
-                      <span
-                        className="font-mono text-[11px] font-medium uppercase tracking-[0.18em]"
-                        style={{ color: palette.textAccent }}
-                      >
-                        {palette.discipline}
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-[#FDE68A] tabular-nums">
-                        <IconStar className="w-3.5 h-3.5" />
-                        <span>{stats.planetStars}</span>
-                      </span>
-                    </div>
-
-                    {/* Visual 3D del planeta flotando libre sobre el cristal transparente */}
-                    <div className="flex items-center justify-center py-1">
-                      <div className="w-40 h-40 flex items-center justify-center">
-                        <div className="scale-[0.84]">
-                          <PlanetVisual name={planet.name} />
-                        </div>
+                  {/* Figura 3D del planeta */}
+                  <div className="pt-2">
+                    <div className="w-44 h-44 flex items-center justify-center mx-auto">
+                      <div className="scale-95">
+                        <PlanetVisual name={planet.name} />
                       </div>
                     </div>
 
-                    {/* Título y descripción */}
-                    <div className="space-y-1.5">
+                    <div className="mt-4 space-y-1">
                       <h3
                         id={`planet-title-${planet.id}`}
-                        className="text-2xl font-bold tracking-tight text-white"
+                        className="text-2xl sm:text-3xl font-black text-white tracking-tight"
                       >
                         {planet.name}
                       </h3>
-                      <p className="text-[13px] text-white/60 leading-relaxed">
-                        {planet.description}
+                      <p className="font-mono text-xs font-semibold uppercase tracking-[0.22em] text-white/65">
+                        {theme.discipline}
                       </p>
-                    </div>
-
-                    {/* Progreso minimalista */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs text-white/55 tabular-nums">
-                        <span>
-                          {stats.completedLevels} de {stats.totalLevels} niveles
-                        </span>
-                        <span className="font-mono text-white/80">{stats.percent}%</span>
-                      </div>
-                      <div
-                        role="progressbar"
-                        aria-label={`Avance en ${planet.name}`}
-                        aria-valuenow={stats.percent}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden"
-                      >
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{
-                            width: `${stats.percent}%`,
-                            backgroundColor: palette.accent,
-                          }}
-                        />
-                      </div>
                     </div>
                   </div>
 
-                  {/* Acciones + Temario desplegable */}
-                  <div className="space-y-3 pt-2 border-t border-white/[0.08]">
-                    <div className="flex items-center gap-2.5">
-                      <Link
-                        href={`/planeta/${planet.id}`}
-                        className="flex-1 min-h-[44px] inline-flex items-center justify-center rounded-full bg-white hover:bg-white/90 text-black text-xs sm:text-sm font-semibold px-4 transition-colors"
-                      >
-                        Abrir {planet.name}
-                      </Link>
-                      <button
-                        type="button"
-                        aria-expanded={isExpanded}
-                        aria-controls={panelId}
-                        onClick={() => setExpandedPlanetId(isExpanded ? null : planet.id)}
-                        className="min-h-[44px] inline-flex items-center justify-center gap-1.5 rounded-full border border-white/12 bg-white/[0.04] hover:bg-white/[0.10] px-4 text-xs font-medium text-white cursor-pointer transition-colors"
-                      >
-                        <span>{isExpanded ? 'Ocultar' : 'Niveles'}</span>
-                        <IconChevron open={isExpanded} />
-                      </button>
-                    </div>
+                  {/* Acciones simples: Explorar Planeta + Ver Cursos */}
+                  <div className="w-full space-y-3">
+                    <Link
+                      href={`/planeta/${planet.id}`}
+                      className="glance min-h-[48px] w-full inline-flex items-center justify-center gap-2 rounded-full text-xs sm:text-sm font-extrabold uppercase tracking-[0.14em] text-white transition-all hover:brightness-115"
+                      style={{
+                        backgroundColor: theme.btnBg,
+                        border: `1.5px solid ${theme.btnBorder}`,
+                      }}
+                    >
+                      <IconExplore className="w-4 h-4 shrink-0" />
+                      <span>Explorar planeta</span>
+                    </Link>
+
+                    <button
+                      type="button"
+                      aria-expanded={isExpanded}
+                      aria-controls={panelId}
+                      onClick={() => setExpandedPlanetId(isExpanded ? null : planet.id)}
+                      className="min-h-[40px] w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] cursor-pointer transition-opacity hover:opacity-85"
+                      style={{ color: theme.accent }}
+                    >
+                      <IconChevron open={isExpanded} />
+                      <span>{isExpanded ? 'Ocultar cursos' : 'Ver cursos'}</span>
+                    </button>
 
                     <AnimatePresence initial={false}>
                       {isExpanded && (
@@ -531,20 +371,15 @@ function StudentDashboardView({
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={prefersReducedMotion ? undefined : { opacity: 0, height: 0 }}
                           transition={{ duration: 0.22 }}
-                          className="overflow-hidden"
+                          className="overflow-hidden text-left"
                         >
-                          <div className="pt-3 space-y-3">
+                          <div className="pt-3 mt-1 border-t border-white/10 space-y-3">
                             {planet.courses.map((course) => (
                               <div
                                 key={course.id}
-                                className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-3.5 space-y-2.5"
+                                className="rounded-2xl border border-white/10 bg-[#050914]/75 p-3.5 space-y-2.5"
                               >
-                                <div>
-                                  <h4 className="text-xs font-semibold text-white">{course.name}</h4>
-                                  <p className="text-[11px] text-white/50 mt-0.5">
-                                    {course.description}
-                                  </p>
-                                </div>
+                                <div className="text-xs font-bold text-white">{course.name}</div>
                                 <div className="flex flex-wrap gap-2">
                                   {course.levels.map((level) => {
                                     const prog = progress[level.id];
@@ -560,7 +395,7 @@ function StudentDashboardView({
                                         <span
                                           key={level.id}
                                           aria-label={`${level.name} bloqueado`}
-                                          className="min-h-[38px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.02] text-xs font-medium text-white/40 cursor-not-allowed"
+                                          className="min-h-[38px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-xs font-medium text-white/45 cursor-not-allowed"
                                         >
                                           <IconLevelState state="locked" />
                                           <span>{level.name}</span>
@@ -576,13 +411,13 @@ function StudentDashboardView({
                                         style={
                                           state === 'completed'
                                             ? {
-                                                backgroundColor: 'rgba(16, 185, 129, 0.12)',
-                                                borderColor: 'rgba(110, 231, 183, 0.35)',
+                                                backgroundColor: 'rgba(16, 185, 129, 0.16)',
+                                                borderColor: 'rgba(110, 231, 183, 0.45)',
                                                 color: '#A7F3D0',
                                               }
                                             : {
-                                                backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                                                borderColor: 'rgba(255, 255, 255, 0.18)',
+                                                backgroundColor: theme.btnBg,
+                                                borderColor: theme.btnBorder,
                                                 color: '#FFFFFF',
                                               }
                                         }
@@ -656,8 +491,8 @@ export default function Dashboard() {
   if (!mounted) {
     return (
       <div className="relative min-h-[60vh] flex items-center justify-center px-6">
-        <p className="text-sm font-medium text-white/60" role="status">
-          Cargando tu espacio de aprendizaje...
+        <p className="text-sm font-medium text-white/65" role="status">
+          Cargando tus mapas estelares...
         </p>
       </div>
     );
@@ -667,21 +502,21 @@ export default function Dashboard() {
     return (
       <div className="relative min-h-[72vh] flex items-center justify-center px-5 sm:px-6">
         <LiquidGlass
-          blur={3}
+          blur={8}
           refraction={14}
-          className="relative z-10 text-center max-w-md w-full mx-auto p-7 sm:p-9 rounded-3xl bg-white/[0.035] border-white/[0.11]"
+          className="relative z-10 text-center max-w-md w-full mx-auto p-7 sm:p-9 rounded-3xl bg-[#070c1c]/[0.84] border-white/[0.14]"
         >
           <div className="space-y-5">
             <div className="space-y-2">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/45">
-                Acceso exclusivo de estudiantes
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#67E8F9]">
+                Acceso de estudiantes
               </div>
               <h1 className="text-2xl font-bold text-white tracking-tight">
-                Inicia sesión para ver tus planetas
+                Inicia sesión para jugar
               </h1>
-              <p className="text-sm text-white/60 leading-relaxed">
-                Los mundos interactivos y tu progreso de estrellas están disponibles únicamente
-                dentro de tu cuenta de estudiante.
+              <p className="text-sm text-white/70 leading-relaxed">
+                Entra con tu cuenta de estudiante desde el botón superior para abrir tus planetas y
+                guardar tus estrellas.
               </p>
             </div>
             <Link

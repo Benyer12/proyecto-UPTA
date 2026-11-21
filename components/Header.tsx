@@ -538,11 +538,11 @@ export default function Header() {
       {/* Barra flotante Liquid Glass estilo glasscn (píldora suspendida con refracción SVG) */}
       <div className="mx-auto max-w-5xl pointer-events-auto">
         <LiquidGlass
-          blur={2.5}
-          refraction={15}
+          blur={4}
+          refraction={14}
           bezel={0.34}
-          saturation={1.38}
-          className="h-13 rounded-full bg-white/[0.05] border-white/[0.12] px-3 sm:px-4"
+          saturation={1.45}
+          className="h-13 rounded-full bg-[#060916]/[0.62] border-white/[0.14] px-3 sm:px-4"
         >
           <div className="h-full flex items-center justify-between gap-3">
             <Link
@@ -763,24 +763,34 @@ export default function Header() {
         )}
       </AnimatePresence>
 
-      {/* Panel Desplegable de Autenticación flotante en cristal glasscn */}
+      {/* Panel Desplegable de Autenticación con velo de fondo y mayor opacidad para lectura perfecta */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            ref={formRef}
-            initial={{ opacity: 0, y: -10, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.98 }}
-            transition={{ duration: 0.26, ease: 'easeOut' }}
-            className="pointer-events-auto relative mx-auto max-w-4xl mt-3 overflow-hidden rounded-3xl liquid-glass-dropdown"
-          >
-            {/* Lienzo de partículas Antigravity dentro del panel desplegable */}
-            <DropdownAntigravityCanvas />
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsOpen(false)}
+              className="pointer-events-auto fixed inset-0 -z-10 bg-black/60 backdrop-blur-sm"
+              aria-hidden="true"
+            />
+            <motion.div
+              ref={formRef}
+              initial={{ opacity: 0, y: -10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.98 }}
+              transition={{ duration: 0.26, ease: 'easeOut' }}
+              className="pointer-events-auto relative mx-auto max-w-4xl mt-3 overflow-hidden rounded-3xl liquid-glass-dropdown"
+            >
+              {/* Lienzo de partículas Antigravity dentro del panel desplegable */}
+              <DropdownAntigravityCanvas />
 
-            <div className="relative z-10 p-5 sm:p-8">
-              <div className="grid lg:grid-cols-12 gap-6 items-stretch">
-                {/* Columna Izquierda: Ventana informativa limpia sin planetas */}
-                <div className="hidden lg:flex lg:col-span-5 flex-col justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+              <div className="relative z-10 p-5 sm:p-8">
+                <div className="grid lg:grid-cols-12 gap-6 items-stretch">
+                  {/* Columna Izquierda: Ventana informativa limpia con mayor opacidad */}
+                  <div className="hidden lg:flex lg:col-span-5 flex-col justify-between rounded-2xl border border-white/12 bg-[#070b18]/85 p-6">
                   <div className="space-y-3">
                     <div className="flex items-center gap-1.5 mb-2" aria-hidden="true">
                       <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F56]" />
@@ -831,9 +841,9 @@ export default function Header() {
                   </div>
                 </div>
 
-                {/* Columna Derecha: Formulario limpio en cristal */}
+                {/* Columna Derecha: Formulario limpio en cristal con alta legibilidad */}
                 <div className="lg:col-span-7">
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-7 h-full flex flex-col justify-center">
+                  <div className="rounded-2xl border border-white/12 bg-[#070b18]/85 p-5 sm:p-7 h-full flex flex-col justify-center">
                     <div className="flex items-center justify-between mb-5">
                       <div>
                         <span className="font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-white/50 block">
@@ -1029,6 +1039,7 @@ export default function Header() {
               </div>
             </div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </header>
