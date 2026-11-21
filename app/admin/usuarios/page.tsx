@@ -1,6 +1,5 @@
 'use client';
 
-import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -54,21 +53,8 @@ function ordenarPorRolYNombre<T extends { role: string; nombre: string }>(lista:
 function IconSearch({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconEdit({ className = 'w-3.5 h-3.5' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className={className} aria-hidden="true">
-      <path
-        d="M13.7 3.8L16.2 6.3L7.1 15.4L4 16L4.6 12.9L13.7 3.8Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
+      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   );
 }
@@ -82,16 +68,6 @@ function IconClose({ className = 'w-4 h-4' }: { className?: string }) {
         strokeWidth="1.8"
         strokeLinecap="round"
       />
-    </svg>
-  );
-}
-
-function IconAlert({ className = 'w-4 h-4' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" className={className} aria-hidden="true">
-      <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M10 6.2V10.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <circle cx="10" cy="13.8" r="1" fill="currentColor" />
     </svg>
   );
 }
@@ -121,60 +97,6 @@ function IconEye({ hidden }: { hidden: boolean }) {
   );
 }
 
-function IconRoleMark({ role }: { role: EditableRole }) {
-  if (role === 'student') {
-    return (
-      <svg viewBox="0 0 18 18" fill="none" className="w-4 h-4" aria-hidden="true">
-        <path
-          d="M9 3L16 6.5L9 10L2 6.5L9 3Z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M4.8 8.2V12.2C4.8 13.4 6.7 14.4 9 14.4C11.3 14.4 13.2 13.4 13.2 12.2V8.2"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 18 18" fill="none" className="w-4 h-4" aria-hidden="true">
-      <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.5" />
-      <polygon points="9,4.6 11.2,9 9,13.4 6.8,9" fill="currentColor" />
-    </svg>
-  );
-}
-
-function EmptyUsersSearchIllustration() {
-  return (
-    <svg
-      viewBox="0 0 180 110"
-      fill="none"
-      className="w-40 h-24 mx-auto mb-2"
-      role="img"
-      aria-label="Ilustración de búsqueda sin coincidencias"
-    >
-      <ellipse
-        cx="90"
-        cy="66"
-        rx="68"
-        ry="19"
-        stroke="#67E8F9"
-        strokeOpacity="0.28"
-        strokeWidth="1.4"
-        strokeDasharray="4 5"
-      />
-      <circle cx="84" cy="52" r="17" fill="#0B1226" stroke="#94A3B8" strokeWidth="1.8" />
-      <path d="M97 65L110 78" stroke="#67E8F9" strokeWidth="2.4" strokeLinecap="round" />
-      <circle cx="42" cy="46" r="2.6" fill="#D8B4FE" fillOpacity="0.7" />
-      <circle cx="144" cy="44" r="2.4" fill="#6EE7B7" fillOpacity="0.7" />
-    </svg>
-  );
-}
-
 export default function AdminUsuariosPage() {
   const router = useRouter();
   const prefersReducedMotion = useReducedMotion();
@@ -186,12 +108,10 @@ export default function AdminUsuariosPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Filtros y búsqueda
   const [busqueda, setBusqueda] = useState('');
   const [filtroRol, setFiltroRol] = useState<'all' | EditableRole>('all');
   const [filtroEstado, setFiltroEstado] = useState<'all' | 'active' | 'inactive'>('all');
 
-  // Estado del modal de edición
   const [editingUser, setEditingUser] = useState<UsuarioEditableDB | null>(null);
   const [form, setForm] = useState<EditFormState>({
     nombre: '',
@@ -205,10 +125,7 @@ export default function AdminUsuariosPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Cambio rápido de estado (status)
   const [togglingStatusId, setTogglingStatusId] = useState<string | null>(null);
-
-  // Notificación flotante profesional en Liquid Glass
   const [toast, setToast] = useState<LiquidGlassToastData | null>(null);
 
   const mostrarToast = useCallback(
@@ -262,7 +179,6 @@ export default function AdminUsuariosPage() {
       const lista = ordenarPorRolYNombre(data as UsuarioEditableDB[]);
       setUsuarios(lista);
 
-      // Si se abrió con ?edit=<id> desde /admin, abrimos el editor automáticamente
       if (typeof window !== 'undefined') {
         const params = new URLSearchParams(window.location.search);
         const editId = params.get('edit');
@@ -294,7 +210,6 @@ export default function AdminUsuariosPage() {
     }
   }, [user, router, mounted, cargarUsuarios]);
 
-  // Cerrar modal con tecla Escape
   useEffect(() => {
     if (!editingUser) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -429,7 +344,6 @@ export default function AdminUsuariosPage() {
     setFormError(null);
 
     try {
-      // 1. Verificar que el nombre de usuario no exista en otro registro (incluyendo admins)
       const { data: dupUsuario, error: errDupUser } = await supabase
         .from('usuarios')
         .select('id')
@@ -444,7 +358,6 @@ export default function AdminUsuariosPage() {
         return;
       }
 
-      // 2. Verificar que el correo no exista en otro registro
       const { data: dupCorreo, error: errDupEmail } = await supabase
         .from('usuarios')
         .select('id')
@@ -459,7 +372,6 @@ export default function AdminUsuariosPage() {
         return;
       }
 
-      // 3. Actualizar la fila en public.usuarios protegiendo los registros admin
       const { data: actualizado, error: errUpdate } = await supabase
         .from('usuarios')
         .update({
@@ -533,233 +445,167 @@ export default function AdminUsuariosPage() {
   if (!mounted || !user || user.role !== 'admin') return null;
 
   return (
-    <div className="relative min-h-screen px-4 sm:px-6 py-10 sm:py-12">
-      <div className="relative z-10 max-w-5xl mx-auto space-y-6">
-        {/* ── NOTIFICACIÓN PROFESIONAL EN LIQUID GLASS ── */}
+    <div className="relative min-h-screen px-5 sm:px-8 lg:px-12 py-8 sm:py-12">
+      <div className="relative z-10 max-w-6xl mx-auto space-y-8">
         <LiquidGlassToast toast={toast} onClose={() => setToast(null)} />
 
-        {/* ── ENCABEZADO PRINCIPAL LIQUID GLASS ── */}
+        {/* Cabecera abierta sobre las partículas + resumen en tira cristalina */}
         <section
           aria-labelledby="manage-users-heading"
-          className="rounded-3xl liquid-glass liquid-glass-panel p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-5"
+          className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-7 border-b border-white/10"
         >
           <div className="space-y-2">
-            <LiquidGlass
-              blur={4}
-              refraction={10}
-              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-[0.2em] text-[#67E8F9]"
-            >
-              <svg viewBox="0 0 18 18" fill="none" className="w-4 h-4" aria-hidden="true">
-                <circle cx="9" cy="6" r="3" stroke="currentColor" strokeWidth="1.5" />
-                <path
-                  d="M3.5 15.2C3.5 12.6 6 10.8 9 10.8C12 10.8 14.5 12.6 14.5 15.2"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <span>Administración de Cuentas</span>
-            </LiquidGlass>
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">
+              Directorio · public.usuarios
+            </div>
             <h1
               id="manage-users-heading"
-              className="text-2xl sm:text-4xl font-black text-[#F8FAFC] tracking-tight"
+              className="text-3xl sm:text-4xl font-bold text-white tracking-tight"
             >
-              Editar Estudiantes y Tutores
+              Estudiantes y Tutores
             </h1>
-            <p className="text-sm text-[#CBD5E1] max-w-xl leading-relaxed">
-              Edita nombre, usuario, correo, contraseña, rol y estado de todas las cuentas con rol{' '}
-              <span className="text-[#6EE7B7] font-semibold">student</span> y{' '}
-              <span className="text-[#D8B4FE] font-semibold">tutor</span> directamente en la tabla{' '}
-              <code className="text-xs px-1.5 py-0.5 rounded bg-white/10 text-[#67E8F9]">
-                usuarios
-              </code>
-              .
+            <p className="text-sm text-white/60 max-w-xl leading-relaxed">
+              Edita credenciales, roles y estado de acceso de todas las cuentas gestionables.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 self-start lg:self-center">
+          <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
+            <LiquidGlass
+              blur={2.5}
+              refraction={12}
+              className="rounded-2xl bg-white/[0.035] border-white/[0.10]"
+            >
+              <div className="grid grid-cols-4 divide-x divide-white/10">
+                <div className="px-3.5 py-2.5 text-center">
+                  <div className="font-mono text-[10px] uppercase text-white/45">Total</div>
+                  <div className="text-base font-bold text-white tabular-nums">{stats.total}</div>
+                </div>
+                <div className="px-3.5 py-2.5 text-center">
+                  <div className="font-mono text-[10px] uppercase text-[#D8B4FE]">Tutores</div>
+                  <div className="text-base font-bold text-white tabular-nums">{stats.tutores}</div>
+                </div>
+                <div className="px-3.5 py-2.5 text-center">
+                  <div className="font-mono text-[10px] uppercase text-[#6EE7B7]">Estud.</div>
+                  <div className="text-base font-bold text-white tabular-nums">
+                    {stats.estudiantes}
+                  </div>
+                </div>
+                <div className="px-3.5 py-2.5 text-center">
+                  <div className="font-mono text-[10px] uppercase text-[#67E8F9]">Activos</div>
+                  <div className="text-base font-bold text-white tabular-nums">{stats.activos}</div>
+                </div>
+              </div>
+            </LiquidGlass>
+
             <button
               type="button"
               onClick={cargarUsuarios}
               disabled={loading}
-              className="min-h-[44px] inline-flex items-center justify-center liquid-glass-btn text-[#F8FAFC] text-xs font-bold tracking-wider uppercase px-5 py-2.5 rounded-xl disabled:opacity-50 cursor-pointer whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
+              className="min-h-[42px] rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black text-white text-xs font-semibold px-4 transition-colors disabled:opacity-50 cursor-pointer"
             >
-              {loading ? 'Sincronizando...' : 'Actualizar lista'}
+              {loading ? 'Sincronizando...' : 'Actualizar'}
             </button>
           </div>
         </section>
 
-        {/* ── TARJETAS RESUMEN (KPIs) ── */}
-        <section aria-label="Resumen de cuentas registradas">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-            <div className="rounded-2xl liquid-glass p-4 sm:p-5">
-              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#67E8F9]">
-                Total gestionables
-              </span>
-              <div className="text-2xl sm:text-3xl font-black text-[#F8FAFC] mt-1 tabular-nums">
-                {stats.total}
+        {/* Hoja cristalina unificada con barra de búsqueda y filtros integrados */}
+        <LiquidGlass
+          blur={3}
+          refraction={12}
+          bezel={0.22}
+          className="rounded-3xl bg-white/[0.03] border-white/[0.10]"
+        >
+          {/* Barra superior de búsqueda y filtros */}
+          <div className="p-4 sm:px-6 border-b border-white/[0.08] bg-white/[0.02] flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div className="relative flex-1 flex items-center gap-2.5">
+              <IconSearch className="w-4 h-4 text-white/45 shrink-0" />
+              <input
+                type="text"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                aria-label="Buscar usuarios por nombre, usuario o correo"
+                placeholder="Buscar por nombre, @usuario o correo..."
+                className="w-full min-h-[38px] bg-transparent text-sm text-white placeholder-white/40 focus:outline-none"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <div
+                role="group"
+                aria-label="Filtrar por rol"
+                className="inline-flex p-0.5 rounded-full border border-white/10 bg-white/[0.04]"
+              >
+                {(
+                  [
+                    { id: 'all', label: 'Todos' },
+                    { id: 'tutor', label: 'Tutores' },
+                    { id: 'student', label: 'Estudiantes' },
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    aria-pressed={filtroRol === opt.id}
+                    onClick={() => setFiltroRol(opt.id)}
+                    className={`min-h-[34px] px-3 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                      filtroRol === opt.id
+                        ? 'bg-white text-black font-semibold'
+                        : 'text-white/65 hover:text-white'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
-              <p className="text-xs text-[#94A3B8] mt-0.5">Solo student y tutor</p>
-            </div>
 
-            <div className="rounded-2xl liquid-glass p-4 sm:p-5">
-              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#6EE7B7]">
-                Estudiantes
-              </span>
-              <div className="text-2xl sm:text-3xl font-black text-[#F8FAFC] mt-1 tabular-nums">
-                {stats.estudiantes}
+              <div
+                role="group"
+                aria-label="Filtrar por estado"
+                className="inline-flex p-0.5 rounded-full border border-white/10 bg-white/[0.04]"
+              >
+                {(
+                  [
+                    { id: 'all', label: 'Todos' },
+                    { id: 'active', label: 'Activos' },
+                    { id: 'inactive', label: 'Inactivos' },
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    aria-pressed={filtroEstado === opt.id}
+                    onClick={() => setFiltroEstado(opt.id)}
+                    className={`min-h-[34px] px-3 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                      filtroEstado === opt.id
+                        ? 'bg-white text-black font-semibold'
+                        : 'text-white/65 hover:text-white'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
-              <p className="text-xs text-[#94A3B8] mt-0.5">Rol: student</p>
             </div>
-
-            <div className="rounded-2xl liquid-glass p-4 sm:p-5">
-              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#D8B4FE]">
-                Tutores
-              </span>
-              <div className="text-2xl sm:text-3xl font-black text-[#F8FAFC] mt-1 tabular-nums">
-                {stats.tutores}
-              </div>
-              <p className="text-xs text-[#94A3B8] mt-0.5">Rol: tutor</p>
-            </div>
-
-            <div className="rounded-2xl liquid-glass p-4 sm:p-5">
-              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#CBD5E1]">
-                Estado
-              </span>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-2xl sm:text-3xl font-black text-[#6EE7B7] tabular-nums">
-                  {stats.activos}
-                </span>
-                <span className="text-xs text-[#CBD5E1] font-semibold tabular-nums">
-                  activos · {stats.inactivos} inactivos
-                </span>
-              </div>
-              <p className="text-xs text-[#94A3B8] mt-0.5">Columna status</p>
-            </div>
-          </div>
-        </section>
-
-        {/* ── BARRA DE BÚSQUEDA Y FILTROS ── */}
-        <div className="rounded-2xl liquid-glass p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="relative flex-1">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]">
-              <IconSearch className="w-4 h-4" />
-            </span>
-            <input
-              type="text"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              aria-label="Buscar usuarios por nombre, usuario o correo"
-              placeholder="Buscar por nombre, @usuario o correo..."
-              className="w-full min-h-[44px] liquid-glass-input rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#F8FAFC] placeholder-[#94A3B8]"
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Filtro por rol */}
-            <div
-              role="group"
-              aria-label="Filtrar por rol"
-              className="inline-flex p-1 rounded-xl liquid-glass-inset gap-1"
-            >
-              {(
-                [
-                  { id: 'all', label: 'Todos' },
-                  { id: 'student', label: 'Estudiantes' },
-                  { id: 'tutor', label: 'Tutores' },
-                ] as const
-              ).map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  aria-pressed={filtroRol === opt.id}
-                  onClick={() => setFiltroRol(opt.id)}
-                  className={`min-h-[38px] px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#67E8F9] ${
-                    filtroRol === opt.id
-                      ? 'liquid-glass-btn text-[#F8FAFC]'
-                      : 'text-[#CBD5E1] hover:text-white'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Filtro por estado */}
-            <div
-              role="group"
-              aria-label="Filtrar por estado"
-              className="inline-flex p-1 rounded-xl liquid-glass-inset gap-1"
-            >
-              {(
-                [
-                  { id: 'all', label: 'Cualquier estado' },
-                  { id: 'active', label: 'Activos' },
-                  { id: 'inactive', label: 'Inactivos' },
-                ] as const
-              ).map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  aria-pressed={filtroEstado === opt.id}
-                  onClick={() => setFiltroEstado(opt.id)}
-                  className={`min-h-[38px] px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#67E8F9] ${
-                    filtroEstado === opt.id
-                      ? 'bg-white/15 text-[#F8FAFC]'
-                      : 'text-[#CBD5E1] hover:text-white'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ── LISTADO DE USUARIOS ── */}
-        <section aria-labelledby="registered-users-heading" className="space-y-3.5">
-          <div className="flex items-center justify-between px-1">
-            <h2
-              id="registered-users-heading"
-              className="text-base sm:text-lg font-black text-[#F8FAFC] tracking-tight tabular-nums"
-            >
-              Usuarios registrados ({usuariosFiltrados.length}
-              {usuariosFiltrados.length !== usuarios.length ? ` de ${usuarios.length}` : ''})
-            </h2>
-            <span className="text-xs text-[#94A3B8] hidden sm:inline">
-              Las cuentas con rol <code className="text-[#D8B4FE]">admin</code> están protegidas
-            </span>
           </div>
 
           {loading ? (
-            <div className="liquid-glass rounded-3xl p-10 text-center" role="status">
-              <p className="text-sm text-[#CBD5E1] font-medium">
-                Cargando estudiantes y tutores desde Supabase...
-              </p>
+            <div className="p-12 text-center" role="status">
+              <p className="text-sm text-white/55">Cargando estudiantes y tutores...</p>
             </div>
           ) : loadError ? (
-            <div
-              role="alert"
-              className="liquid-glass rounded-3xl p-8 text-center space-y-4 border-rose-400/40"
-            >
-              <p className="inline-flex items-center justify-center gap-2 text-sm text-rose-200 font-semibold">
-                <IconAlert className="w-4 h-4 shrink-0" />
-                <span>{loadError}</span>
-              </p>
-              <div>
-                <button
-                  type="button"
-                  onClick={cargarUsuarios}
-                  className="min-h-[44px] liquid-glass-btn px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-[#F8FAFC] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
-                >
-                  Reintentar carga
-                </button>
-              </div>
+            <div role="alert" className="p-10 text-center space-y-4">
+              <p className="text-sm text-rose-200 font-medium">{loadError}</p>
+              <button
+                type="button"
+                onClick={cargarUsuarios}
+                className="min-h-[40px] rounded-full border border-white/15 bg-white/[0.06] hover:bg-white/[0.12] px-5 text-xs font-semibold text-white cursor-pointer"
+              >
+                Reintentar
+              </button>
             </div>
           ) : usuariosFiltrados.length === 0 ? (
-            <div className="liquid-glass liquid-glass-panel rounded-3xl p-10 text-center space-y-3">
-              <EmptyUsersSearchIllustration />
-              <p className="text-sm text-[#F8FAFC] font-bold">
+            <div className="p-12 text-center space-y-3">
+              <p className="text-sm text-white/75 font-medium">
                 No se encontraron usuarios con los filtros aplicados.
               </p>
               {(busqueda || filtroRol !== 'all' || filtroEstado !== 'all') && (
@@ -770,14 +616,14 @@ export default function AdminUsuariosPage() {
                     setFiltroRol('all');
                     setFiltroEstado('all');
                   }}
-                  className="min-h-[44px] inline-flex items-center justify-center px-4 py-2 rounded-xl liquid-glass-pill text-xs font-bold text-[#67E8F9] hover:text-white cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
+                  className="min-h-[38px] rounded-full border border-white/15 bg-white/[0.06] hover:bg-white/[0.12] px-4 text-xs font-medium text-white cursor-pointer"
                 >
-                  Limpiar filtros activos
+                  Limpiar filtros
                 </button>
               )}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="divide-y divide-white/[0.07]">
               {usuariosFiltrados.map((u) => {
                 const isTutor = u.role === 'tutor';
                 const isActivo = u.status !== false;
@@ -786,106 +632,72 @@ export default function AdminUsuariosPage() {
                 return (
                   <div
                     key={u.id}
-                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass liquid-glass-interactive"
-                    style={
-                      !isActivo
-                        ? ({
-                            '--glass-caustic': 'rgba(244, 63, 94, 0.24)',
-                            borderColor: 'rgba(251, 113, 133, 0.34)',
-                          } as CSSProperties)
-                        : undefined
-                    }
+                    className={`flex flex-col md:flex-row md:items-center justify-between gap-4 px-5 sm:px-6 py-4 transition-colors ${
+                      !isActivo ? 'bg-rose-500/[0.04]' : 'hover:bg-white/[0.03]'
+                    }`}
                   >
-                    <div className="flex items-start sm:items-center gap-3.5 min-w-0">
-                      {/* Avatar con iniciales */}
-                      <div
-                        className="w-11 h-11 rounded-2xl liquid-glass-inset flex items-center justify-center font-black text-sm shrink-0 text-[#F8FAFC]"
-                        style={{
-                          background: isTutor
-                            ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(11, 16, 34, 0.9) 100%)'
-                            : 'linear-gradient(135deg, rgba(16, 185, 129, 0.28) 0%, rgba(11, 16, 34, 0.9) 100%)',
-                          borderColor: isTutor
-                            ? 'rgba(216, 180, 254, 0.42)'
-                            : 'rgba(110, 231, 183, 0.42)',
-                        }}
-                      >
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-10 h-10 rounded-full border border-white/12 bg-white/[0.05] flex items-center justify-center font-semibold text-xs text-white shrink-0">
                         {getInitials(u.nombre, u.usuario)}
                       </div>
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm sm:text-base text-[#F8FAFC] font-bold truncate">
+                          <span className="text-sm font-semibold text-white truncate">
                             {u.nombre}
                           </span>
-
-                          {/* Etiqueta de rol */}
                           <span
-                            className={`text-[11px] uppercase tracking-wider font-bold px-2.5 py-0.5 rounded-full border ${
+                            className={`font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                               isTutor
-                                ? 'border-[#D8B4FE]/45 bg-purple-500/15 text-[#E9D5FF]'
-                                : 'border-[#6EE7B7]/45 bg-emerald-500/15 text-[#A7F3D0]'
+                                ? 'border-[#D8B4FE]/35 bg-[#D8B4FE]/[0.08] text-[#E9D5FF]'
+                                : 'border-[#6EE7B7]/35 bg-[#6EE7B7]/[0.08] text-[#A7F3D0]'
                             }`}
                           >
                             {u.role}
                           </span>
-
-                          {/* Etiqueta de estado */}
                           <span
-                            className={`inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider font-bold px-2.5 py-0.5 rounded-full border ${
+                            className={`inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                               isActivo
-                                ? 'border-[#67E8F9]/35 bg-sky-500/10 text-[#67E8F9]'
-                                : 'border-rose-400/45 bg-rose-500/15 text-rose-200'
+                                ? 'border-white/15 bg-white/[0.04] text-white/80'
+                                : 'border-rose-400/35 bg-rose-500/10 text-rose-200'
                             }`}
                           >
                             <span
                               aria-hidden="true"
                               className={`w-1.5 h-1.5 rounded-full ${
-                                isActivo ? 'bg-[#67E8F9]' : 'bg-rose-400'
+                                isActivo ? 'bg-[#6EE7B7]' : 'bg-rose-400'
                               }`}
                             />
-                            <span>
-                              {u.status === true
-                                ? 'Activo'
-                                : u.status === false
-                                  ? 'Inactivo'
-                                  : 'Activo'}
-                            </span>
+                            <span>{isActivo ? 'Activo' : 'Inactivo'}</span>
                           </span>
                         </div>
 
-                        <div className="text-xs text-[#CBD5E1] mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
-                          <span className="font-semibold text-[#67E8F9]">@{u.usuario}</span>
-                          <span className="text-[#94A3B8]" aria-hidden="true">
-                            ·
-                          </span>
-                          <span className="truncate">{u.correo}</span>
+                        <div className="text-xs text-white/50 mt-0.5 truncate">
+                          @{u.usuario} · {u.correo}
                         </div>
                       </div>
                     </div>
 
-                    {/* Botones de acción */}
-                    <div className="flex items-center gap-2.5 self-end md:self-center shrink-0">
+                    <div className="flex items-center gap-2 self-end md:self-center shrink-0">
                       <button
                         type="button"
                         onClick={() => handleToggleEstadoRapido(u)}
                         disabled={isToggling}
-                        className={`min-h-[44px] inline-flex items-center justify-center text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9] ${
+                        className={`min-h-[38px] text-xs font-medium px-3.5 py-1.5 rounded-full border transition-colors cursor-pointer disabled:opacity-50 ${
                           isActivo
-                            ? 'liquid-glass-pill text-[#E2E8F0] hover:bg-rose-500/20 hover:text-rose-200'
-                            : 'liquid-glass-pill text-[#A7F3D0] border-[#6EE7B7]/45 bg-emerald-500/15 hover:bg-emerald-500/25'
+                            ? 'border-white/12 bg-white/[0.04] text-white/75 hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-rose-200'
+                            : 'border-[#6EE7B7]/35 bg-emerald-500/12 text-[#A7F3D0] hover:bg-emerald-500/25'
                         }`}
-                        title={isActivo ? 'Marcar usuario como inactivo' : 'Reactivar usuario'}
                       >
-                        {isToggling ? 'Guardando...' : isActivo ? 'Desactivar' : 'Activar'}
+                        {isToggling ? '...' : isActivo ? 'Desactivar' : 'Activar'}
                       </button>
 
                       <button
                         type="button"
                         onClick={() => abrirEditor(u)}
-                        className="min-h-[44px] text-xs font-bold liquid-glass-btn text-[#F8FAFC] px-4 py-2 rounded-xl cursor-pointer inline-flex items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
+                        className="min-h-[38px] text-xs font-semibold bg-white hover:bg-white/90 text-black px-4 py-1.5 rounded-full cursor-pointer transition-colors"
                       >
-                        <IconEdit className="w-3.5 h-3.5" />
-                        <span>Editar</span>
+                        Editar
                       </button>
                     </div>
                   </div>
@@ -893,10 +705,10 @@ export default function AdminUsuariosPage() {
               })}
             </div>
           )}
-        </section>
+        </LiquidGlass>
       </div>
 
-      {/* ════════════════════ MODAL DE EDICIÓN EN DOBLE ENCAPSULADO LIQUID GLASS ════════════════════ */}
+      {/* Modal de edición en cristal estilo macOS */}
       <AnimatePresence>
         {editingUser && (
           <motion.div
@@ -904,64 +716,36 @@ export default function AdminUsuariosPage() {
             animate={{ opacity: 1 }}
             exit={prefersReducedMotion ? undefined : { opacity: 0 }}
             onClick={cerrarEditor}
-            className="fixed inset-0 z-[120] flex items-center justify-center p-4 overflow-y-auto"
-            style={{
-              background:
-                'radial-gradient(ellipse at 50% 45%, rgba(15, 23, 52, 0.8) 0%, rgba(4, 7, 18, 0.92) 80%)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-            }}
+            className="fixed inset-0 z-[120] flex items-center justify-center p-4 overflow-y-auto bg-black/65 backdrop-blur-md"
           >
             <motion.div
               role="dialog"
               aria-modal="true"
               aria-labelledby="edit-user-modal-title"
-              initial={prefersReducedMotion ? false : { scale: 0.95, y: 12, opacity: 0 }}
+              initial={prefersReducedMotion ? false : { scale: 0.96, y: 10, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={prefersReducedMotion ? undefined : { scale: 0.95, y: 12, opacity: 0 }}
-              transition={{ duration: 0.22 }}
+              exit={prefersReducedMotion ? undefined : { scale: 0.96, y: 10, opacity: 0 }}
+              transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-2xl rounded-3xl liquid-glass-modal p-3 sm:p-4 my-auto"
-              style={{
-                borderColor: 'rgba(103, 232, 249, 0.3)',
-              }}
+              className="w-full max-w-xl rounded-3xl liquid-glass-modal p-6 sm:p-7 my-auto"
             >
-              {/* Cápsula interior Liquid Glass */}
-              <form
-                onSubmit={handleGuardarEdicion}
-                className="rounded-2xl liquid-glass-inset p-5 sm:p-7 space-y-5"
-                style={{
-                  borderColor: 'rgba(216, 180, 254, 0.24)',
-                }}
-              >
-                {/* Cabecera del Modal */}
+              <form onSubmit={handleGuardarEdicion} className="space-y-5">
                 <div className="flex items-start justify-between gap-3 pb-4 border-b border-white/10">
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div
-                      className="w-12 h-12 rounded-2xl liquid-glass-pill flex items-center justify-center font-black text-base text-[#F8FAFC] shrink-0"
-                      style={{
-                        background:
-                          form.role === 'tutor'
-                            ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.38) 0%, rgba(11, 16, 34, 0.9) 100%)'
-                            : 'linear-gradient(135deg, rgba(16, 185, 129, 0.36) 0%, rgba(11, 16, 34, 0.9) 100%)',
-                      }}
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-2" aria-hidden="true">
+                      <span className="size-2.5 rounded-full bg-[#FF5F56]" />
+                      <span className="size-2.5 rounded-full bg-[#FFBD2E]" />
+                      <span className="size-2.5 rounded-full bg-[#27C93F]" />
+                    </div>
+                    <h3
+                      id="edit-user-modal-title"
+                      className="text-lg sm:text-xl font-bold text-white truncate"
                     >
-                      {getInitials(form.nombre, form.usuario)}
-                    </div>
-                    <div className="min-w-0">
-                      <span className="block text-[11px] font-bold uppercase tracking-[0.2em] text-[#67E8F9]">
-                        Editar registro · public.usuarios
-                      </span>
-                      <h3
-                        id="edit-user-modal-title"
-                        className="text-lg sm:text-xl font-black text-[#F8FAFC] truncate"
-                      >
-                        {editingUser.nombre}
-                      </h3>
-                      <p className="text-[11px] text-[#94A3B8] font-mono truncate">
-                        ID: {editingUser.id}
-                      </p>
-                    </div>
+                      {editingUser.nombre}
+                    </h3>
+                    <p className="font-mono text-[11px] text-white/45 truncate">
+                      ID: {editingUser.id}
+                    </p>
                   </div>
 
                   <button
@@ -969,20 +753,15 @@ export default function AdminUsuariosPage() {
                     onClick={cerrarEditor}
                     disabled={saving}
                     aria-label="Cerrar editor de usuario"
-                    className="liquid-glass-pill min-w-[44px] min-h-[44px] rounded-xl flex items-center justify-center text-[#CBD5E1] hover:text-white cursor-pointer shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
-                    title="Cerrar editor"
+                    className="w-10 h-10 rounded-full border border-white/12 bg-white/[0.05] hover:bg-white/[0.12] flex items-center justify-center text-white/70 hover:text-white cursor-pointer shrink-0 transition-colors"
                   >
                     <IconClose className="w-4 h-4" />
                   </button>
                 </div>
 
-                {/* Campos editables de public.usuarios */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label
-                      htmlFor="edit-nombre"
-                      className="block text-xs font-bold uppercase tracking-wider text-[#CBD5E1] mb-1.5"
-                    >
+                    <label htmlFor="edit-nombre" className="block text-xs font-medium text-white/75 mb-1.5">
                       Nombre completo
                     </label>
                     <input
@@ -990,21 +769,18 @@ export default function AdminUsuariosPage() {
                       type="text"
                       value={form.nombre}
                       onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
-                      className="w-full min-h-[44px] liquid-glass-input rounded-xl px-4 py-2.5 text-sm text-[#F8FAFC] placeholder-[#94A3B8]"
+                      className="w-full min-h-[44px] liquid-glass-input rounded-xl px-3.5 py-2 text-sm text-white placeholder-white/35"
                       placeholder="Nombre completo del usuario"
                       required
                     />
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="edit-usuario"
-                      className="block text-xs font-bold uppercase tracking-wider text-[#CBD5E1] mb-1.5"
-                    >
+                    <label htmlFor="edit-usuario" className="block text-xs font-medium text-white/75 mb-1.5">
                       Usuario
                     </label>
                     <div className="relative">
-                      <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] text-sm font-bold">
+                      <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/45 text-sm">
                         @
                       </span>
                       <input
@@ -1012,7 +788,7 @@ export default function AdminUsuariosPage() {
                         type="text"
                         value={form.usuario}
                         onChange={(e) => setForm((f) => ({ ...f, usuario: e.target.value }))}
-                        className="w-full min-h-[44px] liquid-glass-input rounded-xl pl-8 pr-4 py-2.5 text-sm text-[#F8FAFC] placeholder-[#94A3B8]"
+                        className="w-full min-h-[44px] liquid-glass-input rounded-xl pl-8 pr-3.5 py-2 text-sm text-white placeholder-white/35"
                         placeholder="Usuario sin espacios"
                         required
                       />
@@ -1020,10 +796,7 @@ export default function AdminUsuariosPage() {
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="edit-correo"
-                      className="block text-xs font-bold uppercase tracking-wider text-[#CBD5E1] mb-1.5"
-                    >
+                    <label htmlFor="edit-correo" className="block text-xs font-medium text-white/75 mb-1.5">
                       Correo electrónico
                     </label>
                     <input
@@ -1031,17 +804,14 @@ export default function AdminUsuariosPage() {
                       type="email"
                       value={form.correo}
                       onChange={(e) => setForm((f) => ({ ...f, correo: e.target.value }))}
-                      className="w-full min-h-[44px] liquid-glass-input rounded-xl px-4 py-2.5 text-sm text-[#F8FAFC] placeholder-[#94A3B8]"
+                      className="w-full min-h-[44px] liquid-glass-input rounded-xl px-3.5 py-2 text-sm text-white placeholder-white/35"
                       placeholder="correo@dominio.com"
                       required
                     />
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="edit-contrasena"
-                      className="block text-xs font-bold uppercase tracking-wider text-[#CBD5E1] mb-1.5"
-                    >
+                    <label htmlFor="edit-contrasena" className="block text-xs font-medium text-white/75 mb-1.5">
                       Contraseña
                     </label>
                     <div className="relative">
@@ -1050,7 +820,7 @@ export default function AdminUsuariosPage() {
                         type={showPassword ? 'text' : 'password'}
                         value={form.contrasena}
                         onChange={(e) => setForm((f) => ({ ...f, contrasena: e.target.value }))}
-                        className="w-full min-h-[44px] liquid-glass-input rounded-xl pl-4 pr-12 py-2.5 text-sm text-[#F8FAFC] placeholder-[#94A3B8]"
+                        className="w-full min-h-[44px] liquid-glass-input rounded-xl pl-3.5 pr-11 py-2 text-sm text-white placeholder-white/35"
                         placeholder="Contraseña de la cuenta"
                         required
                       />
@@ -1058,8 +828,7 @@ export default function AdminUsuariosPage() {
                         type="button"
                         onClick={() => setShowPassword((v) => !v)}
                         aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 min-w-[38px] min-h-[38px] flex items-center justify-center rounded-lg text-[#CBD5E1] hover:text-white cursor-pointer focus-visible:outline-2 focus-visible:outline-[#67E8F9]"
-                        title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-lg text-white/65 hover:text-white cursor-pointer"
                       >
                         <IconEye hidden={showPassword} />
                       </button>
@@ -1067,122 +836,108 @@ export default function AdminUsuariosPage() {
                   </div>
                 </div>
 
-                {/* Selectores visuales de Rol y Estado */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <span className="block text-xs font-bold uppercase tracking-wider text-[#CBD5E1] mb-1.5">
-                      Rol del usuario (role)
-                    </span>
+                    <span className="block text-xs font-medium text-white/75 mb-1.5">Rol</span>
                     <div
                       role="group"
                       aria-label="Seleccionar rol"
-                      className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl liquid-glass-pill"
+                      className="grid grid-cols-2 gap-1 p-1 rounded-full border border-white/10 bg-white/[0.04]"
                     >
                       <button
                         type="button"
                         aria-pressed={form.role === 'student'}
                         onClick={() => setForm((f) => ({ ...f, role: 'student' }))}
-                        className={`min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#67E8F9] ${
+                        className={`min-h-[38px] rounded-full text-xs font-medium transition-colors cursor-pointer ${
                           form.role === 'student'
-                            ? 'bg-emerald-500/25 border border-[#6EE7B7]/60 text-[#A7F3D0]'
-                            : 'text-[#CBD5E1] hover:text-white'
+                            ? 'bg-white text-black font-semibold'
+                            : 'text-white/65 hover:text-white'
                         }`}
                       >
-                        <IconRoleMark role="student" />
-                        <span>Student</span>
+                        Student
                       </button>
                       <button
                         type="button"
                         aria-pressed={form.role === 'tutor'}
                         onClick={() => setForm((f) => ({ ...f, role: 'tutor' }))}
-                        className={`min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#67E8F9] ${
+                        className={`min-h-[38px] rounded-full text-xs font-medium transition-colors cursor-pointer ${
                           form.role === 'tutor'
-                            ? 'bg-purple-500/25 border border-[#D8B4FE]/60 text-[#E9D5FF]'
-                            : 'text-[#CBD5E1] hover:text-white'
+                            ? 'bg-white text-black font-semibold'
+                            : 'text-white/65 hover:text-white'
                         }`}
                       >
-                        <IconRoleMark role="tutor" />
-                        <span>Tutor</span>
+                        Tutor
                       </button>
                     </div>
                   </div>
 
                   <div>
-                    <span className="block text-xs font-bold uppercase tracking-wider text-[#CBD5E1] mb-1.5">
-                      Estado de la cuenta (status)
-                    </span>
+                    <span className="block text-xs font-medium text-white/75 mb-1.5">Estado</span>
                     <div
                       role="group"
                       aria-label="Seleccionar estado de la cuenta"
-                      className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl liquid-glass-pill"
+                      className="grid grid-cols-2 gap-1 p-1 rounded-full border border-white/10 bg-white/[0.04]"
                     >
                       <button
                         type="button"
                         aria-pressed={form.status}
                         onClick={() => setForm((f) => ({ ...f, status: true }))}
-                        className={`min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#67E8F9] ${
+                        className={`min-h-[38px] rounded-full text-xs font-medium transition-colors cursor-pointer ${
                           form.status
-                            ? 'bg-sky-500/25 border border-[#67E8F9]/60 text-[#E0F2FE]'
-                            : 'text-[#CBD5E1] hover:text-white'
+                            ? 'bg-[#6EE7B7] text-black font-semibold'
+                            : 'text-white/65 hover:text-white'
                         }`}
                       >
-                        <span aria-hidden="true" className="w-2 h-2 rounded-full bg-[#67E8F9]" />
-                        <span>Activo</span>
+                        Activo
                       </button>
                       <button
                         type="button"
                         aria-pressed={!form.status}
                         onClick={() => setForm((f) => ({ ...f, status: false }))}
-                        className={`min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#67E8F9] ${
+                        className={`min-h-[38px] rounded-full text-xs font-medium transition-colors cursor-pointer ${
                           !form.status
-                            ? 'bg-rose-500/25 border border-rose-300/60 text-rose-100'
-                            : 'text-[#CBD5E1] hover:text-white'
+                            ? 'bg-rose-400 text-black font-semibold'
+                            : 'text-white/65 hover:text-white'
                         }`}
                       >
-                        <span aria-hidden="true" className="w-2 h-2 rounded-full bg-rose-400" />
-                        <span>Inactivo</span>
+                        Inactivo
                       </button>
                     </div>
                   </div>
                 </div>
 
-                {/* Aviso informativo cuando se modifica correo o contraseña */}
                 {cambioCredenciales && (
-                  <div className="rounded-xl px-4 py-3 liquid-glass-pill border-[#D8B4FE]/35 text-xs text-[#E2E8F0] leading-relaxed">
-                    <strong className="text-[#D8B4FE]">Nota:</strong> Los cambios de correo y
-                    contraseña se actualizan directamente en la tabla{' '}
-                    <code className="text-[#67E8F9]">public.usuarios</code>. Si el usuario inicia
-                    sesión con Supabase Auth, asegúrate de sincronizar sus credenciales allí también.
+                  <div className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-xs text-white/70 leading-relaxed">
+                    <strong className="text-white">Nota:</strong> Los cambios de correo y contraseña
+                    se actualizan directamente en{' '}
+                    <code className="text-[#67E8F9]">public.usuarios</code>.
                   </div>
                 )}
 
-                {/* Error de validación / Supabase */}
                 {formError && (
                   <div
                     role="alert"
-                    className="rounded-xl px-4 py-3 liquid-glass-pill border-rose-400/50 bg-rose-500/15 text-rose-200 text-xs font-semibold flex items-center gap-2"
+                    className="rounded-xl border border-rose-400/40 bg-rose-500/12 px-4 py-3 text-rose-200 text-xs font-medium"
                   >
-                    <IconAlert className="w-4 h-4 shrink-0" />
-                    <span>{formError}</span>
+                    {formError}
                   </div>
                 )}
 
-                {/* Botones del Modal */}
-                <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-end gap-3 pt-3 border-t border-white/10">
+                <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-end gap-2.5 pt-3 border-t border-white/10">
                   <button
                     type="button"
                     onClick={cerrarEditor}
                     disabled={saving}
-                    className="min-h-[44px] liquid-glass-pill hover:bg-white/15 text-[#E2E8F0] text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
+                    className="min-h-[42px] rounded-full border border-white/15 bg-white/[0.05] hover:bg-white/[0.12] text-white text-xs font-medium px-5 cursor-pointer disabled:opacity-50"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={saving || !hayCambiosEnFormulario}
-                    className="min-h-[44px] bg-[#00F5FF] text-[#06101F] hover:opacity-90 text-xs font-black uppercase tracking-wider px-6 py-2.5 rounded-xl cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
+                    className="min-h-[42px] rounded-full bg-white hover:bg-white/90 text-black text-xs font-semibold px-6 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
-                    {saving ? 'Guardando en Supabase...' : 'Guardar cambios'}
+                    {saving ? 'Guardando...' : 'Guardar cambios'}
                   </button>
                 </div>
               </form>

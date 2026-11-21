@@ -165,14 +165,11 @@ function RetroGlassLevelCard({
         } as CSSProperties
       }
     >
-      {/* Cápsula interior Liquid Glass con alta legibilidad */}
+      {/* Cápsula interior ultra-transparente estilo glasscn */}
       <div
-        className="relative rounded-2xl liquid-glass-inset p-4 sm:p-5 overflow-hidden"
+        className="relative rounded-2xl bg-white/[0.03] border p-4 sm:p-5 overflow-hidden"
         style={{
-          background: available
-            ? `linear-gradient(155deg, ${accent.glow}14 0%, rgba(10, 15, 32, 0.84) 50%, rgba(6, 10, 22, 0.94) 100%)`
-            : 'linear-gradient(155deg, rgba(255,255,255,0.02) 0%, rgba(8,12,24,0.88) 100%)',
-          borderColor: available ? `${accent.glow}38` : 'rgba(255,255,255,0.07)',
+          borderColor: available ? 'rgba(255,255,255,0.11)' : 'rgba(255,255,255,0.06)',
         }}
       >
         {/* Esquinas técnicas del visor */}
@@ -595,18 +592,16 @@ export default function PlanetaPage() {
           <span>Volver al mapa estelar</span>
         </button>
 
-        {/* Encabezado asimétrico del planeta con Doble Encapsulado Liquid Glass */}
+        {/* Encabezado asimétrico del planeta en cristal ultra-transparente glasscn */}
         <section
           aria-labelledby="planet-page-heading"
-          className="mb-10 rounded-3xl liquid-glass p-3 sm:p-4"
-          style={{ borderColor: accent.border }}
+          className="mb-10"
         >
-          <div
-            className="rounded-2xl liquid-glass-inset p-6 sm:p-8 relative overflow-hidden"
-            style={{
-              borderColor: `${accent.glow}35`,
-              background: `linear-gradient(155deg, ${accent.glow}14 0%, rgba(10, 15, 32, 0.78) 52%, rgba(6, 10, 22, 0.9) 100%)`,
-            }}
+          <LiquidGlass
+            blur={3}
+            refraction={14}
+            bezel={0.26}
+            className="rounded-3xl bg-white/[0.03] border-white/[0.10] p-6 sm:p-8"
           >
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
               <motion.div
@@ -619,10 +614,8 @@ export default function PlanetaPage() {
               </motion.div>
 
               <div className="md:col-span-8 text-center md:text-left space-y-3">
-                <LiquidGlass
-                  blur={4}
-                  refraction={10}
-                  className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full font-mono text-[11px] font-bold uppercase tracking-[0.18em]"
+                <div
+                  className="inline-flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.2em]"
                   style={{ color: accent.text }}
                 >
                   <span
@@ -631,13 +624,13 @@ export default function PlanetaPage() {
                     style={{ backgroundColor: accent.text }}
                   />
                   <span>Sector planetario · {planet.shortDescription}</span>
-                </LiquidGlass>
+                </div>
 
                 <motion.h1
                   id="planet-page-heading"
                   initial={prefersReducedMotion ? false : { opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-3xl sm:text-4xl font-black tracking-tight text-[#F8FAFC]"
+                  className="text-3xl sm:text-4xl font-bold tracking-tight text-white"
                 >
                   {planet.name}
                 </motion.h1>
@@ -646,23 +639,23 @@ export default function PlanetaPage() {
                   initial={prefersReducedMotion ? false : { opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.08 }}
-                  className="text-sm sm:text-base text-[#CBD5E1] max-w-xl leading-relaxed mx-auto md:mx-0"
+                  className="text-sm sm:text-base text-white/65 max-w-xl leading-relaxed mx-auto md:mx-0"
                 >
                   {planet.description}
                 </motion.p>
 
-                <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
-                  <div className="px-3.5 py-1.5 rounded-xl bg-[#080D1C]/85 border border-white/12 text-xs font-bold text-[#F8FAFC] tabular-nums">
+                <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+                  <div className="px-3.5 py-1.5 rounded-full border border-white/12 bg-white/[0.04] text-xs font-medium text-white tabular-nums">
                     {planet.courses.length}{' '}
                     {planet.courses.length === 1 ? 'módulo orbital' : 'módulos orbitales'}
                   </div>
-                  <div className="px-3.5 py-1.5 rounded-xl bg-[#080D1C]/85 border border-white/12 text-xs font-bold text-[#CBD5E1] tabular-nums">
+                  <div className="px-3.5 py-1.5 rounded-full border border-white/12 bg-white/[0.04] text-xs font-medium text-white/75 tabular-nums">
                     {totalLevels} {totalLevels === 1 ? 'misión' : 'misiones'} en ruta
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </LiquidGlass>
         </section>
 
         {/* Módulos y Niveles en Liquid Glass */}

@@ -265,8 +265,8 @@ export default function HowToPlayPage() {
                 key={rule.title}
                 className="rounded-xl liquid-glass-inset p-5 flex flex-col justify-between gap-3.5"
                 style={{
-                  background: `linear-gradient(155deg, ${rule.tint} 0%, rgba(8, 12, 26, 0.86) 60%)`,
-                  borderColor: `${rule.accent}35`,
+                  background: `linear-gradient(155deg, ${rule.tint} 0%, rgba(255, 255, 255, 0.02) 60%)`,
+                  borderColor: `${rule.accent}2B`,
                 }}
               >
                 <div className="flex items-center justify-between gap-3">
@@ -335,8 +335,8 @@ export default function HowToPlayPage() {
                 key={role.title}
                 className="rounded-xl liquid-glass-inset p-5 flex flex-col gap-3.5"
                 style={{
-                  background: `linear-gradient(155deg, ${role.tint} 0%, rgba(8, 12, 26, 0.86) 65%)`,
-                  borderColor: `${role.accent}35`,
+                  background: `linear-gradient(155deg, ${role.tint} 0%, rgba(255, 255, 255, 0.02) 65%)`,
+                  borderColor: `${role.accent}2B`,
                 }}
               >
                 <div className="flex items-center justify-between gap-2">

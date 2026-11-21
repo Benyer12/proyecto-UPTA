@@ -534,156 +534,192 @@ export default function Header() {
 
   return (
     <>
-    <header className="fixed top-0 left-0 w-full z-50 liquid-glass-header">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 text-white no-underline group min-h-[44px]">
-          <span className="transition-transform duration-300 group-hover:scale-105">
-            <BrandOrbitMark />
-          </span>
-          <span className="font-extrabold text-base sm:text-lg tracking-tight hidden sm:inline text-[#F8FAFC]">
-            Universo del Conocimiento
-          </span>
-        </Link>
-
-        <div className="flex items-center gap-4">
-          {!(token && user?.role === 'admin') && (
-            <nav className="hidden sm:flex items-center gap-6">
-              <Link href="/about" className="text-sm font-semibold tracking-wide text-slate-200 hover:text-cyan-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
-                Acerca de
-              </Link>
-              <Link href="/how-to-play" className="text-sm font-semibold tracking-wide text-slate-200 hover:text-cyan-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
-                Cómo jugar
-              </Link>
-            </nav>
-          )}
-
-          {token && user ? (
-            <nav
-              className={`flex items-center gap-4 ${
-                user.role === 'admin' ? '' : 'ml-4 pl-5 border-l border-white/15'
-              }`}
+    <header className="fixed top-3 left-0 w-full z-50 px-3 sm:px-6 pointer-events-none">
+      {/* Barra flotante Liquid Glass estilo glasscn (píldora suspendida con refracción SVG) */}
+      <div className="mx-auto max-w-5xl pointer-events-auto">
+        <LiquidGlass
+          blur={2.5}
+          refraction={15}
+          bezel={0.34}
+          saturation={1.38}
+          className="h-13 rounded-full bg-white/[0.05] border-white/[0.12] px-3 sm:px-4"
+        >
+          <div className="h-full flex items-center justify-between gap-3">
+            <Link
+              href="/"
+              className="flex items-center gap-2.5 text-white no-underline group min-h-[40px] pl-1 shrink-0"
             >
-              {user.role === 'admin' && (
-                <LiquidGlass
-                  blur={6}
-                  refraction={10}
-                  bezel={0.32}
-                  saturation={1.65}
-                  className="hidden lg:flex items-center gap-1 p-1 rounded-2xl bg-[#080d1e]/55"
-                >
-                  {ADMIN_NAV_ITEMS.map((item) => {
-                    const isActive =
-                      item.href === '/admin'
-                        ? pathname === '/admin'
-                        : pathname?.startsWith(item.href);
+              <span className="transition-transform duration-300 group-hover:scale-105">
+                <BrandOrbitMark />
+              </span>
+              <span className="font-bold text-sm sm:text-[15px] tracking-tight hidden sm:inline text-white">
+                Universo del Conocimiento
+              </span>
+            </Link>
 
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`glance inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
-                          isActive
-                            ? 'liquid-glass-btn text-white'
-                            : 'text-slate-300 hover:text-white hover:bg-white/8'
-                        }`}
-                      >
-                        <span>{item.label}</span>
-                        {item.isPending && pendingCount > 0 && (
-                          <span
-                            className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black leading-none"
-                            style={{
-                              background:
-                                'linear-gradient(135deg, rgba(251, 191, 36, 0.92) 0%, rgba(245, 158, 11, 0.95) 100%)',
-                              color: '#1E1B4B',
-                              boxShadow: '0 0 12px rgba(251, 191, 36, 0.65)',
-                            }}
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              {!(token && user?.role === 'admin') && (
+                <nav className="hidden sm:flex items-center gap-1">
+                  <Link
+                    href="/about"
+                    className={`text-xs sm:text-[13px] font-medium px-3 py-1.5 rounded-full transition-colors ${
+                      pathname === '/about'
+                        ? 'bg-white/12 text-white'
+                        : 'text-white/70 hover:text-white hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    Acerca de
+                  </Link>
+                  <Link
+                    href="/how-to-play"
+                    className={`text-xs sm:text-[13px] font-medium px-3 py-1.5 rounded-full transition-colors ${
+                      pathname === '/how-to-play'
+                        ? 'bg-white/12 text-white'
+                        : 'text-white/70 hover:text-white hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    Cómo jugar
+                  </Link>
+                </nav>
+              )}
+
+              {token && user ? (
+                <nav className="flex items-center gap-1.5 sm:gap-2">
+                  {user.role === 'admin' && (
+                    <div className="hidden lg:flex items-center gap-0.5 px-1">
+                      {ADMIN_NAV_ITEMS.map((item) => {
+                        const isActive =
+                          item.href === '/admin'
+                            ? pathname === '/admin'
+                            : pathname?.startsWith(item.href);
+
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`glance inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide px-3 py-1.5 rounded-full transition-all whitespace-nowrap ${
+                              isActive
+                                ? 'bg-white text-black'
+                                : 'text-white/70 hover:text-white hover:bg-white/[0.07]'
+                            }`}
                           >
-                            {pendingCount}
-                          </span>
-                        )}
-                      </Link>
-                    );
-                  })}
-                </LiquidGlass>
-              )}
+                            <span>{item.label}</span>
+                            {item.isPending && pendingCount > 0 && (
+                              <span
+                                className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-black leading-none ${
+                                  isActive
+                                    ? 'bg-black text-amber-300'
+                                    : 'bg-amber-400 text-black'
+                                }`}
+                              >
+                                {pendingCount}
+                              </span>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
 
-              {(user.role === 'tutor' || user.role === 'docente') && (
-                <Link href="/maestro" className="text-sm font-semibold tracking-wide text-cyan-300 hover:text-cyan-200 transition-colors px-3 py-1.5 rounded-lg liquid-glass-pill">
-                  Mis Estudiantes
-                </Link>
-              )}
+                  {(user.role === 'tutor' || user.role === 'docente') && (
+                    <Link
+                      href="/maestro"
+                      className={`text-xs sm:text-[13px] font-semibold px-3.5 py-1.5 rounded-full transition-colors whitespace-nowrap ${
+                        pathname === '/maestro'
+                          ? 'bg-white text-black'
+                          : 'bg-white/[0.08] text-white hover:bg-white/[0.14]'
+                      }`}
+                    >
+                      Mis Estudiantes
+                    </Link>
+                  )}
 
-              {user.role === 'student' && (
-                <Link href="/dashboard" className="text-sm font-semibold tracking-wide text-cyan-300 hover:text-cyan-200 transition-colors px-3 py-1.5 rounded-lg liquid-glass-pill">
-                  Dashboard
-                </Link>
-              )}
+                  {user.role === 'student' && (
+                    <Link
+                      href="/dashboard"
+                      className={`text-xs sm:text-[13px] font-semibold px-3.5 py-1.5 rounded-full transition-colors whitespace-nowrap ${
+                        pathname === '/dashboard'
+                          ? 'bg-white text-black'
+                          : 'bg-white/[0.08] text-white hover:bg-white/[0.14]'
+                      }`}
+                    >
+                      Mi Universo
+                    </Link>
+                  )}
 
-              <div className="flex items-center gap-3 pl-4 border-l border-white/15">
-                <div className="text-right leading-tight">
-                  <div className="text-sm text-white font-semibold">{user.name}</div>
-                  <div className="text-[11px] text-cyan-300/80 uppercase tracking-wider font-medium">{user.role}</div>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="text-xs font-semibold liquid-glass-pill hover:bg-white/15 text-white px-3.5 py-1.5 rounded-lg transition-all cursor-pointer"
-                >
-                  Salir
-                </button>
-              </div>
-            </nav>
-          ) : (
-            <button
-              onClick={() => {
-                setIsOpen(!isOpen);
-                resetLoginForm();
-                resetRegForm();
-              }}
-              className="liquid-glass-btn text-white text-sm font-bold tracking-wide px-5 py-2 rounded-xl cursor-pointer"
-            >
-              Iniciar sesión
-            </button>
-          )}
-
-          {/* Botón menú móvil / tablet con etiqueta visible */}
-          <button
-            type="button"
-            aria-expanded={mobileMenuOpen}
-            className={`${
-              token && user?.role === 'admin' ? 'lg:hidden' : 'sm:hidden'
-            } min-h-[44px] inline-flex items-center gap-2 text-xs font-bold text-white px-3 py-2 liquid-glass-pill rounded-xl cursor-pointer`}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'}
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              {mobileMenuOpen ? (
-                <path d="M3.5 3.5L12.5 12.5M12.5 3.5L3.5 12.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                  <div className="flex items-center gap-2 pl-2.5 ml-0.5 border-l border-white/12">
+                    <div className="hidden md:block text-right leading-tight">
+                      <div className="text-xs text-white font-semibold max-w-[120px] truncate">
+                        {user.name}
+                      </div>
+                      <div className="font-mono text-[10px] text-white/55 uppercase tracking-wider">
+                        {user.role}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="min-h-[36px] text-xs font-semibold bg-white/[0.07] hover:bg-white/[0.14] border border-white/12 text-white px-3.5 py-1.5 rounded-full transition-colors cursor-pointer"
+                    >
+                      Salir
+                    </button>
+                  </div>
+                </nav>
               ) : (
-                <path d="M2.5 4.5H13.5M2.5 8H13.5M2.5 11.5H13.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOpen(!isOpen);
+                    resetLoginForm();
+                    resetRegForm();
+                  }}
+                  className="min-h-[36px] bg-white hover:bg-white/90 text-black text-xs sm:text-[13px] font-semibold px-4 py-1.5 rounded-full transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  Iniciar sesión
+                </button>
               )}
-            </svg>
-            <span>Menú</span>
-          </button>
-        </div>
+
+              {/* Botón menú móvil / tablet con etiqueta visible */}
+              <button
+                type="button"
+                aria-expanded={mobileMenuOpen}
+                className={`${
+                  token && user?.role === 'admin' ? 'lg:hidden' : 'sm:hidden'
+                } min-h-[36px] inline-flex items-center gap-1.5 text-xs font-semibold text-white px-3 py-1.5 rounded-full bg-white/[0.07] hover:bg-white/[0.14] border border-white/12 cursor-pointer`}
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'}
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  {mobileMenuOpen ? (
+                    <path d="M3.5 3.5L12.5 12.5M12.5 3.5L3.5 12.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                  ) : (
+                    <path d="M2.5 4.5H13.5M2.5 8H13.5M2.5 11.5H13.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                  )}
+                </svg>
+                <span>Menú</span>
+              </button>
+            </div>
+          </div>
+        </LiquidGlass>
       </div>
 
-      {/* Menú Móvil / Tablet */}
+      {/* Menú Móvil / Tablet flotante en cristal */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ height: 0, opacity: 0, y: -6 }}
+            animate={{ height: 'auto', opacity: 1, y: 0 }}
+            exit={{ height: 0, opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
             className={`${
               token && user?.role === 'admin' ? 'lg:hidden' : 'sm:hidden'
-            } border-t border-white/15 liquid-glass-dropdown overflow-hidden`}
+            } pointer-events-auto mx-auto max-w-5xl mt-2.5 rounded-2xl liquid-glass-dropdown overflow-hidden`}
           >
-            <div className="flex flex-col p-4 gap-2">
+            <div className="flex flex-col p-3 gap-1.5">
               {token && user?.role === 'admin' ? (
                 <>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#93C5FD] px-3 pt-1 pb-1">
-                    Secciones de Administración
+                  <div className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-white/45 px-3 pt-1 pb-1">
+                    Administración
                   </div>
                   {ADMIN_NAV_ITEMS.map((item) => {
                     const isActive =
@@ -696,15 +732,15 @@ export default function Header() {
                         key={item.href}
                         href={item.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`flex items-center justify-between text-sm font-bold px-3.5 py-2.5 rounded-xl transition-all ${
+                        className={`min-h-[44px] flex items-center justify-between text-sm font-semibold px-3.5 py-2 rounded-xl transition-all ${
                           isActive
-                            ? 'liquid-glass-btn text-white'
-                            : 'text-slate-200 hover:text-white hover:bg-white/8'
+                            ? 'bg-white text-black'
+                            : 'text-white/80 hover:text-white hover:bg-white/[0.07]'
                         }`}
                       >
                         <span>{item.label}</span>
                         {item.isPending && pendingCount > 0 && (
-                          <span className="inline-flex items-center justify-center min-w-[22px] h-5 px-2 rounded-full text-[11px] font-black bg-amber-400 text-slate-950">
+                          <span className="inline-flex items-center justify-center min-w-[22px] h-5 px-2 rounded-full text-[11px] font-black bg-amber-400 text-black">
                             {pendingCount}
                           </span>
                         )}
@@ -714,10 +750,10 @@ export default function Header() {
                 </>
               ) : (
                 <>
-                  <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-200 hover:text-cyan-300 px-3 py-2 rounded-lg hover:bg-white/5">
+                  <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-white/80 hover:text-white px-3.5 py-2 rounded-xl hover:bg-white/[0.07]">
                     Acerca de
                   </Link>
-                  <Link href="/how-to-play" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-200 hover:text-cyan-300 px-3 py-2 rounded-lg hover:bg-white/5">
+                  <Link href="/how-to-play" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-white/80 hover:text-white px-3.5 py-2 rounded-xl hover:bg-white/[0.07]">
                     Cómo jugar
                   </Link>
                 </>
@@ -727,131 +763,118 @@ export default function Header() {
         )}
       </AnimatePresence>
 
-      {/* Panel Desplegable de Autenticación con Partículas Interactivas + Cápsulas Liquid Glass */}
+      {/* Panel Desplegable de Autenticación flotante en cristal glasscn */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             ref={formRef}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.32, ease: 'easeInOut' }}
-            className="relative overflow-hidden border-t border-white/15 liquid-glass-dropdown"
+            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ duration: 0.26, ease: 'easeOut' }}
+            className="pointer-events-auto relative mx-auto max-w-4xl mt-3 overflow-hidden rounded-3xl liquid-glass-dropdown"
           >
             {/* Lienzo de partículas Antigravity dentro del panel desplegable */}
             <DropdownAntigravityCanvas />
 
-            <div className="relative z-10 max-w-5xl mx-auto px-6 py-8 md:py-10">
+            <div className="relative z-10 p-5 sm:p-8">
               <div className="grid lg:grid-cols-12 gap-6 items-stretch">
-                {/* Columna Izquierda: Tarjeta de Telemetría y Mundos en Liquid Glass */}
-                <div className="hidden lg:flex lg:col-span-5 flex-col justify-between rounded-2xl liquid-glass p-7">
-                  <div className="space-y-3.5">
-                    <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#67E8F9] block">
-                      Portal de Acceso
+                {/* Columna Izquierda: Ventana informativa limpia sin planetas */}
+                <div className="hidden lg:flex lg:col-span-5 flex-col justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-1.5 mb-2" aria-hidden="true">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F56]" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#27C93F]" />
+                    </div>
+
+                    <span className="font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-white/50 block">
+                      Portal de acceso
                     </span>
 
-                    <h3 className="text-2xl font-black text-white tracking-tight leading-snug">
-                      Continúa tu progreso espacial
+                    <h3 className="text-2xl font-bold text-white tracking-tight leading-snug">
+                      Tu espacio de aprendizaje
                     </h3>
 
-                    <p className="text-sm text-[#CBD5E1] leading-relaxed">
-                      Ingresa con tu cuenta de estudiante, tutor o administrador para guardar misiones, niveles y estrellas.
+                    <p className="text-sm text-white/65 leading-relaxed">
+                      Inicia sesión como estudiante para acceder a los mundos interactivos, o entra como tutor o administrador para gestionar el aula.
                     </p>
                   </div>
 
-                  {/* Mini cápsulas Liquid Glass de los 3 planetas */}
-                  <div className="space-y-2.5 my-5">
-                    <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#94A3B8]">
-                      Mundos disponibles
+                  <div className="space-y-2 my-5">
+                    <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/45">
+                      Áreas disponibles al ingresar
                     </div>
-                    <div className="grid grid-cols-3 gap-2.5">
+                    <div className="space-y-2">
                       {PLANET_CHIPS.map((p) => (
                         <div
                           key={p.name}
-                          className="liquid-glass-inset rounded-xl p-3 text-center"
-                          style={{
-                            background: `linear-gradient(155deg, ${p.bg} 0%, rgba(10, 14, 30, 0.72) 100%)`,
-                            borderColor: `${p.color}40`,
-                          }}
+                          className="rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 flex items-center justify-between"
                         >
-                          <PlanetChipGlyph id={p.id} color={p.color} />
-                          <div className="text-xs font-extrabold text-white tracking-wide">{p.name}</div>
-                          <div className="text-[11px] font-semibold mt-0.5" style={{ color: p.color }}>
-                            {p.sub}
+                          <div className="flex items-center gap-2.5">
+                            <PlanetChipGlyph id={p.id} color={p.color} />
+                            <span className="text-xs font-semibold text-white">{p.sub}</span>
                           </div>
+                          <span className="font-mono text-[10px] uppercase tracking-wider text-white/50">
+                            {p.name}
+                          </span>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Estado del sistema */}
-                  <div className="liquid-glass-inset rounded-xl px-4 py-3 flex items-center justify-between text-xs">
-                    <span className="text-[#CBD5E1] font-medium flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <path
-                          d="M12 3L5 6V11.5C5 16 8 19.8 12 21C16 19.8 19 16 19 11.5V6L12 3Z"
-                          stroke="#6EE7B7"
-                          strokeWidth="1.8"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M9 12L11 14L15.2 9.8"
-                          stroke="#6EE7B7"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      Sincronización en la nube
-                    </span>
-                    <span className="text-[#6EE7B7] font-bold tracking-wider uppercase text-[11px]">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 flex items-center justify-between text-xs">
+                    <span className="text-white/70 font-medium">Sincronización en la nube</span>
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#6EE7B7]">
                       Activa
                     </span>
                   </div>
                 </div>
 
-                {/* Columna Derecha: Cápsula Liquid Glass del Formulario */}
+                {/* Columna Derecha: Formulario limpio en cristal */}
                 <div className="lg:col-span-7">
-                  <div className="rounded-2xl liquid-glass p-6 sm:p-8 h-full flex flex-col justify-center">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-7 h-full flex flex-col justify-center">
                     <div className="flex items-center justify-between mb-5">
                       <div>
-                        <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#67E8F9] block">
-                          {tab === 'login' ? 'Acceso a tu cuenta' : 'Registro de estudiante'}
+                        <span className="font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-white/50 block">
+                          {tab === 'login' ? 'Acceso a tu cuenta' : 'Nuevo registro'}
                         </span>
-                        <h4 className="text-xl font-black text-white tracking-tight mt-0.5">
-                          {tab === 'login' ? 'Iniciar sesión' : 'Crear cuenta nueva'}
+                        <h4 className="text-xl font-bold text-white tracking-tight mt-0.5">
+                          {tab === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
                         </h4>
                       </div>
                       <button
                         type="button"
                         onClick={() => setIsOpen(false)}
-                        className="liquid-glass-pill w-11 h-11 rounded-xl flex items-center justify-center text-slate-300 hover:text-white cursor-pointer"
+                        className="w-10 h-10 rounded-full border border-white/12 bg-white/[0.05] hover:bg-white/[0.12] flex items-center justify-center text-white/70 hover:text-white cursor-pointer transition-colors"
                         aria-label="Cerrar panel de acceso"
                       >
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                           <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                         </svg>
                       </button>
                     </div>
 
-                    {/* Selector de pestañas en cápsula Liquid Glass */}
-                    <div className="flex mb-6 p-1.5 rounded-2xl liquid-glass-pill">
+                    {/* Selector de pestañas estilo segmented pill */}
+                    <div className="flex mb-6 p-1 rounded-full border border-white/10 bg-white/[0.04]">
                       <button
+                        type="button"
                         onClick={() => { setTab('login'); resetRegForm(); }}
-                        className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer ${
+                        className={`flex-1 min-h-[38px] py-2 text-xs sm:text-sm font-semibold rounded-full transition-all cursor-pointer ${
                           tab === 'login'
-                            ? 'liquid-glass-btn text-white shadow-sm'
-                            : 'text-slate-400 hover:text-slate-200'
+                            ? 'bg-white text-black'
+                            : 'text-white/65 hover:text-white'
                         }`}
                       >
                         Iniciar sesión
                       </button>
                       <button
+                        type="button"
                         onClick={() => { setTab('register'); resetLoginForm(); }}
-                        className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer ${
+                        className={`flex-1 min-h-[38px] py-2 text-xs sm:text-sm font-semibold rounded-full transition-all cursor-pointer ${
                           tab === 'register'
-                            ? 'liquid-glass-btn text-white shadow-sm'
-                            : 'text-slate-400 hover:text-slate-200'
+                            ? 'bg-white text-black'
+                            : 'text-white/65 hover:text-white'
                         }`}
                       >
                         Registrarse
@@ -861,7 +884,7 @@ export default function Header() {
                     {tab === 'login' && (
                       <div className="space-y-4">
                         <div>
-                          <label className="text-xs text-slate-200 font-semibold tracking-wide" htmlFor="header-user">
+                          <label className="text-xs text-white/75 font-medium" htmlFor="header-user">
                             Usuario
                           </label>
                           <input
@@ -870,12 +893,12 @@ export default function Header() {
                             value={loginUser}
                             onChange={(e) => setLoginUser(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                            className="w-full mt-1.5 liquid-glass-input rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500"
+                            className="w-full min-h-[44px] mt-1.5 liquid-glass-input rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/35"
                             placeholder="Tu nombre de usuario"
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-slate-200 font-semibold tracking-wide" htmlFor="header-pass">
+                          <label className="text-xs text-white/75 font-medium" htmlFor="header-pass">
                             Contraseña
                           </label>
                           <input
@@ -884,14 +907,14 @@ export default function Header() {
                             value={loginPass}
                             onChange={(e) => setLoginPass(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                            className="w-full mt-1.5 liquid-glass-input rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500"
+                            className="w-full min-h-[44px] mt-1.5 liquid-glass-input rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/35"
                             placeholder="Tu contraseña"
                           />
                         </div>
 
                         {loginError && (
-                          <div className="liquid-glass-pill border-rose-400/45 bg-rose-500/12 rounded-xl px-4 py-2.5 text-rose-200 text-xs font-semibold flex items-center gap-2.5">
-                            <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0 shadow-[0_0_8px_rgba(251,113,133,0.85)]" />
+                          <div className="border border-rose-400/40 bg-rose-500/12 rounded-xl px-4 py-2.5 text-rose-200 text-xs font-medium flex items-center gap-2.5">
+                            <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0" />
                             <span>{loginError}</span>
                           </div>
                         )}
@@ -900,7 +923,7 @@ export default function Header() {
                           type="button"
                           onClick={handleLogin}
                           disabled={loading}
-                          className="w-full min-h-[46px] liquid-glass-btn text-white font-bold py-3 rounded-xl text-sm tracking-wider uppercase disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-2"
+                          className="w-full min-h-[46px] bg-white hover:bg-white/90 text-black font-semibold py-3 rounded-full text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-2"
                         >
                           {loading ? 'Conectando...' : 'Entrar a mi cuenta'}
                         </button>
@@ -910,11 +933,11 @@ export default function Header() {
                     {tab === 'register' && (
                       <div className="space-y-3.5">
                         {regSuccess ? (
-                          <div className="text-center py-8 liquid-glass-pill rounded-2xl p-6 space-y-2 border-emerald-400/35">
-                            <p className="text-emerald-300 font-bold text-base">
+                          <div className="text-center py-8 rounded-2xl border border-emerald-400/30 bg-emerald-500/[0.08] p-6 space-y-2">
+                            <p className="text-emerald-300 font-semibold text-base">
                               Registro completado
                             </p>
-                            <p className="text-slate-300 text-xs leading-relaxed max-w-sm mx-auto">
+                            <p className="text-white/70 text-xs leading-relaxed max-w-sm mx-auto">
                               Tu cuenta quedó en estado pendiente. Un administrador deberá aprobar
                               tu solicitud antes de que puedas iniciar sesión.
                             </p>
@@ -923,7 +946,7 @@ export default function Header() {
                           <>
                             <div className="grid sm:grid-cols-2 gap-3.5">
                               <div>
-                                <label className="text-xs text-slate-200 font-semibold tracking-wide" htmlFor="reg-name">
+                                <label className="text-xs text-white/75 font-medium" htmlFor="reg-name">
                                   Nombre completo
                                 </label>
                                 <input
@@ -931,12 +954,12 @@ export default function Header() {
                                   type="text"
                                   value={regName}
                                   onChange={(e) => setRegName(e.target.value)}
-                                  className="w-full mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-slate-500"
+                                  className="w-full min-h-[44px] mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-white/35"
                                   placeholder="Tu nombre completo"
                                 />
                               </div>
                               <div>
-                                <label className="text-xs text-slate-200 font-semibold tracking-wide" htmlFor="reg-email">
+                                <label className="text-xs text-white/75 font-medium" htmlFor="reg-email">
                                   Correo electrónico
                                 </label>
                                 <input
@@ -944,14 +967,14 @@ export default function Header() {
                                   type="email"
                                   value={regEmail}
                                   onChange={(e) => setRegEmail(e.target.value)}
-                                  className="w-full mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-slate-500"
-                                  placeholder="correo@ejemplo.com"
+                                  className="w-full min-h-[44px] mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-white/35"
+                                  placeholder="correo@dominio.com"
                                 />
                               </div>
                             </div>
                             <div className="grid sm:grid-cols-2 gap-3.5">
                               <div>
-                                <label className="text-xs text-slate-200 font-semibold tracking-wide" htmlFor="reg-user">
+                                <label className="text-xs text-white/75 font-medium" htmlFor="reg-user">
                                   Usuario
                                 </label>
                                 <input
@@ -959,12 +982,12 @@ export default function Header() {
                                   type="text"
                                   value={regUser}
                                   onChange={(e) => setRegUser(e.target.value)}
-                                  className="w-full mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-slate-500"
+                                  className="w-full min-h-[44px] mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-white/35"
                                   placeholder="Nombre de usuario"
                                 />
                               </div>
                               <div>
-                                <label className="text-xs text-slate-200 font-semibold tracking-wide" htmlFor="reg-pass">
+                                <label className="text-xs text-white/75 font-medium" htmlFor="reg-pass">
                                   Contraseña
                                 </label>
                                 <input
@@ -972,15 +995,15 @@ export default function Header() {
                                   type="password"
                                   value={regPass}
                                   onChange={(e) => setRegPass(e.target.value)}
-                                  className="w-full mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-slate-500"
+                                  className="w-full min-h-[44px] mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-white/35"
                                   placeholder="Mínimo 6 caracteres"
                                 />
                               </div>
                             </div>
 
                             {regError && (
-                              <div className="liquid-glass-pill border-rose-400/45 bg-rose-500/12 rounded-xl px-4 py-2.5 text-rose-200 text-xs font-semibold flex items-center gap-2.5">
-                                <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0 shadow-[0_0_8px_rgba(251,113,133,0.85)]" />
+                              <div className="border border-rose-400/40 bg-rose-500/12 rounded-xl px-4 py-2.5 text-rose-200 text-xs font-medium flex items-center gap-2.5">
+                                <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0" />
                                 <span>{regError}</span>
                               </div>
                             )}
@@ -989,12 +1012,12 @@ export default function Header() {
                               type="button"
                               onClick={handleRegister}
                               disabled={loading}
-                              className="w-full min-h-[46px] liquid-glass-btn text-white font-bold py-3 rounded-xl text-sm tracking-wider uppercase disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                              className="w-full min-h-[46px] bg-white hover:bg-white/90 text-black font-semibold py-3 rounded-full text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
                               {loading ? 'Creando cuenta...' : 'Registrar cuenta'}
                             </button>
 
-                            <p className="text-[11px] text-slate-400 text-center">
+                            <p className="text-[11px] text-white/50 text-center">
                               Después de registrarte, un administrador aprobará tu cuenta.
                             </p>
                           </>

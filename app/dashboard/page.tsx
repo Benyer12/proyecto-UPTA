@@ -1,6 +1,5 @@
 'use client';
 
-import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -66,10 +65,6 @@ async function obtenerProgresoDelEstudiante(userId: string): Promise<ProgressFet
 interface PlanetPalette {
   accent: string;
   textAccent: string;
-  buttonBg: string;
-  buttonText: string;
-  surfaceTint: string;
-  borderTint: string;
   discipline: string;
 }
 
@@ -78,10 +73,6 @@ function getPlanetPalette(name: string): PlanetPalette {
     return {
       accent: '#00F5FF',
       textAccent: '#67E8F9',
-      buttonBg: '#00F5FF',
-      buttonText: '#06101F',
-      surfaceTint: 'rgba(0, 245, 255, 0.07)',
-      borderTint: 'rgba(103, 232, 249, 0.34)',
       discipline: 'Matemáticas',
     };
   }
@@ -89,20 +80,12 @@ function getPlanetPalette(name: string): PlanetPalette {
     return {
       accent: '#BF40FF',
       textAccent: '#D8B4FE',
-      buttonBg: '#D8B4FE',
-      buttonText: '#06101F',
-      surfaceTint: 'rgba(191, 64, 255, 0.08)',
-      borderTint: 'rgba(216, 180, 254, 0.34)',
       discipline: 'Lenguaje',
     };
   }
   return {
     accent: '#00FF88',
     textAccent: '#6EE7B7',
-    buttonBg: '#00FF88',
-    buttonText: '#06101F',
-    surfaceTint: 'rgba(0, 255, 136, 0.07)',
-    borderTint: 'rgba(110, 231, 183, 0.34)',
     discipline: 'Ciencias',
   };
 }
@@ -139,9 +122,7 @@ function getPlanetStats(planet: Planet, progress: Record<number, StudentProgress
   };
 }
 
-/* ════════════════════════ ICONOS VECTORIALES PROPIOS (SIN EMOJIS) ════════════════════════ */
-
-function IconStar({ className = 'w-5 h-5' }: { className?: string }) {
+function IconStar({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
       <path
@@ -209,7 +190,7 @@ function IconChevron({ open }: { open: boolean }) {
   );
 }
 
-/* ════════════════════════ VISTA PRINCIPAL DEL ESTUDIANTE ════════════════════════ */
+/* ════════════════════════ PANEL EXCLUSIVO DEL ESTUDIANTE (MUNDOS Y PROGRESO) ════════════════════════ */
 
 function StudentDashboardView({
   planets,
@@ -243,7 +224,6 @@ function StudentDashboardView({
     }).length;
     const overallPct = totalLevels > 0 ? Math.round((completedLevels / totalLevels) * 100) : 0;
 
-    // Elegir la siguiente misión real disponible (prioriza el planeta en progreso o el primero disponible)
     let activeMission: { planet: Planet; course: Course; level: Level } | null = null;
     for (const planet of planets) {
       const st = getPlanetStats(planet, progress);
@@ -263,7 +243,6 @@ function StudentDashboardView({
     }
 
     const featuredPlanet = activeMission?.planet ?? planets[0];
-    const secondaryPlanets = planets.filter((p) => p.id !== featuredPlanet.id);
 
     return {
       totalLevels,
@@ -272,539 +251,357 @@ function StudentDashboardView({
       overallPct,
       activeMission,
       featuredPlanet,
-      secondaryPlanets,
     };
   }, [planets, progress]);
 
-  const featuredPalette = getPlanetPalette(summary.featuredPlanet.name);
-  const featuredStats = getPlanetStats(summary.featuredPlanet, progress);
-
-  const motionReveal = prefersReducedMotion
-    ? {}
-    : {
-        initial: { opacity: 0, y: 14 },
-        animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.36, ease: 'easeOut' as const },
-      };
-
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-10 sm:space-y-12">
-      {/* ── ALERTA DE ERROR DE SINCRONIZACIÓN (R-27) ── */}
+    <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-8 sm:py-12 space-y-10">
+      {/* Alerta de error de sincronización */}
       {progressError && (
         <div
           role="alert"
-          className="rounded-xl bg-[#1A0D18]/95 border border-rose-400/50 px-4 py-3.5 sm:px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          className="rounded-2xl border border-rose-400/35 bg-rose-500/[0.08] backdrop-blur-[6px] px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
         >
           <div className="space-y-0.5">
-            <p className="text-sm font-bold text-rose-100">
+            <p className="text-sm font-semibold text-rose-100">
               No se pudo actualizar tu progreso guardado
             </p>
-            <p className="text-xs text-rose-200/90">
+            <p className="text-xs text-rose-200/80">
               {progressError} Se muestran los niveles iniciales disponibles mientras reconectamos.
             </p>
           </div>
           <button
             type="button"
             onClick={onRetry}
-            className="min-h-[44px] px-4 py-2 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-300/60 text-xs font-bold text-white cursor-pointer transition-colors shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
+            className="min-h-[40px] px-4 py-2 rounded-full border border-rose-300/40 bg-rose-500/15 hover:bg-rose-500/25 text-xs font-semibold text-white cursor-pointer transition-colors shrink-0"
           >
-            Reintentar carga
+            Reintentar
           </button>
         </div>
       )}
 
-      {/* ════════════════════ 1. CONSOLA DE MISIÓN ACTIVA (PUNTO FOCAL ÚNICO, GLASS #1) ════════════════════ */}
-      <motion.section
+      {/* 1. CABECERA ARQUITECTÓNICA ABIERTA (SIN CAJA GRIS PESADA) + TELEMETRÍA EN CRISTAL */}
+      <section
         aria-labelledby="dashboard-heading"
-        {...motionReveal}
-        className="rounded-2xl liquid-glass liquid-glass-panel p-5 sm:p-8 border border-white/15"
+        className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8 border-b border-white/10"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-          {/* Columna izquierda: Saludo + Misión siguiente concreta */}
-          <div className="lg:col-span-7 space-y-4">
-            <div className="space-y-2">
-              <p className="text-sm font-semibold text-[#CBD5E1]">
-                {summary.completedLevels === 0
-                  ? 'Bitácora lista para tu primera partida'
-                  : `Bitácora de ${user.usuario ? `@${user.usuario}` : 'tu cuenta'}`}
-              </p>
-              <h1
-                id="dashboard-heading"
-                className="text-2xl sm:text-4xl font-black tracking-tight text-[#F8FAFC] leading-tight"
-              >
-                Hola, {user.name || 'Explorador'}
-              </h1>
-            </div>
-
-            {summary.activeMission ? (
-              <div className="space-y-4 pt-1">
-                <p className="text-sm sm:text-base text-[#CBD5E1] leading-relaxed max-w-xl">
-                  {summary.completedLevels === 0 ? (
-                    <>
-                      Tu punto de partida es{' '}
-                      <strong className="text-white">{summary.activeMission.planet.name}</strong> en{' '}
-                      <span className="text-white font-semibold">
-                        {summary.activeMission.course.name}
-                      </span>{' '}
-                      ({summary.activeMission.level.name}).
-                    </>
-                  ) : (
-                    <>
-                      Siguiente desafío disponible:{' '}
-                      <strong className="text-white">{summary.activeMission.planet.name}</strong>,{' '}
-                      {summary.activeMission.course.name} ({summary.activeMission.level.name}).
-                    </>
-                  )}
-                </p>
-
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
-                  <Link
-                    href={`/juego/${summary.activeMission.planet.id}/${summary.activeMission.level.id}`}
-                    className="min-h-[46px] inline-flex items-center justify-center px-6 py-3 rounded-lg font-extrabold text-sm tracking-wide transition-opacity hover:opacity-90 active:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
-                    style={{
-                      backgroundColor: featuredPalette.buttonBg,
-                      color: featuredPalette.buttonText,
-                      boxShadow: `0 8px 26px -6px ${featuredPalette.accent}66`,
-                    }}
-                  >
-                    {summary.completedLevels === 0
-                      ? `Jugar ${summary.activeMission.level.name} en ${summary.activeMission.planet.name}`
-                      : `Continuar en ${summary.activeMission.planet.name}`}
-                  </Link>
-
-                  <Link
-                    href={`/planeta/${summary.activeMission.planet.id}`}
-                    className="min-h-[46px] inline-flex items-center justify-center px-5 py-3 rounded-lg bg-white/8 hover:bg-white/14 border border-white/20 text-sm font-bold text-[#F8FAFC] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
-                  >
-                    Ver ruta de {summary.activeMission.planet.name}
-                  </Link>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4 pt-1">
-                <p className="text-sm sm:text-base text-[#CBD5E1] leading-relaxed max-w-xl">
-                  Completaste los niveles habilitados en tus mundos actuales. Puedes repetir cualquier
-                  nivel para mejorar tu total de estrellas.
-                </p>
-                <Link
-                  href={`/planeta/${summary.featuredPlanet.id}`}
-                  className="min-h-[46px] inline-flex items-center justify-center px-6 py-3 rounded-lg bg-[#00F5FF] text-[#06101F] font-extrabold text-sm tracking-wide hover:opacity-90 transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
-                >
-                  Repasar {summary.featuredPlanet.name}
-                </Link>
-              </div>
-            )}
+        <div className="space-y-2.5">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">
+            Mi universo · {user.usuario ? `@${user.usuario}` : 'Estudiante'}
           </div>
-
-          {/* Columna derecha: Telemetría real en cápsula Liquid Glass empotrada */}
-          <div className="lg:col-span-5">
-            <div className="rounded-xl liquid-glass-inset p-5 space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#CBD5E1]">
-                  Progreso real
-                </span>
-                {loadingProgress ? (
-                  <span className="text-xs font-semibold text-[#67E8F9]" aria-live="polite">
-                    Sincronizando...
-                  </span>
-                ) : (
-                  <span className="text-xs font-bold text-[#F8FAFC]">
-                    {summary.overallPct}% completado
-                  </span>
-                )}
-              </div>
-
-              {/* Barra de progreso general accesible */}
-              <div
-                role="progressbar"
-                aria-label="Progreso total de niveles completados"
-                aria-valuenow={summary.overallPct}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                className="h-2.5 w-full rounded-full bg-white/10 overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]"
-              >
-                <div
-                  className="h-full rounded-full transition-all duration-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]"
-                  style={{
-                    width: `${summary.overallPct}%`,
-                    backgroundColor: '#67E8F9',
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3 pt-1">
-                <div className="rounded-lg glass-subtle p-3">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-[#94A3B8]">
-                    <IconStar className="w-4 h-4 shrink-0" />
-                    <span>Estrellas</span>
-                  </div>
-                  <div className="text-xl sm:text-2xl font-black text-[#FDE68A] mt-1 tabular-nums">
-                    {loadingProgress ? '...' : totalStars}
-                  </div>
-                </div>
-
-                <div className="rounded-lg glass-subtle p-3">
-                  <div className="text-xs font-semibold text-[#94A3B8]">Niveles</div>
-                  <div className="text-xl sm:text-2xl font-black text-[#F8FAFC] mt-1 tabular-nums">
-                    {loadingProgress ? '...' : `${summary.completedLevels}/${summary.totalLevels}`}
-                  </div>
-                </div>
-
-                <div className="rounded-lg glass-subtle p-3">
-                  <div className="text-xs font-semibold text-[#94A3B8]">Mundos</div>
-                  <div className="text-xl sm:text-2xl font-black text-[#F8FAFC] mt-1 tabular-nums">
-                    {loadingProgress ? '...' : `${summary.planetsStarted}/${planets.length}`}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* ════════════════════ 2. MUNDOS DE APRENDIZAJE (RITMO ASIMÉTRICO: DESTACADO + 2 SECUNDARIOS) ════════════════════ */}
-      <section aria-labelledby="worlds-heading" className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-          <div>
-            <h2 id="worlds-heading" className="text-xl sm:text-2xl font-black text-[#F8FAFC]">
-              Mundos de aprendizaje
-            </h2>
-            <p className="text-sm text-[#CBD5E1] mt-1">
-              Elige un planeta o entra directamente a cualquiera de los niveles habilitados.
-            </p>
-          </div>
-          <p className="text-xs font-semibold text-[#94A3B8]">
-            {planets.length} mundos activos en tu plan
+          <h1
+            id="dashboard-heading"
+            className="text-3xl sm:text-5xl font-black tracking-[-0.02em] text-white leading-tight"
+          >
+            Hola, {user.name || 'Explorador'}
+          </h1>
+          <p className="text-sm sm:text-[15px] text-white/60 max-w-xl leading-relaxed">
+            Selecciona cualquiera de tus mundos para avanzar por cursos y acumular estrellas.
           </p>
         </div>
 
-        {/* 2A. Mundo destacado con lente refractiva glasscn y caustica planetaria */}
-        <article
-          aria-labelledby={`planet-title-${summary.featuredPlanet.id}`}
-          className="rounded-2xl liquid-glass liquid-glass-interactive p-5 sm:p-7"
-          style={
-            {
-              '--glass-caustic': `${featuredPalette.accent}2E`,
-              borderColor: featuredPalette.borderTint,
-            } as CSSProperties
-          }
+        {/* Franja de telemetría real en cristal ultra-transparente */}
+        <LiquidGlass
+          blur={2.5}
+          refraction={14}
+          bezel={0.3}
+          className="rounded-2xl bg-white/[0.035] border-white/[0.10] shrink-0"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-            {/* Visual 3D del planeta con espacio reservado (sin salto CLS) */}
-            <div className="lg:col-span-4 flex flex-col items-center justify-center py-2">
-              <div className="w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center">
-                <div className="scale-[0.82] sm:scale-95">
-                  <PlanetVisual name={summary.featuredPlanet.name} />
-                </div>
+          <div className="grid grid-cols-4 divide-x divide-white/10">
+            <div className="px-4 sm:px-5 py-3.5">
+              <div className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-white/45">
+                <IconStar className="w-3.5 h-3.5 shrink-0" />
+                <span>Estrellas</span>
               </div>
-              <LiquidGlass
-                blur={4}
-                refraction={10}
-                className="mt-2 inline-flex px-3 py-1 rounded-full"
-              >
-                <span
-                  className="text-xs font-bold uppercase tracking-wider"
-                  style={{ color: featuredPalette.textAccent }}
-                >
-                  {featuredPalette.discipline}
-                </span>
-              </LiquidGlass>
+              <div className="text-lg sm:text-xl font-bold text-[#FDE68A] mt-0.5 tabular-nums">
+                {loadingProgress ? '...' : totalStars}
+              </div>
             </div>
 
-            {/* Contenido, progreso real y accesos directos a niveles */}
-            <div className="lg:col-span-8 space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                <div className="space-y-1">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#94A3B8]">
-                    Mundo recomendado ahora
-                  </span>
-                  <h3
-                    id={`planet-title-${summary.featuredPlanet.id}`}
-                    className="text-2xl sm:text-3xl font-black text-[#F8FAFC]"
-                  >
-                    {summary.featuredPlanet.name}
-                  </h3>
-                  <p className="text-sm text-[#CBD5E1] max-w-xl">
-                    {summary.featuredPlanet.description}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3 text-xs font-bold text-[#CBD5E1] shrink-0">
-                  <span className="px-3 py-1.5 rounded-md bg-[#080D1C] border border-white/12">
-                    {featuredStats.completedLevels}/{featuredStats.totalLevels} niveles
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#080D1C] border border-white/12 text-[#FDE68A]">
-                    <IconStar className="w-3.5 h-3.5" />
-                    <span>{featuredStats.planetStars}</span>
-                  </span>
-                </div>
+            <div className="px-4 sm:px-5 py-3.5">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
+                Niveles
               </div>
-
-              {/* Cursos y niveles interactivos del mundo destacado */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {summary.featuredPlanet.courses.map((course) => (
-                  <div
-                    key={course.id}
-                    className="rounded-xl liquid-glass-inset p-4 space-y-3"
-                  >
-                    <div>
-                      <h4 className="text-sm font-bold text-[#F8FAFC]">{course.name}</h4>
-                      <p className="text-xs text-[#94A3B8] mt-0.5">{course.description}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2.5">
-                      {course.levels.map((level) => {
-                        const prog = progress[level.id];
-                        const state: 'completed' | 'unlocked' | 'locked' =
-                          prog?.status === 'completed'
-                            ? 'completed'
-                            : prog?.status === 'unlocked'
-                              ? 'unlocked'
-                              : 'locked';
-
-                        if (state === 'locked') {
-                          return (
-                            <span
-                              key={level.id}
-                              aria-label={`${level.name} bloqueado`}
-                              className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-[#94A3B8] cursor-not-allowed"
-                            >
-                              <IconLevelState state="locked" />
-                              <span>{level.name}</span>
-                            </span>
-                          );
-                        }
-
-                        return (
-                          <Link
-                            key={level.id}
-                            href={`/juego/${summary.featuredPlanet.id}/${level.id}`}
-                            className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
-                            style={
-                              state === 'completed'
-                                ? {
-                                    backgroundColor: 'rgba(16, 185, 129, 0.16)',
-                                    borderColor: 'rgba(110, 231, 183, 0.5)',
-                                    color: '#A7F3D0',
-                                  }
-                                : {
-                                    backgroundColor: 'rgba(0, 245, 255, 0.14)',
-                                    borderColor: featuredPalette.borderTint,
-                                    color: '#F8FAFC',
-                                  }
-                            }
-                          >
-                            <IconLevelState state={state} />
-                            <span>{level.name}</span>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
+              <div className="text-lg sm:text-xl font-bold text-white mt-0.5 tabular-nums">
+                {loadingProgress ? '...' : `${summary.completedLevels}/${summary.totalLevels}`}
               </div>
+            </div>
 
-              <div className="flex flex-wrap items-center gap-3 pt-1">
-                <Link
-                  href={`/planeta/${summary.featuredPlanet.id}`}
-                  className="min-h-[44px] inline-flex items-center justify-center px-5 py-2.5 rounded-lg font-extrabold text-sm transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
-                  style={{
-                    backgroundColor: featuredPalette.buttonBg,
-                    color: featuredPalette.buttonText,
-                  }}
-                >
-                  Abrir mapa de {summary.featuredPlanet.name}
-                </Link>
+            <div className="px-4 sm:px-5 py-3.5">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
+                Mundos
+              </div>
+              <div className="text-lg sm:text-xl font-bold text-white mt-0.5 tabular-nums">
+                {loadingProgress ? '...' : `${summary.planetsStarted}/${planets.length}`}
+              </div>
+            </div>
+
+            <div className="px-4 sm:px-5 py-3.5">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
+                Avance
+              </div>
+              <div className="text-lg sm:text-xl font-bold text-[#67E8F9] mt-0.5 tabular-nums">
+                {loadingProgress ? '...' : `${summary.overallPct}%`}
               </div>
             </div>
           </div>
-        </article>
+        </LiquidGlass>
+      </section>
 
-        {/* ── 2B. OTROS MUNDOS (LIQUID GLASS GLASSCN CON CAUSTICA PLANETARIA Y GLANCE) ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {summary.secondaryPlanets.map((planet) => {
+      {/* 2. BARRA DE SIGUIENTE MISIÓN ACTIVA EN LIQUID GLASS CRISTALINO */}
+      <LiquidGlass
+        blur={2.5}
+        refraction={12}
+        bezel={0.28}
+        className="rounded-2xl bg-white/[0.035] border-white/[0.11] p-5 sm:p-6"
+      >
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#67E8F9]">
+              Siguiente misión sugerida
+            </div>
+            {summary.activeMission ? (
+              <p className="text-sm sm:text-base text-white/80">
+                <strong className="text-white font-semibold">
+                  {summary.activeMission.planet.name}
+                </strong>{' '}
+                · {summary.activeMission.course.name} ({summary.activeMission.level.name})
+              </p>
+            ) : (
+              <p className="text-sm sm:text-base text-white/80">
+                Completaste los niveles habilitados. Puedes repetir cualquier reto para sumar más
+                estrellas.
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            {summary.activeMission ? (
+              <>
+                <Link
+                  href={`/juego/${summary.activeMission.planet.id}/${summary.activeMission.level.id}`}
+                  className="min-h-[44px] inline-flex items-center justify-center rounded-full bg-white hover:bg-white/90 text-black text-xs sm:text-sm font-semibold px-6 transition-colors"
+                >
+                  {summary.completedLevels === 0 ? 'Iniciar primera misión' : 'Continuar misión'}
+                </Link>
+                <Link
+                  href={`/planeta/${summary.activeMission.planet.id}`}
+                  className="glance min-h-[44px] inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.05] hover:bg-white/[0.11] text-white text-xs sm:text-sm font-medium px-5 transition-colors"
+                >
+                  Ver ruta de {summary.activeMission.planet.name}
+                </Link>
+              </>
+            ) : (
+              <Link
+                href={`/planeta/${summary.featuredPlanet.id}`}
+                className="min-h-[44px] inline-flex items-center justify-center rounded-full bg-white hover:bg-white/90 text-black text-xs sm:text-sm font-semibold px-6 transition-colors"
+              >
+                Repasar {summary.featuredPlanet.name}
+              </Link>
+            )}
+          </div>
+        </div>
+      </LiquidGlass>
+
+      {/* 3. LOS 3 PLANETAS (EXCLUSIVOS DEL DASHBOARD DEL ESTUDIANTE) EN CRISTAL ULTRA-TRANSPARENTE */}
+      <section aria-labelledby="worlds-heading" className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/45 mb-1">
+              Mundos activos
+            </div>
+            <h2 id="worlds-heading" className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+              Explora tus planetas
+            </h2>
+          </div>
+          <p className="font-mono text-xs text-white/45">
+            {planets.length} mundos disponibles en tu cuenta
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {planets.map((planet) => {
             const palette = getPlanetPalette(planet.name);
             const stats = getPlanetStats(planet, progress);
             const isExpanded = expandedPlanetId === planet.id;
             const panelId = `planet-courses-${planet.id}`;
 
             return (
-              <article
+              <LiquidGlass
                 key={planet.id}
-                aria-labelledby={`planet-title-${planet.id}`}
-                className="rounded-2xl liquid-glass liquid-glass-interactive p-5 sm:p-6 flex flex-col justify-between gap-5"
-                style={
-                  {
-                    '--glass-caustic': `${palette.accent}2A`,
-                    borderColor: palette.borderTint,
-                  } as CSSProperties
-                }
+                blur={3}
+                refraction={14}
+                bezel={0.26}
+                className="rounded-3xl bg-white/[0.03] border-white/[0.10] flex flex-col justify-between p-6"
               >
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center shrink-0">
-                      <div className="scale-[0.54] sm:scale-[0.62]">
-                        <PlanetVisual name={planet.name} />
-                      </div>
-                    </div>
-
-                    <div className="min-w-0 flex-1 space-y-1.5 pt-1">
+                <article
+                  aria-labelledby={`planet-title-${planet.id}`}
+                  className="flex flex-col justify-between h-full gap-6"
+                >
+                  <div className="space-y-5">
+                    {/* Fila superior: disciplina + estrellas */}
+                    <div className="flex items-center justify-between gap-2">
                       <span
-                        className="inline-block text-xs font-bold uppercase tracking-wider"
+                        className="font-mono text-[11px] font-medium uppercase tracking-[0.18em]"
                         style={{ color: palette.textAccent }}
                       >
                         {palette.discipline}
                       </span>
-                      <h3
-                        id={`planet-title-${planet.id}`}
-                        className="text-xl sm:text-2xl font-black text-[#F8FAFC]"
-                      >
-                        {planet.name}
-                      </h3>
-                      <p className="text-sm text-[#CBD5E1] leading-relaxed">
-                        {planet.description}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Barra de avance del planeta */}
-                  <div className="space-y-2 pt-1">
-                    <div className="flex items-center justify-between text-xs font-semibold text-[#CBD5E1]">
-                      <span>
-                        {stats.completedLevels} de {stats.totalLevels} niveles completados
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[#FDE68A] font-bold">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-[#FDE68A] tabular-nums">
                         <IconStar className="w-3.5 h-3.5" />
                         <span>{stats.planetStars}</span>
                       </span>
                     </div>
-                    <div
-                      role="progressbar"
-                      aria-label={`Avance en ${planet.name}`}
-                      aria-valuenow={stats.percent}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      className="h-2 w-full rounded-full bg-white/10 overflow-hidden"
-                    >
+
+                    {/* Visual 3D del planeta flotando libre sobre el cristal transparente */}
+                    <div className="flex items-center justify-center py-1">
+                      <div className="w-40 h-40 flex items-center justify-center">
+                        <div className="scale-[0.84]">
+                          <PlanetVisual name={planet.name} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Título y descripción */}
+                    <div className="space-y-1.5">
+                      <h3
+                        id={`planet-title-${planet.id}`}
+                        className="text-2xl font-bold tracking-tight text-white"
+                      >
+                        {planet.name}
+                      </h3>
+                      <p className="text-[13px] text-white/60 leading-relaxed">
+                        {planet.description}
+                      </p>
+                    </div>
+
+                    {/* Progreso minimalista */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs text-white/55 tabular-nums">
+                        <span>
+                          {stats.completedLevels} de {stats.totalLevels} niveles
+                        </span>
+                        <span className="font-mono text-white/80">{stats.percent}%</span>
+                      </div>
                       <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${stats.percent}%`,
-                          backgroundColor: palette.accent,
-                        }}
-                      />
+                        role="progressbar"
+                        aria-label={`Avance en ${planet.name}`}
+                        aria-valuenow={stats.percent}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden"
+                      >
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${stats.percent}%`,
+                            backgroundColor: palette.accent,
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Acciones con objetivo táctil >= 44px */}
-                <div className="space-y-3">
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Link
-                      href={`/planeta/${planet.id}`}
-                      className="flex-1 min-h-[44px] inline-flex items-center justify-center px-4 py-2.5 rounded-lg font-extrabold text-sm transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
-                      style={{
-                        backgroundColor: palette.buttonBg,
-                        color: palette.buttonText,
-                      }}
-                    >
-                      Abrir mapa de {planet.name}
-                    </Link>
-
-                    <button
-                      type="button"
-                      aria-expanded={isExpanded}
-                      aria-controls={panelId}
-                      onClick={() => setExpandedPlanetId(isExpanded ? null : planet.id)}
-                      className="min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white/6 hover:bg-white/12 border border-white/16 text-xs font-bold text-[#F8FAFC] cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
-                    >
-                      <span>
-                        {isExpanded
-                          ? 'Ocultar temario'
-                          : `Ver temario (${planet.courses.length} ${planet.courses.length === 1 ? 'curso' : 'cursos'})`}
-                      </span>
-                      <IconChevron open={isExpanded} />
-                    </button>
-                  </div>
-
-                  {/* Temario desplegable con niveles reales */}
-                  <AnimatePresence initial={false}>
-                    {isExpanded && (
-                      <motion.div
-                        id={panelId}
-                        initial={prefersReducedMotion ? false : { opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={prefersReducedMotion ? undefined : { opacity: 0, height: 0 }}
-                        transition={{ duration: 0.22 }}
-                        className="overflow-hidden"
+                  {/* Acciones + Temario desplegable */}
+                  <div className="space-y-3 pt-2 border-t border-white/[0.08]">
+                    <div className="flex items-center gap-2.5">
+                      <Link
+                        href={`/planeta/${planet.id}`}
+                        className="flex-1 min-h-[44px] inline-flex items-center justify-center rounded-full bg-white hover:bg-white/90 text-black text-xs sm:text-sm font-semibold px-4 transition-colors"
                       >
-                        <div className="pt-3 mt-1 border-t border-white/10 space-y-3">
-                          {planet.courses.map((course) => (
-                            <div
-                              key={course.id}
-                              className="rounded-lg bg-[#080D1C] border border-white/10 p-3.5 space-y-2.5"
-                            >
-                              <div>
-                                <h4 className="text-sm font-bold text-[#F8FAFC]">{course.name}</h4>
-                                <p className="text-xs text-[#94A3B8] mt-0.5">
-                                  {course.description}
-                                </p>
-                              </div>
-                              <div className="flex flex-wrap gap-2.5">
-                                {course.levels.map((level) => {
-                                  const prog = progress[level.id];
-                                  const state: 'completed' | 'unlocked' | 'locked' =
-                                    prog?.status === 'completed'
-                                      ? 'completed'
-                                      : prog?.status === 'unlocked'
-                                        ? 'unlocked'
-                                        : 'locked';
+                        Abrir {planet.name}
+                      </Link>
+                      <button
+                        type="button"
+                        aria-expanded={isExpanded}
+                        aria-controls={panelId}
+                        onClick={() => setExpandedPlanetId(isExpanded ? null : planet.id)}
+                        className="min-h-[44px] inline-flex items-center justify-center gap-1.5 rounded-full border border-white/12 bg-white/[0.04] hover:bg-white/[0.10] px-4 text-xs font-medium text-white cursor-pointer transition-colors"
+                      >
+                        <span>{isExpanded ? 'Ocultar' : 'Niveles'}</span>
+                        <IconChevron open={isExpanded} />
+                      </button>
+                    </div>
 
-                                  if (state === 'locked') {
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.div
+                          id={panelId}
+                          initial={prefersReducedMotion ? false : { opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={prefersReducedMotion ? undefined : { opacity: 0, height: 0 }}
+                          transition={{ duration: 0.22 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pt-3 space-y-3">
+                            {planet.courses.map((course) => (
+                              <div
+                                key={course.id}
+                                className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-3.5 space-y-2.5"
+                              >
+                                <div>
+                                  <h4 className="text-xs font-semibold text-white">{course.name}</h4>
+                                  <p className="text-[11px] text-white/50 mt-0.5">
+                                    {course.description}
+                                  </p>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  {course.levels.map((level) => {
+                                    const prog = progress[level.id];
+                                    const state: 'completed' | 'unlocked' | 'locked' =
+                                      prog?.status === 'completed'
+                                        ? 'completed'
+                                        : prog?.status === 'unlocked'
+                                          ? 'unlocked'
+                                          : 'locked';
+
+                                    if (state === 'locked') {
+                                      return (
+                                        <span
+                                          key={level.id}
+                                          aria-label={`${level.name} bloqueado`}
+                                          className="min-h-[38px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.02] text-xs font-medium text-white/40 cursor-not-allowed"
+                                        >
+                                          <IconLevelState state="locked" />
+                                          <span>{level.name}</span>
+                                        </span>
+                                      );
+                                    }
+
                                     return (
-                                      <span
+                                      <Link
                                         key={level.id}
-                                        aria-label={`${level.name} bloqueado`}
-                                        className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-[#94A3B8] cursor-not-allowed"
+                                        href={`/juego/${planet.id}/${level.id}`}
+                                        className="min-h-[38px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors hover:bg-white/[0.12]"
+                                        style={
+                                          state === 'completed'
+                                            ? {
+                                                backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                                                borderColor: 'rgba(110, 231, 183, 0.35)',
+                                                color: '#A7F3D0',
+                                              }
+                                            : {
+                                                backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                                                borderColor: 'rgba(255, 255, 255, 0.18)',
+                                                color: '#FFFFFF',
+                                              }
+                                        }
                                       >
-                                        <IconLevelState state="locked" />
+                                        <IconLevelState state={state} />
                                         <span>{level.name}</span>
-                                      </span>
+                                      </Link>
                                     );
-                                  }
-
-                                  return (
-                                    <Link
-                                      key={level.id}
-                                      href={`/juego/${planet.id}/${level.id}`}
-                                      className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
-                                      style={
-                                        state === 'completed'
-                                          ? {
-                                              backgroundColor: 'rgba(16, 185, 129, 0.16)',
-                                              borderColor: 'rgba(110, 231, 183, 0.5)',
-                                              color: '#A7F3D0',
-                                            }
-                                          : {
-                                              backgroundColor: palette.surfaceTint,
-                                              borderColor: palette.borderTint,
-                                              color: '#F8FAFC',
-                                            }
-                                      }
-                                    >
-                                      <IconLevelState state={state} />
-                                      <span>{level.name}</span>
-                                    </Link>
-                                  );
-                                })}
+                                  })}
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </article>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </article>
+              </LiquidGlass>
             );
           })}
         </div>
@@ -859,8 +656,8 @@ export default function Dashboard() {
   if (!mounted) {
     return (
       <div className="relative min-h-[60vh] flex items-center justify-center px-6">
-        <p className="text-sm font-semibold text-[#CBD5E1]" role="status">
-          Cargando tu centro de aprendizaje...
+        <p className="text-sm font-medium text-white/60" role="status">
+          Cargando tu espacio de aprendizaje...
         </p>
       </div>
     );
@@ -868,24 +665,33 @@ export default function Dashboard() {
 
   if (!user) {
     return (
-      <div className="relative min-h-[72vh] flex items-center justify-center px-4 sm:px-6">
-        <div className="relative z-10 text-center max-w-md w-full mx-auto p-6 sm:p-8 rounded-2xl liquid-glass liquid-glass-panel space-y-5">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-black text-[#F8FAFC] tracking-tight">
-              Inicia sesión para ver tu progreso
-            </h1>
-            <p className="text-sm text-[#CBD5E1] leading-relaxed">
-              Necesitas entrar con tu cuenta de estudiante para abrir los planetas y guardar tus
-              estrellas.
-            </p>
+      <div className="relative min-h-[72vh] flex items-center justify-center px-5 sm:px-6">
+        <LiquidGlass
+          blur={3}
+          refraction={14}
+          className="relative z-10 text-center max-w-md w-full mx-auto p-7 sm:p-9 rounded-3xl bg-white/[0.035] border-white/[0.11]"
+        >
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/45">
+                Acceso exclusivo de estudiantes
+              </div>
+              <h1 className="text-2xl font-bold text-white tracking-tight">
+                Inicia sesión para ver tus planetas
+              </h1>
+              <p className="text-sm text-white/60 leading-relaxed">
+                Los mundos interactivos y tu progreso de estrellas están disponibles únicamente
+                dentro de tu cuenta de estudiante.
+              </p>
+            </div>
+            <Link
+              href="/"
+              className="min-h-[46px] inline-flex items-center justify-center rounded-full bg-white hover:bg-white/90 text-black px-7 text-sm font-semibold transition-colors"
+            >
+              Volver al inicio
+            </Link>
           </div>
-          <Link
-            href="/"
-            className="min-h-[46px] inline-flex items-center justify-center px-6 py-3 rounded-lg bg-[#00F5FF] text-[#06101F] text-sm font-extrabold tracking-wide hover:opacity-90 transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
-          >
-            Volver al inicio para iniciar sesión
-          </Link>
-        </div>
+        </LiquidGlass>
       </div>
     );
   }

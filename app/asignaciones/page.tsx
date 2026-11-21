@@ -1,6 +1,5 @@
 'use client';
 
-import type { CSSProperties } from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../lib/auth-store';
@@ -32,40 +31,6 @@ function IconCheckCircle({ className = 'w-3.5 h-3.5' }: { className?: string }) 
         strokeWidth="1.6"
         strokeLinecap="round"
         strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function EmptyAssignmentIllustration({ label }: { label: string }) {
-  return (
-    <svg
-      viewBox="0 0 190 110"
-      fill="none"
-      className="w-40 h-24 mx-auto mb-3"
-      role="img"
-      aria-label={label}
-    >
-      <ellipse
-        cx="95"
-        cy="62"
-        rx="70"
-        ry="20"
-        stroke="#67E8F9"
-        strokeOpacity="0.3"
-        strokeWidth="1.4"
-        strokeDasharray="4 5"
-      />
-      <circle cx="66" cy="54" r="14" fill="#0B1226" stroke="#67E8F9" strokeOpacity="0.65" strokeWidth="1.6" />
-      <circle cx="124" cy="54" r="14" fill="#0B1226" stroke="#6EE7B7" strokeOpacity="0.65" strokeWidth="1.6" />
-      <line
-        x1="80"
-        y1="54"
-        x2="110"
-        y2="54"
-        stroke="#94A3B8"
-        strokeWidth="1.6"
-        strokeDasharray="3 4"
       />
     </svg>
   );
@@ -225,206 +190,205 @@ export default function AsignacionesPage() {
   });
 
   return (
-    <div className="relative min-h-screen px-4 sm:px-6 py-10 sm:py-12">
-      <div className="relative z-10 max-w-4xl mx-auto space-y-8">
-        {/* Encabezado Liquid Glass */}
+    <div className="relative min-h-screen px-5 sm:px-8 lg:px-12 py-8 sm:py-12">
+      <div className="relative z-10 max-w-6xl mx-auto space-y-8">
+        {/* Cabecera abierta */}
         <section
           aria-labelledby="assignments-heading"
-          className="rounded-3xl liquid-glass liquid-glass-panel p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5"
+          className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-7 border-b border-white/10"
         >
           <div className="space-y-2">
-            <LiquidGlass
-              blur={4}
-              refraction={10}
-              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-[0.2em] text-[#67E8F9]"
-            >
-              <svg viewBox="0 0 18 18" fill="none" className="w-4 h-4" aria-hidden="true">
-                <circle cx="5" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5" />
-                <circle cx="13" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M7.5 9H10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
-              <span>Gestión Académica</span>
-            </LiquidGlass>
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">
+              Gestión académica · Vínculos
+            </div>
             <h1
               id="assignments-heading"
-              className="text-2xl sm:text-3xl font-black text-[#F8FAFC] tracking-tight"
+              className="text-3xl sm:text-4xl font-bold text-white tracking-tight"
             >
-              Asignación de Tutores y Estudiantes
+              Asignaciones de Tutores
             </h1>
-            <p className="text-sm text-[#CBD5E1] max-w-xl leading-relaxed">
-              Selecciona un tutor y elige los estudiantes que estarán a su cargo. Los estudiantes
-              asignados al tutor seleccionado aparecen primero.
+            <p className="text-sm text-white/60 max-w-xl leading-relaxed">
+              Elige un tutor en el panel izquierdo y administra los estudiantes a su cargo en el
+              panel derecho. Los asignados aparecen primero.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 self-start md:self-center shrink-0">
-            <div className="rounded-2xl liquid-glass-inset px-4 py-3 text-center min-w-[96px]">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-[#67E8F9]">
-                Tutores
+          <LiquidGlass
+            blur={2.5}
+            refraction={12}
+            className="rounded-2xl bg-white/[0.035] border-white/[0.10] self-start md:self-auto shrink-0"
+          >
+            <div className="grid grid-cols-3 divide-x divide-white/10">
+              <div className="px-4 py-3 text-center">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-[#67E8F9]">
+                  Tutores
+                </div>
+                <div className="text-lg font-bold text-white tabular-nums">{tutores.length}</div>
               </div>
-              <div className="text-2xl font-black text-[#F8FAFC] mt-0.5 tabular-nums">
-                {tutores.length}
+              <div className="px-4 py-3 text-center">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-white/50">
+                  Estudiantes
+                </div>
+                <div className="text-lg font-bold text-white tabular-nums">{estudiantes.length}</div>
+              </div>
+              <div className="px-4 py-3 text-center">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-[#6EE7B7]">
+                  Vínculos
+                </div>
+                <div className="text-lg font-bold text-white tabular-nums">{relaciones.length}</div>
               </div>
             </div>
-            <div className="rounded-2xl liquid-glass-inset px-4 py-3 text-center min-w-[96px]">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-[#6EE7B7]">
-                Vínculos
-              </div>
-              <div className="text-2xl font-black text-[#F8FAFC] mt-0.5 tabular-nums">
-                {relaciones.length}
-              </div>
-            </div>
-          </div>
+          </LiquidGlass>
         </section>
 
         {loading ? (
-          <div className="liquid-glass rounded-3xl p-8 text-center" role="status">
-            <p className="text-sm text-[#CBD5E1] font-medium">
+          <LiquidGlass blur={3} refraction={10} className="rounded-3xl bg-white/[0.03] p-12 text-center">
+            <p className="text-sm text-white/55" role="status">
               Cargando tutores y estudiantes...
             </p>
-          </div>
+          </LiquidGlass>
         ) : tutores.length === 0 ? (
-          <div className="liquid-glass liquid-glass-panel rounded-3xl p-10 text-center border-amber-300/35">
-            <EmptyAssignmentIllustration label="Ilustración sin tutores registrados" />
-            <p className="text-sm sm:text-base text-[#FDE68A] font-bold">
+          <LiquidGlass blur={3} refraction={10} className="rounded-3xl bg-white/[0.03] p-12 text-center space-y-2">
+            <p className="text-sm font-semibold text-[#FDE68A]">
               No hay usuarios con el rol de Tutor.
             </p>
-            <p className="text-xs sm:text-sm text-[#CBD5E1] mt-1.5 max-w-md mx-auto">
+            <p className="text-xs text-white/55">
               Ve al Panel de Administración y asigna al menos un Tutor para vincular estudiantes.
             </p>
-          </div>
+          </LiquidGlass>
         ) : (
-          <>
-            {/* 1. Selección de Tutor */}
-            <section aria-labelledby="select-tutor-heading" className="space-y-4">
-              <h2
-                id="select-tutor-heading"
-                className="text-lg font-black text-[#F8FAFC] tracking-tight tabular-nums"
+          /* Nuevo diseño maestro-detalle en 2 columnas cristalinas */
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Panel Izquierdo: Lista de Tutores */}
+            <section aria-labelledby="select-tutor-heading" className="lg:col-span-4">
+              <LiquidGlass
+                blur={3}
+                refraction={12}
+                bezel={0.22}
+                className="rounded-3xl bg-white/[0.03] border-white/[0.10]"
               >
-                1. Selecciona un Tutor ({tutores.length})
-              </h2>
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {tutores.map((t) => {
-                  const cantidadAsignados = relaciones.filter(
-                    (r) => r.tutor_id === t.id
-                  ).length;
-                  const activo = t.id === tutorSeleccionadoId;
-
-                  return (
-                    <button
-                      type="button"
-                      key={t.id}
-                      aria-pressed={activo}
-                      onClick={() => setTutorSeleccionadoId(t.id)}
-                      className={`text-left p-5 rounded-2xl liquid-glass liquid-glass-interactive cursor-pointer transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9] ${
-                        activo
-                          ? 'border-[#67E8F9]/70 shadow-[0_0_26px_rgba(0,245,255,0.2)]'
-                          : 'hover:border-white/25'
-                      }`}
-                      style={
-                        activo
-                          ? ({
-                              '--glass-caustic': 'rgba(0, 245, 255, 0.28)',
-                              '--glass-tint': 'rgba(103, 232, 249, 0.22)',
-                            } as CSSProperties)
-                          : undefined
-                      }
-                    >
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className="text-base font-bold text-[#F8FAFC] truncate">
-                          {t.nombre}
-                        </span>
-                        <span
-                          aria-hidden="true"
-                          className={`w-2.5 h-2.5 rounded-full shrink-0 ${
-                            activo
-                              ? 'bg-[#67E8F9] shadow-[0_0_10px_rgba(103,232,249,0.9)]'
-                              : 'bg-slate-500'
-                          }`}
-                        />
-                      </div>
-                      <div className="text-xs text-[#CBD5E1] mb-3.5 truncate">
-                        @{t.usuario}
-                      </div>
-                      <div className="text-xs font-bold text-[#67E8F9] liquid-glass-inset inline-block px-3 py-1.5 rounded-lg tabular-nums">
-                        {cantidadAsignados} estudiante
-                        {cantidadAsignados === 1 ? '' : 's'} a cargo
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* 2. Lista de Estudiantes */}
-            <section aria-labelledby="students-for-tutor-heading" className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                <h2
-                  id="students-for-tutor-heading"
-                  className="text-lg font-black text-[#F8FAFC] tracking-tight tabular-nums"
-                >
-                  2. Estudiantes para {tutorActivo?.nombre} ({estudiantes.length})
-                </h2>
-                <span className="text-xs font-medium text-[#94A3B8]">
-                  Asignados a este tutor primero
-                </span>
-              </div>
-
-              {estudiantes.length === 0 ? (
-                <div className="liquid-glass liquid-glass-panel rounded-3xl p-10 text-center">
-                  <EmptyAssignmentIllustration label="Ilustración sin estudiantes registrados" />
-                  <p className="text-sm text-[#CBD5E1] font-medium">
-                    No hay usuarios con el rol de estudiante registrados.
-                  </p>
+                <div className="px-5 py-4 border-b border-white/[0.08] bg-white/[0.02]">
+                  <h2
+                    id="select-tutor-heading"
+                    className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/60 tabular-nums"
+                  >
+                    1. Tutores ({tutores.length})
+                  </h2>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {estudiantesOrdenados.map((est) => {
-                    const relacion = relaciones.find(
-                      (r) => r.estudiante_id === est.id
-                    );
-                    const esDeEsteTutor =
-                      relacion?.tutor_id === tutorSeleccionadoId;
-                    const otroTutor = tutores.find(
-                      (t) => t.id === relacion?.tutor_id
-                    );
-                    const isUpdating = updatingId === est.id;
+
+                <div className="divide-y divide-white/[0.07]">
+                  {tutores.map((t) => {
+                    const cantidadAsignados = relaciones.filter(
+                      (r) => r.tutor_id === t.id
+                    ).length;
+                    const activo = t.id === tutorSeleccionadoId;
 
                     return (
-                      <div
-                        key={est.id}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass liquid-glass-interactive"
-                        style={
-                          esDeEsteTutor
-                            ? ({
-                                '--glass-caustic': 'rgba(16, 185, 129, 0.26)',
-                                '--glass-tint': 'rgba(110, 231, 183, 0.18)',
-                                borderColor: 'rgba(110, 231, 183, 0.48)',
-                              } as CSSProperties)
-                            : undefined
-                        }
+                      <button
+                        type="button"
+                        key={t.id}
+                        aria-pressed={activo}
+                        onClick={() => setTutorSeleccionadoId(t.id)}
+                        className={`w-full text-left px-5 py-4 flex items-center justify-between gap-3 transition-colors cursor-pointer ${
+                          activo ? 'bg-white/[0.09]' : 'hover:bg-white/[0.04]'
+                        }`}
                       >
-                        <div className="flex items-start sm:items-center gap-3.5 min-w-0">
-                          <span
-                            aria-hidden="true"
-                            className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1.5 sm:mt-0 ${
-                              esDeEsteTutor
-                                ? 'bg-[#6EE7B7] shadow-[0_0_10px_rgba(52,211,153,0.9)]'
-                                : otroTutor
-                                  ? 'bg-[#FDE68A] shadow-[0_0_10px_rgba(250,204,21,0.75)]'
-                                  : 'bg-slate-500'
-                            }`}
-                          />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span
+                              aria-hidden="true"
+                              className={`w-2 h-2 rounded-full shrink-0 ${
+                                activo ? 'bg-[#67E8F9]' : 'bg-white/25'
+                              }`}
+                            />
+                            <span className="text-sm font-semibold text-white truncate">
+                              {t.nombre}
+                            </span>
+                          </div>
+                          <div className="text-xs text-white/45 mt-0.5 pl-4 truncate">
+                            @{t.usuario}
+                          </div>
+                        </div>
+
+                        <span className="font-mono text-[11px] px-2.5 py-1 rounded-full border border-white/12 bg-white/[0.04] text-white/80 shrink-0 tabular-nums">
+                          {cantidadAsignados}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </LiquidGlass>
+            </section>
+
+            {/* Panel Derecho: Estudiantes para el tutor seleccionado */}
+            <section aria-labelledby="students-for-tutor-heading" className="lg:col-span-8">
+              <LiquidGlass
+                blur={3}
+                refraction={12}
+                bezel={0.22}
+                className="rounded-3xl bg-white/[0.03] border-white/[0.10]"
+              >
+                <div className="px-5 sm:px-6 py-4 border-b border-white/[0.08] bg-white/[0.02] flex items-center justify-between gap-2">
+                  <h2
+                    id="students-for-tutor-heading"
+                    className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/65 tabular-nums truncate"
+                  >
+                    2. Estudiantes para {tutorActivo?.nombre} ({estudiantes.length})
+                  </h2>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-[#6EE7B7] hidden sm:inline">
+                    Asignados primero
+                  </span>
+                </div>
+
+                {estudiantes.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <p className="text-sm text-white/55">
+                      No hay usuarios con el rol de estudiante registrados.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-white/[0.07]">
+                    {estudiantesOrdenados.map((est) => {
+                      const relacion = relaciones.find(
+                        (r) => r.estudiante_id === est.id
+                      );
+                      const esDeEsteTutor =
+                        relacion?.tutor_id === tutorSeleccionadoId;
+                      const otroTutor = tutores.find(
+                        (t) => t.id === relacion?.tutor_id
+                      );
+                      const isUpdating = updatingId === est.id;
+
+                      return (
+                        <div
+                          key={est.id}
+                          className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 sm:px-6 py-4 transition-colors ${
+                            esDeEsteTutor ? 'bg-emerald-500/[0.06]' : 'hover:bg-white/[0.03]'
+                          }`}
+                        >
                           <div className="min-w-0">
-                            <div className="text-sm sm:text-base text-[#F8FAFC] font-bold flex flex-wrap items-baseline gap-x-2">
-                              <span>{est.nombre}</span>
-                              <span className="text-xs text-[#CBD5E1] font-normal">
-                                @{est.usuario} · {est.correo}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span
+                                aria-hidden="true"
+                                className={`w-2 h-2 rounded-full shrink-0 ${
+                                  esDeEsteTutor
+                                    ? 'bg-[#6EE7B7]'
+                                    : otroTutor
+                                      ? 'bg-[#FDE68A]'
+                                      : 'bg-white/25'
+                                }`}
+                              />
+                              <span className="text-sm font-semibold text-white">
+                                {est.nombre}
+                              </span>
+                              <span className="text-xs text-white/45">
+                                @{est.usuario}
                               </span>
                             </div>
-                            <div className="text-xs mt-1">
+
+                            <div className="text-xs mt-1 pl-4">
                               {esDeEsteTutor ? (
-                                <span className="inline-flex items-center gap-1.5 text-[#6EE7B7] font-semibold">
+                                <span className="inline-flex items-center gap-1.5 text-[#6EE7B7] font-medium">
                                   <IconCheckCircle className="w-3.5 h-3.5 shrink-0" />
                                   <span>
                                     Asignado a {tutorActivo?.nombre}
@@ -435,45 +399,43 @@ export default function AsignacionesPage() {
                                   </span>
                                 </span>
                               ) : otroTutor ? (
-                                <span className="text-[#FDE68A] font-medium">
+                                <span className="text-[#FDE68A]/90">
                                   Asignado actualmente a: {otroTutor.nombre}
                                 </span>
                               ) : (
-                                <span className="text-[#94A3B8]">
-                                  Sin tutor asignado
-                                </span>
+                                <span className="text-white/40">Sin tutor asignado</span>
                               )}
                             </div>
                           </div>
-                        </div>
 
-                        <div className="flex gap-2 self-end sm:self-center shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => toggleAsignacion(est.id)}
-                            disabled={isUpdating}
-                            className={`min-h-[44px] text-xs px-4 py-2.5 rounded-xl font-bold transition-all disabled:opacity-50 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9] ${
-                              esDeEsteTutor
-                                ? 'bg-rose-500/20 hover:bg-rose-500/35 text-rose-100 border border-rose-400/50 backdrop-blur-md'
-                                : 'liquid-glass-btn text-[#F8FAFC]'
-                            }`}
-                          >
-                            {isUpdating
-                              ? 'Guardando...'
-                              : esDeEsteTutor
-                                ? 'Quitar de este tutor'
-                                : otroTutor
-                                  ? `Cambiar a ${tutorActivo?.nombre}`
-                                  : `Asignar a ${tutorActivo?.nombre}`}
-                          </button>
+                          <div className="flex gap-2 self-end sm:self-center shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => toggleAsignacion(est.id)}
+                              disabled={isUpdating}
+                              className={`min-h-[38px] text-xs px-4 py-1.5 rounded-full font-medium transition-colors disabled:opacity-50 cursor-pointer ${
+                                esDeEsteTutor
+                                  ? 'border border-rose-400/35 bg-rose-500/12 hover:bg-rose-500/25 text-rose-200'
+                                  : 'bg-white hover:bg-white/90 text-black font-semibold'
+                              }`}
+                            >
+                              {isUpdating
+                                ? 'Guardando...'
+                                : esDeEsteTutor
+                                  ? 'Quitar'
+                                  : otroTutor
+                                    ? 'Transferir aquí'
+                                    : 'Asignar'}
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                )}
+              </LiquidGlass>
             </section>
-          </>
+          </div>
         )}
       </div>
     </div>

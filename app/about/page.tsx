@@ -235,8 +235,8 @@ export default function AboutPage() {
                 key={p.nombre}
                 className="rounded-xl liquid-glass-inset p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 style={{
-                  background: `linear-gradient(150deg, ${p.tint} 0%, rgba(8, 12, 26, 0.85) 60%)`,
-                  borderColor: `${p.accent}38`,
+                  background: `linear-gradient(150deg, ${p.tint} 0%, rgba(255, 255, 255, 0.02) 60%)`,
+                  borderColor: `${p.accent}2E`,
                 }}
               >
                 <div className="flex items-start gap-4">

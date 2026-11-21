@@ -121,15 +121,17 @@ export type LiquidGlassProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 /**
- * Superficie Liquid Glass refractiva de glasscn con filtro SVG feDisplacementMap
- * (squircle convexo en bordes) y bisel direccional estilo iOS 27.
+ * Superficie Liquid Glass fiel a glasscn:
+ * - Fondo ultra-transparente (bg-white/[0.045]) para máxima claridad óptica
+ * - Desenfoque bajo (2px-3px) + filtro SVG feDisplacementMap (squircle convexo)
+ * - Borde direccional iOS 27 de 0.75px con desvanecimiento limpio en esquinas
  */
 export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function LiquidGlass(
   {
-    blur = 4,
-    refraction = 14,
+    blur = 2.5,
+    refraction = 15,
     bezel = 0.34,
-    saturation = 1.48,
+    saturation = 1.32,
     className,
     style,
     children,
@@ -193,15 +195,16 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
   const refractionActive = supported && mapUrl !== '';
   const backdropFilter = refractionActive
     ? `url(#${filterId}) blur(${blur}px) saturate(${saturation})`
-    : `blur(${blur + 6}px) saturate(${saturation})`;
+    : `blur(${blur + 2.5}px) saturate(${saturation})`;
 
   return (
     <>
       <div
         ref={setRefs}
         className={cn(
-          'relative overflow-hidden rounded-full bg-[#090f22]/[0.52]',
-          'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-12px_24px_-10px_rgba(180,210,255,0.20),inset_1px_0_0_0_rgba(255,255,255,0.10),inset_-1px_0_0_0_rgba(255,255,255,0.08),0_16px_42px_-14px_rgba(0,0,0,0.62)]',
+          'relative overflow-hidden rounded-full bg-white/[0.045]',
+          'border border-white/[0.10]',
+          'shadow-[0_24px_80px_-42px_rgba(0,0,0,0.72),inset_0_1px_0_0_rgba(255,255,255,0.18)]',
           className,
         )}
         style={{ ...style, backdropFilter, WebkitBackdropFilter: backdropFilter } as CSSProperties}
@@ -212,10 +215,10 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 rounded-[inherit]"
           style={{
-            padding: 'var(--liquid-glass-rim-width, 1px)',
+            padding: 'var(--liquid-glass-rim-width, 0.75px)',
             background:
-              'linear-gradient(to right, rgba(255,255,255,0), var(--liquid-glass-rim-light, rgba(255,255,255,0.38)) var(--liquid-glass-rim-fade, 18%), var(--liquid-glass-rim-light, rgba(255,255,255,0.38)) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(255,255,255,0)), ' +
-              'linear-gradient(to bottom, rgba(120,170,255,0), var(--liquid-glass-rim-dark, rgba(140,210,255,0.22)) var(--liquid-glass-rim-fade, 18%), var(--liquid-glass-rim-dark, rgba(140,210,255,0.22)) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(120,170,255,0))',
+              'linear-gradient(to right, rgba(255,255,255,0), var(--liquid-glass-rim-light, rgba(255,255,255,0.28)) var(--liquid-glass-rim-fade, 18%), var(--liquid-glass-rim-light, rgba(255,255,255,0.28)) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(255,255,255,0)), ' +
+              'linear-gradient(to bottom, rgba(0,0,0,0), var(--liquid-glass-rim-dark, rgba(255,255,255,0.09)) var(--liquid-glass-rim-fade, 18%), var(--liquid-glass-rim-dark, rgba(255,255,255,0.09)) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(0,0,0,0))',
             WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
             WebkitMaskComposite: 'xor',
             mask: 'linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0)',
