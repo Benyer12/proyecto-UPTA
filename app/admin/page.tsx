@@ -17,6 +17,15 @@ interface UsuarioDB {
   status?: boolean | null;
 }
 
+function ordenarPorRolYNombre<T extends { role: string; nombre: string }>(lista: T[]): T[] {
+  const pesoRol = (role: string) => (role === 'tutor' || role === 'docente' ? 0 : 1);
+  return [...lista].sort((a, b) => {
+    const diffRol = pesoRol(a.role) - pesoRol(b.role);
+    if (diffRol !== 0) return diffRol;
+    return (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' });
+  });
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -55,7 +64,7 @@ export default function AdminPage() {
     if (error) {
       console.error('Error al cargar usuarios desde Supabase:', error.message);
     } else if (data) {
-      setUsuarios(data);
+      setUsuarios(ordenarPorRolYNombre(data));
     }
     setLoading(false);
   };
@@ -81,7 +90,9 @@ export default function AdminPage() {
       });
     } else {
       setUsuarios((prev) =>
-        prev.map((item) => (item.id === u.id ? { ...item, role: nuevoRol } : item))
+        ordenarPorRolYNombre(
+          prev.map((item) => (item.id === u.id ? { ...item, role: nuevoRol } : item))
+        )
       );
 
       if (assignRole) {

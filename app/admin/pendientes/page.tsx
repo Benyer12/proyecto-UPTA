@@ -29,6 +29,15 @@ function getInitials(nombre: string, usuario: string): string {
   return source.slice(0, 2).toUpperCase();
 }
 
+function ordenarPorRolYNombre<T extends { role: string; nombre: string }>(lista: T[]): T[] {
+  const pesoRol = (role: string) => (role === 'tutor' || role === 'docente' ? 0 : 1);
+  return [...lista].sort((a, b) => {
+    const diffRol = pesoRol(a.role) - pesoRol(b.role);
+    if (diffRol !== 0) return diffRol;
+    return (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' });
+  });
+}
+
 export default function AdminPendientesPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -58,7 +67,7 @@ export default function AdminPendientesPage() {
       console.error('Error al cargar pendientes:', error.message);
       setLoadError('No se pudieron cargar las solicitudes pendientes desde Supabase.');
     } else if (data) {
-      const lista = data as UsuarioPendiente[];
+      const lista = ordenarPorRolYNombre(data as UsuarioPendiente[]);
       setPendientes(lista);
       setRolesSeleccionados((prev) => {
         const next: Record<string, ApprovalRole> = { ...prev };

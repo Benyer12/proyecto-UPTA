@@ -40,6 +40,15 @@ function getInitials(nombre: string, usuario: string): string {
   return source.slice(0, 2).toUpperCase();
 }
 
+function ordenarPorRolYNombre<T extends { role: string; nombre: string }>(lista: T[]): T[] {
+  const pesoRol = (role: string) => (role === 'tutor' || role === 'docente' ? 0 : 1);
+  return [...lista].sort((a, b) => {
+    const diffRol = pesoRol(a.role) - pesoRol(b.role);
+    if (diffRol !== 0) return diffRol;
+    return (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' });
+  });
+}
+
 export default function AdminUsuariosPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -123,7 +132,7 @@ export default function AdminUsuariosPage() {
       console.error('Error al cargar usuarios desde Supabase:', error.message);
       setLoadError('No se pudieron cargar los usuarios desde Supabase. Verifica la conexión e intenta nuevamente.');
     } else if (data) {
-      const lista = data as UsuarioEditableDB[];
+      const lista = ordenarPorRolYNombre(data as UsuarioEditableDB[]);
       setUsuarios(lista);
 
       // Si se abrió con ?edit=<id> desde /admin, abrimos el editor automáticamente
@@ -343,11 +352,11 @@ export default function AdminUsuariosPage() {
 
       if (actualizado) {
         setUsuarios((prev) =>
-          prev
-            .map((item) =>
+          ordenarPorRolYNombre(
+            prev.map((item) =>
               item.id === editingUser.id ? (actualizado as UsuarioEditableDB) : item,
-            )
-            .sort((a, b) => a.nombre.localeCompare(b.nombre)),
+            ),
+          ),
         );
 
         if (assignRole && form.role !== editingUser.role) {
