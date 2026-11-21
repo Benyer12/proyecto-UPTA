@@ -373,9 +373,14 @@ export default function Header() {
           {token && user ? (
             <nav className="flex items-center gap-5 ml-4 pl-5 border-l border-white/15">
               {user.role === 'admin' && (
-                <Link href="/admin" className="text-sm font-semibold tracking-wide text-cyan-300 hover:text-cyan-200 transition-colors px-3 py-1.5 rounded-lg liquid-glass-pill">
-                  Panel Admin
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link href="/admin" className="text-sm font-semibold tracking-wide text-cyan-300 hover:text-cyan-200 transition-colors px-3 py-1.5 rounded-lg liquid-glass-pill">
+                    Panel Admin
+                  </Link>
+                  <Link href="/admin/usuarios" className="hidden md:inline-flex text-sm font-semibold tracking-wide text-slate-200 hover:text-cyan-200 transition-colors px-3 py-1.5 rounded-lg liquid-glass-pill">
+                    Editar Usuarios
+                  </Link>
+                </div>
               )}
               
               {(user.role === 'tutor' || user.role === 'docente') && (

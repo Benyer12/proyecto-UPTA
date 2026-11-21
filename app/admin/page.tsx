@@ -12,6 +12,7 @@ interface UsuarioDB {
   usuario: string;
   correo: string;
   role: 'student' | 'tutor' | 'admin' | string;
+  status?: boolean | null;
 }
 
 export default function AdminPage() {
@@ -43,8 +44,8 @@ export default function AdminPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from('usuarios')
-      .select('id, nombre, usuario, correo, role')
-      .neq('role', 'admin')
+      .select('id, nombre, usuario, correo, role, status')
+      .in('role', ['student', 'tutor'])
       .order('nombre', { ascending: true });
 
     if (error) {
@@ -99,12 +100,21 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <Link
-            href="/asignaciones"
-            className="inline-flex items-center justify-center liquid-glass-btn text-white text-xs font-bold tracking-wider uppercase px-5 py-3 rounded-2xl whitespace-nowrap"
-          >
-            Asignar Tutores a Estudiantes →
-          </Link>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link
+              href="/admin/usuarios"
+              className="inline-flex items-center justify-center gap-1.5 liquid-glass-btn text-white text-xs font-bold tracking-wider uppercase px-5 py-3 rounded-2xl whitespace-nowrap"
+            >
+              <span>✏️</span>
+              <span>Editar Usuarios</span>
+            </Link>
+            <Link
+              href="/asignaciones"
+              className="inline-flex items-center justify-center liquid-glass-pill hover:bg-white/15 text-white text-xs font-bold tracking-wider uppercase px-5 py-3 rounded-2xl whitespace-nowrap transition-all"
+            >
+              Asignar Tutores a Estudiantes →
+            </Link>
+          </div>
         </div>
 
         <section className="space-y-4">
@@ -157,6 +167,11 @@ export default function AdminPage() {
                           >
                             {u.role}
                           </span>
+                          {u.status === false && (
+                            <span className="text-[10px] uppercase tracking-widest font-bold px-2.5 py-0.5 rounded-full border border-rose-400/40 bg-rose-500/15 text-rose-200">
+                              Inactivo
+                            </span>
+                          )}
                         </div>
                         <div className="text-xs text-slate-300/80 mt-0.5">
                           @{u.usuario} · {u.correo}
@@ -164,7 +179,14 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <div className="flex gap-2 self-end sm:self-center">
+                    <div className="flex flex-wrap gap-2 self-end sm:self-center">
+                      <Link
+                        href={`/admin/usuarios?edit=${u.id}`}
+                        className="text-xs font-bold liquid-glass-btn text-white px-4 py-2 rounded-xl transition-all inline-flex items-center gap-1.5"
+                      >
+                        <span>✏️</span>
+                        <span>Editar</span>
+                      </Link>
                       <button
                         onClick={() => cambiarRol(u.id, u.role)}
                         disabled={isUpdating}

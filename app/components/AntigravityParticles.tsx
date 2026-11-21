@@ -54,6 +54,7 @@ function isRouteAllowed(pathname: string | null): boolean {
   if (ALLOWED_ROUTES.includes(clean)) return true;
   return (
     clean.startsWith('/planeta/') ||
+    clean.startsWith('/admin/') ||
     clean.startsWith('/maestro/') ||
     clean.startsWith('/docente/') ||
     clean.startsWith('/tutor/') ||
