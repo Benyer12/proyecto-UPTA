@@ -1,40 +1,41 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PreguntaMatematica, RetoArmilarBoss } from '../../../lib/preguntas-numerix';
 
 /* ════════════════════════ COMPONENTES LIQUID GLASS COMPARTIDOS ════════════════════════ */
 
-/** Esfera Armilar elegante en paleta Azul Crema, Morado y Esmeralda. */
+/** Esfera Armilar luminosa en paleta Azul Crema, Morado Amatista y Verde Esmeralda. */
 function EsferaArmilarMini() {
   return (
-    <svg width="46" height="46" viewBox="0 0 64 64" className="overflow-visible select-none pointer-events-none shrink-0">
+    <svg width="50" height="50" viewBox="0 0 64 64" className="overflow-visible select-none pointer-events-none shrink-0">
       <defs>
         <radialGradient id="miniArmilarGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#C084FC" stopOpacity="0.55" />
-          <stop offset="60%" stopColor="#6366F1" stopOpacity="0.18" />
+          <stop offset="0%" stopColor="#E879F9" stopOpacity="0.85" />
+          <stop offset="50%" stopColor="#818CF8" stopOpacity="0.45" />
           <stop offset="100%" stopColor="#0F172A" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="miniArmilarRing" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#F0F6FF" />
-          <stop offset="50%" stopColor="#C084FC" />
+          <stop offset="0%" stopColor="#FFFFFF" />
+          <stop offset="45%" stopColor="#C084FC" />
           <stop offset="100%" stopColor="#6EE7B7" />
         </linearGradient>
       </defs>
-      <circle cx="32" cy="32" r="28" fill="url(#miniArmilarGlow)" />
+      <circle cx="32" cy="32" r="30" fill="url(#miniArmilarGlow)" />
       <g transform="translate(32 32)">
-        <ellipse rx="21" ry="20" fill="none" stroke="url(#miniArmilarRing)" strokeWidth="2.8" />
-        <ellipse rx="20" ry="10" transform="rotate(-30)" fill="none" stroke="#E2EEFF" strokeOpacity="0.8" strokeWidth="2.2" />
-        <ellipse rx="18" ry="8.5" transform="rotate(35)" fill="none" stroke="#6EE7B7" strokeOpacity="0.8" strokeWidth="2" />
-        <circle r="6" fill="#1E1B4B" stroke="#E2EEFF" strokeWidth="1.2" />
-        <circle r="3" fill="#E879F9" />
+        <ellipse rx="22" ry="21" fill="none" stroke="url(#miniArmilarRing)" strokeWidth="3" />
+        <ellipse rx="21" ry="10.5" transform="rotate(-30)" fill="none" stroke="#F0F6FF" strokeOpacity="0.95" strokeWidth="2.4" />
+        <ellipse rx="19" ry="9" transform="rotate(35)" fill="none" stroke="#6EE7B7" strokeOpacity="0.95" strokeWidth="2.2" />
+        <circle r="7" fill="#312E81" stroke="#FFFFFF" strokeWidth="1.5" />
+        <circle r="3.8" fill="#6EE7B7" />
+        <circle r="1.8" fill="#FFFFFF" />
       </g>
     </svg>
   );
 }
 
-/** Botón Pista Cuántica en Liquid Glass (integrado de forma limpia). */
+/** Botón Pista Cuántica en Liquid Glass con iluminación viva. */
 function BotonPistaCuantica({
   activa,
   onClick,
@@ -46,13 +47,16 @@ function BotonPistaCuantica({
     <button
       type="button"
       onClick={onClick}
-      className="liquid-glass-pill inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase cursor-pointer transition-all shrink-0"
+      className="liquid-glass-pill inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-extrabold tracking-wider uppercase cursor-pointer transition-all shrink-0"
       style={{
         background: activa
-          ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.34) 0%, rgba(16, 185, 129, 0.28) 100%)'
-          : 'rgba(15, 23, 52, 0.65)',
-        borderColor: activa ? 'rgba(110, 231, 183, 0.65)' : 'rgba(191, 219, 254, 0.25)',
-        color: activa ? '#ECFDF5' : '#E2EEFF',
+          ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.62) 0%, rgba(16, 185, 129, 0.52) 100%)'
+          : 'linear-gradient(135deg, rgba(49, 46, 129, 0.65) 0%, rgba(30, 58, 138, 0.55) 100%)',
+        borderColor: activa ? 'rgba(110, 231, 183, 0.85)' : 'rgba(191, 219, 254, 0.5)',
+        color: '#FFFFFF',
+        boxShadow: activa
+          ? '0 0 18px rgba(168, 85, 247, 0.55), inset 0 1px 1px rgba(255,255,255,0.45)'
+          : '0 0 14px rgba(147, 197, 253, 0.22), inset 0 1px 1px rgba(255,255,255,0.3)',
       }}
       title="Mostrar Pista Cuántica"
     >
@@ -62,9 +66,12 @@ function BotonPistaCuantica({
   );
 }
 
-/** Cubo Cuántico 3D Pulcro en estilo Liquid Glass (sin líneas punteadas internas). */
+type TonoCubo = 'crema' | 'amatista' | 'esmeralda' | 'magenta';
+
+/** Cubo Cuántico 3D Cristalino y Luminoso en estilo Liquid Glass (sin líneas punteadas internas). */
 function CuboCuantico3D({
   texto,
+  tono = 'crema',
   seleccionado = false,
   estado = 'normal',
   inclinacion = 0,
@@ -73,6 +80,7 @@ function CuboCuantico3D({
   disabled = false,
 }: {
   texto: string;
+  tono?: TonoCubo;
   seleccionado?: boolean;
   estado?: 'normal' | 'correcto' | 'error';
   inclinacion?: number;
@@ -80,45 +88,104 @@ function CuboCuantico3D({
   onClick?: () => void;
   disabled?: boolean;
 }) {
-  const w = compacto ? 100 : 112;
-  const h = compacto ? 100 : 112;
+  const uid = useId().replace(/:/g, '');
+  const w = compacto ? 106 : 118;
+  const h = compacto ? 106 : 118;
 
-  const colores = {
-    normal: {
-      topStroke: seleccionado ? '#FFFFFF' : '#BFDBFE',
-      sideStroke: seleccionado ? '#6EE7B7' : 'rgba(147, 197, 253, 0.55)',
-      topFill: seleccionado ? 'rgba(192, 132, 252, 0.42)' : 'rgba(147, 197, 253, 0.22)',
-      leftFill: seleccionado ? 'rgba(67, 56, 202, 0.84)' : 'rgba(22, 36, 77, 0.88)',
-      rightFill: seleccionado ? 'rgba(49, 46, 129, 0.92)' : 'rgba(13, 23, 52, 0.94)',
-      text: seleccionado ? '#FFFFFF' : '#F0F6FF',
-      glow: seleccionado
-        ? '0 0 24px rgba(192, 132, 252, 0.65)'
-        : '0 10px 22px rgba(2, 6, 23, 0.55)',
+  const paletaTono = {
+    crema: {
+      topStart: '#F0F9FF',
+      topEnd: '#60A5FA',
+      leftStart: '#3B82F6',
+      leftEnd: '#1E3A8A',
+      rightStart: '#2563EB',
+      rightEnd: '#172554',
+      topStroke: '#FFFFFF',
+      sideStroke: '#BFDBFE',
+      aura: 'rgba(147, 197, 253, 0.62)',
+      orb: '#93C5FD',
     },
-    correcto: {
-      topStroke: '#A7F3D0',
-      sideStroke: '#34D399',
-      topFill: 'rgba(52, 211, 153, 0.44)',
-      leftFill: 'rgba(6, 95, 70, 0.88)',
-      rightFill: 'rgba(4, 65, 48, 0.94)',
-      text: '#ECFDF5',
-      glow: '0 0 26px rgba(52, 211, 153, 0.72)',
+    amatista: {
+      topStart: '#FAF5FF',
+      topEnd: '#C084FC',
+      leftStart: '#9333EA',
+      leftEnd: '#4C1D95',
+      rightStart: '#7E22CE',
+      rightEnd: '#2E1065',
+      topStroke: '#FFFFFF',
+      sideStroke: '#E9D5FF',
+      aura: 'rgba(192, 132, 252, 0.64)',
+      orb: '#D8B4FE',
     },
-    error: {
-      topStroke: '#FDA4AF',
-      sideStroke: '#F43F5E',
-      topFill: 'rgba(244, 63, 94, 0.42)',
-      leftFill: 'rgba(136, 19, 55, 0.88)',
-      rightFill: 'rgba(96, 14, 42, 0.94)',
-      text: '#FFE4E6',
-      glow: '0 0 24px rgba(244, 63, 94, 0.65)',
+    esmeralda: {
+      topStart: '#ECFDF5',
+      topEnd: '#34D399',
+      leftStart: '#10B981',
+      leftEnd: '#065F46',
+      rightStart: '#059669',
+      rightEnd: '#064E3B',
+      topStroke: '#FFFFFF',
+      sideStroke: '#A7F3D0',
+      aura: 'rgba(52, 211, 153, 0.62)',
+      orb: '#6EE7B7',
     },
-  }[estado];
+    magenta: {
+      topStart: '#FDF4FF',
+      topEnd: '#E879F9',
+      leftStart: '#C026D3',
+      leftEnd: '#581C87',
+      rightStart: '#9333EA',
+      rightEnd: '#3B0764',
+      topStroke: '#FFFFFF',
+      sideStroke: '#F5D0FE',
+      aura: 'rgba(232, 121, 249, 0.62)',
+      orb: '#F0ABFC',
+    },
+  }[tono];
+
+  const configVisual =
+    estado === 'correcto'
+      ? {
+          topStart: '#ECFDF5',
+          topEnd: '#10B981',
+          leftStart: '#10B981',
+          leftEnd: '#065F46',
+          rightStart: '#059669',
+          rightEnd: '#064E3B',
+          topStroke: '#FFFFFF',
+          sideStroke: '#A7F3D0',
+          glow: '0 0 32px rgba(52, 211, 153, 0.9)',
+          orb: '#6EE7B7',
+        }
+      : estado === 'error'
+        ? {
+            topStart: '#FFF1F2',
+            topEnd: '#FB7185',
+            leftStart: '#F43F5E',
+            leftEnd: '#881337',
+            rightStart: '#E11D48',
+            rightEnd: '#4C0519',
+            topStroke: '#FFFFFF',
+            sideStroke: '#FECDD3',
+            glow: '0 0 28px rgba(244, 63, 94, 0.85)',
+            orb: '#FDA4AF',
+          }
+        : seleccionado
+          ? {
+              ...paletaTono,
+              topStroke: '#FFFFFF',
+              sideStroke: '#6EE7B7',
+              glow: '0 0 34px rgba(110, 231, 183, 0.85), 0 0 20px rgba(192, 132, 252, 0.75)',
+            }
+          : {
+              ...paletaTono,
+              glow: `0 10px 26px ${paletaTono.aura}`,
+            };
 
   return (
     <motion.button
       type="button"
-      whileHover={disabled ? undefined : { y: -5 }}
+      whileHover={disabled ? undefined : { y: -6, scale: 1.04 }}
       whileTap={disabled ? undefined : { scale: 0.96 }}
       animate={{ rotate: inclinacion }}
       onClick={onClick}
@@ -129,70 +196,117 @@ function CuboCuantico3D({
       style={{
         width: w,
         height: h,
-        filter: `drop-shadow(${colores.glow})`,
+        filter: `drop-shadow(${configVisual.glow})`,
       }}
     >
       <svg viewBox="0 0 120 120" className="w-full h-full overflow-visible">
-        {/* Halo de selección suave */}
-        {seleccionado && estado === 'normal' && (
+        <defs>
+          <linearGradient id={`top-${uid}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={configVisual.topStart} stopOpacity="0.95" />
+            <stop offset="100%" stopColor={configVisual.topEnd} stopOpacity="0.88" />
+          </linearGradient>
+          <linearGradient id={`left-${uid}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={configVisual.leftStart} stopOpacity="0.95" />
+            <stop offset="100%" stopColor={configVisual.leftEnd} stopOpacity="0.96" />
+          </linearGradient>
+          <linearGradient id={`right-${uid}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={configVisual.rightStart} stopOpacity="0.95" />
+            <stop offset="100%" stopColor={configVisual.rightEnd} stopOpacity="0.98" />
+          </linearGradient>
+          <radialGradient id={`halo-${uid}`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor={configVisual.orb} stopOpacity="0.55" />
+            <stop offset="100%" stopColor={configVisual.orb} stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* Resplandor energético detrás del cubo */}
+        <circle cx="60" cy="62" r="54" fill={`url(#halo-${uid})`} />
+
+        {/* Halo exterior de selección */}
+        {seleccionado && (
           <polygon
-            points="60,6 112,35 60,114 8,35"
+            points="60,5 113,34 60,115 7,34"
             fill="none"
             stroke="#6EE7B7"
-            strokeOpacity="0.65"
-            strokeWidth="1.6"
+            strokeWidth="2.4"
+            strokeOpacity="0.95"
           />
         )}
 
-        {/* Cara Izquierda sólida y limpia */}
+        {/* Cara Izquierda cristalina */}
         <polygon
-          points="14,38 60,60 60,108 14,84"
-          fill={colores.leftFill}
-          stroke={colores.sideStroke}
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-        {/* Cara Derecha sólida y limpia */}
-        <polygon
-          points="106,38 60,60 60,108 106,84"
-          fill={colores.rightFill}
-          stroke={colores.sideStroke}
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-        {/* Cara Superior tipo cristal esmerilado */}
-        <polygon
-          points="60,14 106,38 60,60 14,38"
-          fill={colores.topFill}
-          stroke={colores.topStroke}
-          strokeWidth={seleccionado ? 2.2 : 1.7}
+          points="14,38 60,62 60,108 14,84"
+          fill={`url(#left-${uid})`}
+          stroke={configVisual.sideStroke}
+          strokeWidth="1.9"
           strokeLinejoin="round"
         />
 
-        {/* Reflejo sutil en la arista superior */}
+        {/* Brillo vertical interno izquierdo */}
+        <polygon
+          points="18,43 56,63 56,82 18,62"
+          fill="#FFFFFF"
+          fillOpacity="0.14"
+        />
+
+        {/* Cara Derecha cristalina */}
+        <polygon
+          points="106,38 60,62 60,108 106,84"
+          fill={`url(#right-${uid})`}
+          stroke={configVisual.sideStroke}
+          strokeWidth="1.9"
+          strokeLinejoin="round"
+        />
+
+        {/* Brillo diagonal derecho */}
+        <polygon
+          points="64,63 102,43 102,58 64,78"
+          fill="#FFFFFF"
+          fillOpacity="0.10"
+        />
+
+        {/* Cara Superior iluminada */}
+        <polygon
+          points="60,14 106,38 60,62 14,38"
+          fill={`url(#top-${uid})`}
+          stroke={configVisual.topStroke}
+          strokeWidth={seleccionado ? 2.6 : 2}
+          strokeLinejoin="round"
+        />
+
+        {/* Reflejo especular Liquid Glass en la cara superior */}
+        <polygon
+          points="60,17 98,37 60,44 22,37"
+          fill="#FFFFFF"
+          fillOpacity="0.32"
+        />
+
+        {/* Arista central luminosa */}
         <line
-          x1="28"
-          y1="32"
+          x1="60"
+          y1="62"
           x2="60"
-          y2="17"
+          y2="107"
           stroke="#FFFFFF"
-          strokeOpacity="0.45"
-          strokeWidth="1.4"
-          strokeLinecap="round"
+          strokeOpacity="0.65"
+          strokeWidth="1.6"
         />
 
-        {/* Valor numérico / opción centrada con alta legibilidad */}
+        {/* Valor numérico / opción centrada con contraste nítido */}
         <text
           x="60"
-          y={texto.length > 5 ? '39' : '37'}
+          y={texto.length > 5 ? '39' : '38'}
           textAnchor="middle"
           dominantBaseline="central"
-          fill={colores.text}
-          fontSize={texto.length > 7 ? '14' : texto.length > 4 ? '18' : '23'}
+          fill="#0F172A"
+          stroke="#FFFFFF"
+          strokeWidth="3.5"
+          paintOrder="stroke"
+          fontSize={texto.length > 7 ? '14' : texto.length > 4 ? '18' : '25'}
           fontWeight="900"
           style={{
             fontFamily: "'Orbitron', sans-serif",
-            filter: 'drop-shadow(0 2px 6px rgba(2, 6, 23, 0.85))',
+            filter: 'drop-shadow(0 2px 6px rgba(15, 23, 42, 0.45))',
           }}
         >
           {texto}
@@ -202,95 +316,147 @@ function CuboCuantico3D({
   );
 }
 
-/** Base del Reactor Orbital Elegante en paleta Azul Profundo, Azul Crema, Morado y Esmeralda. */
+/** Base del Reactor Cuántico luminosa con núcleo de plasma y 4 cápsulas de energía Liquid Glass. */
 function BaseReactorCuantico({
   ranuras,
   onSlotClick,
 }: {
-  ranuras?: (string | null)[];
+  ranuras: (string | null)[];
   onSlotClick?: (idx: number) => void;
 }) {
-  const slots = ranuras ?? [null, null, null, null];
+  const slots = [0, 1, 2, 3].map((i) => ranuras[i] ?? null);
+
   const posRanuras = [
-    { left: '16%', top: '12%', rot: -10 },
-    { left: '38%', top: '3%', rot: -3 },
-    { left: '62%', top: '3%', rot: 3 },
-    { left: '84%', top: '12%', rot: 10 },
+    { left: '14%', top: '8%', rot: -6, accent: '#93C5FD' },
+    { left: '38%', top: '0%', rot: -2, accent: '#C084FC' },
+    { left: '62%', top: '0%', rot: 2, accent: '#6EE7B7' },
+    { left: '86%', top: '8%', rot: 6, accent: '#E879F9' },
   ];
 
   return (
-    <div className="relative w-full max-w-[660px] h-[142px] sm:h-[160px] mx-auto select-none">
-      {/* SVG del Reactor Orbital Pulcro */}
-      <svg viewBox="0 0 680 170" className="w-full h-full overflow-visible">
+    <div className="relative w-full max-w-[660px] h-40 sm:h-46 mx-auto select-none flex items-end justify-center">
+      {/* Resplandor volumétrico ascendente del reactor */}
+      <div
+        className="pointer-events-none absolute inset-x-10 bottom-2 h-32 rounded-full blur-2xl opacity-85"
+        style={{
+          background:
+            'radial-gradient(ellipse at 50% 60%, rgba(110, 231, 183, 0.42) 0%, rgba(192, 132, 252, 0.38) 45%, rgba(59, 130, 246, 0.15) 75%, transparent 100%)',
+        }}
+      />
+
+      {/* Plataforma Elíptica del Reactor Cuántico */}
+      <svg viewBox="0 0 680 185" className="w-full h-36 sm:h-40 overflow-visible">
         <defs>
-          <linearGradient id="reactorRimSoft" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#6366F1" stopOpacity="0.7" />
-            <stop offset="30%" stopColor="#BFDBFE" stopOpacity="0.9" />
-            <stop offset="65%" stopColor="#C084FC" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#6EE7B7" stopOpacity="0.8" />
+          <radialGradient id="reactorOuterFloor" cx="50%" cy="48%" r="55%">
+            <stop offset="0%" stopColor="#312E81" stopOpacity="0.95" />
+            <stop offset="55%" stopColor="#1E3A8A" stopOpacity="0.92" />
+            <stop offset="100%" stopColor="#0F172A" stopOpacity="0.96" />
+          </radialGradient>
+          <radialGradient id="reactorInnerChamber" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#581C87" />
+            <stop offset="55%" stopColor="#1E1B4B" />
+            <stop offset="100%" stopColor="#090D24" />
+          </radialGradient>
+          <linearGradient id="reactorRimBright" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#93C5FD" />
+            <stop offset="35%" stopColor="#E879F9" />
+            <stop offset="70%" stopColor="#6EE7B7" />
+            <stop offset="100%" stopColor="#BFDBFE" />
           </linearGradient>
-          <radialGradient id="reactorCoreSoft" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#F0F6FF" stopOpacity="0.95" />
-            <stop offset="45%" stopColor="#A855F7" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="#1E1B4B" stopOpacity="0" />
+          <radialGradient id="reactorCoreBright" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="35%" stopColor="#6EE7B7" />
+            <stop offset="70%" stopColor="#C084FC" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="#6366F1" stopOpacity="0" />
           </radialGradient>
         </defs>
 
-        {/* Sombra de profundidad */}
-        <ellipse cx="340" cy="136" rx="305" ry="62" fill="#030612" opacity="0.72" />
-
-        {/* Base exterior en Azul Profundo */}
+        {/* Sombra proyectada y halo exterior */}
+        <ellipse cx="340" cy="126" rx="315" ry="54" fill="rgba(15, 23, 42, 0.75)" />
         <ellipse
           cx="340"
-          cy="118"
-          rx="276"
-          ry="56"
-          fill="#0D1633"
-          stroke="url(#reactorRimSoft)"
+          cy="120"
+          rx="304"
+          ry="52"
+          fill="none"
+          stroke="url(#reactorRimBright)"
           strokeOpacity="0.55"
-          strokeWidth="2"
+          strokeWidth="2.5"
         />
 
-        {/* Anillo intermedio esmerilado */}
+        {/* Anillo principal iluminado */}
         <ellipse
           cx="340"
-          cy="108"
-          rx="236"
-          ry="47"
-          fill="#131E46"
-          stroke="url(#reactorRimSoft)"
-          strokeWidth="2.4"
+          cy="115"
+          rx="282"
+          ry="49"
+          fill="url(#reactorOuterFloor)"
+          stroke="url(#reactorRimBright)"
+          strokeWidth="3"
         />
 
-        {/* Foso energético central */}
+        {/* Anillo intermedio con segmentos de energía */}
         <ellipse
           cx="340"
-          cy="106"
-          rx="178"
-          ry="34"
-          fill="#070C1F"
-          stroke="#C4B5FD"
-          strokeOpacity="0.55"
-          strokeWidth="1.6"
+          cy="111"
+          rx="238"
+          ry="40"
+          fill="url(#reactorInnerChamber)"
+          stroke="#E2EEFF"
+          strokeOpacity="0.8"
+          strokeWidth="2.2"
         />
+
+        {/* Pista de energía segmentada */}
         <ellipse
           cx="340"
-          cy="106"
-          rx="140"
-          ry="26"
+          cy="110"
+          rx="192"
+          ry="31"
           fill="none"
           stroke="#6EE7B7"
-          strokeOpacity="0.45"
-          strokeWidth="1.3"
+          strokeOpacity="0.85"
+          strokeWidth="2"
+          strokeDasharray="16 10"
+        />
+        <ellipse
+          cx="340"
+          cy="110"
+          rx="145"
+          ry="23"
+          fill="none"
+          stroke="#E879F9"
+          strokeOpacity="0.8"
+          strokeWidth="1.8"
           strokeDasharray="10 8"
         />
 
-        {/* Núcleo central luminoso */}
-        <ellipse cx="340" cy="105" rx="44" ry="13" fill="#1E1B4B" stroke="#E2EEFF" strokeOpacity="0.65" strokeWidth="1.4" />
-        <ellipse cx="340" cy="104" rx="26" ry="8" fill="url(#reactorCoreSoft)" />
+        {/* Rayos radiales hacia el núcleo */}
+        <line x1="160" y1="110" x2="275" y2="110" stroke="#93C5FD" strokeOpacity="0.55" strokeWidth="2.2" />
+        <line x1="405" y1="110" x2="520" y2="110" stroke="#6EE7B7" strokeOpacity="0.55" strokeWidth="2.2" />
+
+        {/* Nodos luminosos orbitales */}
+        <circle cx="96" cy="115" r="5" fill="#93C5FD" />
+        <circle cx="215" cy="148" r="4.5" fill="#E879F9" />
+        <circle cx="465" cy="148" r="4.5" fill="#6EE7B7" />
+        <circle cx="584" cy="115" r="5" fill="#C084FC" />
+
+        {/* Núcleo central de plasma cuántico */}
+        <ellipse
+          cx="340"
+          cy="108"
+          rx="68"
+          ry="19"
+          fill="#312E81"
+          stroke="#FFFFFF"
+          strokeOpacity="0.85"
+          strokeWidth="2"
+        />
+        <ellipse cx="340" cy="107" rx="52" ry="15" fill="url(#reactorCoreBright)" />
+        <ellipse cx="340" cy="106" rx="22" ry="6.5" fill="#FFFFFF" />
       </svg>
 
-      {/* 4 Ranuras en Cápsulas Liquid Glass */}
+      {/* 4 Ranuras en Cápsulas Liquid Glass Luminosas */}
       {slots.map((valor, idx) => {
         const cfg = posRanuras[idx % 4];
         const lleno = Boolean(valor);
@@ -307,36 +473,39 @@ function BaseReactorCuantico({
               lleno && onSlotClick ? 'cursor-pointer' : ''
             }`}
           >
-            {/* Haz de luz suave */}
+            {/* Haz de luz holográfico hacia el cubo */}
             <div
-              className="pointer-events-none absolute -top-10 w-16 sm:w-20 h-12 opacity-50"
+              className="pointer-events-none absolute -top-12 w-20 sm:w-24 h-14"
               style={{
                 background: lleno
-                  ? 'linear-gradient(180deg, transparent 0%, rgba(110,231,183,0.18) 55%, rgba(110,231,183,0.6) 100%)'
-                  : 'linear-gradient(180deg, transparent 0%, rgba(147,197,253,0.12) 60%, rgba(192,132,252,0.42) 100%)',
-                clipPath: 'polygon(18% 0%, 82% 0%, 100% 100%, 0% 100%)',
+                  ? 'linear-gradient(180deg, transparent 0%, rgba(110,231,183,0.32) 45%, rgba(110,231,183,0.82) 100%)'
+                  : 'linear-gradient(180deg, transparent 0%, rgba(192,132,252,0.22) 50%, rgba(147,197,253,0.62) 100%)',
+                clipPath: 'polygon(16% 0%, 84% 0%, 100% 100%, 0% 100%)',
               }}
             />
             <div
-              className="w-16 sm:w-22 h-9 sm:h-11 rounded-xl flex items-center justify-center transition-all liquid-glass-pill"
+              className="w-18 sm:w-24 h-10 sm:h-12 rounded-xl flex items-center justify-center transition-all liquid-glass-pill"
               style={{
                 background: lleno
-                  ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.55) 0%, rgba(99, 102, 241, 0.45) 100%)'
-                  : 'linear-gradient(135deg, rgba(30, 41, 82, 0.72) 0%, rgba(12, 18, 42, 0.85) 100%)',
-                borderColor: lleno ? 'rgba(167, 243, 208, 0.85)' : 'rgba(191, 219, 254, 0.35)',
+                  ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.85) 0%, rgba(139, 92, 246, 0.78) 100%)'
+                  : 'linear-gradient(135deg, rgba(59, 130, 246, 0.42) 0%, rgba(88, 28, 135, 0.52) 100%)',
+                borderColor: lleno ? '#A7F3D0' : 'rgba(191, 219, 254, 0.65)',
                 boxShadow: lleno
-                  ? '0 0 18px rgba(52, 211, 153, 0.48), inset 0 1px 1px rgba(255,255,255,0.45)'
-                  : 'inset 0 2px 6px rgba(0,0,0,0.5)',
+                  ? '0 0 24px rgba(52, 211, 153, 0.7), inset 0 1px 2px rgba(255,255,255,0.65)'
+                  : '0 0 16px rgba(147, 197, 253, 0.32), inset 0 1px 2px rgba(255,255,255,0.35)',
               }}
             >
               <span
-                className="font-black text-xs sm:text-base tracking-tight"
+                className="font-black text-xs sm:text-base tracking-wider"
                 style={{
-                  color: lleno ? '#FFFFFF' : 'rgba(147, 197, 253, 0.35)',
+                  color: lleno ? '#FFFFFF' : '#E2EEFF',
                   fontFamily: "'Orbitron', sans-serif",
+                  textShadow: lleno
+                    ? '0 0 10px rgba(255,255,255,0.75)'
+                    : '0 0 8px rgba(147,197,253,0.55)',
                 }}
               >
-                {valor ?? '·'}
+                {valor ?? `◈ 0${idx + 1}`}
               </span>
             </div>
           </div>
@@ -383,6 +552,7 @@ export function ModalReactorCuantico({
 
   const esSecuencia = modo === 'secuencia';
   const estadoActual = esSecuencia ? estadoSecuencia : estadoPregunta;
+  const tonosCubos: TonoCubo[] = ['crema', 'amatista', 'esmeralda', 'magenta'];
 
   const textoPista = esSecuencia
     ? 'Compara las decenas de cada cubo y colócalos del número más pequeño al más grande.'
@@ -406,7 +576,7 @@ export function ModalReactorCuantico({
       className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-5 overflow-y-auto select-none"
       style={{
         background:
-          'radial-gradient(ellipse at 50% 45%, rgba(12, 18, 44, 0.80) 0%, rgba(5, 8, 22, 0.90) 75%)',
+          'radial-gradient(ellipse at 50% 45%, rgba(23, 37, 84, 0.72) 0%, rgba(6, 10, 26, 0.86) 78%)',
         backdropFilter: 'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
       }}
@@ -415,35 +585,62 @@ export function ModalReactorCuantico({
         initial={{ scale: 0.94, y: 14, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 280, damping: 26 }}
-        className="relative w-full max-w-[840px] rounded-3xl liquid-glass-modal p-3.5 sm:p-4 my-auto"
+        className="relative w-full max-w-[850px] rounded-3xl liquid-glass-modal p-3.5 sm:p-4 my-auto"
         style={{
-          borderColor: 'rgba(191, 219, 254, 0.28)',
+          background:
+            'linear-gradient(145deg, rgba(30, 58, 138, 0.45) 0%, rgba(49, 46, 129, 0.48) 50%, rgba(15, 23, 42, 0.75) 100%)',
+          borderColor: 'rgba(191, 219, 254, 0.55)',
+          boxShadow:
+            '0 25px 70px rgba(2, 6, 23, 0.75), 0 0 50px rgba(139, 92, 246, 0.28), inset 0 1px 2px rgba(255, 255, 255, 0.45)',
         }}
       >
-        {/* Cápsula Interior en Doble Encapsulado Liquid Glass */}
+        {/* Cápsula Interior en Doble Encapsulado Liquid Glass Luminoso */}
         <div
           className="relative rounded-2xl liquid-glass px-5 sm:px-8 py-6 sm:py-7 flex flex-col justify-between gap-4 overflow-hidden"
           style={{
             background:
-              'radial-gradient(ellipse at 50% 25%, rgba(36, 48, 98, 0.42) 0%, rgba(11, 17, 38, 0.76) 60%, rgba(6, 10, 24, 0.88) 100%)',
-            borderColor: 'rgba(196, 181, 253, 0.22)',
+              'radial-gradient(ellipse at 50% 18%, rgba(79, 70, 229, 0.45) 0%, rgba(30, 58, 138, 0.52) 45%, rgba(15, 23, 52, 0.82) 100%)',
+            borderColor: 'rgba(226, 238, 255, 0.42)',
+            boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.35)',
           }}
         >
-          {/* ── CABECERA LIMPIA LIQUID GLASS ── */}
-          <div className="relative z-20 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/10">
-            <div className="flex items-center gap-3">
+          {/* Nebulosas de luz ambiental para dar vida y color al fondo del modal */}
+          <div
+            className="pointer-events-none absolute -top-20 -left-16 w-72 h-72 rounded-full blur-3xl opacity-70"
+            style={{
+              background: 'radial-gradient(circle, rgba(192, 132, 252, 0.45) 0%, transparent 70%)',
+            }}
+          />
+          <div
+            className="pointer-events-none absolute -top-16 -right-16 w-72 h-72 rounded-full blur-3xl opacity-70"
+            style={{
+              background: 'radial-gradient(circle, rgba(96, 165, 250, 0.45) 0%, transparent 70%)',
+            }}
+          />
+          <div
+            className="pointer-events-none absolute -bottom-20 left-1/2 -translate-x-1/2 w-[480px] h-56 rounded-full blur-3xl opacity-75"
+            style={{
+              background:
+                'radial-gradient(ellipse, rgba(52, 211, 153, 0.38) 0%, rgba(168, 85, 247, 0.28) 55%, transparent 80%)',
+            }}
+          />
+
+          {/* ── CABECERA LUMINOSA LIQUID GLASS ── */}
+          <div className="relative z-20 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/20">
+            <div className="flex items-center gap-3.5">
               <EsferaArmilarMini />
               <div>
-                <span className="block text-[10px] font-bold uppercase tracking-[0.22em] text-[#93C5FD]">
-                  {esSecuencia ? 'Módulo de Propulsión' : 'Cámara de Precisión'}
+                <span className="block text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#6EE7B7]">
+                  {esSecuencia ? '✦ Módulo de Propulsión' : '✦ Cámara de Precisión'}
                 </span>
                 <h2
                   className="text-base sm:text-xl font-black tracking-wide uppercase"
                   style={{
-                    background: 'linear-gradient(135deg, #F0F6FF 0%, #BFDBFE 50%, #C4B5FD 100%)',
+                    background: 'linear-gradient(135deg, #FFFFFF 0%, #E2EEFF 45%, #E9D5FF 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     fontFamily: "'Orbitron', sans-serif",
+                    filter: 'drop-shadow(0 2px 10px rgba(192, 132, 252, 0.45))',
                   }}
                 >
                   {esSecuencia ? 'REACTOR DE PROPULSIÓN CUÁNTICA' : 'CÁMARA DE CÁLCULO CUÁNTICO'}
@@ -451,16 +648,31 @@ export function ModalReactorCuantico({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <BotonPistaCuantica activa={mostrarPista} onClick={() => setMostrarPista((v) => !v)} />
 
-              <div className="liquid-glass-pill inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-black text-[#F0F6FF]">
+              <div
+                className="liquid-glass-pill inline-flex items-center gap-1.5 whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-black text-white"
+                style={{
+                  background:
+                    'linear-gradient(135deg, rgba(16, 185, 129, 0.42) 0%, rgba(30, 58, 138, 0.6) 100%)',
+                  borderColor: 'rgba(110, 231, 183, 0.65)',
+                  boxShadow: '0 0 14px rgba(52, 211, 153, 0.3)',
+                }}
+              >
                 <span className="text-[#6EE7B7]">◈</span>
                 <span>{nucleosActivos}/4</span>
               </div>
 
               {estrellas > 0 && (
-                <div className="liquid-glass-pill inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-black text-emerald-200">
+                <div
+                  className="liquid-glass-pill inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-black text-white"
+                  style={{
+                    background:
+                      'linear-gradient(135deg, rgba(168, 85, 247, 0.48) 0%, rgba(16, 185, 129, 0.42) 100%)',
+                    borderColor: 'rgba(233, 213, 255, 0.65)',
+                  }}
+                >
                   <span>⭐</span>
                   <span>{estrellas}</span>
                 </div>
@@ -468,30 +680,40 @@ export function ModalReactorCuantico({
             </div>
           </div>
 
-          {/* ── CONSIGNA / ENUNCIADO ── */}
+          {/* ── CONSIGNA / ENUNCIADO LUMINOSO ── */}
           <div className="relative z-20 text-center px-1">
             {esSecuencia ? (
-              <div className="space-y-1">
-                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#6EE7B7]">
+              <div
+                className="max-w-2xl mx-auto px-5 py-3.5 rounded-2xl liquid-glass-pill"
+                style={{
+                  background:
+                    'linear-gradient(135deg, rgba(67, 56, 202, 0.52) 0%, rgba(16, 185, 129, 0.32) 100%)',
+                  borderColor: 'rgba(167, 243, 208, 0.55)',
+                  boxShadow: '0 0 25px rgba(99, 102, 241, 0.28)',
+                }}
+              >
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#A7F3D0] mb-1">
                   ✦ Secuencia de Propulsión · Ordena de Menor a Mayor ✦
                 </p>
-                <h3 className="text-lg sm:text-2xl font-black text-[#F0F6FF] tracking-tight">
+                <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight">
                   Calcula y encaja la energía
                 </h3>
               </div>
             ) : (
               <div
-                className="max-w-2xl mx-auto px-5 py-4 rounded-2xl liquid-glass-pill"
+                className="max-w-2xl mx-auto px-6 py-4 rounded-2xl liquid-glass-pill"
                 style={{
                   background:
-                    'linear-gradient(135deg, rgba(22, 34, 72, 0.72) 0%, rgba(12, 18, 42, 0.82) 100%)',
-                  borderColor: 'rgba(191, 219, 254, 0.24)',
+                    'linear-gradient(135deg, rgba(55, 48, 163, 0.62) 0%, rgba(30, 64, 175, 0.55) 50%, rgba(109, 40, 217, 0.48) 100%)',
+                  borderColor: 'rgba(191, 219, 254, 0.55)',
+                  boxShadow:
+                    '0 10px 30px rgba(15, 23, 42, 0.45), 0 0 24px rgba(147, 197, 253, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.4)',
                 }}
               >
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#C4B5FD] mb-1.5">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#6EE7B7] mb-1.5">
                   🛰️ Reto de Cálculo Cuántico {pregunta?.operador ? `· ${pregunta.operador}` : ''}
                 </p>
-                <h3 className="text-base sm:text-xl font-extrabold text-[#F0F6FF] leading-snug">
+                <h3 className="text-base sm:text-xl font-black text-white leading-snug drop-shadow-[0_2px_8px_rgba(15,23,42,0.6)]">
                   {pregunta?.enunciado}
                 </h3>
               </div>
@@ -505,20 +727,21 @@ export function ModalReactorCuantico({
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
-                className="relative z-30 mx-auto max-w-xl rounded-2xl px-4 py-2.5 liquid-glass-pill text-[#E2EEFF] text-xs sm:text-sm font-semibold text-center"
+                className="relative z-30 mx-auto max-w-xl rounded-2xl px-4 py-2.5 liquid-glass-pill text-white text-xs sm:text-sm font-semibold text-center"
                 style={{
                   background:
-                    'linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(15, 23, 52, 0.86) 100%)',
-                  borderColor: 'rgba(192, 132, 252, 0.45)',
+                    'linear-gradient(135deg, rgba(147, 51, 234, 0.58) 0%, rgba(30, 58, 138, 0.78) 100%)',
+                  borderColor: 'rgba(233, 213, 255, 0.72)',
+                  boxShadow: '0 0 22px rgba(192, 132, 252, 0.45)',
                 }}
               >
-                💡 <strong className="text-[#C4B5FD]">Pista Cuántica:</strong> {textoPista}
+                💡 <strong className="text-[#A7F3D0]">Pista Cuántica:</strong> {textoPista}
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* ── 4 CUBOS CUÁNTICOS FLOTANTES ── */}
-          <div className="relative z-20 flex flex-wrap items-center justify-center gap-3 sm:gap-6 py-1">
+          {/* ── 4 CUBOS CUÁNTICOS CRISTALINOS MULTICOLOR ── */}
+          <div className="relative z-20 flex flex-wrap items-center justify-center gap-3.5 sm:gap-7 py-1">
             {esSecuencia &&
               secuencia.map((num, idx) => {
                 const yaElegido = seleccionSecuencia.includes(num);
@@ -527,6 +750,7 @@ export function ModalReactorCuantico({
                   <CuboCuantico3D
                     key={num}
                     texto={String(num)}
+                    tono={tonosCubos[idx % 4]}
                     seleccionado={yaElegido}
                     estado={
                       estadoSecuencia === 'correct'
@@ -551,6 +775,7 @@ export function ModalReactorCuantico({
                   <CuboCuantico3D
                     key={idx}
                     texto={opt}
+                    tono={tonosCubos[idx % 4]}
                     seleccionado={elegida}
                     estado={
                       estadoPregunta === 'idle'
@@ -569,8 +794,8 @@ export function ModalReactorCuantico({
               })}
           </div>
 
-          {/* ── BASE DEL REACTOR ORBITAL ── */}
-          <div className="relative z-10 -my-2">
+          {/* ── BASE DEL REACTOR ORBITAL LUMINOSA ── */}
+          <div className="relative z-10 -my-1">
             <BaseReactorCuantico
               ranuras={ranurasReactor}
               onSlotClick={(slotIdx) => {
@@ -592,13 +817,17 @@ export function ModalReactorCuantico({
                 style={{
                   background:
                     estadoActual === 'correct'
-                      ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.24) 0%, rgba(6, 42, 34, 0.88) 100%)'
-                      : 'linear-gradient(135deg, rgba(244, 63, 94, 0.22) 0%, rgba(58, 12, 30, 0.88) 100%)',
+                      ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.52) 0%, rgba(6, 78, 59, 0.88) 100%)'
+                      : 'linear-gradient(135deg, rgba(244, 63, 94, 0.48) 0%, rgba(136, 19, 55, 0.88) 100%)',
                   borderColor:
                     estadoActual === 'correct'
-                      ? 'rgba(110, 231, 183, 0.6)'
-                      : 'rgba(253, 164, 175, 0.55)',
-                  color: estadoActual === 'correct' ? '#ECFDF5' : '#FFE4E6',
+                      ? 'rgba(167, 243, 208, 0.85)'
+                      : 'rgba(253, 164, 175, 0.8)',
+                  color: '#FFFFFF',
+                  boxShadow:
+                    estadoActual === 'correct'
+                      ? '0 0 24px rgba(52, 211, 153, 0.45)'
+                      : '0 0 24px rgba(244, 63, 94, 0.4)',
                 }}
               >
                 {esSecuencia ? (
@@ -627,21 +856,20 @@ export function ModalReactorCuantico({
             )}
           </AnimatePresence>
 
-          {/* ── BOTÓN DE ACCIÓN PRINCIPAL EN LIQUID GLASS ── */}
+          {/* ── BOTÓN DE ACCIÓN PRINCIPAL RADIANTE EN LIQUID GLASS ── */}
           <div className="relative z-20 flex justify-center pt-1">
             <button
               type="button"
               onClick={esSecuencia ? onConfirmarSecuencia : onConfirmarPregunta}
-              className="liquid-glass-btn px-9 sm:px-12 py-3 rounded-2xl font-black text-xs sm:text-sm tracking-[0.2em] text-white uppercase cursor-pointer"
+              className="liquid-glass-btn px-10 sm:px-14 py-3.5 rounded-2xl font-black text-xs sm:text-sm tracking-[0.22em] text-white uppercase cursor-pointer"
               style={{
                 background:
                   estadoActual !== 'idle'
-                    ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.62) 0%, rgba(52, 211, 153, 0.45) 100%)'
-                    : 'linear-gradient(135deg, rgba(99, 102, 241, 0.62) 0%, rgba(168, 85, 247, 0.52) 52%, rgba(16, 185, 129, 0.48) 100%)',
-                borderColor:
-                  estadoActual !== 'idle'
-                    ? 'rgba(167, 243, 208, 0.75)'
-                    : 'rgba(226, 238, 255, 0.55)',
+                    ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.88) 0%, rgba(52, 211, 153, 0.78) 100%)'
+                    : 'linear-gradient(135deg, rgba(79, 70, 229, 0.9) 0%, rgba(168, 85, 247, 0.85) 50%, rgba(16, 185, 129, 0.82) 100%)',
+                borderColor: 'rgba(255, 255, 255, 0.75)',
+                boxShadow:
+                  '0 0 28px rgba(168, 85, 247, 0.55), 0 0 18px rgba(52, 211, 153, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
               }}
             >
               {estadoActual !== 'idle'
@@ -674,7 +902,7 @@ interface ModalAlertaImpactoProps {
   onCerrar: () => void;
 }
 
-/** Asteroide Espacial 3D con cristales en paleta Azul Crema, Morado y Esmeralda + mira [ ]. */
+/** Asteroide Espacial 3D luminoso con cristales en paleta Azul Crema, Morado y Esmeralda + mira [ ]. */
 function AsteroideCristalSVG({
   numero,
   variante,
@@ -694,22 +922,28 @@ function AsteroideCristalSVG({
 }) {
   const cfg = {
     crema: {
-      c1: '#93C5FD',
+      c1: '#BFDBFE',
       c2: '#3B82F6',
-      glow: 'rgba(147, 197, 253, 0.45)',
-      bracket: '#BFDBFE',
+      rockTop: '#3B82F6',
+      rockBase: '#1E3A8A',
+      glow: 'rgba(147, 197, 253, 0.72)',
+      bracket: '#E0F2FE',
     },
     magenta: {
-      c1: '#E879F9',
-      c2: '#9333EA',
-      glow: 'rgba(217, 70, 239, 0.45)',
-      bracket: '#E879F9',
+      c1: '#F5D0FE',
+      c2: '#C026D3',
+      rockTop: '#9333EA',
+      rockBase: '#4C1D95',
+      glow: 'rgba(232, 121, 249, 0.72)',
+      bracket: '#F5D0FE',
     },
     esmeralda: {
-      c1: '#6EE7B7',
-      c2: '#059669',
-      glow: 'rgba(52, 211, 153, 0.45)',
-      bracket: '#6EE7B7',
+      c1: '#A7F3D0',
+      c2: '#10B981',
+      rockTop: '#059669',
+      rockBase: '#064E3B',
+      glow: 'rgba(52, 211, 153, 0.72)',
+      bracket: '#A7F3D0',
     },
   }[variante];
 
@@ -725,7 +959,7 @@ function AsteroideCristalSVG({
   return (
     <motion.button
       type="button"
-      whileHover={disabled ? undefined : { y: -4 }}
+      whileHover={disabled ? undefined : { y: -5, scale: 1.04 }}
       whileTap={disabled ? undefined : { scale: 0.95 }}
       onClick={onClick}
       disabled={disabled}
@@ -733,38 +967,39 @@ function AsteroideCristalSVG({
         disabled ? 'cursor-default' : 'cursor-crosshair'
       }`}
       style={{
-        filter: `drop-shadow(0 0 16px ${cfg.glow})`,
+        filter: `drop-shadow(0 0 24px ${cfg.glow})`,
       }}
     >
       <svg viewBox="0 0 160 160" className="w-full h-full overflow-visible">
-        {/* Mira táctica [ ] */}
-        <g stroke={colorMira} strokeWidth="2.6" fill="none" strokeLinecap="round" opacity="0.9">
+        {/* Mira táctica luminosa [ ] */}
+        <g stroke={colorMira} strokeWidth="3" fill="none" strokeLinecap="round">
           <path d="M 18 36 V 18 H 36" />
           <path d="M 142 36 V 18 H 124" />
           <path d="M 18 124 V 142 H 36" />
           <path d="M 142 124 V 142 H 124" />
         </g>
 
-        {/* Cuerpo rocoso 3D en azul profundo */}
+        {/* Cuerpo rocoso 3D iluminado */}
         <polygon
           points="80,16 122,28 144,66 134,114 96,142 52,138 20,108 18,58 44,24"
-          fill="#1A2448"
-          stroke="#64748B"
-          strokeOpacity="0.65"
-          strokeWidth="2"
+          fill={cfg.rockBase}
+          stroke={cfg.c1}
+          strokeOpacity="0.85"
+          strokeWidth="2.2"
           strokeLinejoin="round"
         />
-        <polygon points="80,16 122,28 106,58 64,46" fill="#273668" />
-        <polygon points="20,108 52,138 96,142 134,114 102,94 48,96" fill="#0F1630" />
+        <polygon points="80,16 122,28 106,58 64,46" fill={cfg.rockTop} fillOpacity="0.65" />
+        <polygon points="20,108 52,138 96,142 134,114 102,94 48,96" fill="#0F172A" fillOpacity="0.55" />
 
-        {/* Cristales incrustados */}
-        <polygon points="80,26 98,52 80,66 62,52" fill={cfg.c1} stroke="#FFFFFF" strokeOpacity="0.7" strokeWidth="1" />
-        <polygon points="44,58 68,72 54,98 34,82" fill={cfg.c2} stroke={cfg.c1} strokeWidth="1" />
-        <polygon points="116,60 126,88 102,98 92,72" fill={cfg.c1} stroke="#FFFFFF" strokeOpacity="0.7" strokeWidth="1" />
-        <polygon points="78,96 98,118 76,130 58,114" fill={cfg.c1} stroke="#FFFFFF" strokeOpacity="0.7" strokeWidth="1" />
+        {/* Cristales incrustados brillantes */}
+        <polygon points="80,22 100,52 80,68 60,52" fill={cfg.c1} stroke="#FFFFFF" strokeWidth="1.4" />
+        <polygon points="40,56 68,72 52,100 30,82" fill={cfg.c2} stroke={cfg.c1} strokeWidth="1.4" />
+        <polygon points="118,58 130,88 102,100 92,72" fill={cfg.c1} stroke="#FFFFFF" strokeWidth="1.4" />
+        <polygon points="78,96 100,120 76,134 56,116" fill={cfg.c1} stroke="#FFFFFF" strokeWidth="1.4" />
 
-        {/* Núcleo central con el número */}
-        <circle cx="80" cy="82" r="34" fill="#080E22" fillOpacity="0.82" stroke={cfg.c1} strokeWidth="1.8" />
+        {/* Núcleo central luminoso con el número */}
+        <circle cx="80" cy="82" r="35" fill="#1E1B4B" stroke="#FFFFFF" strokeWidth="2.4" />
+        <circle cx="80" cy="82" r="29" fill={cfg.c2} fillOpacity="0.35" />
         <text
           x="80"
           y="83"
@@ -772,10 +1007,10 @@ function AsteroideCristalSVG({
           dominantBaseline="central"
           fontSize="36"
           fontWeight="900"
-          fill="#F0F6FF"
+          fill="#FFFFFF"
           style={{
             fontFamily: "'Orbitron', sans-serif",
-            filter: 'drop-shadow(0 2px 8px rgba(2,6,23,0.9))',
+            filter: 'drop-shadow(0 2px 8px rgba(2,6,23,0.95))',
           }}
         >
           {numero}
@@ -785,34 +1020,34 @@ function AsteroideCristalSVG({
   );
 }
 
-/** Torreta / Cañón Deflector de Escudo Antimateria rediseñado en Azul Profundo, Crema, Morado y Esmeralda. */
+/** Torreta / Cañón Deflector de Escudo Antimateria luminoso. */
 function TorretaAntimateriaSVG({ angulo }: { angulo: number }) {
   return (
     <div className="relative w-44 h-30 flex items-center justify-center select-none pointer-events-none">
       <svg viewBox="0 0 180 130" className="w-full h-full overflow-visible">
-        <ellipse cx="90" cy="112" rx="54" ry="13" fill="#0D1633" stroke="#93C5FD" strokeOpacity="0.65" strokeWidth="1.8" />
-        <ellipse cx="90" cy="106" rx="38" ry="9" fill="#312E81" stroke="#C4B5FD" strokeWidth="1.4" />
+        <ellipse cx="90" cy="112" rx="58" ry="14" fill="#1E3A8A" stroke="#BFDBFE" strokeWidth="2.2" />
+        <ellipse cx="90" cy="106" rx="42" ry="10" fill="#4C1D95" stroke="#E9D5FF" strokeWidth="1.8" />
 
         <g transform={`translate(90 96) rotate(${angulo})`}>
           {/* Conductos de plasma morado/esmeralda */}
           <path
             d="M -25 -6 C -44 -12, -44 16, -21 12"
             fill="none"
-            stroke="#C084FC"
-            strokeWidth="6"
+            stroke="#E879F9"
+            strokeWidth="6.5"
             strokeLinecap="round"
           />
           <path
             d="M 25 -6 C 44 -12, 44 16, 21 12"
             fill="none"
             stroke="#6EE7B7"
-            strokeWidth="6"
+            strokeWidth="6.5"
             strokeLinecap="round"
           />
 
           {/* Chasis central */}
-          <rect x="-24" y="-26" width="48" height="36" rx="10" fill="#1E2952" stroke="#BFDBFE" strokeWidth="1.8" />
-          <rect x="-15" y="-19" width="30" height="22" rx="5" fill="#4C1D95" stroke="#E2EEFF" strokeOpacity="0.7" strokeWidth="1.2" />
+          <rect x="-24" y="-26" width="48" height="36" rx="10" fill="#2563EB" stroke="#FFFFFF" strokeWidth="2" />
+          <rect x="-15" y="-19" width="30" height="22" rx="5" fill="#7E22CE" stroke="#F0F6FF" strokeWidth="1.5" />
 
           {/* Cañón anillado */}
           {[-34, -44, -54, -64].map((ky, i) => (
@@ -823,12 +1058,12 @@ function TorretaAntimateriaSVG({ angulo }: { angulo: number }) {
               width={26 - i * 2.8}
               height="6.5"
               rx="2.5"
-              fill={i % 2 === 0 ? '#93C5FD' : '#6366F1'}
-              stroke="#0B1124"
+              fill={i % 2 === 0 ? '#BFDBFE' : '#C084FC'}
+              stroke="#1E1B4B"
               strokeWidth="1.1"
             />
           ))}
-          <circle cx="0" cy="-72" r="6.5" fill="#F0F6FF" stroke="#6EE7B7" strokeWidth="2" />
+          <circle cx="0" cy="-72" r="7.5" fill="#FFFFFF" stroke="#6EE7B7" strokeWidth="2.5" />
         </g>
       </svg>
     </div>
@@ -854,7 +1089,7 @@ export function ModalAlertaImpacto({
       className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-5 overflow-y-auto select-none"
       style={{
         background:
-          'radial-gradient(ellipse at 50% 45%, rgba(22, 14, 48, 0.82) 0%, rgba(5, 8, 22, 0.92) 75%)',
+          'radial-gradient(ellipse at 50% 45%, rgba(46, 16, 101, 0.72) 0%, rgba(6, 10, 26, 0.88) 78%)',
         backdropFilter: 'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
       }}
@@ -863,65 +1098,102 @@ export function ModalAlertaImpacto({
         initial={{ scale: 0.94, y: 14, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 280, damping: 26 }}
-        className="relative w-full max-w-[840px] rounded-3xl liquid-glass-modal p-3.5 sm:p-4 my-auto"
+        className="relative w-full max-w-[850px] rounded-3xl liquid-glass-modal p-3.5 sm:p-4 my-auto"
         style={{
-          borderColor: 'rgba(232, 121, 249, 0.38)',
+          background:
+            'linear-gradient(145deg, rgba(109, 40, 217, 0.45) 0%, rgba(30, 58, 138, 0.48) 50%, rgba(15, 23, 42, 0.78) 100%)',
+          borderColor: 'rgba(240, 171, 252, 0.6)',
+          boxShadow:
+            '0 25px 70px rgba(2, 6, 23, 0.75), 0 0 50px rgba(217, 70, 239, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.45)',
         }}
       >
-        {/* Consola Interior Liquid Glass */}
+        {/* Consola Interior Liquid Glass Luminosa */}
         <div
           className="relative rounded-2xl liquid-glass px-5 sm:px-8 py-6 sm:py-7 flex flex-col justify-between gap-4 overflow-hidden"
           style={{
             background:
-              'radial-gradient(circle at 50% 50%, rgba(49, 26, 86, 0.42) 0%, rgba(11, 16, 38, 0.8) 62%, rgba(6, 9, 22, 0.9) 100%)',
-            borderColor: 'rgba(232, 121, 249, 0.28)',
+              'radial-gradient(circle at 50% 42%, rgba(126, 34, 206, 0.45) 0%, rgba(30, 58, 138, 0.52) 52%, rgba(15, 23, 52, 0.84) 100%)',
+            borderColor: 'rgba(245, 208, 254, 0.45)',
+            boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.35)',
           }}
         >
-          {/* Radar Holográfico Suave */}
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-25">
-            <div className="w-[300px] h-[300px] rounded-full border border-[#C084FC] flex items-center justify-center">
-              <div className="w-[210px] h-[210px] rounded-full border border-[#93C5FD] flex items-center justify-center">
-                <div className="w-[120px] h-[120px] rounded-full border border-dashed border-[#6EE7B7]" />
+          {/* Nebulosas de luz ambiental */}
+          <div
+            className="pointer-events-none absolute -top-20 -left-16 w-72 h-72 rounded-full blur-3xl opacity-75"
+            style={{
+              background: 'radial-gradient(circle, rgba(232, 121, 249, 0.45) 0%, transparent 70%)',
+            }}
+          />
+          <div
+            className="pointer-events-none absolute -bottom-20 right-0 w-80 h-72 rounded-full blur-3xl opacity-75"
+            style={{
+              background: 'radial-gradient(circle, rgba(52, 211, 153, 0.42) 0%, transparent 70%)',
+            }}
+          />
+
+          {/* Radar Holográfico Luminoso */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-40">
+            <div className="w-[310px] h-[310px] rounded-full border-2 border-[#E879F9] flex items-center justify-center">
+              <div className="w-[215px] h-[215px] rounded-full border border-[#93C5FD] flex items-center justify-center">
+                <div className="w-[125px] h-[125px] rounded-full border-2 border-dashed border-[#6EE7B7]" />
               </div>
             </div>
-            <div className="absolute w-[340px] h-px bg-[#93C5FD]/40" />
-            <div className="absolute h-[340px] w-px bg-[#93C5FD]/40" />
+            <div className="absolute w-[350px] h-px bg-[#BFDBFE]/60" />
+            <div className="absolute h-[350px] w-px bg-[#BFDBFE]/60" />
           </div>
 
           {/* Cabecera */}
-          <div className="relative z-20 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl liquid-glass-pill flex items-center justify-center text-xl">
+          <div className="relative z-20 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/20">
+            <div className="flex items-center gap-3.5">
+              <div
+                className="w-12 h-12 rounded-2xl liquid-glass-pill flex items-center justify-center text-2xl"
+                style={{
+                  background:
+                    'linear-gradient(135deg, rgba(192, 38, 211, 0.55) 0%, rgba(79, 70, 229, 0.55) 100%)',
+                  borderColor: 'rgba(245, 208, 254, 0.75)',
+                }}
+              >
                 🛡️
               </div>
               <div>
-                <span className="block text-[10px] font-bold uppercase tracking-[0.22em] text-[#E879F9]">
-                  Escudo Antimateria
+                <span className="block text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#F5D0FE]">
+                  ✦ Escudo Antimateria
                 </span>
                 <h2
-                  className="text-base sm:text-xl font-black tracking-wide uppercase text-[#F0F6FF]"
-                  style={{ fontFamily: "'Orbitron', sans-serif" }}
+                  className="text-base sm:text-xl font-black tracking-wide uppercase text-white"
+                  style={{
+                    fontFamily: "'Orbitron', sans-serif",
+                    filter: 'drop-shadow(0 2px 10px rgba(232, 121, 249, 0.5))',
+                  }}
                 >
                   ALERTA DE IMPACTO
                 </h2>
               </div>
             </div>
 
-            <span className="liquid-glass-pill px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest text-[#F0ABFC]">
+            <span
+              className="liquid-glass-pill px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest text-white"
+              style={{
+                background:
+                  'linear-gradient(135deg, rgba(192, 38, 211, 0.55) 0%, rgba(16, 185, 129, 0.45) 100%)',
+                borderColor: 'rgba(245, 208, 254, 0.75)',
+              }}
+            >
               ● Radar Activo
             </span>
           </div>
 
           {/* Consigna dinámica */}
           <div className="relative z-20 text-center max-w-xl mx-auto px-2">
-            <p className="text-sm sm:text-lg font-extrabold text-[#E2EEFF] leading-relaxed">
+            <p className="text-sm sm:text-lg font-extrabold text-white leading-relaxed">
               ¡Dispara al asteroide con número{' '}
               <span
-                className="inline-block mx-1 px-3.5 py-0.5 rounded-xl font-black text-white liquid-glass-pill"
+                className="inline-block mx-1 px-4 py-1 rounded-xl font-black text-white liquid-glass-pill"
                 style={{
                   background:
-                    'linear-gradient(135deg, rgba(168, 85, 247, 0.55) 0%, rgba(16, 185, 129, 0.45) 100%)',
-                  borderColor: 'rgba(240, 171, 252, 0.75)',
+                    'linear-gradient(135deg, rgba(168, 85, 247, 0.85) 0%, rgba(16, 185, 129, 0.78) 100%)',
+                  borderColor: '#FFFFFF',
+                  boxShadow: '0 0 20px rgba(192, 132, 252, 0.6)',
                 }}
               >
                 {condicion.etiqueta}
@@ -965,7 +1237,7 @@ export function ModalAlertaImpacto({
                     transformOrigin: 'bottom center',
                     rotate: `${anguloTorreta}deg`,
                   }}
-                  className="pointer-events-none absolute bottom-24 w-2 h-36 rounded-full bg-white shadow-[0_0_18px_#6EE7B7,0_0_36px_#C084FC]"
+                  className="pointer-events-none absolute bottom-24 w-2.5 h-36 rounded-full bg-white shadow-[0_0_22px_#6EE7B7,0_0_40px_#E879F9]"
                 />
               )}
             </AnimatePresence>
@@ -983,13 +1255,13 @@ export function ModalAlertaImpacto({
                 style={{
                   background:
                     estado === 'correct'
-                      ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.24) 0%, rgba(6, 42, 34, 0.9) 100%)'
-                      : 'linear-gradient(135deg, rgba(244, 63, 94, 0.24) 0%, rgba(58, 12, 30, 0.9) 100%)',
+                      ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.55) 0%, rgba(6, 78, 59, 0.9) 100%)'
+                      : 'linear-gradient(135deg, rgba(244, 63, 94, 0.52) 0%, rgba(136, 19, 55, 0.9) 100%)',
                   borderColor:
                     estado === 'correct'
-                      ? 'rgba(110, 231, 183, 0.6)'
-                      : 'rgba(253, 164, 175, 0.55)',
-                  color: estado === 'correct' ? '#ECFDF5' : '#FFE4E6',
+                      ? 'rgba(167, 243, 208, 0.85)'
+                      : 'rgba(253, 164, 175, 0.85)',
+                  color: '#FFFFFF',
                 }}
               >
                 <div className="text-xs sm:text-sm font-semibold text-center sm:text-left">
@@ -1007,7 +1279,12 @@ export function ModalAlertaImpacto({
                 <button
                   type="button"
                   onClick={onCerrar}
-                  className="shrink-0 px-5 py-2 rounded-xl font-black text-xs uppercase tracking-wider liquid-glass-btn text-white cursor-pointer"
+                  className="shrink-0 px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider liquid-glass-btn text-white cursor-pointer"
+                  style={{
+                    background:
+                      'linear-gradient(135deg, rgba(79, 70, 229, 0.9) 0%, rgba(16, 185, 129, 0.85) 100%)',
+                    borderColor: '#FFFFFF',
+                  }}
                 >
                   CONTINUAR ✦
                 </button>
@@ -1044,6 +1321,7 @@ export function ModalGuardianArmilar({
   onAlinearAnillo,
 }: ModalGuardianArmilarProps) {
   const [mostrarPista, setMostrarPista] = useState(false);
+  const tonosBoss: TonoCubo[] = ['crema', 'amatista', 'esmeralda'];
 
   const ranurasBoss: (string | null)[] = [0, 1, 2].map((i) =>
     opcionElegida === i ? reto.opciones[i] : null,
@@ -1057,7 +1335,7 @@ export function ModalGuardianArmilar({
       className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-5 overflow-y-auto select-none"
       style={{
         background:
-          'radial-gradient(ellipse at 50% 45%, rgba(20, 18, 52, 0.84) 0%, rgba(5, 8, 22, 0.93) 75%)',
+          'radial-gradient(ellipse at 50% 45%, rgba(30, 27, 75, 0.75) 0%, rgba(6, 10, 26, 0.88) 78%)',
         backdropFilter: 'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
       }}
@@ -1066,35 +1344,55 @@ export function ModalGuardianArmilar({
         initial={{ scale: 0.94, y: 14, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 280, damping: 26 }}
-        className="relative w-full max-w-[860px] rounded-3xl liquid-glass-modal p-3.5 sm:p-4 my-auto"
+        className="relative w-full max-w-[870px] rounded-3xl liquid-glass-modal p-3.5 sm:p-4 my-auto"
         style={{
-          borderColor: 'rgba(196, 181, 253, 0.34)',
+          background:
+            'linear-gradient(145deg, rgba(67, 56, 202, 0.48) 0%, rgba(109, 40, 217, 0.45) 50%, rgba(15, 23, 42, 0.78) 100%)',
+          borderColor: 'rgba(221, 214, 254, 0.6)',
+          boxShadow:
+            '0 25px 70px rgba(2, 6, 23, 0.75), 0 0 55px rgba(168, 85, 247, 0.32), inset 0 1px 2px rgba(255, 255, 255, 0.45)',
         }}
       >
-        {/* Interior en Doble Encapsulado Liquid Glass */}
+        {/* Interior en Doble Encapsulado Liquid Glass Luminoso */}
         <div
           className="relative rounded-2xl liquid-glass px-5 sm:px-8 py-6 sm:py-7 flex flex-col justify-between gap-4 overflow-hidden"
           style={{
             background:
-              'radial-gradient(ellipse at 54% 44%, rgba(44, 34, 96, 0.44) 0%, rgba(11, 16, 38, 0.8) 62%, rgba(6, 9, 22, 0.9) 100%)',
-            borderColor: 'rgba(196, 181, 253, 0.24)',
+              'radial-gradient(ellipse at 54% 35%, rgba(91, 33, 182, 0.48) 0%, rgba(30, 58, 138, 0.52) 50%, rgba(15, 23, 52, 0.84) 100%)',
+            borderColor: 'rgba(233, 213, 255, 0.45)',
+            boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.35)',
           }}
         >
+          {/* Nebulosas de luz ambiental */}
+          <div
+            className="pointer-events-none absolute -top-20 -left-16 w-72 h-72 rounded-full blur-3xl opacity-75"
+            style={{
+              background: 'radial-gradient(circle, rgba(192, 132, 252, 0.45) 0%, transparent 70%)',
+            }}
+          />
+          <div
+            className="pointer-events-none absolute -top-12 right-0 w-72 h-72 rounded-full blur-3xl opacity-75"
+            style={{
+              background: 'radial-gradient(circle, rgba(52, 211, 153, 0.4) 0%, transparent 70%)',
+            }}
+          />
+
           {/* Cabecera */}
-          <div className="relative z-20 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/10">
-            <div className="flex items-center gap-3">
+          <div className="relative z-20 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/20">
+            <div className="flex items-center gap-3.5">
               <EsferaArmilarMini />
               <div>
-                <span className="block text-[10px] font-bold uppercase tracking-[0.22em] text-[#C4B5FD]">
-                  Desafío Final · Sellos Armilares ({faseActual}/3)
+                <span className="block text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#6EE7B7]">
+                  ✦ Desafío Final · Sellos Armilares ({faseActual}/3)
                 </span>
                 <h2
                   className="text-base sm:text-xl font-black tracking-wide uppercase"
                   style={{
-                    background: 'linear-gradient(135deg, #F0F6FF 0%, #C4B5FD 55%, #6EE7B7 100%)',
+                    background: 'linear-gradient(135deg, #FFFFFF 0%, #E9D5FF 50%, #A7F3D0 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     fontFamily: "'Orbitron', sans-serif",
+                    filter: 'drop-shadow(0 2px 10px rgba(192, 132, 252, 0.45))',
                   }}
                 >
                   GUARDIÁN DEL NIVEL · NÚCLEO ARMILAR
@@ -1102,10 +1400,17 @@ export function ModalGuardianArmilar({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <BotonPistaCuantica activa={mostrarPista} onClick={() => setMostrarPista((v) => !v)} />
               {estrellas > 0 && (
-                <div className="liquid-glass-pill inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-black text-emerald-200">
+                <div
+                  className="liquid-glass-pill inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-black text-white"
+                  style={{
+                    background:
+                      'linear-gradient(135deg, rgba(168, 85, 247, 0.5) 0%, rgba(16, 185, 129, 0.45) 100%)',
+                    borderColor: 'rgba(233, 213, 255, 0.7)',
+                  }}
+                >
                   <span>⭐</span>
                   <span>{estrellas}</span>
                 </div>
@@ -1115,16 +1420,20 @@ export function ModalGuardianArmilar({
 
           {/* Barra de Núcleos y Progreso de Fases */}
           <div className="relative z-20 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               {(['+', '−', '×', '÷'] as const).map((op, i) => {
                 const activo = nucleos[i] ?? true;
                 return (
                   <div
                     key={op}
-                    className="w-8 h-8 rounded-xl liquid-glass-pill flex items-center justify-center font-black text-sm"
+                    className="w-9 h-9 rounded-xl liquid-glass-pill flex items-center justify-center font-black text-sm"
                     style={{
-                      color: activo ? '#6EE7B7' : '#64748B',
-                      borderColor: activo ? 'rgba(110, 231, 183, 0.5)' : 'rgba(255,255,255,0.1)',
+                      background: activo
+                        ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.55) 0%, rgba(79, 70, 229, 0.55) 100%)'
+                        : 'rgba(15, 23, 42, 0.6)',
+                      color: activo ? '#FFFFFF' : '#94A3B8',
+                      borderColor: activo ? '#A7F3D0' : 'rgba(255,255,255,0.2)',
+                      boxShadow: activo ? '0 0 14px rgba(52, 211, 153, 0.45)' : 'none',
                     }}
                   >
                     {op}
@@ -1133,17 +1442,24 @@ export function ModalGuardianArmilar({
               })}
             </div>
 
-            <div className="flex items-center gap-3 px-4 py-1.5 rounded-full liquid-glass-pill">
-              <div className="w-20 sm:w-28 h-2.5 rounded-full bg-[#060A18] border border-white/15 p-0.5 overflow-hidden">
+            <div
+              className="flex items-center gap-3 px-4 py-1.5 rounded-full liquid-glass-pill"
+              style={{
+                background: 'rgba(30, 41, 82, 0.75)',
+                borderColor: 'rgba(191, 219, 254, 0.5)',
+              }}
+            >
+              <div className="w-24 sm:w-32 h-3 rounded-full bg-[#090D24] border border-white/25 p-0.5 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{
                     width: `${(faseActual / 3) * 100}%`,
-                    background: 'linear-gradient(90deg, #6366F1 0%, #C084FC 50%, #6EE7B7 100%)',
+                    background: 'linear-gradient(90deg, #60A5FA 0%, #E879F9 50%, #34D399 100%)',
+                    boxShadow: '0 0 12px rgba(110, 231, 183, 0.8)',
                   }}
                 />
               </div>
-              <span className="text-[11px] font-bold tracking-wider text-[#E2EEFF] uppercase whitespace-nowrap">
+              <span className="text-xs font-extrabold tracking-wider text-white uppercase whitespace-nowrap">
                 FASE {faseActual}/3
               </span>
             </div>
@@ -1156,51 +1472,53 @@ export function ModalGuardianArmilar({
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
-                className="relative z-30 mx-auto max-w-xl rounded-2xl px-4 py-2.5 liquid-glass-pill text-[#E2EEFF] text-xs sm:text-sm font-semibold text-center"
+                className="relative z-30 mx-auto max-w-xl rounded-2xl px-4 py-2.5 liquid-glass-pill text-white text-xs sm:text-sm font-semibold text-center"
                 style={{
                   background:
-                    'linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(15, 23, 52, 0.86) 100%)',
-                  borderColor: 'rgba(192, 132, 252, 0.45)',
+                    'linear-gradient(135deg, rgba(147, 51, 234, 0.58) 0%, rgba(30, 58, 138, 0.78) 100%)',
+                  borderColor: 'rgba(233, 213, 255, 0.72)',
                 }}
               >
-                💡 <strong className="text-[#C4B5FD]">Pista Cuántica:</strong> {reto.pista}
+                💡 <strong className="text-[#A7F3D0]">Pista Cuántica:</strong> {reto.pista}
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Visor del Problema + Gran Esfera Armilar */}
+          {/* Visor del Problema + Gran Esfera Armilar Luminosa */}
           <div className="relative z-20 grid grid-cols-1 md:grid-cols-12 items-center gap-4">
             <div
               className="md:col-span-6 liquid-glass-pill rounded-2xl p-5"
               style={{
                 background:
-                  'linear-gradient(145deg, rgba(22, 34, 72, 0.72) 0%, rgba(12, 18, 42, 0.84) 100%)',
-                borderColor: 'rgba(196, 181, 253, 0.28)',
+                  'linear-gradient(145deg, rgba(55, 48, 163, 0.65) 0%, rgba(30, 64, 175, 0.58) 55%, rgba(109, 40, 217, 0.52) 100%)',
+                borderColor: 'rgba(221, 214, 254, 0.6)',
+                boxShadow:
+                  '0 10px 28px rgba(15, 23, 42, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.4)',
               }}
             >
-              <span className="inline-block text-[10px] font-bold uppercase tracking-[0.22em] text-[#6EE7B7] mb-1.5">
+              <span className="inline-block text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#A7F3D0] mb-1.5">
                 ◈ Anillo Armilar #{faseActual}
               </span>
-              <p className="text-sm sm:text-base font-bold text-[#F0F6FF] leading-relaxed">
+              <p className="text-sm sm:text-base font-extrabold text-white leading-relaxed">
                 {reto.enunciado}
               </p>
             </div>
 
             <div className="md:col-span-6 flex items-center justify-center">
-              <svg width="210" height="190" viewBox="0 0 240 220" className="overflow-visible">
+              <svg width="215" height="195" viewBox="0 0 240 220" className="overflow-visible">
                 <defs>
                   <radialGradient id="bossCenterGlow" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#C084FC" stopOpacity="0.48" />
-                    <stop offset="55%" stopColor="#6366F1" stopOpacity="0.2" />
+                    <stop offset="0%" stopColor="#E879F9" stopOpacity="0.72" />
+                    <stop offset="50%" stopColor="#818CF8" stopOpacity="0.38" />
                     <stop offset="100%" stopColor="#0F172A" stopOpacity="0" />
                   </radialGradient>
                   <linearGradient id="bossRingGrad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#F0F6FF" />
-                    <stop offset="50%" stopColor="#C084FC" />
+                    <stop offset="0%" stopColor="#FFFFFF" />
+                    <stop offset="50%" stopColor="#E879F9" />
                     <stop offset="100%" stopColor="#6EE7B7" />
                   </linearGradient>
                 </defs>
-                <circle cx="120" cy="110" r="92" fill="url(#bossCenterGlow)" />
+                <circle cx="120" cy="110" r="98" fill="url(#bossCenterGlow)" />
 
                 <g transform="translate(120 110)">
                   <g>
@@ -1216,14 +1534,14 @@ export function ModalGuardianArmilar({
                       ry="74"
                       fill="none"
                       stroke={faseActual > 1 || estado === 'correct' ? '#6EE7B7' : 'url(#bossRingGrad)'}
-                      strokeWidth="8"
+                      strokeWidth="8.5"
                     />
                     <ellipse
                       rx="78"
                       ry="74"
                       fill="none"
-                      stroke="#E2EEFF"
-                      strokeWidth="1.5"
+                      stroke="#FFFFFF"
+                      strokeWidth="1.8"
                       strokeDasharray="6 8"
                     />
                   </g>
@@ -1233,9 +1551,9 @@ export function ModalGuardianArmilar({
                       rx="72"
                       ry="38"
                       fill="none"
-                      stroke={faseActual > 2 ? '#6EE7B7' : '#E2EEFF'}
-                      strokeOpacity="0.85"
-                      strokeWidth="6.5"
+                      stroke={faseActual > 2 ? '#6EE7B7' : '#F0F6FF'}
+                      strokeOpacity="0.95"
+                      strokeWidth="7"
                     />
                   </g>
 
@@ -1244,16 +1562,16 @@ export function ModalGuardianArmilar({
                       rx="66"
                       ry="34"
                       fill="none"
-                      stroke="#C084FC"
-                      strokeOpacity="0.85"
-                      strokeWidth="6"
+                      stroke="#E879F9"
+                      strokeOpacity="0.95"
+                      strokeWidth="6.5"
                     />
                   </g>
 
-                  <circle r="24" fill="#1E1B4B" stroke="#E2EEFF" strokeWidth="2" />
-                  <circle r="15" fill="#A855F7" opacity="0.65" />
-                  <circle r="8" fill="#6EE7B7" />
-                  <circle r="3.5" fill="#FFFFFF" />
+                  <circle r="26" fill="#312E81" stroke="#FFFFFF" strokeWidth="2.5" />
+                  <circle r="17" fill="#C084FC" opacity="0.85" />
+                  <circle r="9.5" fill="#6EE7B7" />
+                  <circle r="4.5" fill="#FFFFFF" />
                 </g>
               </svg>
             </div>
@@ -1270,6 +1588,7 @@ export function ModalGuardianArmilar({
                   <CuboCuantico3D
                     key={op}
                     texto={op}
+                    tono={tonosBoss[idx % 3]}
                     compacto
                     seleccionado={elegida}
                     estado={
@@ -1289,7 +1608,7 @@ export function ModalGuardianArmilar({
               })}
             </div>
 
-            <div className="w-full -my-2">
+            <div className="w-full -my-1">
               <BaseReactorCuantico ranuras={[ranurasBoss[0], ranurasBoss[1], ranurasBoss[2], null]} />
             </div>
           </div>
@@ -1305,13 +1624,13 @@ export function ModalGuardianArmilar({
                 style={{
                   background:
                     estado === 'correct'
-                      ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.24) 0%, rgba(6, 42, 34, 0.9) 100%)'
-                      : 'linear-gradient(135deg, rgba(244, 63, 94, 0.24) 0%, rgba(58, 12, 30, 0.9) 100%)',
+                      ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.55) 0%, rgba(6, 78, 59, 0.9) 100%)'
+                      : 'linear-gradient(135deg, rgba(244, 63, 94, 0.52) 0%, rgba(136, 19, 55, 0.9) 100%)',
                   borderColor:
                     estado === 'correct'
-                      ? 'rgba(110, 231, 183, 0.6)'
-                      : 'rgba(253, 164, 175, 0.55)',
-                  color: estado === 'correct' ? '#ECFDF5' : '#FFE4E6',
+                      ? 'rgba(167, 243, 208, 0.85)'
+                      : 'rgba(253, 164, 175, 0.85)',
+                  color: '#FFFFFF',
                 }}
               >
                 {estado === 'correct' ? (
@@ -1321,7 +1640,7 @@ export function ModalGuardianArmilar({
                 ) : (
                   <span>
                     ⚠️ <strong>Frecuencia incorrecta:</strong> {reto.explicacion}{' '}
-                    <span className="text-[#C4B5FD]">
+                    <span className="text-[#F5D0FE]">
                       (¡Intenta alinear este anillo con una nueva pregunta!)
                     </span>
                   </span>
@@ -1335,25 +1654,24 @@ export function ModalGuardianArmilar({
             <button
               type="button"
               onClick={onAlinearAnillo}
-              className="liquid-glass-btn px-9 sm:px-12 py-3 rounded-2xl font-black text-xs sm:text-sm tracking-[0.2em] text-white uppercase cursor-pointer"
+              className="liquid-glass-btn px-10 sm:px-14 py-3.5 rounded-2xl font-black text-xs sm:text-sm tracking-[0.22em] text-white uppercase cursor-pointer"
               style={{
                 background:
-                  estado !== 'idle'
-                    ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.62) 0%, rgba(52, 211, 153, 0.45) 100%)'
-                    : 'linear-gradient(135deg, rgba(99, 102, 241, 0.62) 0%, rgba(168, 85, 247, 0.52) 52%, rgba(16, 185, 129, 0.48) 100%)',
-                borderColor:
-                  estado !== 'idle'
-                    ? 'rgba(167, 243, 208, 0.75)'
-                    : 'rgba(226, 238, 255, 0.55)',
+                  estado === 'correct'
+                    ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.88) 0%, rgba(52, 211, 153, 0.78) 100%)'
+                    : 'linear-gradient(135deg, rgba(79, 70, 229, 0.9) 0%, rgba(168, 85, 247, 0.85) 50%, rgba(16, 185, 129, 0.82) 100%)',
+                borderColor: 'rgba(255, 255, 255, 0.75)',
+                boxShadow:
+                  '0 0 28px rgba(168, 85, 247, 0.55), 0 0 18px rgba(52, 211, 153, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
               }}
             >
-              {estado === 'idle'
-                ? 'ALINEAR ANILLO'
-                : faseActual < 3 && estado === 'correct'
-                  ? 'SIGUIENTE ANILLO ✦'
-                  : estado === 'correct'
-                    ? 'RESTAURAR NÚCLEO ✦'
-                    : 'NUEVA PREGUNTA ↻'}
+              {estado === 'correct'
+                ? faseActual < 3
+                  ? `PASAR A FASE ${faseActual + 1} ✦`
+                  : 'COMPLETAR NÚCLEO ARMILAR ✦'
+                : estado === 'incorrect'
+                  ? 'REINTENTAR ANILLO ↻'
+                  : 'ALINEAR ANILLO ARMILAR'}
             </button>
           </div>
         </div>
