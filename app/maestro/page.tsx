@@ -1,9 +1,11 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../lib/auth-store';
 import { supabase } from '../../lib/supabase';
+import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 
 const PLANET_DATA = [
   {
@@ -283,13 +285,17 @@ export default function MaestroPage() {
           className="rounded-3xl liquid-glass liquid-glass-panel p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
         >
           <div className="space-y-2">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#67E8F9]">
+            <LiquidGlass
+              blur={4}
+              refraction={10}
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-[0.2em] text-[#67E8F9]"
+            >
               <svg viewBox="0 0 18 18" fill="none" className="w-4 h-4" aria-hidden="true">
                 <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.5" />
                 <polygon points="9,4.2 11.4,9 9,13.8 6.6,9" fill="currentColor" />
               </svg>
               <span>Panel Docente</span>
-            </span>
+            </LiquidGlass>
             <h1
               id="tutor-heading"
               className="text-3xl sm:text-4xl font-black text-[#F8FAFC] tracking-tight"
@@ -419,11 +425,13 @@ export default function MaestroPage() {
             {PLANET_DATA.map((p) => (
               <article
                 key={p.nombre}
-                className="liquid-glass rounded-3xl p-6 flex flex-col justify-between gap-4"
-                style={{
-                  background: `linear-gradient(155deg, ${p.tint} 0%, rgba(11, 16, 34, 0.72) 55%, rgba(8, 12, 26, 0.86) 100%)`,
-                  borderColor: p.border,
-                }}
+                className="liquid-glass liquid-glass-interactive rounded-3xl p-6 flex flex-col justify-between gap-4"
+                style={
+                  {
+                    '--glass-caustic': `${p.accent}30`,
+                    borderColor: p.border,
+                  } as CSSProperties
+                }
               >
                 <div>
                   <div className="flex items-center justify-between gap-3 mb-4">
@@ -513,7 +521,7 @@ export default function MaestroPage() {
                 return (
                   <div
                     key={s.id}
-                    className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 liquid-glass rounded-2xl p-5"
+                    className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 liquid-glass liquid-glass-interactive rounded-2xl p-5"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
                       <div className="w-11 h-11 rounded-2xl bg-[#0B152E] border border-[#67E8F9]/35 flex items-center justify-center text-[#F8FAFC] text-sm font-black uppercase shrink-0">

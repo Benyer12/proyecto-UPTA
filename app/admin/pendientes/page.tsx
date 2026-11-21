@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -8,6 +9,7 @@ import { supabase } from '../../../lib/supabase';
 import LiquidGlassToast, {
   type LiquidGlassToastData,
 } from '../../components/LiquidGlassToast';
+import { LiquidGlass } from '../../../components/ui/glasscn/liquid-glass';
 
 type ApprovalRole = 'student' | 'tutor';
 
@@ -208,7 +210,11 @@ export default function AdminPendientesPage() {
           className="rounded-3xl liquid-glass liquid-glass-panel p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5"
         >
           <div className="space-y-2">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#FDE68A]">
+            <LiquidGlass
+              blur={4}
+              refraction={10}
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-[0.2em] text-[#FDE68A]"
+            >
               <svg viewBox="0 0 18 18" fill="none" className="w-4 h-4" aria-hidden="true">
                 <circle cx="9" cy="9" r="6.8" stroke="currentColor" strokeWidth="1.5" />
                 <path
@@ -220,7 +226,7 @@ export default function AdminPendientesPage() {
                 />
               </svg>
               <span>Control de Ingresos</span>
-            </span>
+            </LiquidGlass>
             <h1
               id="pending-heading"
               className="text-2xl sm:text-4xl font-black text-[#F8FAFC] tracking-tight"
@@ -331,10 +337,13 @@ export default function AdminPendientesPage() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={prefersReducedMotion ? undefined : { opacity: 0, x: 24, scale: 0.97 }}
                       transition={{ duration: 0.22 }}
-                      className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass"
-                      style={{
-                        borderColor: 'rgba(253, 230, 138, 0.28)',
-                      }}
+                      className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass liquid-glass-interactive"
+                      style={
+                        {
+                          '--glass-caustic': 'rgba(251, 191, 36, 0.22)',
+                          borderColor: 'rgba(253, 230, 138, 0.28)',
+                        } as CSSProperties
+                      }
                     >
                       {/* Información del usuario */}
                       <div className="flex items-start sm:items-center gap-3.5 min-w-0">

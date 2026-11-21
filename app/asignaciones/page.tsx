@@ -1,9 +1,11 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../lib/auth-store';
 import { supabase } from '../../lib/supabase';
+import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 
 interface Usuario {
   id: string;
@@ -231,14 +233,18 @@ export default function AsignacionesPage() {
           className="rounded-3xl liquid-glass liquid-glass-panel p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5"
         >
           <div className="space-y-2">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#67E8F9]">
+            <LiquidGlass
+              blur={4}
+              refraction={10}
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-[0.2em] text-[#67E8F9]"
+            >
               <svg viewBox="0 0 18 18" fill="none" className="w-4 h-4" aria-hidden="true">
                 <circle cx="5" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5" />
                 <circle cx="13" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5" />
                 <path d="M7.5 9H10.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
               </svg>
               <span>Gestión Académica</span>
-            </span>
+            </LiquidGlass>
             <h1
               id="assignments-heading"
               className="text-2xl sm:text-3xl font-black text-[#F8FAFC] tracking-tight"
@@ -310,17 +316,17 @@ export default function AsignacionesPage() {
                       key={t.id}
                       aria-pressed={activo}
                       onClick={() => setTutorSeleccionadoId(t.id)}
-                      className={`text-left p-5 rounded-2xl liquid-glass cursor-pointer transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9] ${
+                      className={`text-left p-5 rounded-2xl liquid-glass liquid-glass-interactive cursor-pointer transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9] ${
                         activo
                           ? 'border-[#67E8F9]/70 shadow-[0_0_26px_rgba(0,245,255,0.2)]'
                           : 'hover:border-white/25'
                       }`}
                       style={
                         activo
-                          ? {
-                              background:
-                                'linear-gradient(145deg, rgba(6, 182, 212, 0.2) 0%, rgba(11, 16, 34, 0.88) 100%)',
-                            }
+                          ? ({
+                              '--glass-caustic': 'rgba(0, 245, 255, 0.28)',
+                              '--glass-tint': 'rgba(103, 232, 249, 0.22)',
+                            } as CSSProperties)
                           : undefined
                       }
                     >
@@ -387,14 +393,14 @@ export default function AsignacionesPage() {
                     return (
                       <div
                         key={est.id}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass liquid-glass-interactive"
                         style={
                           esDeEsteTutor
-                            ? {
-                                background:
-                                  'linear-gradient(145deg, rgba(16, 185, 129, 0.16) 0%, rgba(11, 16, 34, 0.88) 100%)',
+                            ? ({
+                                '--glass-caustic': 'rgba(16, 185, 129, 0.26)',
+                                '--glass-tint': 'rgba(110, 231, 183, 0.18)',
                                 borderColor: 'rgba(110, 231, 183, 0.48)',
-                              }
+                              } as CSSProperties)
                             : undefined
                         }
                       >

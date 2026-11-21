@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -9,6 +10,7 @@ import LiquidGlassToast, {
   type LiquidGlassToastData,
   type LiquidGlassToastVariant,
 } from '../../components/LiquidGlassToast';
+import { LiquidGlass } from '../../../components/ui/glasscn/liquid-glass';
 
 type EditableRole = 'student' | 'tutor';
 
@@ -542,7 +544,11 @@ export default function AdminUsuariosPage() {
           className="rounded-3xl liquid-glass liquid-glass-panel p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-5"
         >
           <div className="space-y-2">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#67E8F9]">
+            <LiquidGlass
+              blur={4}
+              refraction={10}
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-[0.2em] text-[#67E8F9]"
+            >
               <svg viewBox="0 0 18 18" fill="none" className="w-4 h-4" aria-hidden="true">
                 <circle cx="9" cy="6" r="3" stroke="currentColor" strokeWidth="1.5" />
                 <path
@@ -553,7 +559,7 @@ export default function AdminUsuariosPage() {
                 />
               </svg>
               <span>Administración de Cuentas</span>
-            </span>
+            </LiquidGlass>
             <h1
               id="manage-users-heading"
               className="text-2xl sm:text-4xl font-black text-[#F8FAFC] tracking-tight"
@@ -780,12 +786,13 @@ export default function AdminUsuariosPage() {
                 return (
                   <div
                     key={u.id}
-                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass"
+                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass liquid-glass-interactive"
                     style={
                       !isActivo
-                        ? {
+                        ? ({
+                            '--glass-caustic': 'rgba(244, 63, 94, 0.24)',
                             borderColor: 'rgba(251, 113, 133, 0.34)',
-                          }
+                          } as CSSProperties)
                         : undefined
                     }
                   >

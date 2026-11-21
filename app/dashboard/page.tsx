@@ -1,11 +1,13 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { createBrowserClient } from '@supabase/ssr';
 import PlanetVisual from '../components/PlanetVisual';
+import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import { useAuthStore } from '../../lib/auth-store';
 import { MOCK_PLANETS, MOCK_PROGRESS } from '../../lib/mock-data';
 import type { Course, Level, Planet, StudentProgress } from '../../shared/types';
@@ -394,9 +396,9 @@ function StudentDashboardView({
             )}
           </div>
 
-          {/* Columna derecha: Telemetría real (superficie mate contrastada, sin números inventados) */}
+          {/* Columna derecha: Telemetría real en cápsula Liquid Glass empotrada */}
           <div className="lg:col-span-5">
-            <div className="rounded-xl bg-[#0B1022]/95 border border-white/14 p-5 space-y-4">
+            <div className="rounded-xl liquid-glass-inset p-5 space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#CBD5E1]">
                   Progreso real
@@ -419,10 +421,10 @@ function StudentDashboardView({
                 aria-valuenow={summary.overallPct}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                className="h-2.5 w-full rounded-full bg-white/10 overflow-hidden"
+                className="h-2.5 w-full rounded-full bg-white/10 overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]"
               >
                 <div
-                  className="h-full rounded-full transition-all duration-500"
+                  className="h-full rounded-full transition-all duration-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]"
                   style={{
                     width: `${summary.overallPct}%`,
                     backgroundColor: '#67E8F9',
@@ -431,7 +433,7 @@ function StudentDashboardView({
               </div>
 
               <div className="grid grid-cols-3 gap-3 pt-1">
-                <div className="rounded-lg bg-[#080D1C] border border-white/10 p-3">
+                <div className="rounded-lg glass-subtle p-3">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-[#94A3B8]">
                     <IconStar className="w-4 h-4 shrink-0" />
                     <span>Estrellas</span>
@@ -441,14 +443,14 @@ function StudentDashboardView({
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-[#080D1C] border border-white/10 p-3">
+                <div className="rounded-lg glass-subtle p-3">
                   <div className="text-xs font-semibold text-[#94A3B8]">Niveles</div>
                   <div className="text-xl sm:text-2xl font-black text-[#F8FAFC] mt-1 tabular-nums">
                     {loadingProgress ? '...' : `${summary.completedLevels}/${summary.totalLevels}`}
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-[#080D1C] border border-white/10 p-3">
+                <div className="rounded-lg glass-subtle p-3">
                   <div className="text-xs font-semibold text-[#94A3B8]">Mundos</div>
                   <div className="text-xl sm:text-2xl font-black text-[#F8FAFC] mt-1 tabular-nums">
                     {loadingProgress ? '...' : `${summary.planetsStarted}/${planets.length}`}
@@ -476,14 +478,16 @@ function StudentDashboardView({
           </p>
         </div>
 
-        {/* 2A. Mundo destacado (horizontal split, segunda superficie glass dentro del tope R-10) */}
+        {/* 2A. Mundo destacado con lente refractiva glasscn y caustica planetaria */}
         <article
           aria-labelledby={`planet-title-${summary.featuredPlanet.id}`}
-          className="rounded-2xl liquid-glass p-5 sm:p-7 border"
-          style={{
-            background: `linear-gradient(155deg, ${featuredPalette.surfaceTint} 0%, rgba(11, 16, 34, 0.88) 55%, rgba(8, 13, 28, 0.94) 100%)`,
-            borderColor: featuredPalette.borderTint,
-          }}
+          className="rounded-2xl liquid-glass liquid-glass-interactive p-5 sm:p-7"
+          style={
+            {
+              '--glass-caustic': `${featuredPalette.accent}2E`,
+              borderColor: featuredPalette.borderTint,
+            } as CSSProperties
+          }
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
             {/* Visual 3D del planeta con espacio reservado (sin salto CLS) */}
@@ -493,16 +497,18 @@ function StudentDashboardView({
                   <PlanetVisual name={summary.featuredPlanet.name} />
                 </div>
               </div>
-              <span
-                className="mt-2 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border"
-                style={{
-                  color: featuredPalette.textAccent,
-                  borderColor: featuredPalette.borderTint,
-                  backgroundColor: '#080D1C',
-                }}
+              <LiquidGlass
+                blur={4}
+                refraction={10}
+                className="mt-2 inline-flex px-3 py-1 rounded-full"
               >
-                {featuredPalette.discipline}
-              </span>
+                <span
+                  className="text-xs font-bold uppercase tracking-wider"
+                  style={{ color: featuredPalette.textAccent }}
+                >
+                  {featuredPalette.discipline}
+                </span>
+              </LiquidGlass>
             </div>
 
             {/* Contenido, progreso real y accesos directos a niveles */}
@@ -539,7 +545,7 @@ function StudentDashboardView({
                 {summary.featuredPlanet.courses.map((course) => (
                   <div
                     key={course.id}
-                    className="rounded-xl bg-[#080D1C]/90 border border-white/10 p-4 space-y-3"
+                    className="rounded-xl liquid-glass-inset p-4 space-y-3"
                   >
                     <div>
                       <h4 className="text-sm font-bold text-[#F8FAFC]">{course.name}</h4>
@@ -613,7 +619,7 @@ function StudentDashboardView({
           </div>
         </article>
 
-        {/* ── 2B. OTROS MUNDOS (SUPERFICIES MATE SÓLIDAS, REJILLA FLUIDA 1 -> 2 COLUMNAS) ── */}
+        {/* ── 2B. OTROS MUNDOS (LIQUID GLASS GLASSCN CON CAUSTICA PLANETARIA Y GLANCE) ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {summary.secondaryPlanets.map((planet) => {
             const palette = getPlanetPalette(planet.name);
@@ -625,7 +631,13 @@ function StudentDashboardView({
               <article
                 key={planet.id}
                 aria-labelledby={`planet-title-${planet.id}`}
-                className="rounded-xl bg-[#0B1022]/95 border border-white/12 p-5 sm:p-6 flex flex-col justify-between gap-5 transition-colors hover:border-white/24"
+                className="rounded-2xl liquid-glass liquid-glass-interactive p-5 sm:p-6 flex flex-col justify-between gap-5"
+                style={
+                  {
+                    '--glass-caustic': `${palette.accent}2A`,
+                    borderColor: palette.borderTint,
+                  } as CSSProperties
+                }
               >
                 <div className="space-y-4">
                   <div className="flex items-start gap-4">

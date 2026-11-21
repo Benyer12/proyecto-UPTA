@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase';
 import LiquidGlassToast, {
   type LiquidGlassToastData,
 } from '../components/LiquidGlassToast';
+import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 
 interface UsuarioDB {
   id: string;
@@ -176,7 +177,11 @@ export default function AdminPage() {
           className="rounded-3xl liquid-glass liquid-glass-panel p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6"
         >
           <div className="space-y-2">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#67E8F9]">
+            <LiquidGlass
+              blur={4}
+              refraction={10}
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-[0.2em] text-[#67E8F9]"
+            >
               <svg viewBox="0 0 18 18" fill="none" className="w-4 h-4" aria-hidden="true">
                 <path
                   d="M9 2.2L15 4.9V9.2C15 12.6 12.5 15.2 9 16C5.5 15.2 3 12.6 3 9.2V4.9L9 2.2Z"
@@ -186,7 +191,7 @@ export default function AdminPage() {
                 />
               </svg>
               <span>Control del Sistema</span>
-            </span>
+            </LiquidGlass>
             <h1
               id="admin-roles-heading"
               className="text-3xl sm:text-4xl font-black text-[#F8FAFC] tracking-tight"
@@ -256,7 +261,7 @@ export default function AdminPage() {
                 return (
                   <div
                     key={u.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl liquid-glass liquid-glass-interactive"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
                       <div

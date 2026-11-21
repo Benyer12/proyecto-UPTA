@@ -270,17 +270,31 @@ export default function LiquidGlassToast({
               boxShadow: `0 26px 64px -12px rgba(0, 0, 0, 0.86), 0 0 42px -8px ${theme.accentGlow}`,
             }}
           >
-            {/* Superficie principal en Liquid Glass intenso */}
+            {/* Superficie principal en Liquid Glass intenso (optica glasscn: bisel 6 capas + iOS rim + deriva) */}
             <div
-              className="relative overflow-hidden rounded-[20.5px] px-4 py-4 sm:px-5 sm:py-4"
+              className="relative overflow-hidden rounded-[20.5px] px-4 py-4 sm:px-5 sm:py-4 animate-[liquid-drift_18s_ease-in-out_infinite] motion-reduce:animate-none"
               style={{
                 background: theme.innerBg,
-                backdropFilter: 'blur(42px) saturate(225%)',
-                WebkitBackdropFilter: 'blur(42px) saturate(225%)',
+                backgroundSize: '180% 180%',
+                backdropFilter: 'blur(26px) saturate(210%) brightness(1.04)',
+                WebkitBackdropFilter: 'blur(26px) saturate(210%) brightness(1.04)',
                 boxShadow:
-                  'inset 0 1.5px 1px rgba(255, 255, 255, 0.42), inset 0 -10px 24px rgba(0, 0, 0, 0.42)',
+                  'inset 0 1px 0 0 rgba(255, 255, 255, 0.48), inset 0 -14px 28px -10px rgba(180, 215, 255, 0.22), inset 1px 0 0 0 rgba(255, 255, 255, 0.16), inset -1px 0 0 0 rgba(255, 255, 255, 0.12)',
               }}
             >
+              {/* Borde direccional iOS 27 con desvanecimiento en esquinas (glasscn) */}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 rounded-[inherit]"
+                style={{
+                  padding: '1px',
+                  background:
+                    'linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.44) 18%, rgba(255,255,255,0.44) 82%, rgba(255,255,255,0)), linear-gradient(to bottom, rgba(140,210,255,0), rgba(140,210,255,0.22) 18%, rgba(140,210,255,0.22) 82%, rgba(140,210,255,0))',
+                  WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
+                  WebkitMaskComposite: 'xor',
+                  mask: 'linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0)',
+                }}
+              />
               {/* Reflejo especular óptico en movimiento */}
               {!prefersReducedMotion && (
                 <motion.div

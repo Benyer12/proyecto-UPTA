@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import LiquidGlassToast, {
   type LiquidGlassToastData,
 } from '../app/components/LiquidGlassToast';
+import { LiquidGlass } from './ui/glasscn/liquid-glass';
 import type { LoginData, RegisterData } from '../shared/types';
 
 interface DropdownParticle {
@@ -563,7 +564,13 @@ export default function Header() {
               }`}
             >
               {user.role === 'admin' && (
-                <div className="hidden lg:flex items-center gap-1 p-1 rounded-2xl liquid-glass-pill">
+                <LiquidGlass
+                  blur={6}
+                  refraction={10}
+                  bezel={0.32}
+                  saturation={1.65}
+                  className="hidden lg:flex items-center gap-1 p-1 rounded-2xl bg-[#080d1e]/55"
+                >
                   {ADMIN_NAV_ITEMS.map((item) => {
                     const isActive =
                       item.href === '/admin'
@@ -574,7 +581,7 @@ export default function Header() {
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
+                        className={`glance inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
                           isActive
                             ? 'liquid-glass-btn text-white'
                             : 'text-slate-300 hover:text-white hover:bg-white/8'
@@ -597,7 +604,7 @@ export default function Header() {
                       </Link>
                     );
                   })}
-                </div>
+                </LiquidGlass>
               )}
 
               {(user.role === 'tutor' || user.role === 'docente') && (

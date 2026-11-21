@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -7,6 +8,7 @@ import { useMemo } from 'react';
 import { getPlanetById, getLevelProgress } from '../../../lib/mock-data';
 import type { Course, Level } from '../../../shared/types';
 import PlanetVisual from '../../components/PlanetVisual';
+import { LiquidGlass } from '../../../components/ui/glasscn/liquid-glass';
 
 function IconArrowLeft({ className = 'w-4 h-4' }: { className?: string }) {
   return (
@@ -153,15 +155,15 @@ function RetroGlassLevelCard({
   const cardInner = (
     <div
       className={`relative rounded-3xl liquid-glass p-2.5 transition-all duration-300 ${
-        available ? 'group-hover:-translate-y-0.5' : ''
+        available ? 'liquid-glass-interactive group-hover:-translate-y-0.5' : ''
       }`}
-      style={{
-        borderColor: available ? accent.border : 'rgba(255,255,255,0.09)',
-        boxShadow: available
-          ? `0 18px 40px -12px rgba(0,0,0,0.72), 0 0 28px -8px ${accent.glow}35, inset 0 1px 0 rgba(255,255,255,0.22)`
-          : '0 12px 28px -12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07)',
-        opacity: available ? 1 : 0.72,
-      }}
+      style={
+        {
+          '--glass-caustic': available ? `${accent.glow}2E` : 'rgba(120,170,255,0.08)',
+          borderColor: available ? accent.border : 'rgba(255,255,255,0.09)',
+          opacity: available ? 1 : 0.72,
+        } as CSSProperties
+      }
     >
       {/* Cápsula interior Liquid Glass con alta legibilidad */}
       <div
@@ -617,9 +619,11 @@ export default function PlanetaPage() {
               </motion.div>
 
               <div className="md:col-span-8 text-center md:text-left space-y-3">
-                <div
-                  className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full liquid-glass-pill font-mono text-[11px] font-bold uppercase tracking-[0.18em]"
-                  style={{ color: accent.text, borderColor: accent.border }}
+                <LiquidGlass
+                  blur={4}
+                  refraction={10}
+                  className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full font-mono text-[11px] font-bold uppercase tracking-[0.18em]"
+                  style={{ color: accent.text }}
                 >
                   <span
                     aria-hidden="true"
@@ -627,7 +631,7 @@ export default function PlanetaPage() {
                     style={{ backgroundColor: accent.text }}
                   />
                   <span>Sector planetario · {planet.shortDescription}</span>
-                </div>
+                </LiquidGlass>
 
                 <motion.h1
                   id="planet-page-heading"

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 
 const planetasInfo = [
   {
@@ -138,9 +139,13 @@ export default function AboutPage() {
         <section className="liquid-glass liquid-glass-panel rounded-2xl p-6 sm:p-9">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7 space-y-4">
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#67E8F9] block">
+              <LiquidGlass
+                blur={4}
+                refraction={10}
+                className="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-[0.18em] text-[#67E8F9]"
+              >
                 Nuestra misión educativa
-              </span>
+              </LiquidGlass>
               <h1 className="text-3xl sm:text-5xl font-black tracking-tight cosmic-title leading-tight">
                 Universo del Conocimiento
               </h1>
@@ -200,7 +205,7 @@ export default function AboutPage() {
 
           <div className="grid sm:grid-cols-3 gap-3.5 pt-1">
             {PILARES.map((pilar) => (
-              <div key={pilar.label} className="liquid-glass rounded-xl p-4 flex items-start gap-3">
+              <div key={pilar.label} className="liquid-glass liquid-glass-interactive rounded-xl p-4 flex items-start gap-3">
                 <div className="w-10 h-10 rounded-lg liquid-glass-inset flex items-center justify-center shrink-0">
                   <PillarIcon id={pilar.id} />
                 </div>

@@ -1,8 +1,10 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import Planeta from './components/Planeta';
+import { LiquidGlass } from '../components/ui/glasscn/liquid-glass';
 
 const PLANETAS_PREVIEW = [
   {
@@ -241,9 +243,13 @@ export default function LandingPage() {
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
             <div className="lg:col-span-7 space-y-6">
-              <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.18em] text-[#67E8F9]">
+              <LiquidGlass
+                blur={4}
+                refraction={10}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold uppercase tracking-[0.18em] text-[#67E8F9]"
+              >
                 Educación primaria de 10 a 12 años
-              </p>
+              </LiquidGlass>
 
               <h1 className="text-3xl sm:text-5xl lg:text-[54px] font-black tracking-tight leading-[1.06] cosmic-title">
                 Universo del Conocimiento
@@ -319,8 +325,13 @@ export default function LandingPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.45 }}
-          className="rounded-2xl liquid-glass p-5 sm:p-7"
-          style={{ borderColor: `${featuredPlanet.glow}40` }}
+          className="rounded-2xl liquid-glass liquid-glass-interactive p-5 sm:p-7"
+          style={
+            {
+              '--glass-caustic': `${featuredPlanet.glow}2E`,
+              borderColor: `${featuredPlanet.glow}40`,
+            } as CSSProperties
+          }
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
             <div className="lg:col-span-5 flex justify-center">
@@ -386,7 +397,12 @@ export default function LandingPage() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, duration: 0.45 }}
               className="rounded-2xl liquid-glass liquid-glass-interactive p-5 sm:p-6 flex flex-col justify-between gap-5"
-              style={{ borderColor: `${p.glow}38` }}
+              style={
+                {
+                  '--glass-caustic': `${p.glow}2C`,
+                  borderColor: `${p.glow}38`,
+                } as CSSProperties
+              }
             >
               <div className="rounded-xl liquid-glass-inset p-5 flex flex-col items-center text-center">
                 <Planeta

@@ -32,12 +32,12 @@ function normalizeAngleDelta(target: number, current: number): number {
 
 function getPanelBaseFrost(el: HTMLElement): number {
   const cl = el.classList;
-  if (cl.contains('liquid-glass-dropdown')) return 38;
-  if (cl.contains('liquid-glass-modal')) return 36;
-  if (cl.contains('liquid-glass-panel')) return 26;
-  if (cl.contains('liquid-glass-btn')) return 12;
-  if (cl.contains('liquid-glass-pill')) return 11;
-  return 18;
+  if (cl.contains('liquid-glass-dropdown')) return 30;
+  if (cl.contains('liquid-glass-modal')) return 28;
+  if (cl.contains('liquid-glass-panel')) return 18;
+  if (cl.contains('liquid-glass-btn')) return 11;
+  if (cl.contains('liquid-glass-pill')) return 10;
+  return 12;
 }
 
 export default function FondoWrapper() {
