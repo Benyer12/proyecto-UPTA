@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useAuthStore } from '../../lib/auth-store';
 import { supabase } from '../../lib/supabase';
 
@@ -179,13 +178,6 @@ export default function AsignacionesPage() {
               Selecciona un tutor y elige los estudiantes que estarán a su cargo.
             </p>
           </div>
-
-          <Link
-            href="/admin"
-            className="inline-flex items-center justify-center liquid-glass-pill hover:bg-white/15 text-white text-xs font-bold tracking-wider uppercase px-5 py-3 rounded-2xl transition-all whitespace-nowrap"
-          >
-            ← Volver al Panel Admin
-          </Link>
         </div>
 
         {loading ? (

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from '../../../lib/auth-store';
 import { supabase } from '../../../lib/supabase';
@@ -238,6 +237,9 @@ export default function AdminUsuariosPage() {
       setUsuarios((prev) =>
         prev.map((item) => (item.id === u.id ? { ...item, status: data.status } : item)),
       );
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('admin-pending-updated'));
+      }
       if (nuevoStatus) {
         mostrarToast({
           variant: 'activated',
@@ -354,6 +356,9 @@ export default function AdminUsuariosPage() {
 
         const estadoAnterior = editingUser.status !== false;
         if (form.status !== estadoAnterior) {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('admin-pending-updated'));
+          }
           if (form.status) {
             mostrarToast({
               variant: 'activated',
@@ -417,26 +422,14 @@ export default function AdminUsuariosPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link
-              href="/admin"
-              className="inline-flex items-center justify-center liquid-glass-pill hover:bg-white/15 text-[#E2EEFF] text-xs font-bold tracking-wider uppercase px-4 py-2.5 rounded-xl transition-all whitespace-nowrap"
-            >
-              ← Panel Admin
-            </Link>
-            <Link
-              href="/asignaciones"
-              className="inline-flex items-center justify-center liquid-glass-pill hover:bg-white/15 text-[#E2EEFF] text-xs font-bold tracking-wider uppercase px-4 py-2.5 rounded-xl transition-all whitespace-nowrap"
-            >
-              Asignaciones →
-            </Link>
+          <div className="flex items-center gap-2.5 self-start lg:self-center">
             <button
               type="button"
               onClick={cargarUsuarios}
               disabled={loading}
               className="inline-flex items-center justify-center liquid-glass-btn text-white text-xs font-bold tracking-wider uppercase px-4 py-2.5 rounded-xl disabled:opacity-50 cursor-pointer whitespace-nowrap"
             >
-              {loading ? 'Sincronizando...' : '↻ Actualizar'}
+              {loading ? 'Sincronizando...' : 'Actualizar'}
             </button>
           </div>
         </div>

@@ -10,7 +10,8 @@ const usuarios = new Table({
   correo: column.text,
   usuario: column.text,
   contrasena: column.text,
-  role: column.text
+  role: column.text,
+  status: column.integer
 });
 
 // 2. Definimos el esquema

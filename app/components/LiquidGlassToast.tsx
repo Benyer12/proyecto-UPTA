@@ -7,6 +7,7 @@ export type LiquidGlassToastVariant =
   | 'activated'
   | 'deactivated'
   | 'saved'
+  | 'pending'
   | 'blocked'
   | 'error';
 
@@ -17,6 +18,8 @@ export interface LiquidGlassToastData {
   title: string;
   message: string;
   durationMs?: number;
+  actionLabel?: string;
+  onAction?: () => void;
 }
 
 interface VariantTheme {
@@ -74,6 +77,20 @@ const VARIANT_THEMES: Record<LiquidGlassToastVariant, VariantTheme> = {
     iconBorder: 'rgba(191, 219, 254, 0.65)',
     iconColor: '#E0F2FE',
     pulseColor: 'rgba(147, 197, 253, 0.42)',
+  },
+  pending: {
+    defaultEyebrow: 'SOLICITUDES PENDIENTES',
+    outerBorder:
+      'linear-gradient(135deg, rgba(255,255,255,0.76) 0%, rgba(251,191,36,0.82) 36%, rgba(192,132,252,0.62) 68%, rgba(245,158,11,0.78) 100%)',
+    innerBg:
+      'linear-gradient(155deg, rgba(217, 119, 6, 0.24) 0%, rgba(30, 20, 52, 0.88) 46%, rgba(10, 10, 26, 0.94) 100%)',
+    accentGlow: 'rgba(245, 158, 11, 0.44)',
+    barGradient: 'linear-gradient(90deg, #FBBF24 0%, #C084FC 58%, #93C5FD 100%)',
+    eyebrowColor: '#FDE68A',
+    iconBg: 'linear-gradient(145deg, rgba(245, 158, 11, 0.36) 0%, rgba(109, 40, 217, 0.56) 100%)',
+    iconBorder: 'rgba(253, 230, 138, 0.72)',
+    iconColor: '#FEF3C7',
+    pulseColor: 'rgba(251, 191, 36, 0.5)',
   },
   blocked: {
     defaultEyebrow: 'ACCESO RESTRINGIDO · CUENTA INACTIVA',
@@ -164,6 +181,28 @@ function ToastIcon({ variant, color }: { variant: LiquidGlassToastVariant; color
           strokeLinecap="round"
         />
         <circle cx="12" cy="15.2" r="1.45" fill={color} />
+      </svg>
+    );
+  }
+
+  if (variant === 'pending') {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M15.5 19.25V17.75C15.5 15.82 13.93 14.25 12 14.25H7.5C5.57 14.25 4 15.82 4 17.75V19.25"
+          stroke={color}
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+        <circle cx="9.75" cy="8.75" r="3.25" stroke={color} strokeWidth="1.8" />
+        <circle cx="17.75" cy="10.25" r="3.5" stroke={color} strokeWidth="1.75" />
+        <path
+          d="M17.75 8.5V10.4L19 11.15"
+          stroke={color}
+          strokeWidth="1.65"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     );
   }
@@ -304,6 +343,32 @@ export default function LiquidGlassToast({
                   <p className="text-xs sm:text-[13px] text-slate-200/90 leading-relaxed mt-1 font-normal">
                     {toast.message}
                   </p>
+                  {toast.actionLabel && toast.onAction && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        toast.onAction?.();
+                        onClose();
+                      }}
+                      className="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.12)',
+                        border: `1px solid ${theme.iconBorder}`,
+                        color: theme.iconColor,
+                      }}
+                    >
+                      <span>{toast.actionLabel}</span>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                        <path
+                          d="M2.5 6H9.5M6.5 3L9.5 6L6.5 9"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  )}
                 </div>
 
                 {/* Botón de cierre minimalista SVG */}

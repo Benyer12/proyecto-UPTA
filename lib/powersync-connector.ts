@@ -41,6 +41,7 @@ export class AppSyncConnector implements PowerSyncBackendConnector {
         if (op.opData.correo !== undefined) dataToSync.correo = op.opData.correo;
         if (op.opData.contrasena !== undefined) dataToSync.contrasena = op.opData.contrasena;
         if (op.opData.role !== undefined) dataToSync.role = op.opData.role;
+        if (op.opData.status !== undefined) dataToSync.status = Boolean(op.opData.status);
 
         if (op.op === 'PUT') {
           const { error } = await supabase.from(tabla).insert({

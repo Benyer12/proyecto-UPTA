@@ -1,5 +1,4 @@
-import { db } from './powersync';
-// IMPORTANTE: Asegúrate de que la ruta de importación coincida con donde tienes tu cliente de supabase
+// Cliente de Supabase conectado al proyecto
 import { supabase } from './powersync-connector'; 
 
 // 1. Definimos los dos caminos posibles para que TypeScript no se confunda
@@ -21,30 +20,83 @@ export const registrarUsuario = async (datos: {
   role: string;
 }) => {
   try {
-    // PASO NUEVO: 1. Registrar al usuario en Supabase Auth
+    const cleanNombre = datos.nombre.trim();
+    const cleanCorreo = datos.correo.trim().toLowerCase();
+    const cleanUsuario = datos.usuario.trim();
+    const cleanContrasena = datos.contrasena;
+
+    if (!cleanNombre || !cleanCorreo || !cleanUsuario || !cleanContrasena) {
+      return { success: false, message: 'Todos los campos son obligatorios.' };
+    }
+
+    if (/\s/.test(cleanUsuario)) {
+      return { success: false, message: 'El nombre de usuario no puede contener espacios.' };
+    }
+
+    // 1. Verificar que el usuario y correo no existan previamente en public.usuarios
+    const { data: dupUser } = await supabase
+      .from('usuarios')
+      .select('id')
+      .ilike('usuario', cleanUsuario)
+      .limit(1);
+
+    if (dupUser && dupUser.length > 0) {
+      return { success: false, message: 'Ese nombre de usuario ya está en uso.' };
+    }
+
+    const { data: dupEmail } = await supabase
+      .from('usuarios')
+      .select('id')
+      .ilike('correo', cleanCorreo)
+      .limit(1);
+
+    if (dupEmail && dupEmail.length > 0) {
+      return { success: false, message: 'Ese correo electrónico ya está registrado.' };
+    }
+
+    // 2. Registrar al usuario en Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: datos.correo,
-      password: datos.contrasena,
+      email: cleanCorreo,
+      password: cleanContrasena,
     });
 
     if (authError) {
-      console.error('❌ Error de Supabase Auth al registrar:', authError.message);
+      console.error('Error de Supabase Auth al registrar:', authError.message);
       return { success: false, message: 'Error en la nube: ' + authError.message };
     }
 
-    if (!db) return { success: false, message: 'Base de datos no disponible.' };
+    const newUserId =
+      authData.user?.id ||
+      (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : undefined);
 
-    // 2. Guardar en la BD local de PowerSync
-    await db.execute(
-      'INSERT INTO usuarios (id, nombre, correo, usuario, contrasena, role) VALUES (uuid(), ?, ?, ?, ?, ?)',
-      [
-        datos.nombre,
-        datos.correo,
-        datos.usuario,
-        datos.contrasena,
-        datos.role || 'student'
-      ]
-    );
+    // 3. Guardar directamente en public.usuarios con status = false por defecto (Pendiente por aprobar)
+    const payload: Record<string, any> = {
+      nombre: cleanNombre,
+      correo: cleanCorreo,
+      usuario: cleanUsuario,
+      contrasena: cleanContrasena,
+      role: datos.role || 'student',
+      status: false,
+    };
+    if (newUserId) {
+      payload.id = newUserId;
+    }
+
+    const { error: insertError } = await supabase.from('usuarios').insert(payload);
+
+    if (insertError) {
+      console.error('Error al insertar usuario en Supabase:', insertError.message);
+      return {
+        success: false,
+        message: 'No se pudo guardar el registro en la base de datos.',
+      };
+    }
+
+    // 4. Cerrar cualquier sesión temporal hasta que un administrador apruebe la cuenta
+    await supabase.auth.signOut().catch(() => {});
+
     return { success: true };
   } catch (error: any) {
     return { success: false, message: error.message };

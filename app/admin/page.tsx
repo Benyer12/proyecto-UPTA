@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useAuthStore } from '../../lib/auth-store';
 import { supabase } from '../../lib/supabase';
+import LiquidGlassToast, {
+  type LiquidGlassToastData,
+} from '../components/LiquidGlassToast';
 
 interface UsuarioDB {
   id: string;
@@ -24,6 +26,7 @@ export default function AdminPage() {
   const [usuarios, setUsuarios] = useState<UsuarioDB[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<LiquidGlassToastData | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -46,6 +49,7 @@ export default function AdminPage() {
       .from('usuarios')
       .select('id, nombre, usuario, correo, role, status')
       .in('role', ['student', 'tutor'])
+      .or('status.is.null,status.eq.true')
       .order('nombre', { ascending: true });
 
     if (error) {
@@ -56,26 +60,42 @@ export default function AdminPage() {
     setLoading(false);
   };
 
-  const cambiarRol = async (id: string, rolActual: string) => {
-    const nuevoRol = rolActual === 'student' ? 'tutor' : 'student';
-    setUpdatingId(id);
+  const cambiarRol = async (u: UsuarioDB) => {
+    const nuevoRol = u.role === 'student' ? 'tutor' : 'student';
+    setUpdatingId(u.id);
 
     const { error } = await supabase
       .from('usuarios')
       .update({ role: nuevoRol })
-      .eq('id', id);
+      .eq('id', u.id)
+      .in('role', ['student', 'tutor']);
 
     if (error) {
       console.error('Error al actualizar el rol:', error.message);
-      alert('No se pudo actualizar el rol en la base de datos.');
+      setToast({
+        id: Date.now(),
+        variant: 'error',
+        eyebrow: 'ERROR DE ACTUALIZACIÓN',
+        title: 'No se pudo cambiar el rol',
+        message: `Ocurrió un error al actualizar el rol de ${u.nombre}. Intenta nuevamente.`,
+      });
     } else {
       setUsuarios((prev) =>
-        prev.map((u) => (u.id === id ? { ...u, role: nuevoRol } : u))
+        prev.map((item) => (item.id === u.id ? { ...item, role: nuevoRol } : item))
       );
 
       if (assignRole) {
-        assignRole(id, nuevoRol);
+        assignRole(u.id, nuevoRol);
       }
+
+      const rolLegible = nuevoRol === 'tutor' ? 'Tutor' : 'Estudiante';
+      setToast({
+        id: Date.now(),
+        variant: 'saved',
+        eyebrow: 'ROL ACTUALIZADO',
+        title: `Rol asignado: ${rolLegible}`,
+        message: `${u.nombre} ahora cuenta con permisos de ${rolLegible} en la plataforma.`,
+      });
     }
 
     setUpdatingId(null);
@@ -86,41 +106,28 @@ export default function AdminPage() {
   return (
     <div className="relative min-h-screen px-6 py-12">
       <div className="relative z-10 max-w-4xl mx-auto space-y-8">
-        {/* Encabezado Liquid Glass */}
-        <div className="rounded-3xl liquid-glass liquid-glass-panel p-7 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+        <LiquidGlassToast toast={toast} onClose={() => setToast(null)} />
+
+        {/* Encabezado limpio Liquid Glass (toda la navegación vive en el menú superior) */}
+        <div className="rounded-3xl liquid-glass liquid-glass-panel p-7 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.2em] text-cyan-300 mb-2">
-              <span>✦</span> Control del Sistema
+            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-cyan-300 mb-2">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.85)]" />
+              Control del Sistema
             </span>
             <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
               Panel de Administración
             </h1>
             <p className="text-sm md:text-base text-slate-300/90 mt-1.5">
-              Gestiona los roles de los usuarios registrados para que accedan como Estudiante o Tutor.
+              Gestiona los roles de los usuarios activos registrados como Estudiante o Tutor.
             </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link
-              href="/admin/usuarios"
-              className="inline-flex items-center justify-center gap-1.5 liquid-glass-btn text-white text-xs font-bold tracking-wider uppercase px-5 py-3 rounded-2xl whitespace-nowrap"
-            >
-              <span>✏️</span>
-              <span>Editar Usuarios</span>
-            </Link>
-            <Link
-              href="/asignaciones"
-              className="inline-flex items-center justify-center liquid-glass-pill hover:bg-white/15 text-white text-xs font-bold tracking-wider uppercase px-5 py-3 rounded-2xl whitespace-nowrap transition-all"
-            >
-              Asignar Tutores a Estudiantes →
-            </Link>
           </div>
         </div>
 
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-lg font-black text-white tracking-wide">
-              Usuarios del sistema ({usuarios.length})
+              Usuarios activos ({usuarios.length})
             </h2>
           </div>
 
@@ -133,7 +140,7 @@ export default function AdminPage() {
           ) : usuarios.length === 0 ? (
             <div className="liquid-glass rounded-3xl p-8 text-center">
               <p className="text-sm text-slate-400 font-medium">
-                No hay usuarios registrados.
+                No hay usuarios activos registrados.
               </p>
             </div>
           ) : (
@@ -157,7 +164,9 @@ export default function AdminPage() {
                       />
                       <div>
                         <div className="flex items-center gap-2.5 flex-wrap">
-                          <span className="text-sm sm:text-base text-white font-bold">{u.nombre}</span>
+                          <span className="text-sm sm:text-base text-white font-bold">
+                            {u.nombre}
+                          </span>
                           <span
                             className={`text-[10px] uppercase tracking-widest font-bold px-2.5 py-0.5 rounded-full border ${
                               isTutor
@@ -167,11 +176,6 @@ export default function AdminPage() {
                           >
                             {u.role}
                           </span>
-                          {u.status === false && (
-                            <span className="text-[10px] uppercase tracking-widest font-bold px-2.5 py-0.5 rounded-full border border-rose-400/40 bg-rose-500/15 text-rose-200">
-                              Inactivo
-                            </span>
-                          )}
                         </div>
                         <div className="text-xs text-slate-300/80 mt-0.5">
                           @{u.usuario} · {u.correo}
@@ -179,16 +183,10 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 self-end sm:self-center">
-                      <Link
-                        href={`/admin/usuarios?edit=${u.id}`}
-                        className="text-xs font-bold liquid-glass-btn text-white px-4 py-2 rounded-xl transition-all inline-flex items-center gap-1.5"
-                      >
-                        <span>✏️</span>
-                        <span>Editar</span>
-                      </Link>
+                    <div className="flex gap-2 self-end sm:self-center">
                       <button
-                        onClick={() => cambiarRol(u.id, u.role)}
+                        type="button"
+                        onClick={() => cambiarRol(u)}
                         disabled={isUpdating}
                         className="text-xs font-bold liquid-glass-pill hover:bg-white/15 disabled:opacity-50 text-white px-4 py-2 rounded-xl transition-all cursor-pointer"
                       >

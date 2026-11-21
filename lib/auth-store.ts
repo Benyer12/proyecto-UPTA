@@ -20,6 +20,7 @@ interface AuthState {
   } | null;
   token: string | null;
   lastLoginError: LoginErrorInfo | null;
+  lastRegisterError: string | null;
   login: (data: LoginData) => Promise<boolean>;
   register: (data: RegisterData) => Promise<boolean>;
   logout: () => void;
@@ -34,6 +35,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       lastLoginError: null,
+      lastRegisterError: null,
 
       // 1. LOGIN GLOBAL (Conectado a Supabase vía auth-service)
       login: async (data: LoginData) => {
@@ -86,6 +88,7 @@ export const useAuthStore = create<AuthState>()(
 
       // 2. REGISTRO GLOBAL (Conectado a Supabase vía auth-service)
       register: async (data: RegisterData) => {
+        set({ lastRegisterError: null });
         const resultado = await registrarUsuario({
           nombre: data.name,
           correo: data.email,
@@ -93,6 +96,12 @@ export const useAuthStore = create<AuthState>()(
           contrasena: data.password,
           role: 'student',
         });
+        if (!resultado.success) {
+          set({
+            lastRegisterError:
+              resultado.message || 'Error al crear la cuenta. Intenta con otro usuario.',
+          });
+        }
         return resultado.success;
       },
 

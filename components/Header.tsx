@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -260,6 +260,13 @@ const PLANET_CHIPS = [
   { name: 'Naturae', sub: 'Ciencias', icon: '🌿', color: '#00ff88', bg: 'rgba(0, 255, 136, 0.09)' },
 ];
 
+const ADMIN_NAV_ITEMS = [
+  { href: '/admin', label: 'Roles' },
+  { href: '/admin/pendientes', label: 'Pendientes', isPending: true },
+  { href: '/admin/usuarios', label: 'Usuarios' },
+  { href: '/asignaciones', label: 'Asignaciones' },
+];
+
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
@@ -270,6 +277,7 @@ export default function Header() {
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
   const [authToast, setAuthToast] = useState<LiquidGlassToastData | null>(null);
+  const [pendingCount, setPendingCount] = useState<number>(0);
 
   const [loginUser, setLoginUser] = useState('');
   const [loginPass, setLoginPass] = useState('');
@@ -283,6 +291,41 @@ export default function Header() {
   const [regSuccess, setRegSuccess] = useState(false);
 
   const formRef = useRef<HTMLDivElement | null>(null);
+
+  const fetchPendingCount = useCallback(async (): Promise<number> => {
+    const { count, error } = await supabase
+      .from('usuarios')
+      .select('id', { count: 'exact', head: true })
+      .in('role', ['student', 'tutor'])
+      .eq('status', false);
+
+    if (error) {
+      console.error('Error al consultar usuarios pendientes:', error.message);
+      return 0;
+    }
+
+    const total = count ?? 0;
+    setPendingCount(total);
+    return total;
+  }, []);
+
+  // Mantener actualizado el contador de pendientes para el menú superior del administrador
+  useEffect(() => {
+    if (!token || !user || user.role !== 'admin') {
+      setPendingCount(0);
+      return;
+    }
+
+    fetchPendingCount();
+
+    const handlePendingUpdated = () => {
+      fetchPendingCount();
+    };
+    window.addEventListener('admin-pending-updated', handlePendingUpdated);
+    return () => {
+      window.removeEventListener('admin-pending-updated', handlePendingUpdated);
+    };
+  }, [token, user, pathname, fetchPendingCount]);
 
   // Verificar que cuentas activas (student/tutor, excepto admin) no hayan sido desactivadas
   useEffect(() => {
@@ -357,6 +400,26 @@ export default function Header() {
     if (ok) {
       setIsOpen(false);
       resetLoginForm();
+      const loggedUser = useAuthStore.getState().user;
+      if (loggedUser?.role === 'admin') {
+        const totalPendientes = await fetchPendingCount();
+        if (totalPendientes > 0) {
+          setAuthToast({
+            id: Date.now(),
+            variant: 'pending',
+            eyebrow: 'SOLICITUDES DE ACCESO',
+            title:
+              totalPendientes === 1
+                ? 'Tienes 1 usuario pendiente por aprobar'
+                : `Tienes ${totalPendientes} usuarios pendientes por aprobar`,
+            message:
+              'Hay cuentas recién registradas esperando tu aprobación para poder iniciar sesión en la plataforma.',
+            actionLabel: 'Revisar pendientes',
+            onAction: () => router.push('/admin/pendientes'),
+            durationMs: 8500,
+          });
+        }
+      }
       router.push(getRedirect() as any);
     } else {
       const err = useAuthStore.getState().lastLoginError;
@@ -384,12 +447,13 @@ export default function Header() {
     }
   };
 
-  const handleRegister = async () => { 
+  const handleRegister = async () => {
+    setRegError('');
     if (!regName || !regEmail || !regUser || !regPass) {
       setRegError('Todos los campos son obligatorios.');
       return;
     }
-    
+
     setLoading(true);
     const ok = await register({
       name: regName,
@@ -404,9 +468,10 @@ export default function Header() {
       setTimeout(() => {
         setTab('login');
         resetRegForm();
-      }, 2500);
+      }, 3200);
     } else {
-      setRegError('Error al crear la cuenta. Intenta con otro usuario.');
+      const regErrMsg = useAuthStore.getState().lastRegisterError;
+      setRegError(regErrMsg || 'Error al crear la cuenta. Intenta con otro usuario.');
     }
   };
 
@@ -427,28 +492,61 @@ export default function Header() {
         </Link>
 
         <div className="flex items-center gap-4">
-          <nav className="hidden sm:flex items-center gap-6">
-            <Link href="/about" className="text-sm font-semibold tracking-wide text-slate-200 hover:text-cyan-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
-              Acerca de
-            </Link>
-            <Link href="/how-to-play" className="text-sm font-semibold tracking-wide text-slate-200 hover:text-cyan-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
-              Cómo jugar
-            </Link>
-          </nav>
+          {!(token && user?.role === 'admin') && (
+            <nav className="hidden sm:flex items-center gap-6">
+              <Link href="/about" className="text-sm font-semibold tracking-wide text-slate-200 hover:text-cyan-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
+                Acerca de
+              </Link>
+              <Link href="/how-to-play" className="text-sm font-semibold tracking-wide text-slate-200 hover:text-cyan-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
+                Cómo jugar
+              </Link>
+            </nav>
+          )}
 
           {token && user ? (
-            <nav className="flex items-center gap-5 ml-4 pl-5 border-l border-white/15">
+            <nav
+              className={`flex items-center gap-4 ${
+                user.role === 'admin' ? '' : 'ml-4 pl-5 border-l border-white/15'
+              }`}
+            >
               {user.role === 'admin' && (
-                <div className="flex items-center gap-2">
-                  <Link href="/admin" className="text-sm font-semibold tracking-wide text-cyan-300 hover:text-cyan-200 transition-colors px-3 py-1.5 rounded-lg liquid-glass-pill">
-                    Panel Admin
-                  </Link>
-                  <Link href="/admin/usuarios" className="hidden md:inline-flex text-sm font-semibold tracking-wide text-slate-200 hover:text-cyan-200 transition-colors px-3 py-1.5 rounded-lg liquid-glass-pill">
-                    Editar Usuarios
-                  </Link>
+                <div className="hidden lg:flex items-center gap-1 p-1 rounded-2xl liquid-glass-pill">
+                  {ADMIN_NAV_ITEMS.map((item) => {
+                    const isActive =
+                      item.href === '/admin'
+                        ? pathname === '/admin'
+                        : pathname?.startsWith(item.href);
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
+                          isActive
+                            ? 'liquid-glass-btn text-white'
+                            : 'text-slate-300 hover:text-white hover:bg-white/8'
+                        }`}
+                      >
+                        <span>{item.label}</span>
+                        {item.isPending && pendingCount > 0 && (
+                          <span
+                            className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black leading-none"
+                            style={{
+                              background:
+                                'linear-gradient(135deg, rgba(251, 191, 36, 0.92) 0%, rgba(245, 158, 11, 0.95) 100%)',
+                              color: '#1E1B4B',
+                              boxShadow: '0 0 12px rgba(251, 191, 36, 0.65)',
+                            }}
+                          >
+                            {pendingCount}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
-              
+
               {(user.role === 'tutor' || user.role === 'docente') && (
                 <Link href="/maestro" className="text-sm font-semibold tracking-wide text-cyan-300 hover:text-cyan-200 transition-colors px-3 py-1.5 rounded-lg liquid-glass-pill">
                   Mis Estudiantes
@@ -487,17 +585,20 @@ export default function Header() {
             </button>
           )}
 
-          {/* Botón menú móvil */}
+          {/* Botón menú móvil / tablet */}
           <button
-            className="sm:hidden text-white p-2 liquid-glass-pill rounded-lg"
+            className={`${
+              token && user?.role === 'admin' ? 'lg:hidden' : 'sm:hidden'
+            } text-white p-2 liquid-glass-pill rounded-lg cursor-pointer`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Abrir menú"
           >
             ☰
           </button>
         </div>
       </div>
 
-      {/* Menú Móvil */}
+      {/* Menú Móvil / Tablet */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -505,15 +606,53 @@ export default function Header() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="sm:hidden border-t border-white/15 liquid-glass-dropdown overflow-hidden"
+            className={`${
+              token && user?.role === 'admin' ? 'lg:hidden' : 'sm:hidden'
+            } border-t border-white/15 liquid-glass-dropdown overflow-hidden`}
           >
-            <div className="flex flex-col p-4 gap-3">
-              <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-200 hover:text-cyan-300 px-3 py-2 rounded-lg hover:bg-white/5">
-                Acerca de
-              </Link>
-              <Link href="/how-to-play" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-200 hover:text-cyan-300 px-3 py-2 rounded-lg hover:bg-white/5">
-                Cómo jugar
-              </Link>
+            <div className="flex flex-col p-4 gap-2">
+              {token && user?.role === 'admin' ? (
+                <>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#93C5FD] px-3 pt-1 pb-1">
+                    Secciones de Administración
+                  </div>
+                  {ADMIN_NAV_ITEMS.map((item) => {
+                    const isActive =
+                      item.href === '/admin'
+                        ? pathname === '/admin'
+                        : pathname?.startsWith(item.href);
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center justify-between text-sm font-bold px-3.5 py-2.5 rounded-xl transition-all ${
+                          isActive
+                            ? 'liquid-glass-btn text-white'
+                            : 'text-slate-200 hover:text-white hover:bg-white/8'
+                        }`}
+                      >
+                        <span>{item.label}</span>
+                        {item.isPending && pendingCount > 0 && (
+                          <span className="inline-flex items-center justify-center min-w-[22px] h-5 px-2 rounded-full text-[11px] font-black bg-amber-400 text-slate-950">
+                            {pendingCount}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </>
+              ) : (
+                <>
+                  <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-200 hover:text-cyan-300 px-3 py-2 rounded-lg hover:bg-white/5">
+                    Acerca de
+                  </Link>
+                  <Link href="/how-to-play" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-200 hover:text-cyan-300 px-3 py-2 rounded-lg hover:bg-white/5">
+                    Cómo jugar
+                  </Link>
+                </>
+              )}
             </div>
           </motion.div>
         )}
@@ -684,12 +823,13 @@ export default function Header() {
                     {tab === 'register' && (
                       <div className="space-y-3.5">
                         {regSuccess ? (
-                          <div className="text-center py-8 liquid-glass-pill rounded-2xl p-6">
+                          <div className="text-center py-8 liquid-glass-pill rounded-2xl p-6 space-y-2 border-emerald-400/35">
                             <p className="text-emerald-300 font-bold text-base">
-                              ✅ Registro exitoso
+                              Registro completado
                             </p>
-                            <p className="text-slate-300 text-xs mt-2">
-                              Un administrador debe asignar tu rol para que puedas acceder.
+                            <p className="text-slate-300 text-xs leading-relaxed max-w-sm mx-auto">
+                              Tu cuenta quedó en estado pendiente. Un administrador deberá aprobar
+                              tu solicitud antes de que puedas iniciar sesión.
                             </p>
                           </div>
                         ) : (
@@ -752,8 +892,9 @@ export default function Header() {
                             </div>
 
                             {regError && (
-                              <div className="liquid-glass-pill border-red-400/40 bg-red-500/10 rounded-xl px-4 py-2 text-red-300 text-xs font-semibold">
-                                ⚠️ {regError}
+                              <div className="liquid-glass-pill border-rose-400/45 bg-rose-500/12 rounded-xl px-4 py-2.5 text-rose-200 text-xs font-semibold flex items-center gap-2.5">
+                                <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0 shadow-[0_0_8px_rgba(251,113,133,0.85)]" />
+                                <span>{regError}</span>
                               </div>
                             )}
 
