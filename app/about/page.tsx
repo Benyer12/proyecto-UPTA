@@ -1,4 +1,8 @@
+'use client';
+
 import Link from 'next/link';
+import { motion, useReducedMotion } from 'framer-motion';
+import PlanetVisual from '../components/PlanetVisual';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 
 const planetasInfo = [
@@ -6,27 +10,30 @@ const planetasInfo = [
     id: 1,
     nombre: 'Numérix',
     materia: 'Matemáticas',
-    desc: 'Números, operaciones, geometría y razonamiento lógico aplicados a retos paso a paso.',
+    desc: 'Números, operaciones, geometría y razonamiento lógico transformados en misiones espaciales paso a paso.',
     accent: '#67E8F9',
-    tint: 'rgba(0, 245, 255, 0.08)',
+    border: 'rgba(0, 245, 255, 0.34)',
+    bgClass: 'bg-[#041724]/[0.82]',
     badge: '6 niveles · 2 cursos',
   },
   {
     id: 2,
     nombre: 'Letralia',
     materia: 'Lenguas',
-    desc: 'Gramática, vocabulario, ortografía y comprensión lectora mediante desafíos interactivos.',
+    desc: 'Gramática, vocabulario, ortografía y comprensión lectora con acertijos y aventuras llenas de imaginación.',
     accent: '#D8B4FE',
-    tint: 'rgba(191, 64, 255, 0.08)',
+    border: 'rgba(191, 64, 255, 0.36)',
+    bgClass: 'bg-[#160828]/[0.82]',
     badge: '3 niveles · 1 curso',
   },
   {
     id: 3,
     nombre: 'Naturae',
     materia: 'Ciencias',
-    desc: 'Seres vivos, ecosistemas, energía y el universo con recorridos exploratorios.',
+    desc: 'Seres vivos, ecosistemas, energía y secretos del universo en recorridos llenos de descubrimientos.',
     accent: '#6EE7B7',
-    tint: 'rgba(0, 255, 136, 0.08)',
+    border: 'rgba(0, 255, 136, 0.34)',
+    bgClass: 'bg-[#041C14]/[0.82]',
     badge: '3 niveles · 1 curso',
   },
 ];
@@ -35,253 +42,365 @@ const PILARES = [
   {
     id: 'sync',
     label: 'Modo Offline y Online',
-    desc: 'Sincronización entre el dispositivo y la nube para conservar el avance de cada sesión.',
+    desc: 'Guarda tus estrellas en el dispositivo y sincronízalas en la nube para no perder nunca tu aventura.',
+    accent: '#67E8F9',
+    cardBg: 'bg-[#041724]/[0.78]',
+    border: 'rgba(103, 232, 249, 0.3)',
   },
   {
     id: 'safe',
     label: 'Aprendizaje sin castigos',
-    desc: 'Equivocarse entrega pistas formativas y nunca borra el progreso acumulado.',
+    desc: 'Equivocarse te da pistas útiles y una nueva oportunidad. ¡Aquí cada intento cuenta para aprender!',
+    accent: '#6EE7B7',
+    cardBg: 'bg-[#041B14]/[0.78]',
+    border: 'rgba(110, 231, 183, 0.3)',
   },
   {
     id: 'age',
     label: 'Primaria de 10 a 12 años',
-    desc: 'Ejercicios y lecturas calibrados para los últimos grados de educación básica.',
+    desc: 'Retos coloridos, lecturas claras y mecánicas de juego pensadas especialmente para estudiantes de primaria.',
+    accent: '#FDE68A',
+    cardBg: 'bg-[#1C1405]/[0.78]',
+    border: 'rgba(253, 230, 138, 0.3)',
   },
 ] as const;
 
-function MissionCompassIllustration() {
-  return (
-    <svg
-      viewBox="0 0 300 220"
-      fill="none"
-      className="w-full h-auto max-w-[300px] mx-auto select-none"
-      role="img"
-      aria-label="Ilustración vectorial de una brújula orbital conectando matemáticas, lenguaje y ciencias"
-    >
-      <defs>
-        <radialGradient id="aboutHalo" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#67E8F9" stopOpacity="0.32" />
-          <stop offset="65%" stopColor="#818CF8" stopOpacity="0.1" />
-          <stop offset="100%" stopColor="#0F172A" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <circle cx="150" cy="110" r="88" fill="url(#aboutHalo)" />
-      <circle cx="150" cy="110" r="72" stroke="#94A3B8" strokeOpacity="0.3" strokeWidth="1.2" strokeDasharray="4 6" />
-      <ellipse cx="150" cy="110" rx="108" ry="42" transform="rotate(-18 150 110)" stroke="#67E8F9" strokeOpacity="0.55" strokeWidth="1.4" />
-      <ellipse cx="150" cy="110" rx="102" ry="38" transform="rotate(20 150 110)" stroke="#D8B4FE" strokeOpacity="0.5" strokeWidth="1.4" />
-      <path d="M150 62L160 100L198 110L160 120L150 158L140 120L102 110L140 100L150 62Z" fill="#1E293B" stroke="#E2E8F0" strokeWidth="1.4" />
-      <circle cx="150" cy="110" r="9" fill="#67E8F9" />
-      <circle cx="64" cy="142" r="8" fill="#67E8F9" fillOpacity="0.85" stroke="#E0F2FE" strokeWidth="1.4" />
-      <circle cx="236" cy="78" r="8" fill="#D8B4FE" fillOpacity="0.85" stroke="#F3E8FF" strokeWidth="1.4" />
-      <circle cx="226" cy="154" r="7.5" fill="#6EE7B7" fillOpacity="0.85" stroke="#D1FAE5" strokeWidth="1.4" />
-    </svg>
-  );
-}
-
-function PillarIcon({ id }: { id: 'sync' | 'safe' | 'age' }) {
+function PillarIcon({ id, color }: { id: 'sync' | 'safe' | 'age'; color: string }) {
   if (id === 'sync') {
     return (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M20 11A8 8 0 0 0 6.3 5.3L4 7.5" stroke="#67E8F9" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M4 4V7.5H7.5" stroke="#67E8F9" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M4 13A8 8 0 0 0 17.7 18.7L20 16.5" stroke="#6EE7B7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M20 20V16.5H16.5" stroke="#6EE7B7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M20 11A8 8 0 0 0 6.3 5.3L4 7.5" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M4 4V7.5H7.5" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M4 13A8 8 0 0 0 17.7 18.7L20 16.5" stroke="#6EE7B7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M20 20V16.5H16.5" stroke="#6EE7B7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
   if (id === 'safe') {
     return (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M12 3L5 6V11.5C5 16 8 19.8 12 21C16 19.8 19 16 19 11.5V6L12 3Z" stroke="#6EE7B7" strokeWidth="1.8" strokeLinejoin="round" />
-        <path d="M9 12L11 14L15.2 9.8" stroke="#6EE7B7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 3L5 6V11.5C5 16 8 19.8 12 21C16 19.8 19 16 19 11.5V6L12 3Z" stroke={color} strokeWidth="2" strokeLinejoin="round" />
+        <path d="M9 12L11 14L15.2 9.8" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="8.5" stroke="#D8B4FE" strokeWidth="1.8" />
-      <circle cx="12" cy="12" r="4" stroke="#D8B4FE" strokeWidth="1.6" />
-      <circle cx="12" cy="12" r="1.4" fill="#D8B4FE" />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 3L14.8 8.7L21 9.6L16.5 14L17.6 20.2L12 17.2L6.4 20.2L7.5 14L3 9.6L9.2 8.7L12 3Z"
+        fill="#FDE68A"
+        fillOpacity="0.2"
+        stroke={color}
+        strokeWidth="1.9"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
-function PlanetMark({ id, color }: { id: number; color: string }) {
-  if (id === 1) {
-    return (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect x="3.5" y="3.5" width="17" height="17" rx="4" stroke={color} strokeWidth="1.7" />
-        <path d="M8.5 8.5H15.5L11.5 12L15.5 15.5H8.5" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  if (id === 2) {
-    return (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M19.5 4.5C13.5 5 8.5 9.5 6.8 16.2L5 19.5L8.3 17.7C15 16 19 11 19.5 4.5Z" stroke={color} strokeWidth="1.7" strokeLinejoin="round" />
-        <path d="M6.5 18L15 9.5" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
-      </svg>
-    );
-  }
+function JoyfulPlanetsStage() {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M19 5C12.5 5 7.5 8.8 6.5 17C14.5 16 19 11.5 19 5Z" stroke={color} strokeWidth="1.7" strokeLinejoin="round" />
-      <path d="M6.5 17C9 13.5 12 11 15.5 9" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
+    <div
+      className="relative rounded-2xl border border-white/12 p-5 sm:p-6 overflow-hidden min-h-[250px] flex flex-col items-center justify-center"
+      style={{
+        background:
+          'radial-gradient(circle at 22% 24%, rgba(0, 245, 255, 0.22) 0%, transparent 48%), radial-gradient(circle at 78% 28%, rgba(191, 64, 255, 0.24) 0%, transparent 50%), radial-gradient(circle at 52% 85%, rgba(0, 255, 136, 0.20) 0%, transparent 50%), rgba(6, 10, 24, 0.72)',
+      }}
+    >
+      {/* Órbita decorativa luminosa */}
+      <svg
+        viewBox="0 0 360 220"
+        fill="none"
+        className="pointer-events-none absolute inset-0 w-full h-full opacity-70"
+        aria-hidden="true"
+      >
+        <ellipse cx="180" cy="112" rx="146" ry="62" stroke="#67E8F9" strokeOpacity="0.3" strokeWidth="1.3" strokeDasharray="5 6" />
+        <ellipse cx="180" cy="112" rx="108" ry="44" stroke="#D8B4FE" strokeOpacity="0.28" strokeWidth="1.2" />
+        <circle cx="48" cy="40" r="3" fill="#FDE68A" />
+        <circle cx="314" cy="48" r="2.5" fill="#67E8F9" />
+        <circle cx="298" cy="184" r="3" fill="#6EE7B7" />
+        <circle cx="64" cy="176" r="2.5" fill="#D8B4FE" />
+      </svg>
+
+      {/* Trío alegre de planetas 3D */}
+      <div className="relative z-10 flex items-center justify-center gap-2 sm:gap-4">
+        <motion.div
+          animate={prefersReducedMotion ? undefined : { y: [0, -7, 0] }}
+          transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut' }}
+          className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center"
+        >
+          <div className="scale-[0.54] sm:scale-[0.62]">
+            <PlanetVisual name="Numérix" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          animate={prefersReducedMotion ? undefined : { y: [0, 7, 0] }}
+          transition={{ duration: 4.8, repeat: Infinity, ease: 'easeInOut' }}
+          className="w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center -mt-4"
+        >
+          <div className="scale-[0.64] sm:scale-[0.74]">
+            <PlanetVisual name="Letralia" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          animate={prefersReducedMotion ? undefined : { y: [0, -6, 0] }}
+          transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+          className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center"
+        >
+          <div className="scale-[0.54] sm:scale-[0.62]">
+            <PlanetVisual name="Naturae" />
+          </div>
+        </motion.div>
+      </div>
+
+      <div className="relative z-10 mt-2 inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#070c1e]/85 px-4 py-1.5 text-xs font-semibold text-[#FDE68A]">
+        <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4 shrink-0" aria-hidden="true">
+          <path
+            d="M10 2.4L12.35 7.16L17.6 7.92L13.8 11.62L14.7 16.85L10 14.38L5.3 16.85L6.2 11.62L2.4 7.92L7.65 7.16L10 2.4Z"
+            fill="#FACC15"
+            stroke="#F59E0B"
+            strokeWidth="1.2"
+          />
+        </svg>
+        <span>3 mundos llenos de retos y estrellas</span>
+      </div>
+    </div>
   );
 }
 
 export default function AboutPage() {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <div className="relative min-h-screen">
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-12 pb-24 space-y-10 sm:space-y-12">
-        {/* Encabezado asimétrico en Liquid Glass */}
-        <section className="liquid-glass liquid-glass-panel rounded-2xl p-6 sm:p-9">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-7 space-y-4">
-              <LiquidGlass
-                blur={4}
-                refraction={10}
-                className="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-[0.18em] text-[#67E8F9]"
-              >
-                Nuestra misión educativa
-              </LiquidGlass>
-              <h1 className="text-3xl sm:text-5xl font-black tracking-tight cosmic-title leading-tight">
-                Universo del Conocimiento
-              </h1>
-              <p className="text-base sm:text-lg text-[#CBD5E1] leading-relaxed">
-                Una plataforma educativa gamificada que transforma el refuerzo escolar en un{' '}
-                <strong className="text-[#F8FAFC]">recorrido espacial interactivo</strong> diseñado
-                para estudiantes de 10 a 12 años.
-              </p>
-            </div>
-            <div className="lg:col-span-5">
-              <div className="rounded-xl liquid-glass-inset p-4">
-                <MissionCompassIllustration />
+      <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-12 pb-24 space-y-10 sm:space-y-12">
+        {/* 1. ENCABEZADO ALEGRE Y LUMINOSO EN LIQUID GLASS */}
+        <motion.section
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+        >
+          <LiquidGlass
+            blur={8}
+            refraction={14}
+            bezel={0.24}
+            saturation={1.5}
+            className="rounded-3xl bg-[#070d1f]/[0.82] border-white/[0.14] p-6 sm:p-9"
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div className="lg:col-span-6 space-y-5">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#67E8F9]/35 bg-[#041724]/80 px-4 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#67E8F9]">
+                  <span className="size-2 rounded-full bg-[#67E8F9]" aria-hidden="true" />
+                  <span>Nuestra misión educativa</span>
+                </div>
+
+                <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-[1.06] bg-gradient-to-r from-white via-[#BAE6FD] to-[#D8B4FE] bg-clip-text text-transparent">
+                  Universo del Conocimiento
+                </h1>
+
+                <p className="text-base sm:text-lg text-white/80 leading-relaxed">
+                  Una plataforma educativa alegre y gamificada que convierte el repaso escolar en
+                  una <strong className="text-white">gran aventura espacial</strong> para niños y
+                  niñas de 10 a 12 años.
+                </p>
+
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <span className="rounded-full border border-[#6EE7B7]/35 bg-[#041B14]/80 px-3.5 py-1.5 text-xs font-semibold text-[#6EE7B7]">
+                    100% Gratuito
+                  </span>
+                  <span className="rounded-full border border-[#D8B4FE]/35 bg-[#160828]/80 px-3.5 py-1.5 text-xs font-semibold text-[#D8B4FE]">
+                    Sin castigos
+                  </span>
+                  <span className="rounded-full border border-[#FDE68A]/35 bg-[#1C1405]/80 px-3.5 py-1.5 text-xs font-semibold text-[#FDE68A]">
+                    Gana estrellas
+                  </span>
+                </div>
+              </div>
+
+              <div className="lg:col-span-6">
+                <JoyfulPlanetsStage />
               </div>
             </div>
-          </div>
-        </section>
+          </LiquidGlass>
+        </motion.section>
 
-        {/* Historia del proyecto y pilares pedagógicos */}
-        <section className="liquid-glass liquid-glass-panel rounded-2xl p-6 sm:p-8 space-y-6">
-          <div className="flex flex-wrap items-end justify-between gap-3 pb-4 border-b border-white/10">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#67E8F9] block">
+        {/* 2. HISTORIA Y PILARES CON COLOR Y ENERGÍA */}
+        <section className="space-y-6">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="space-y-1">
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[#67E8F9] block">
                 Origen y propósito
               </span>
-              <h2 className="text-2xl font-black text-[#F8FAFC] tracking-tight mt-0.5">
-                ¿Cómo nació este proyecto?
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                ¿Cómo nació esta aventura?
               </h2>
             </div>
-            <span className="liquid-glass-inset px-3.5 py-1.5 rounded-lg text-xs font-bold text-[#6EE7B7] border border-emerald-400/35">
-              Acceso gratuito
+            <span className="rounded-full border border-[#6EE7B7]/40 bg-[#041B14]/80 px-4 py-1.5 text-xs font-bold text-[#6EE7B7]">
+              Acceso gratuito para primaria
             </span>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="liquid-glass-inset rounded-xl p-5 sm:p-6 space-y-2.5">
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-[#67E8F9]">
-                Educación y gamificación
-              </h3>
-              <p className="text-[#CBD5E1] text-sm sm:text-base leading-relaxed">
-                Este proyecto nace de la necesidad de formar jóvenes mediante técnicas dinámicas,
-                combinando contenidos escolares con mecánicas de tablero para lograr un aprendizaje
-                atractivo y constante.
+          <div className="grid md:grid-cols-2 gap-5">
+            <LiquidGlass
+              blur={8}
+              refraction={12}
+              bezel={0.24}
+              className="rounded-3xl bg-[#041724]/[0.80] p-6 sm:p-7 space-y-3"
+              style={{ borderColor: 'rgba(103, 232, 249, 0.3)' }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl border border-[#67E8F9]/40 bg-[#00F5FF]/12 flex items-center justify-center text-[#67E8F9] shrink-0">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden="true">
+                    <path
+                      d="M12 3.5C15.5 5.5 17.5 9.2 17.5 13.5L20 16L18.2 17.8L15.4 16.6H8.6L5.8 17.8L4 16L6.5 13.5C6.5 9.2 8.5 5.5 12 3.5Z"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="12" cy="10.8" r="1.7" fill="currentColor" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-extrabold uppercase tracking-wider text-[#67E8F9]">
+                  Educación y gamificación
+                </h3>
+              </div>
+              <p className="text-white/80 text-sm sm:text-base leading-relaxed">
+                Este proyecto nació para motivar a los estudiantes mediante retos dinámicos,
+                combinando contenidos escolares con tableros coloridos para que aprender se sienta
+                como explorar el espacio.
               </p>
-            </div>
+            </LiquidGlass>
 
-            <div className="liquid-glass-inset rounded-xl p-5 sm:p-6 space-y-2.5">
-              <h3 className="text-sm font-extrabold uppercase tracking-wider text-[#D8B4FE]">
-                Inclusivo y sin frustración
-              </h3>
-              <p className="text-[#CBD5E1] text-sm sm:text-base leading-relaxed">
-                La meta es ofrecer una herramienta <strong className="text-[#F8FAFC]">gratuita, accesible y sin castigos</strong>{' '}
-                que ayude a estudiantes de primaria a fortalecer Matemática, Lenguaje y Ciencias
-                Naturales a su propio ritmo.
+            <LiquidGlass
+              blur={8}
+              refraction={12}
+              bezel={0.24}
+              className="rounded-3xl bg-[#160828]/[0.80] p-6 sm:p-7 space-y-3"
+              style={{ borderColor: 'rgba(216, 180, 254, 0.32)' }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl border border-[#D8B4FE]/40 bg-[#BF40FF]/15 flex items-center justify-center text-[#D8B4FE] shrink-0">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-hidden="true">
+                    <path
+                      d="M12 20.2C12 20.2 4.5 15.6 4.5 9.6C4.5 6.8 6.6 4.8 9.1 4.8C10.7 4.8 11.6 5.6 12 6.5C12.4 5.6 13.3 4.8 14.9 4.8C17.4 4.8 19.5 6.8 19.5 9.6C19.5 15.6 12 20.2 12 20.2Z"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-base font-extrabold uppercase tracking-wider text-[#D8B4FE]">
+                  Inclusivo y sin frustración
+                </h3>
+              </div>
+              <p className="text-white/80 text-sm sm:text-base leading-relaxed">
+                Nuestra meta es ofrecer una herramienta{' '}
+                <strong className="text-white">gratuita, amigable y sin castigos</strong> que ayude
+                a fortalecer Matemática, Lenguaje y Ciencias Naturales a su propio ritmo.
               </p>
-            </div>
+            </LiquidGlass>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-3.5 pt-1">
+          <div className="grid sm:grid-cols-3 gap-4">
             {PILARES.map((pilar) => (
-              <div key={pilar.label} className="liquid-glass liquid-glass-interactive rounded-xl p-4 flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg liquid-glass-inset flex items-center justify-center shrink-0">
-                  <PillarIcon id={pilar.id} />
+              <div
+                key={pilar.label}
+                className={`rounded-2xl border ${pilar.cardBg} backdrop-blur-md p-5 flex items-start gap-3.5`}
+                style={{ borderColor: pilar.border }}
+              >
+                <div
+                  className="w-11 h-11 rounded-xl border bg-white/[0.05] flex items-center justify-center shrink-0"
+                  style={{ borderColor: pilar.border }}
+                >
+                  <PillarIcon id={pilar.id} color={pilar.accent} />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-[#F8FAFC]">{pilar.label}</h3>
-                  <p className="text-xs text-[#CBD5E1] leading-relaxed">{pilar.desc}</p>
+                  <h3 className="text-sm font-bold text-white">{pilar.label}</h3>
+                  <p className="text-xs text-white/70 leading-relaxed">{pilar.desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Los planetas del conocimiento en lista estructurada */}
-        <section className="liquid-glass liquid-glass-panel rounded-2xl p-6 sm:p-8 space-y-6">
+        {/* 3. LOS PLANETAS DEL CONOCIMIENTO CON SUS FIGURAS 3D */}
+        <section className="space-y-6">
           <div className="space-y-1">
-            <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#94A3B8] block">
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[#D8B4FE] block">
               Sistema planetario
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-[#F8FAFC] tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               Los planetas del conocimiento
             </h2>
           </div>
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {planetasInfo.map((p) => (
-              <article
+              <LiquidGlass
                 key={p.nombre}
-                className="rounded-xl liquid-glass-inset p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                style={{
-                  background: `linear-gradient(150deg, ${p.tint} 0%, rgba(255, 255, 255, 0.02) 60%)`,
-                  borderColor: `${p.accent}2E`,
-                }}
+                blur={8}
+                refraction={14}
+                bezel={0.24}
+                className={`rounded-3xl ${p.bgClass} p-6 flex flex-col items-center text-center justify-between gap-5`}
+                style={{ borderColor: p.border }}
               >
-                <div className="flex items-start gap-4">
-                  <div
-                    className="w-12 h-12 rounded-xl bg-[#080D1C] flex items-center justify-center shrink-0 border"
-                    style={{ borderColor: `${p.accent}45` }}
-                  >
-                    <PlanetMark id={p.id} color={p.accent} />
+                <div className="w-full space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="font-mono text-[10px] font-bold uppercase tracking-[0.2em]"
+                      style={{ color: p.accent }}
+                    >
+                      {p.materia}
+                    </span>
+                    <span className="rounded-full border border-white/12 bg-white/[0.05] px-2.5 py-0.5 text-[11px] font-semibold text-white/80">
+                      {p.badge}
+                    </span>
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <h3 className="text-lg font-black text-[#F8FAFC]">{p.nombre}</h3>
-                      <span
-                        className="text-xs font-bold uppercase tracking-wider"
-                        style={{ color: p.accent }}
-                      >
-                        {p.materia}
-                      </span>
+
+                  <div className="w-36 h-36 flex items-center justify-center mx-auto">
+                    <div className="scale-[0.80]">
+                      <PlanetVisual name={p.nombre} />
                     </div>
-                    <p className="text-sm text-[#CBD5E1] leading-relaxed max-w-xl">{p.desc}</p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <h3 className="text-2xl font-black text-white">{p.nombre}</h3>
+                    <p className="text-sm text-white/75 leading-relaxed">{p.desc}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
-                  <span className="text-xs font-bold text-[#CBD5E1] px-3 py-1.5 rounded-md bg-[#080D1C] border border-white/12">
-                    {p.badge}
-                  </span>
-                  <Link
-                    href={`/planeta/${p.id}`}
-                    className="min-h-[44px] inline-flex items-center justify-center liquid-glass-pill hover:bg-white/15 text-xs font-bold text-white px-4 py-2 rounded-lg transition-colors"
-                  >
-                    Abrir planeta
-                  </Link>
-                </div>
-              </article>
+                <Link
+                  href="/dashboard"
+                  className="glance min-h-[44px] w-full inline-flex items-center justify-center rounded-full border text-xs font-bold uppercase tracking-[0.14em] text-white transition-all hover:brightness-115"
+                  style={{
+                    borderColor: p.border,
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  }}
+                >
+                  Ir al panel para jugar
+                </Link>
+              </LiquidGlass>
             ))}
           </div>
         </section>
 
-        <div className="flex justify-center pt-2">
+        {/* Botones finales */}
+        <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
+          <Link
+            href="/dashboard"
+            className="min-h-[46px] inline-flex items-center justify-center rounded-full bg-white hover:bg-white/90 text-black text-sm font-semibold px-7 transition-colors"
+          >
+            Entrar a mi espacio
+          </Link>
           <Link
             href="/"
-            className="min-h-[44px] inline-flex items-center justify-center liquid-glass-pill hover:bg-white/15 text-xs font-bold uppercase tracking-widest text-[#67E8F9] hover:text-white px-6 py-3 rounded-xl transition-colors"
+            className="glance min-h-[46px] inline-flex items-center justify-center rounded-full border border-white/15 bg-[#070c1b]/80 hover:bg-white/[0.12] text-xs font-bold uppercase tracking-widest text-white px-6 transition-colors"
           >
-            Volver a la página principal
+            Volver al inicio
           </Link>
         </div>
       </div>
