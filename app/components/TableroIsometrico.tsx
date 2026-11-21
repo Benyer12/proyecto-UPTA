@@ -686,8 +686,8 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         </div>
 
         {/* ── Lienzo SVG de la Montaña Planetaria y los 20 Cubos Isométricos ── */}
-        <div className="w-full h-full flex items-center justify-center px-4 sm:px-6 py-2">
-          <div className="w-full h-full max-w-[960px] flex items-center justify-center mx-auto">
+        <div className="w-full h-full flex items-center justify-center px-4 sm:px-6 pt-12 pb-14">
+          <div className="w-full h-full max-w-[1060px] flex items-center justify-center mx-auto">
             <MapaMontañaCuantica
               pos={pos}
               caminando={caminando}
@@ -697,15 +697,17 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         </div>
 
         {/* ── Abajo al Centro: Píldora Flotante de Instrucciones en Liquid Glass ── */}
-        <div
-          className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 max-w-[92%] sm:max-w-lg px-6 py-2.5 rounded-2xl liquid-glass-pill flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#E2EEFF] text-center transition-opacity duration-200"
-          style={{
-            background: 'linear-gradient(135deg, rgba(15, 23, 52, 0.84) 0%, rgba(9, 14, 34, 0.9) 100%)',
-            borderColor: 'rgba(191, 219, 254, 0.28)',
-          }}
-        >
-          <span className="text-[#6EE7B7]">✦</span>
-          <span>{avisoFlotante}</span>
+        <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 max-w-[92%] sm:max-w-lg pointer-events-none">
+          <div
+            className="px-6 py-2.5 rounded-2xl liquid-glass-pill flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#E2EEFF] text-center"
+            style={{
+              background: 'linear-gradient(135deg, rgba(15, 23, 52, 0.84) 0%, rgba(9, 14, 34, 0.9) 100%)',
+              borderColor: 'rgba(191, 219, 254, 0.28)',
+            }}
+          >
+            <span className="text-[#6EE7B7]">✦</span>
+            <span>{avisoFlotante}</span>
+          </div>
         </div>
       </div>
 
@@ -850,7 +852,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               </div>
 
               <div
-                className="mt-3 rounded-xl px-3.5 py-2.5 flex items-center justify-between liquid-glass-pill transition-all"
+                className="mt-3 rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-2 liquid-glass-pill transition-all"
                 style={{
                   background: llaveLista
                     ? 'linear-gradient(90deg, rgba(16,185,129,0.22) 0%, rgba(168,85,247,0.22) 100%)'
@@ -858,22 +860,16 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                   borderColor: llaveLista ? 'rgba(110, 231, 183, 0.55)' : 'rgba(191, 219, 254, 0.16)',
                 }}
               >
-                <div className="flex items-center gap-2.5">
-                  <span className="text-base">{llaveLista ? '🗝️' : '🔒'}</span>
-                  <div className="leading-tight">
-                    <p className="text-[11px] font-black uppercase tracking-wider text-[#F0F6FF]">
-                      LLAVE DEL GUARDIÁN
-                    </p>
-                    <p className="text-[11px] font-medium text-[#93C5FD]/85">
-                      {llaveLista
-                        ? '¡4 núcleos listos para el Núcleo Armilar!'
-                        : 'Reúne los 4 núcleos en el camino'}
-                    </p>
-                  </div>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="text-base shrink-0">{llaveLista ? '🗝️' : '🔒'}</span>
+                  <p className="text-xs font-black uppercase tracking-wider text-[#F0F6FF] truncate">
+                    LLAVE DEL GUARDIÁN
+                  </p>
                 </div>
                 {stars > 0 && (
-                  <span className="text-xs font-black text-emerald-200 bg-emerald-400/15 border border-emerald-300/40 px-2 py-0.5 rounded-full">
-                    ⭐ {stars}
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 text-xs font-black text-emerald-200 bg-emerald-400/15 border border-emerald-300/40 px-2.5 py-1 rounded-full leading-none">
+                    <span>⭐</span>
+                    <span>{stars}</span>
                   </span>
                 )}
               </div>
