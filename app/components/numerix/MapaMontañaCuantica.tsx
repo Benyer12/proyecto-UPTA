@@ -1077,7 +1077,7 @@ export default function MapaMontañaCuantica({
 
   return (
     <svg
-      viewBox="-25 18 1190 644"
+      viewBox="0 0 900 680"
       preserveAspectRatio="xMidYMid meet"
       className="w-full h-full select-none overflow-visible"
       role="img"
@@ -1242,7 +1242,7 @@ export default function MapaMontañaCuantica({
         </linearGradient>
       </defs>
 
-      <g transform="translate(55 4) scale(1.22, 1.02)">
+      <g transform="translate(8 0)">
         <EscenarioMontaña />
 
         {/* ── RIEL FLUIDO Y ELEGANTE (Azul Crema -> Morado -> Esmeralda) ── */}

@@ -21,15 +21,6 @@ const FACE_COLORS: Record<number, string> = {
   6: '#3B0764',
 };
 
-const FACE_ROTATIONS: Record<number, { rotateX: number; rotateY: number }> = {
-  1: { rotateX: -14, rotateY: 18 },
-  2: { rotateX: -14, rotateY: -72 },
-  3: { rotateX: -104, rotateY: 18 },
-  4: { rotateX: 76, rotateY: 18 },
-  5: { rotateX: -14, rotateY: 108 },
-  6: { rotateX: 14, rotateY: 198 },
-};
-
 const DICE_PIP_LAYOUTS: Record<number, number[][]> = {
   1: [[0.5, 0.5]],
   2: [[0.27, 0.27], [0.73, 0.73]],
@@ -54,8 +45,8 @@ function DiceFace({
   pipColor?: string;
   themed: boolean;
 }) {
-  const pips = DICE_PIP_LAYOUTS[num];
-  const pipSize = num === 1 ? size * 0.2 : size * 0.155;
+  const pips = DICE_PIP_LAYOUTS[num] || DICE_PIP_LAYOUTS[1];
+  const pipSize = num === 1 ? size * 0.21 : size * 0.16;
   const isLavender =
     themed &&
     (color.toLowerCase().startsWith('#e') ||
@@ -64,20 +55,18 @@ function DiceFace({
 
   return (
     <div
-      className="absolute flex items-center justify-center select-none overflow-hidden"
+      className="relative flex items-center justify-center select-none overflow-hidden"
       style={{
         width: size,
         height: size,
         borderRadius: size * 0.22,
         background: isLavender
           ? `radial-gradient(circle at 30% 25%, #ffffff 0%, ${color} 68%, ${borderColor ?? color}88 100%)`
-          : `linear-gradient(145deg, rgba(45, 62, 128, 0.94) 0%, ${color} 52%, rgba(8, 13, 32, 0.96) 100%)`,
-        border: `1.8px solid ${borderColor ?? '#BFDBFE'}`,
+          : `linear-gradient(145deg, rgba(45, 62, 128, 0.96) 0%, ${color} 52%, rgba(8, 13, 32, 0.98) 100%)`,
+        border: `2px solid ${borderColor ?? '#BFDBFE'}`,
         boxShadow: isLavender
-          ? `inset 0 0 ${size * 0.16}px ${borderColor ?? color}55`
-          : `inset 0 2px 3px rgba(255, 255, 255, 0.35), inset 0 -4px 10px rgba(3, 6, 20, 0.8), 0 0 16px rgba(147, 197, 253, 0.22)`,
-        backfaceVisibility: 'hidden',
-        WebkitBackfaceVisibility: 'hidden',
+          ? `inset 0 0 ${size * 0.16}px ${borderColor ?? color}55, 0 8px 20px rgba(15,23,42,0.3)`
+          : `inset 0 2px 3px rgba(255, 255, 255, 0.38), inset 0 -4px 10px rgba(3, 6, 20, 0.85), 0 8px 20px rgba(2, 6, 23, 0.55)`,
       }}
     >
       {!isLavender && (
@@ -86,7 +75,7 @@ function DiceFace({
           style={{
             inset: size * 0.08,
             borderRadius: size * 0.15,
-            border: '1px solid rgba(191, 219, 254, 0.22)',
+            border: '1px solid rgba(191, 219, 254, 0.24)',
             background:
               'radial-gradient(circle at 30% 22%, rgba(226, 238, 255, 0.14) 0%, transparent 60%)',
           }}
@@ -141,59 +130,46 @@ export default function Dado3D({
   borderColor,
   pipColor,
 }: Dado3DProps) {
-  const [rot, setRot] = useState<{ x: number; y: number }>(() => ({
-    x: FACE_ROTATIONS[1].rotateX,
-    y: FACE_ROTATIONS[1].rotateY,
-  }));
-
-  const cumulativeTurnsRef = useRef({ x: 0, y: 0 });
+  const [displayFace, setDisplayFace] = useState(result || 1);
+  const [angle, setAngle] = useState(0);
   const isRollingRef = useRef(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onRollCompleteRef = useRef(onRollComplete);
   onRollCompleteRef.current = onRollComplete;
 
-  const half = size / 2;
   const themed = Boolean(faceColor);
+
+  useEffect(() => {
+    if (!rolling && !isRollingRef.current) {
+      setDisplayFace(result || 1);
+    }
+  }, [result, rolling]);
 
   useEffect(() => {
     if (rolling && !isRollingRef.current) {
       isRollingRef.current = true;
-      const target = FACE_ROTATIONS[result] || FACE_ROTATIONS[1];
+      // Giro 2D plano sobre su eje central (rotateZ): tamaño 100% constante de principio a fin, CERO zoom
+      setAngle((prev) => prev + 720);
 
-      // Sumar exactamente 3 giros completos (1080°) en cada eje sobre una única transición CSS nativa
-      // (sin scale3d ni re-interpolación por vértices de Framer Motion, eliminando cualquier zoom/salto)
-      cumulativeTurnsRef.current = {
-        x: cumulativeTurnsRef.current.x + 1080,
-        y: cumulativeTurnsRef.current.y + 1080,
-      };
+      let step = 0;
+      const interval = setInterval(() => {
+        step++;
+        setDisplayFace(((step + result) % 6) + 1);
+      }, 115);
 
-      setRot({
-        x: target.rotateX + cumulativeTurnsRef.current.x,
-        y: target.rotateY + cumulativeTurnsRef.current.y,
-      });
-
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => {
+      const timer = setTimeout(() => {
+        clearInterval(interval);
+        setDisplayFace(result || 1);
         isRollingRef.current = false;
         onRollCompleteRef.current?.();
-      }, 1050);
+      }, 920);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timer);
+        isRollingRef.current = false;
+      };
     }
   }, [rolling, result]);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
-
-  const faceTransforms: Record<number, string> = {
-    1: `translateZ(${half}px)`,
-    2: `rotateY(90deg) translateZ(${half}px)`,
-    3: `rotateX(90deg) translateZ(${half}px)`,
-    4: `rotateX(-90deg) translateZ(${half}px)`,
-    5: `rotateY(-90deg) translateZ(${half}px)`,
-    6: `rotateY(180deg) translateZ(${half}px)`,
-  };
 
   return (
     <div
@@ -201,43 +177,24 @@ export default function Dado3D({
       style={{
         width: size,
         height: size,
-        perspective: `${size * 9}px`,
       }}
     >
       <div
         style={{
           width: size,
           height: size,
-          position: 'relative',
-          transformStyle: 'preserve-3d',
-          WebkitTransformStyle: 'preserve-3d',
-          transform: `rotateX(${rot.x}deg) rotateY(${rot.y}deg)`,
-          transition: 'transform 1.02s cubic-bezier(0.22, 1, 0.36, 1)',
-          willChange: 'transform',
+          transform: `rotate(${angle}deg)`,
+          transition: 'transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
-        {[1, 2, 3, 4, 5, 6].map((num) => (
-          <div
-            key={num}
-            style={{
-              width: size,
-              height: size,
-              transform: faceTransforms[num],
-              position: 'absolute',
-              backfaceVisibility: 'hidden',
-              WebkitBackfaceVisibility: 'hidden',
-            }}
-          >
-            <DiceFace
-              num={num}
-              size={size}
-              color={faceColor ?? FACE_COLORS[num]}
-              borderColor={borderColor}
-              pipColor={pipColor}
-              themed={themed}
-            />
-          </div>
-        ))}
+        <DiceFace
+          num={displayFace}
+          size={size}
+          color={faceColor ?? FACE_COLORS[displayFace]}
+          borderColor={borderColor}
+          pipColor={pipColor}
+          themed={themed}
+        />
       </div>
     </div>
   );
