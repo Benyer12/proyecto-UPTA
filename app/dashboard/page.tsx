@@ -7,7 +7,9 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { createBrowserClient } from '@supabase/ssr';
 import PlanetVisual from '../components/PlanetVisual';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
+import ThemeTogglePill from '../../components/ThemeTogglePill';
 import { useAuthStore } from '../../lib/auth-store';
+import { useThemeStore } from '../../lib/theme-store';
 import { MOCK_PLANETS, MOCK_PROGRESS } from '../../lib/mock-data';
 import type { Planet, StudentProgress } from '../../shared/types';
 
@@ -71,40 +73,68 @@ interface PlanetTheme {
   btnBorder: string;
 }
 
-function getPlanetTheme(name: string): PlanetTheme {
+function getPlanetTheme(name: string, isLight: boolean): PlanetTheme {
   if (name.includes('Numérix')) {
-    return {
-      discipline: 'MATEMÁTICAS',
-      accent: '#67E8F9',
-      border: 'rgba(103, 232, 249, 0.36)',
-      cardBg: 'bg-[#031524]/[0.34]',
-      btnBg: 'rgba(0, 245, 255, 0.16)',
-      btnBorder: 'rgba(103, 232, 249, 0.5)',
-    };
+    return isLight
+      ? {
+          discipline: 'MATEMÁTICAS',
+          accent: '#0369A1',
+          border: 'rgba(14, 165, 233, 0.42)',
+          cardBg: 'bg-[#031524]/[0.34]',
+          btnBg: 'rgba(14, 165, 233, 0.14)',
+          btnBorder: 'rgba(2, 132, 199, 0.48)',
+        }
+      : {
+          discipline: 'MATEMÁTICAS',
+          accent: '#67E8F9',
+          border: 'rgba(103, 232, 249, 0.36)',
+          cardBg: 'bg-[#031524]/[0.34]',
+          btnBg: 'rgba(0, 245, 255, 0.16)',
+          btnBorder: 'rgba(103, 232, 249, 0.5)',
+        };
   }
   if (name.includes('Letralia')) {
-    return {
-      discipline: 'LENGUAS',
-      accent: '#D8B4FE',
-      border: 'rgba(216, 180, 254, 0.38)',
-      cardBg: 'bg-[#160726]/[0.36]',
-      btnBg: 'rgba(191, 64, 255, 0.18)',
-      btnBorder: 'rgba(216, 180, 254, 0.52)',
-    };
+    return isLight
+      ? {
+          discipline: 'LENGUAS',
+          accent: '#7E22CE',
+          border: 'rgba(147, 51, 234, 0.38)',
+          cardBg: 'bg-[#160726]/[0.36]',
+          btnBg: 'rgba(147, 51, 234, 0.14)',
+          btnBorder: 'rgba(126, 34, 206, 0.46)',
+        }
+      : {
+          discipline: 'LENGUAS',
+          accent: '#D8B4FE',
+          border: 'rgba(216, 180, 254, 0.38)',
+          cardBg: 'bg-[#160726]/[0.36]',
+          btnBg: 'rgba(191, 64, 255, 0.18)',
+          btnBorder: 'rgba(216, 180, 254, 0.52)',
+        };
   }
-  return {
-    discipline: 'CIENCIAS',
-    accent: '#6EE7B7',
-    border: 'rgba(110, 231, 183, 0.36)',
-    cardBg: 'bg-[#031B14]/[0.34]',
-    btnBg: 'rgba(0, 255, 136, 0.16)',
-    btnBorder: 'rgba(110, 231, 183, 0.5)',
-  };
+  return isLight
+    ? {
+        discipline: 'CIENCIAS',
+        accent: '#047857',
+        border: 'rgba(16, 185, 129, 0.4)',
+        cardBg: 'bg-[#031B14]/[0.34]',
+        btnBg: 'rgba(16, 185, 129, 0.14)',
+        btnBorder: 'rgba(5, 150, 105, 0.48)',
+      }
+    : {
+        discipline: 'CIENCIAS',
+        accent: '#6EE7B7',
+        border: 'rgba(110, 231, 183, 0.36)',
+        cardBg: 'bg-[#031B14]/[0.34]',
+        btnBg: 'rgba(0, 255, 136, 0.16)',
+        btnBorder: 'rgba(110, 231, 183, 0.5)',
+      };
 }
 
 function ExplorerAvatarIcon() {
   return (
     <div
+      data-keep-light-text="true"
       className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 border border-[#67E8F9]/45"
       style={{
         background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
@@ -233,6 +263,8 @@ function StudentDashboardView({
   onRetry: () => void;
 }) {
   const prefersReducedMotion = useReducedMotion();
+  const appTheme = useThemeStore((s) => s.theme);
+  const isLight = appTheme === 'light';
   const [expandedPlanetId, setExpandedPlanetId] = useState<number | null>(null);
 
   return (
@@ -262,7 +294,7 @@ function StudentDashboardView({
         saturation={1.65}
         className="rounded-3xl bg-white/[0.045] border-white/[0.16] px-5 sm:px-7 py-4 sm:py-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.32),inset_0_-14px_26px_-12px_rgba(180,220,255,0.18),0_24px_70px_-32px_rgba(0,0,0,0.75)]"
       >
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
             <ExplorerAvatarIcon />
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight truncate">
@@ -270,23 +302,27 @@ function StudentDashboardView({
             </h1>
           </div>
 
-          <LiquidGlass
-            blur={2}
-            refraction={14}
-            bezel={0.42}
-            saturation={1.65}
-            className="inline-flex items-center gap-3 rounded-full border-white/[0.18] bg-white/[0.05] px-4 sm:px-5 py-2 shrink-0"
-          >
-            <IconStar className="w-6 h-6 shrink-0" />
-            <div className="leading-tight">
-              <div className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white/70">
-                Estrellas
+          <div className="flex items-center gap-3 flex-wrap justify-end">
+            <ThemeTogglePill showLabels />
+
+            <LiquidGlass
+              blur={2}
+              refraction={14}
+              bezel={0.42}
+              saturation={1.65}
+              className="inline-flex items-center gap-3 rounded-full border-white/[0.18] bg-white/[0.05] px-4 sm:px-5 py-2 shrink-0"
+            >
+              <IconStar className="w-6 h-6 shrink-0" />
+              <div className="leading-tight">
+                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white/70">
+                  Estrellas
+                </div>
+                <div className="text-lg sm:text-xl font-black text-white tabular-nums">
+                  {loadingProgress ? '...' : totalStars}
+                </div>
               </div>
-              <div className="text-lg sm:text-xl font-black text-white tabular-nums">
-                {loadingProgress ? '...' : totalStars}
-              </div>
-            </div>
-          </LiquidGlass>
+            </LiquidGlass>
+          </div>
         </div>
       </LiquidGlass>
 
@@ -304,7 +340,7 @@ function StudentDashboardView({
       <section aria-label="Planetas disponibles">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {planets.map((planet) => {
-            const theme = getPlanetTheme(planet.name);
+            const theme = getPlanetTheme(planet.name, isLight);
             const isExpanded = expandedPlanetId === planet.id;
             const panelId = `planet-courses-${planet.id}`;
 
@@ -318,8 +354,9 @@ function StudentDashboardView({
                 className={`rounded-3xl ${theme.cardBg} p-6 sm:p-7 flex flex-col justify-between shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_28px_-12px_rgba(180,220,255,0.18),0_26px_76px_-30px_rgba(0,0,0,0.78)]`}
                 style={{
                   borderColor: theme.border,
-                  backgroundImage:
-                    'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.22) 100%)',
+                  backgroundImage: isLight
+                    ? 'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.22) 45%, transparent 74%), linear-gradient(180deg, rgba(255,255,255,0.52) 0%, rgba(241,247,255,0.28) 100%)'
+                    : 'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.22) 100%)',
                 }}
               >
                 <article
@@ -420,15 +457,21 @@ function StudentDashboardView({
                                         className="min-h-[38px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors hover:bg-white/[0.12]"
                                         style={
                                           state === 'completed'
-                                            ? {
-                                                backgroundColor: 'rgba(16, 185, 129, 0.16)',
-                                                borderColor: 'rgba(110, 231, 183, 0.45)',
-                                                color: '#A7F3D0',
-                                              }
+                                            ? isLight
+                                              ? {
+                                                  backgroundColor: 'rgba(16, 185, 129, 0.14)',
+                                                  borderColor: 'rgba(5, 150, 105, 0.45)',
+                                                  color: '#047857',
+                                                }
+                                              : {
+                                                  backgroundColor: 'rgba(16, 185, 129, 0.16)',
+                                                  borderColor: 'rgba(110, 231, 183, 0.45)',
+                                                  color: '#A7F3D0',
+                                                }
                                             : {
                                                 backgroundColor: theme.btnBg,
                                                 borderColor: theme.btnBorder,
-                                                color: '#FFFFFF',
+                                                color: isLight ? '#0F172A' : '#FFFFFF',
                                               }
                                         }
                                       >

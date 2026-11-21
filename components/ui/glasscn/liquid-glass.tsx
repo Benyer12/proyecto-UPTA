@@ -12,6 +12,7 @@ import {
   useState,
 } from 'react';
 import { cn } from '../../../app/utils/cn';
+import { useThemeStore } from '../../../lib/theme-store';
 
 type MapGeometry = {
   width: number;
@@ -141,6 +142,8 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
 ) {
   const rawId = useId();
   const filterId = useMemo(() => `liquid-glass-${rawId.replace(/:/g, '')}`, [rawId]);
+  const theme = useThemeStore((s) => s.theme);
+  const isLight = theme === 'light';
 
   const localRef = useRef<HTMLDivElement | null>(null);
   const setRefs = useCallback(
@@ -201,10 +204,12 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
     <>
       <div
         ref={setRefs}
+        data-liquid-glass="true"
         className={cn(
-          'relative overflow-hidden rounded-full bg-white/[0.045]',
-          'border border-white/[0.10]',
-          'shadow-[0_24px_80px_-42px_rgba(0,0,0,0.72),inset_0_1px_0_0_rgba(255,255,255,0.18)]',
+          'relative overflow-hidden rounded-full',
+          isLight
+            ? 'bg-white/[0.48] border border-white/[0.78] shadow-[0_20px_54px_-28px_rgba(15,23,42,0.18),inset_0_1px_0_0_rgba(255,255,255,0.94),inset_0_-10px_22px_-12px_rgba(56,189,248,0.16)]'
+            : 'bg-white/[0.045] border border-white/[0.10] shadow-[0_24px_80px_-42px_rgba(0,0,0,0.72),inset_0_1px_0_0_rgba(255,255,255,0.18)]',
           className,
         )}
         style={{ ...style, backdropFilter, WebkitBackdropFilter: backdropFilter } as CSSProperties}
@@ -216,9 +221,11 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
           className="pointer-events-none absolute inset-0 rounded-[inherit]"
           style={{
             padding: 'var(--liquid-glass-rim-width, 0.75px)',
-            background:
-              'linear-gradient(to right, rgba(255,255,255,0), var(--liquid-glass-rim-light, rgba(255,255,255,0.28)) var(--liquid-glass-rim-fade, 18%), var(--liquid-glass-rim-light, rgba(255,255,255,0.28)) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(255,255,255,0)), ' +
-              'linear-gradient(to bottom, rgba(0,0,0,0), var(--liquid-glass-rim-dark, rgba(255,255,255,0.09)) var(--liquid-glass-rim-fade, 18%), var(--liquid-glass-rim-dark, rgba(255,255,255,0.09)) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(0,0,0,0))',
+            background: isLight
+              ? 'linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.96) var(--liquid-glass-rim-fade, 18%), rgba(255,255,255,0.96) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(255,255,255,0)), ' +
+                'linear-gradient(to bottom, rgba(15,23,42,0), rgba(15,23,42,0.14) var(--liquid-glass-rim-fade, 18%), rgba(15,23,42,0.14) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(15,23,42,0))'
+              : 'linear-gradient(to right, rgba(255,255,255,0), var(--liquid-glass-rim-light, rgba(255,255,255,0.28)) var(--liquid-glass-rim-fade, 18%), var(--liquid-glass-rim-light, rgba(255,255,255,0.28)) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(255,255,255,0)), ' +
+                'linear-gradient(to bottom, rgba(0,0,0,0), var(--liquid-glass-rim-dark, rgba(255,255,255,0.09)) var(--liquid-glass-rim-fade, 18%), var(--liquid-glass-rim-dark, rgba(255,255,255,0.09)) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(0,0,0,0))',
             WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
             WebkitMaskComposite: 'xor',
             mask: 'linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0)',

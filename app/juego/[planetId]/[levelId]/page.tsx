@@ -414,7 +414,7 @@ export default function JuegoPage() {
 
   if (isLetralia) {
     return (
-      <div className="fixed inset-0 z-[100] h-screen w-screen overflow-hidden bg-[#1E293B]">
+      <div data-game-board="true" className="fixed inset-0 z-[100] h-screen w-screen overflow-hidden bg-[#1E293B]">
         <TableroLetralia onPositionChange={handlePositionChange} />
       </div>
     );
@@ -422,7 +422,7 @@ export default function JuegoPage() {
 
   if (isNumerix) {
     return (
-      <div className="fixed inset-0 z-[100] h-screen w-screen overflow-hidden bg-[#071326]">
+      <div data-game-board="true" className="fixed inset-0 z-[100] h-screen w-screen overflow-hidden bg-[#071326]">
         <TableroIsometrico
           planetColor={planet.color}
           planetGlow={planet.glow}
@@ -433,7 +433,7 @@ export default function JuegoPage() {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] h-screen w-screen overflow-hidden" style={{ background: '#00000a' }}>
+    <div data-game-board="true" className="fixed inset-0 z-[100] h-screen w-screen overflow-hidden" style={{ background: '#00000a' }}>
       <FondoCosmico />
 
       {/* ── HUD HEADER ── */}

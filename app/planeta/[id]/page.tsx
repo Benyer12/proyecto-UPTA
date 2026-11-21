@@ -8,6 +8,7 @@ import { getPlanetById, getLevelProgress } from '../../../lib/mock-data';
 import type { Course, Level } from '../../../shared/types';
 import PlanetVisual from '../../components/PlanetVisual';
 import { LiquidGlass } from '../../../components/ui/glasscn/liquid-glass';
+import { useThemeStore } from '../../../lib/theme-store';
 
 function IconArrowLeft({ className = 'w-4 h-4' }: { className?: string }) {
   return (
@@ -125,30 +126,51 @@ function MissingPortalIllustration() {
   );
 }
 
-function getReadableAccent(color: string) {
+function getReadableAccent(color: string, isLight: boolean) {
   const normalized = color.toLowerCase();
   if (normalized.includes('bf40ff') || normalized.includes('a855f7')) {
-    return {
-      text: '#D8B4FE',
-      border: 'rgba(216, 180, 254, 0.42)',
-      glow: '#BF40FF',
-      crystalBg: 'bg-[#160726]/[0.34]',
-    };
+    return isLight
+      ? {
+          text: '#7E22CE',
+          border: 'rgba(147, 51, 234, 0.4)',
+          glow: '#9333EA',
+          crystalBg: 'bg-[#160726]/[0.34]',
+        }
+      : {
+          text: '#D8B4FE',
+          border: 'rgba(216, 180, 254, 0.42)',
+          glow: '#BF40FF',
+          crystalBg: 'bg-[#160726]/[0.34]',
+        };
   }
   if (normalized.includes('00ff88') || normalized.includes('10b981') || normalized.includes('34d399')) {
-    return {
-      text: '#6EE7B7',
-      border: 'rgba(110, 231, 183, 0.42)',
-      glow: '#00FF88',
-      crystalBg: 'bg-[#031B14]/[0.34]',
-    };
+    return isLight
+      ? {
+          text: '#047857',
+          border: 'rgba(5, 150, 105, 0.42)',
+          glow: '#059669',
+          crystalBg: 'bg-[#031B14]/[0.34]',
+        }
+      : {
+          text: '#6EE7B7',
+          border: 'rgba(110, 231, 183, 0.42)',
+          glow: '#00FF88',
+          crystalBg: 'bg-[#031B14]/[0.34]',
+        };
   }
-  return {
-    text: '#67E8F9',
-    border: 'rgba(103, 232, 249, 0.42)',
-    glow: color || '#00F5FF',
-    crystalBg: 'bg-[#031524]/[0.34]',
-  };
+  return isLight
+    ? {
+        text: '#0369A1',
+        border: 'rgba(2, 132, 199, 0.42)',
+        glow: '#0284C7',
+        crystalBg: 'bg-[#031524]/[0.34]',
+      }
+    : {
+        text: '#67E8F9',
+        border: 'rgba(103, 232, 249, 0.42)',
+        glow: color || '#00F5FF',
+        crystalBg: 'bg-[#031524]/[0.34]',
+      };
 }
 
 function RetroGlassLevelCard({
@@ -162,9 +184,11 @@ function RetroGlassLevelCard({
   color: string;
   planetId: number;
 }) {
+  const appTheme = useThemeStore((s) => s.theme);
+  const isLight = appTheme === 'light';
   const numStr = String(level.order).padStart(2, '0');
   const stageCode = level.isBoss ? `JEFE-0${level.order}` : `FASE-${numStr}`;
-  const accent = getReadableAccent(color);
+  const accent = getReadableAccent(color, isLight);
 
   const cardInner = (
     <LiquidGlass
@@ -230,14 +254,14 @@ function RetroGlassLevelCard({
             style={
               available
                 ? {
-                    color: '#F8FAFC',
+                    color: isLight ? '#0F172A' : '#F8FAFC',
                     borderColor: accent.border,
-                    background: `${accent.glow}22`,
+                    background: isLight ? `${accent.glow}1A` : `${accent.glow}22`,
                   }
                 : {
-                    color: '#94A3B8',
-                    borderColor: 'rgba(255,255,255,0.1)',
-                    background: 'rgba(255,255,255,0.04)',
+                    color: isLight ? '#64748B' : '#94A3B8',
+                    borderColor: isLight ? 'rgba(15,23,42,0.14)' : 'rgba(255,255,255,0.1)',
+                    background: isLight ? 'rgba(15,23,42,0.05)' : 'rgba(255,255,255,0.04)',
                   }
             }
           >
@@ -283,7 +307,7 @@ function RetroGlassLevelCard({
             <span
               className="font-mono text-2xl font-black leading-none tracking-tight tabular-nums"
               style={{
-                color: available ? '#F8FAFC' : '#94A3B8',
+                color: available ? (isLight ? '#0F172A' : '#F8FAFC') : isLight ? '#64748B' : '#94A3B8',
               }}
             >
               {numStr}
@@ -348,14 +372,16 @@ function RetroGlassLevelCard({
             style={
               available
                 ? {
-                    background: `linear-gradient(135deg, ${accent.glow}34, ${accent.glow}16)`,
+                    background: isLight
+                      ? `linear-gradient(135deg, ${accent.glow}24, ${accent.glow}10)`
+                      : `linear-gradient(135deg, ${accent.glow}34, ${accent.glow}16)`,
                     border: `1px solid ${accent.border}`,
-                    color: '#F8FAFC',
+                    color: isLight ? '#0F172A' : '#F8FAFC',
                   }
                 : {
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    color: '#94A3B8',
+                    background: isLight ? 'rgba(15,23,42,0.05)' : 'rgba(255,255,255,0.04)',
+                    border: isLight ? '1px solid rgba(15,23,42,0.12)' : '1px solid rgba(255,255,255,0.1)',
+                    color: isLight ? '#64748B' : '#94A3B8',
                   }
             }
           >
@@ -403,7 +429,9 @@ function CoursePortalSection({
   planetColor: string;
   planetId: number;
 }) {
-  const accent = getReadableAccent(planetColor);
+  const appTheme = useThemeStore((s) => s.theme);
+  const isLight = appTheme === 'light';
+  const accent = getReadableAccent(planetColor, isLight);
 
   return (
     <section
@@ -504,8 +532,12 @@ function CoursePortalSection({
                         <div
                           className="w-5 h-5 rounded-md rotate-45 flex items-center justify-center shrink-0 z-10 border"
                           style={{
-                            background: '#080D1C',
-                            borderColor: available ? accent.text : 'rgba(255,255,255,0.18)',
+                            background: isLight ? '#FFFFFF' : '#080D1C',
+                            borderColor: available
+                              ? accent.text
+                              : isLight
+                                ? 'rgba(15,23,42,0.2)'
+                                : 'rgba(255,255,255,0.18)',
                             boxShadow: available ? `0 0 12px ${accent.glow}66` : 'none',
                           }}
                         >
@@ -531,8 +563,12 @@ function CoursePortalSection({
                         <div
                           className="w-5 h-5 rounded-md rotate-45 flex items-center justify-center shrink-0 z-10 border"
                           style={{
-                            background: '#080D1C',
-                            borderColor: available ? accent.text : 'rgba(255,255,255,0.18)',
+                            background: isLight ? '#FFFFFF' : '#080D1C',
+                            borderColor: available
+                              ? accent.text
+                              : isLight
+                                ? 'rgba(15,23,42,0.2)'
+                                : 'rgba(255,255,255,0.18)',
                             boxShadow: available ? `0 0 12px ${accent.glow}66` : 'none',
                           }}
                         >
@@ -574,6 +610,8 @@ export default function PlanetaPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const prefersReducedMotion = useReducedMotion();
+  const appTheme = useThemeStore((s) => s.theme);
+  const isLight = appTheme === 'light';
   const planetId = parseInt(params.id, 10);
   const planet = useMemo(() => getPlanetById(planetId), [planetId]);
 
@@ -603,7 +641,7 @@ export default function PlanetaPage() {
     );
   }
 
-  const accent = getReadableAccent(planet.color);
+  const accent = getReadableAccent(planet.color, isLight);
   const totalLevels = planet.courses.reduce((sum, c) => sum + c.levels.length, 0);
 
   return (

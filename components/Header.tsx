@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from '../lib/auth-store';
+import { useThemeStore } from '../lib/theme-store';
 import { supabase } from '../lib/supabase';
 import LiquidGlassToast, {
   type LiquidGlassToastData,
 } from '../app/components/LiquidGlassToast';
 import { LiquidGlass } from './ui/glasscn/liquid-glass';
+import ThemeTogglePill from './ThemeTogglePill';
 import type { LoginData, RegisterData } from '../shared/types';
 
 interface DropdownParticle {
@@ -42,8 +44,24 @@ const DROPDOWN_PALETTE = [
   '250, 204, 21',  // Dorado estelar
 ];
 
+const DROPDOWN_LIGHT_PALETTE = [
+  '2, 132, 199',   // Cyan océano
+  '37, 99, 235',   // Azul cobalto
+  '124, 58, 237',  // Violeta real
+  '192, 38, 211',  // Orquídea
+  '5, 150, 105',   // Esmeralda profunda
+  '217, 119, 6',   // Ámbar solar
+  '14, 116, 144',  // Turquesa
+];
+
 function DropdownAntigravityCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const theme = useThemeStore((s) => s.theme);
+  const themeRef = useRef(theme);
+
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -65,10 +83,11 @@ function DropdownAntigravityCanvas() {
     };
 
     const getColor = (x: number, y: number, w: number, h: number) => {
+      const palette = themeRef.current === 'light' ? DROPDOWN_LIGHT_PALETTE : DROPDOWN_PALETTE;
       const nx = x / Math.max(1, w);
       const ny = y / Math.max(1, h);
       const ratio = Math.max(0, Math.min(0.999, nx * 0.65 + ny * 0.35 + (Math.random() - 0.5) * 0.2));
-      return DROPDOWN_PALETTE[Math.floor(ratio * DROPDOWN_PALETTE.length)];
+      return palette[Math.floor(ratio * palette.length)];
     };
 
     const initParticles = (w: number, h: number) => {
@@ -244,7 +263,7 @@ function DropdownAntigravityCanvas() {
       ro.disconnect();
       window.removeEventListener('pointermove', handlePointerMove);
     };
-  }, []);
+  }, [theme]);
 
   return (
     <canvas
@@ -679,6 +698,9 @@ export default function Header() {
                 </button>
               )}
 
+              {/* Botón compacto de modo claro/oscuro en la barra superior */}
+              <ThemeTogglePill className="hidden sm:inline-flex" />
+
               {/* Botón menú móvil / tablet con etiqueta visible */}
               <button
                 type="button"
@@ -758,6 +780,12 @@ export default function Header() {
                   </Link>
                 </>
               )}
+              <div className="pt-2 mt-1 border-t border-white/10 flex items-center justify-between px-2">
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/55">
+                  Apariencia
+                </span>
+                <ThemeTogglePill showLabels />
+              </div>
             </div>
           </motion.div>
         )}

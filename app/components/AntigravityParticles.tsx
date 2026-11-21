@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { useThemeStore } from '../../lib/theme-store';
 
 interface Particle {
   x: number;
@@ -23,16 +24,28 @@ interface Particle {
   orbitOffset: number;
 }
 
-// Paleta espacial sincronizada con el panel de Iniciar Sesión (Numérix Cyan, Letralia Púrpura, Naturae Esmeralda, Estelar Dorado/Azul)
-const PALETTE = [
-  '0, 245, 255',   // Cyan Numérix (#00f5ff)
-  '56, 189, 248',  // Azul celeste cósmico (#38bdf8)
-  '59, 130, 246',  // Azul profundo (#3b82f6)
-  '191, 64, 255',  // Púrpura Letralia (#bf40ff)
-  '168, 85, 247',  // Violeta (#a855f7)
-  '217, 70, 239',  // Magenta espacial (#d946ef)
-  '0, 255, 136',   // Esmeralda Naturae (#00ff88)
-  '250, 204, 21',  // Dorado estelar (#facc15)
+// Paleta espacial luminosa para modo oscuro
+const DARK_PALETTE = [
+  '0, 245, 255',   // Cyan Numérix
+  '56, 189, 248',  // Azul celeste cósmico
+  '59, 130, 246',  // Azul profundo
+  '191, 64, 255',  // Púrpura Letralia
+  '168, 85, 247',  // Violeta
+  '217, 70, 239',  // Magenta espacial
+  '0, 255, 136',   // Esmeralda Naturae
+  '250, 204, 21',  // Dorado estelar
+];
+
+// Paleta gema viva de alto contraste para modo claro
+const LIGHT_PALETTE = [
+  '2, 132, 199',   // Cian océano (#0284c7)
+  '37, 99, 235',   // Azul cobalto (#2563eb)
+  '124, 58, 237',  // Violeta real (#7c3aed)
+  '192, 38, 211',  // Fucsia orquídea (#c026d3)
+  '5, 150, 105',   // Esmeralda intensa (#059669)
+  '217, 119, 6',   // Ámbar solar (#d97706)
+  '14, 116, 144',  // Turquesa profundo (#0e7490)
+  '79, 70, 229',   // Índigo luminoso (#4f46e5)
 ];
 
 const ALLOWED_ROUTES = [
@@ -64,6 +77,7 @@ function isRouteAllowed(pathname: string | null): boolean {
 
 export default function AntigravityParticles() {
   const pathname = usePathname();
+  const theme = useThemeStore((s) => s.theme);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const allowed = isRouteAllowed(pathname);
 
@@ -74,6 +88,9 @@ export default function AntigravityParticles() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    const isLight = theme === 'light';
+    const activePalette = isLight ? LIGHT_PALETTE : DARK_PALETTE;
 
     let animationId: number;
     let particles: Particle[] = [];
@@ -94,13 +111,12 @@ export default function AntigravityParticles() {
       const ny = y / Math.max(1, h);
       const ratio = nx * 0.65 + ny * 0.35 + (Math.random() - 0.5) * 0.2;
       const clamped = Math.max(0, Math.min(0.999, ratio));
-      const idx = Math.floor(clamped * PALETTE.length);
-      return PALETTE[idx];
+      const idx = Math.floor(clamped * activePalette.length);
+      return activePalette[idx];
     };
 
     const createParticles = (w: number, h: number): Particle[] => {
       const list: Particle[] = [];
-      // Misma densidad y visibilidad viva que el panel desplegable de Iniciar Sesión
       const spacing = w < 768 ? 68 : 54;
       const cols = Math.ceil(w / spacing);
       const rows = Math.ceil(h / spacing);
@@ -119,13 +135,12 @@ export default function AntigravityParticles() {
             vx: 0,
             vy: 0,
             size: 1.25 + Math.random() * 1.15,
-            length: 3.8 + Math.random() * 4.6,
+            length: 4 + Math.random() * 4.8,
             angle: initialAngle,
             targetAngle: initialAngle,
             color: getColorForPosition(ox, oy, w, h),
-            // Opacidad igualada a la del panel de Iniciar Sesión (mucho más visibles y nítidas)
-            baseAlpha: 0.24 + Math.random() * 0.28,
-            alpha: 0.32,
+            baseAlpha: isLight ? 0.32 + Math.random() * 0.3 : 0.24 + Math.random() * 0.28,
+            alpha: isLight ? 0.42 : 0.32,
             phase: Math.random() * Math.PI * 2,
             speed: 0.45 + Math.random() * 0.55,
             orbitRadius: 55 + Math.random() * 130,
@@ -188,7 +203,6 @@ export default function AntigravityParticles() {
       const time = timestamp / 1000;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Seguimiento suave del cursor
       if (mouse.active) {
         const prevX = mouse.x;
         const prevY = mouse.y;
@@ -206,7 +220,6 @@ export default function AntigravityParticles() {
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
-        // Flotación ambiental suave alrededor de su origen
         const floatX = Math.cos(time * p.speed + p.phase) * 5.5;
         const floatY = Math.sin(time * p.speed * 0.85 + p.phase) * 5.5;
         const homeX = p.originX + floatX;
@@ -246,8 +259,7 @@ export default function AntigravityParticles() {
               p.vy -= (dyMouse / distMouse) * push;
             }
 
-            // Misma intensidad luminosa al acercarse al cursor que en el panel de Iniciar Sesión
-            targetAlpha = Math.min(0.88, p.baseAlpha + smoothInfluence * 0.48);
+            targetAlpha = Math.min(isLight ? 0.92 : 0.88, p.baseAlpha + smoothInfluence * 0.48);
             stretch = 1 + smoothInfluence * 0.85;
           }
         }
@@ -312,7 +324,7 @@ export default function AntigravityParticles() {
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('resize', handleResize);
     };
-  }, [allowed]);
+  }, [allowed, theme]);
 
   if (!allowed) return null;
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useThemeStore } from '../lib/theme-store';
 
 interface Star {
   x: number;
@@ -13,8 +14,9 @@ interface Star {
   color: string;
 }
 
-const STAR_COUNT = 80;
-const STAR_COLORS = [
+const STAR_COUNT = 85;
+
+const DARK_STAR_COLORS = [
   '255,255,255',
   '180,220,255',
   '200,180,255',
@@ -22,64 +24,140 @@ const STAR_COLORS = [
   '255,220,180',
 ];
 
-function pickStarColor(): string {
-  return STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)];
-}
+const LIGHT_MOTE_COLORS = [
+  '2,132,199',
+  '124,58,237',
+  '5,150,105',
+  '217,119,6',
+  '37,99,235',
+];
 
-function createStars(w: number, h: number): Star[] {
+function createStars(w: number, h: number, isLight: boolean): Star[] {
+  const palette = isLight ? LIGHT_MOTE_COLORS : DARK_STAR_COLORS;
   const stars: Star[] = [];
   for (let i = 0; i < STAR_COUNT; i++) {
     stars.push({
       x: Math.random() * w,
       y: Math.random() * h,
-      radius: Math.random() * 2.2,
-      baseAlpha: Math.random() * 0.7 + 0.3,
+      radius: isLight ? 1 + Math.random() * 1.8 : Math.random() * 2.1,
+      baseAlpha: isLight ? 0.16 + Math.random() * 0.28 : 0.3 + Math.random() * 0.65,
       alpha: 0,
-      speed: Math.random() * 0.008 + 0.002,
+      speed: Math.random() * 0.007 + 0.002,
       phase: Math.random() * Math.PI * 2,
-      color: pickStarColor(),
+      color: palette[Math.floor(Math.random() * palette.length)],
     });
   }
   return stars;
 }
 
-let nebulaCache: HTMLCanvasElement | null = null;
+function drawAuroraWave(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  time: number,
+  isLight: boolean,
+) {
+  const shiftX = Math.sin(time * 0.18) * w * 0.04;
+  const shiftY = Math.cos(time * 0.15) * h * 0.035;
 
-function buildNebulaCache(w: number, h: number): HTMLCanvasElement {
-  if (nebulaCache && nebulaCache.width === w && nebulaCache.height === h) {
-    return nebulaCache;
+  if (isLight) {
+    // Fondo diurno perlado luminoso con ondas iridiscentes pastel ideales para Liquid Glass
+    const baseGrad = ctx.createLinearGradient(0, 0, w, h);
+    baseGrad.addColorStop(0, '#F5F8FF');
+    baseGrad.addColorStop(0.5, '#EEF3FF');
+    baseGrad.addColorStop(1, '#F6F2FF');
+    ctx.fillStyle = baseGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    const lightOrbs: [number, number, number, string, number][] = [
+      [w * 0.16 + shiftX, h * 0.2 + shiftY, Math.max(w, h) * 0.42, '56, 189, 248', 0.3],
+      [w * 0.84 - shiftX, h * 0.18 - shiftY, Math.max(w, h) * 0.4, '168, 85, 247', 0.24],
+      [w * 0.52 + shiftX * 0.6, h * 0.54 - shiftY, Math.max(w, h) * 0.45, '52, 211, 153', 0.22],
+      [w * 0.22 - shiftX * 0.5, h * 0.82 + shiftY, Math.max(w, h) * 0.38, '251, 191, 36', 0.22],
+      [w * 0.82 + shiftX * 0.7, h * 0.8 - shiftY * 0.8, Math.max(w, h) * 0.42, '96, 165, 250', 0.26],
+    ];
+
+    for (const [cx, cy, r, rgb, alpha] of lightOrbs) {
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      g.addColorStop(0, `rgba(${rgb}, ${alpha})`);
+      g.addColorStop(0.55, `rgba(${rgb}, ${(alpha * 0.35).toFixed(3)})`);
+      g.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Cinta prismática diagonal suave para potenciar el efecto liquid-refract en bordes
+    ctx.save();
+    ctx.translate(w * 0.5 + shiftX * 0.5, h * 0.48 + shiftY * 0.5);
+    ctx.rotate(-0.28);
+    const ribbonGrad = ctx.createLinearGradient(-w * 0.6, 0, w * 0.6, 0);
+    ribbonGrad.addColorStop(0, 'rgba(56, 189, 248, 0)');
+    ribbonGrad.addColorStop(0.25, 'rgba(14, 165, 233, 0.16)');
+    ribbonGrad.addColorStop(0.5, 'rgba(168, 85, 247, 0.16)');
+    ribbonGrad.addColorStop(0.75, 'rgba(16, 185, 129, 0.14)');
+    ribbonGrad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+    ctx.fillStyle = ribbonGrad;
+    ctx.fillRect(-w * 0.75, -h * 0.14, w * 1.5, h * 0.28);
+    ctx.restore();
+    return;
   }
 
-  const offscreen = document.createElement('canvas');
-  offscreen.width = w;
-  offscreen.height = h;
-  const ctx = offscreen.getContext('2d');
-  if (!ctx) return offscreen;
+  // Modo oscuro mejorado: cosmos profundo con auroras prismáticas suaves para refracción líquida
+  const bg = ctx.createRadialGradient(
+    w * 0.5,
+    h * 0.42,
+    0,
+    w * 0.5,
+    h * 0.5,
+    Math.max(w, h) * 0.85,
+  );
+  bg.addColorStop(0, '#070B22');
+  bg.addColorStop(0.55, '#030513');
+  bg.addColorStop(1, '#010108');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
 
-  const clouds: [number, number, number, string, number][] = [
-    [w * 0.15, h * 0.2, 300, '30,200,120', 0.04],
-    [w * 0.8, h * 0.1, 250, '100,50,200', 0.05],
-    [w * 0.5, h * 0.7, 350, '0,180,200', 0.04],
-    [w * 0.9, h * 0.8, 280, '80,20,160', 0.04],
-    [w * 0.1, h * 0.85, 220, '20,160,100', 0.035],
+  const darkOrbs: [number, number, number, string, number][] = [
+    [w * 0.18 + shiftX, h * 0.22 + shiftY, Math.max(w, h) * 0.42, '0, 210, 255', 0.13],
+    [w * 0.82 - shiftX, h * 0.2 - shiftY, Math.max(w, h) * 0.42, '168, 85, 247', 0.15],
+    [w * 0.5 + shiftX * 0.5, h * 0.68 - shiftY, Math.max(w, h) * 0.44, '16, 185, 129', 0.1],
+    [w * 0.85 + shiftX * 0.4, h * 0.82 + shiftY * 0.5, Math.max(w, h) * 0.36, '59, 130, 246', 0.12],
+    [w * 0.14 - shiftX * 0.4, h * 0.82 - shiftY * 0.5, Math.max(w, h) * 0.34, '217, 70, 239', 0.09],
   ];
 
-  for (const [cx, cy, r, color, alpha] of clouds) {
+  for (const [cx, cy, r, rgb, alpha] of darkOrbs) {
     const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    g.addColorStop(0, `rgba(${color}, ${alpha})`);
-    g.addColorStop(1, 'rgba(0,0,0,0)');
+    g.addColorStop(0, `rgba(${rgb}, ${alpha})`);
+    g.addColorStop(0.55, `rgba(${rgb}, ${(alpha * 0.32).toFixed(3)})`);
+    g.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  nebulaCache = offscreen;
-  return offscreen;
+  // Cinta auroral sutil para que el liquid-refract curve la luz en los bordes
+  ctx.save();
+  ctx.translate(w * 0.5 + shiftX * 0.5, h * 0.5 + shiftY * 0.5);
+  ctx.rotate(-0.26);
+  const darkRibbon = ctx.createLinearGradient(-w * 0.6, 0, w * 0.6, 0);
+  darkRibbon.addColorStop(0, 'rgba(0, 245, 255, 0)');
+  darkRibbon.addColorStop(0.28, 'rgba(0, 245, 255, 0.08)');
+  darkRibbon.addColorStop(0.52, 'rgba(191, 64, 255, 0.09)');
+  darkRibbon.addColorStop(0.76, 'rgba(0, 255, 136, 0.06)');
+  darkRibbon.addColorStop(1, 'rgba(56, 189, 248, 0)');
+  ctx.fillStyle = darkRibbon;
+  ctx.fillRect(-w * 0.75, -h * 0.13, w * 1.5, h * 0.26);
+  ctx.restore();
 }
 
 export default function FondoCosmico() {
+  const theme = useThemeStore((s) => s.theme);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -91,12 +169,12 @@ export default function FondoCosmico() {
     let animationId: number;
     let stars: Star[] = [];
     let isVisible = true;
+    const isLight = theme === 'light';
 
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      stars = createStars(canvas.width, canvas.height);
-      nebulaCache = null;
+      stars = createStars(canvas.width, canvas.height, themeRef.current === 'light');
     };
 
     const handleVisibility = () => {
@@ -116,32 +194,21 @@ export default function FondoCosmico() {
       }
 
       const time = timestamp / 1000;
+      const lightNow = themeRef.current === 'light';
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const bg = ctx.createRadialGradient(
-        canvas.width / 2, canvas.height / 2, 0,
-        canvas.width / 2, canvas.height / 2, canvas.width * 0.85,
-      );
-      bg.addColorStop(0, 'rgba(5, 0, 22, 1)');
-      bg.addColorStop(0.5, 'rgba(2, 0, 15, 1)');
-      bg.addColorStop(1, 'rgba(0, 0, 8, 1)');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const nebula = buildNebulaCache(canvas.width, canvas.height);
-      ctx.drawImage(nebula, 0, 0);
+      drawAuroraWave(ctx, canvas.width, canvas.height, time, lightNow);
 
       for (let i = 0; i < stars.length; i++) {
         const star = stars[i];
         star.alpha = star.baseAlpha * (0.5 + 0.5 * Math.sin(time * star.speed * 60 + star.phase));
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${star.color}, ${star.alpha})`;
+        ctx.fillStyle = `rgba(${star.color}, ${star.alpha.toFixed(3)})`;
         ctx.fill();
       }
 
-      if (Math.floor(time) % 13 === 0 && Math.floor(time * 10) % 7 === 0) {
+      if (!lightNow && Math.floor(time) % 13 === 0 && Math.floor(time * 10) % 7 === 0) {
         const sx = Math.random() * canvas.width;
         const sy = Math.random() * (canvas.height / 2);
         const len = 120 + Math.random() * 80;
@@ -168,16 +235,17 @@ export default function FondoCosmico() {
 
     return () => {
       cancelAnimationFrame(animationId);
+      clearTimeout(resizeTimer);
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [theme]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none -z-10"
-      style={{ background: '#00000a' }}
+      className="fixed inset-0 w-full h-full pointer-events-none -z-10 transition-colors duration-300"
+      style={{ background: theme === 'light' ? '#F3F7FF' : '#020410' }}
     />
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useThemeStore } from '../../lib/theme-store';
 
 export type LiquidGlassToastVariant =
   | 'activated'
@@ -122,6 +123,93 @@ const VARIANT_THEMES: Record<LiquidGlassToastVariant, VariantTheme> = {
   },
 };
 
+const LIGHT_VARIANT_THEMES: Record<LiquidGlassToastVariant, VariantTheme> = {
+  activated: {
+    defaultEyebrow: 'ESTADO ACTUALIZADO · ACTIVO',
+    outerBorder:
+      'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(16,185,129,0.55) 45%, rgba(255,255,255,0.85) 100%)',
+    innerBg:
+      'linear-gradient(155deg, rgba(236, 253, 245, 0.94) 0%, rgba(255, 255, 255, 0.92) 55%, rgba(240, 253, 250, 0.94) 100%)',
+    accentGlow: 'rgba(16, 185, 129, 0.24)',
+    barGradient: 'linear-gradient(90deg, #059669 0%, #10B981 55%, #34D399 100%)',
+    eyebrowColor: '#047857',
+    iconBg: 'linear-gradient(145deg, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.12) 100%)',
+    iconBorder: 'rgba(16, 185, 129, 0.4)',
+    iconColor: '#047857',
+    pulseColor: 'rgba(16, 185, 129, 0.35)',
+  },
+  deactivated: {
+    defaultEyebrow: 'ESTADO ACTUALIZADO · INACTIVO',
+    outerBorder:
+      'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(244,63,94,0.52) 45%, rgba(255,255,255,0.85) 100%)',
+    innerBg:
+      'linear-gradient(155deg, rgba(255, 241, 242, 0.95) 0%, rgba(255, 255, 255, 0.93) 55%, rgba(255, 247, 237, 0.94) 100%)',
+    accentGlow: 'rgba(244, 63, 94, 0.22)',
+    barGradient: 'linear-gradient(90deg, #E11D48 0%, #F43F5E 55%, #FB923C 100%)',
+    eyebrowColor: '#BE123C',
+    iconBg: 'linear-gradient(145deg, rgba(244, 63, 94, 0.16) 0%, rgba(225, 29, 72, 0.1) 100%)',
+    iconBorder: 'rgba(244, 63, 94, 0.42)',
+    iconColor: '#BE123C',
+    pulseColor: 'rgba(244, 63, 94, 0.35)',
+  },
+  saved: {
+    defaultEyebrow: 'REGISTRO SINCRONIZADO',
+    outerBorder:
+      'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(59,130,246,0.52) 45%, rgba(139,92,246,0.48) 100%)',
+    innerBg:
+      'linear-gradient(155deg, rgba(239, 246, 255, 0.95) 0%, rgba(255, 255, 255, 0.93) 55%, rgba(245, 243, 255, 0.94) 100%)',
+    accentGlow: 'rgba(59, 130, 246, 0.22)',
+    barGradient: 'linear-gradient(90deg, #2563EB 0%, #7C3AED 55%, #059669 100%)',
+    eyebrowColor: '#1D4ED8',
+    iconBg: 'linear-gradient(145deg, rgba(59, 130, 246, 0.16) 0%, rgba(124, 58, 237, 0.12) 100%)',
+    iconBorder: 'rgba(59, 130, 246, 0.4)',
+    iconColor: '#1D4ED8',
+    pulseColor: 'rgba(59, 130, 246, 0.35)',
+  },
+  pending: {
+    defaultEyebrow: 'SOLICITUDES PENDIENTES',
+    outerBorder:
+      'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(217,119,6,0.55) 45%, rgba(139,92,246,0.45) 100%)',
+    innerBg:
+      'linear-gradient(155deg, rgba(255, 251, 235, 0.95) 0%, rgba(255, 255, 255, 0.93) 55%, rgba(245, 243, 255, 0.94) 100%)',
+    accentGlow: 'rgba(217, 119, 6, 0.22)',
+    barGradient: 'linear-gradient(90deg, #D97706 0%, #7C3AED 58%, #2563EB 100%)',
+    eyebrowColor: '#B45309',
+    iconBg: 'linear-gradient(145deg, rgba(245, 158, 11, 0.18) 0%, rgba(124, 58, 237, 0.12) 100%)',
+    iconBorder: 'rgba(217, 119, 6, 0.42)',
+    iconColor: '#B45309',
+    pulseColor: 'rgba(245, 158, 11, 0.38)',
+  },
+  blocked: {
+    defaultEyebrow: 'ACCESO RESTRINGIDO · CUENTA INACTIVA',
+    outerBorder:
+      'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(225,29,72,0.58) 45%, rgba(168,85,247,0.45) 100%)',
+    innerBg:
+      'linear-gradient(155deg, rgba(255, 241, 242, 0.95) 0%, rgba(255, 255, 255, 0.93) 55%, rgba(250, 245, 255, 0.94) 100%)',
+    accentGlow: 'rgba(225, 29, 72, 0.24)',
+    barGradient: 'linear-gradient(90deg, #E11D48 0%, #9333EA 55%, #F43F5E 100%)',
+    eyebrowColor: '#BE123C',
+    iconBg: 'linear-gradient(145deg, rgba(225, 29, 72, 0.18) 0%, rgba(147, 51, 234, 0.12) 100%)',
+    iconBorder: 'rgba(225, 29, 72, 0.45)',
+    iconColor: '#BE123C',
+    pulseColor: 'rgba(225, 29, 72, 0.38)',
+  },
+  error: {
+    defaultEyebrow: 'ERROR DE OPERACIÓN',
+    outerBorder:
+      'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(239,68,68,0.55) 45%, rgba(255,255,255,0.85) 100%)',
+    innerBg:
+      'linear-gradient(155deg, rgba(254, 242, 242, 0.95) 0%, rgba(255, 255, 255, 0.93) 55%, rgba(255, 241, 242, 0.94) 100%)',
+    accentGlow: 'rgba(239, 68, 68, 0.22)',
+    barGradient: 'linear-gradient(90deg, #EF4444 0%, #DC2626 100%)',
+    eyebrowColor: '#B91C1C',
+    iconBg: 'linear-gradient(145deg, rgba(239, 68, 68, 0.16) 0%, rgba(185, 28, 28, 0.1) 100%)',
+    iconBorder: 'rgba(239, 68, 68, 0.42)',
+    iconColor: '#B91C1C',
+    pulseColor: 'rgba(239, 68, 68, 0.35)',
+  },
+};
+
 function ToastIcon({ variant, color }: { variant: LiquidGlassToastVariant; color: string }) {
   if (variant === 'activated') {
     return (
@@ -239,6 +327,8 @@ export default function LiquidGlassToast({
   onClose: () => void;
 }) {
   const prefersReducedMotion = useReducedMotion();
+  const appTheme = useThemeStore((s) => s.theme);
+  const isLight = appTheme === 'light';
   const durationMs = toast?.durationMs ?? (toast?.variant === 'blocked' ? 6800 : 4800);
 
   useEffect(() => {
@@ -247,7 +337,9 @@ export default function LiquidGlassToast({
     return () => clearTimeout(timer);
   }, [toast, durationMs, onClose]);
 
-  const theme = toast ? VARIANT_THEMES[toast.variant] : null;
+  const theme = toast
+    ? (isLight ? LIGHT_VARIANT_THEMES[toast.variant] : VARIANT_THEMES[toast.variant])
+    : null;
 
   return (
     <div
@@ -267,7 +359,9 @@ export default function LiquidGlassToast({
             className="pointer-events-auto relative w-full rounded-[22px] p-[1.5px]"
             style={{
               background: theme.outerBorder,
-              boxShadow: `0 26px 64px -12px rgba(0, 0, 0, 0.86), 0 0 42px -8px ${theme.accentGlow}`,
+              boxShadow: isLight
+                ? `0 22px 54px -16px rgba(15, 23, 42, 0.22), 0 0 28px -8px ${theme.accentGlow}`
+                : `0 26px 64px -12px rgba(0, 0, 0, 0.86), 0 0 42px -8px ${theme.accentGlow}`,
             }}
           >
             {/* Superficie principal en Liquid Glass intenso (optica glasscn: bisel 6 capas + iOS rim + deriva) */}
@@ -278,8 +372,9 @@ export default function LiquidGlassToast({
                 backgroundSize: '180% 180%',
                 backdropFilter: 'blur(26px) saturate(210%) brightness(1.04)',
                 WebkitBackdropFilter: 'blur(26px) saturate(210%) brightness(1.04)',
-                boxShadow:
-                  'inset 0 1px 0 0 rgba(255, 255, 255, 0.48), inset 0 -14px 28px -10px rgba(180, 215, 255, 0.22), inset 1px 0 0 0 rgba(255, 255, 255, 0.16), inset -1px 0 0 0 rgba(255, 255, 255, 0.12)',
+                boxShadow: isLight
+                  ? 'inset 0 1px 0 0 rgba(255, 255, 255, 1), inset 0 -10px 22px -12px rgba(15, 23, 42, 0.08)'
+                  : 'inset 0 1px 0 0 rgba(255, 255, 255, 0.48), inset 0 -14px 28px -10px rgba(180, 215, 255, 0.22), inset 1px 0 0 0 rgba(255, 255, 255, 0.16), inset -1px 0 0 0 rgba(255, 255, 255, 0.12)',
               }}
             >
               {/* Borde direccional iOS 27 con desvanecimiento en esquinas (glasscn) */}
@@ -354,10 +449,18 @@ export default function LiquidGlassToast({
                   >
                     {toast.eyebrow ?? theme.defaultEyebrow}
                   </div>
-                  <h4 className="text-sm sm:text-[15px] font-bold text-white tracking-tight leading-snug">
+                  <h4
+                    className={`text-sm sm:text-[15px] font-bold tracking-tight leading-snug ${
+                      isLight ? 'text-[#0F172A]' : 'text-white'
+                    }`}
+                  >
                     {toast.title}
                   </h4>
-                  <p className="text-xs sm:text-[13px] text-slate-200/90 leading-relaxed mt-1 font-normal">
+                  <p
+                    className={`text-xs sm:text-[13px] leading-relaxed mt-1 font-normal ${
+                      isLight ? 'text-slate-600' : 'text-slate-200/90'
+                    }`}
+                  >
                     {toast.message}
                   </p>
                   {toast.actionLabel && toast.onAction && (
@@ -369,7 +472,7 @@ export default function LiquidGlassToast({
                       }}
                       className="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] px-3 py-1.5 rounded-lg transition-all cursor-pointer"
                       style={{
-                        background: 'rgba(255, 255, 255, 0.12)',
+                        background: isLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(255, 255, 255, 0.12)',
                         border: `1px solid ${theme.iconBorder}`,
                         color: theme.iconColor,
                       }}
@@ -393,7 +496,11 @@ export default function LiquidGlassToast({
                   type="button"
                   onClick={onClose}
                   aria-label="Cerrar notificación"
-                  className="shrink-0 min-w-[36px] min-h-[36px] rounded-xl flex items-center justify-center text-slate-200 hover:text-white hover:bg-white/12 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#67E8F9]"
+                  className={`shrink-0 min-w-[36px] min-h-[36px] rounded-xl flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#67E8F9] ${
+                    isLight
+                      ? 'text-slate-500 hover:text-slate-900 hover:bg-slate-900/10'
+                      : 'text-slate-200 hover:text-white hover:bg-white/12'
+                  }`}
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                     <path
@@ -407,7 +514,11 @@ export default function LiquidGlassToast({
               </div>
 
               {/* Barra de progreso de tiempo restante */}
-              <div className="relative z-10 mt-3.5 h-[2.5px] w-full rounded-full bg-white/10 overflow-hidden">
+              <div
+                className={`relative z-10 mt-3.5 h-[2.5px] w-full rounded-full overflow-hidden ${
+                  isLight ? 'bg-slate-900/10' : 'bg-white/10'
+                }`}
+              >
                 <motion.div
                   key={`bar-${toast.id}`}
                   className="h-full origin-left rounded-full"

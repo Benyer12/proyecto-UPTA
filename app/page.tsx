@@ -5,6 +5,7 @@ import { type PointerEvent, useCallback, useEffect, useRef, useState } from 'rea
 import { motion, useReducedMotion } from 'framer-motion';
 import PlanetVisual from './components/PlanetVisual';
 import { LiquidGlass } from '../components/ui/glasscn/liquid-glass';
+import { useThemeStore } from '../lib/theme-store';
 
 type Point = { x: number; y: number };
 
@@ -106,7 +107,9 @@ const PLANETAS_MUESTRA = [
     frase: 'Supera retos de sumas, restas, multiplicaciones y divisiones entre asteroides.',
     detalle: 'Tablero espacial de 20 casillas y misiones cuánticas',
     accent: '#67E8F9',
+    lightAccent: '#0369A1',
     border: 'rgba(103, 232, 249, 0.36)',
+    lightBorder: 'rgba(2, 132, 199, 0.38)',
     bgClass: 'bg-[#031524]/[0.34]',
   },
   {
@@ -115,7 +118,9 @@ const PLANETAS_MUESTRA = [
     frase: 'Descifra palabras, lectura comprensiva y acertijos en una galaxia llena de historias.',
     detalle: 'Mapa astral con altares de decodificación',
     accent: '#D8B4FE',
+    lightAccent: '#7E22CE',
     border: 'rgba(216, 180, 254, 0.38)',
+    lightBorder: 'rgba(147, 51, 234, 0.36)',
     bgClass: 'bg-[#160726]/[0.36]',
   },
   {
@@ -124,7 +129,9 @@ const PLANETAS_MUESTRA = [
     frase: 'Descubre cómo funciona la naturaleza, los ecosistemas y los misterios del universo.',
     detalle: 'Exploración científica guiada paso a paso',
     accent: '#6EE7B7',
+    lightAccent: '#047857',
     border: 'rgba(110, 231, 183, 0.36)',
+    lightBorder: 'rgba(5, 150, 105, 0.38)',
     bgClass: 'bg-[#031B14]/[0.34]',
   },
 ];
@@ -136,6 +143,7 @@ const PASOS_DIDACTICOS = [
     description:
       'Entra con tu usuario de estudiante para abrir tu panel personal con los mapas estelares listos para jugar.',
     accent: '#67E8F9',
+    lightAccent: '#0369A1',
   },
   {
     code: '02',
@@ -143,6 +151,7 @@ const PASOS_DIDACTICOS = [
     description:
       'Avanza por tableros coloridos respondiendo retos cortos y divertidos de matemáticas, lenguaje y ciencias.',
     accent: '#D8B4FE',
+    lightAccent: '#7E22CE',
   },
   {
     code: '03',
@@ -150,6 +159,7 @@ const PASOS_DIDACTICOS = [
     description:
       'Si te equivocas puedes volver a intentarlo. Cada misión completada suma estrellas a tu progreso en la nube.',
     accent: '#6EE7B7',
+    lightAccent: '#047857',
   },
 ];
 
@@ -193,6 +203,8 @@ function StepBadgeIcon({ code, color }: { code: string; color: string }) {
 
 export default function Home() {
   const prefersReducedMotion = useReducedMotion();
+  const appTheme = useThemeStore((s) => s.theme);
+  const isLight = appTheme === 'light';
 
   return (
     <div className="relative min-h-screen text-white selection:bg-white/25">
@@ -384,7 +396,7 @@ export default function Home() {
                 saturation={1.68}
                 className={`h-full rounded-3xl ${planeta.bgClass} p-6 flex flex-col items-center text-center justify-between gap-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_28px_-12px_rgba(180,220,255,0.18),0_26px_76px_-30px_rgba(0,0,0,0.78)]`}
                 style={{
-                  borderColor: planeta.border,
+                  borderColor: isLight ? planeta.lightBorder : planeta.border,
                   backgroundImage:
                     'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.22) 100%)',
                 }}
@@ -393,7 +405,7 @@ export default function Home() {
                   <div className="flex items-center justify-between">
                     <span
                       className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em]"
-                      style={{ color: planeta.accent }}
+                      style={{ color: isLight ? planeta.lightAccent : planeta.accent }}
                     >
                       {planeta.materia}
                     </span>
@@ -423,9 +435,9 @@ export default function Home() {
                   <div
                     className="rounded-full border px-3.5 py-2 text-xs font-medium"
                     style={{
-                      borderColor: planeta.border,
-                      color: planeta.accent,
-                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                      borderColor: isLight ? planeta.lightBorder : planeta.border,
+                      color: isLight ? planeta.lightAccent : planeta.accent,
+                      backgroundColor: isLight ? 'rgba(255, 255, 255, 0.55)' : 'rgba(255, 255, 255, 0.04)',
                     }}
                   >
                     {planeta.detalle}
@@ -460,7 +472,7 @@ export default function Home() {
             >
               <div className="flex items-center justify-between">
                 <div className="w-10 h-10 rounded-xl border border-white/14 bg-white/[0.06] flex items-center justify-center">
-                  <StepBadgeIcon code={item.code} color={item.accent} />
+                  <StepBadgeIcon code={item.code} color={isLight ? item.lightAccent : item.accent} />
                 </div>
                 <span className="font-mono text-xs tracking-[0.2em] text-white/45">
                   {item.code}

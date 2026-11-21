@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../lib/auth-store';
 import { supabase } from '../../lib/supabase';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
+import ThemeTogglePill from '../../components/ThemeTogglePill';
 
 const PLANET_DATA = [
   {
@@ -205,43 +206,47 @@ export default function MaestroPage() {
             </p>
           </div>
 
-          {/* Tira de métricas cristalina */}
-          <LiquidGlass
-            blur={2}
-            refraction={20}
-            bezel={0.36}
-            saturation={1.65}
-            className="rounded-2xl bg-[#050a18]/[0.38] border-white/[0.15] shrink-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)]"
-          >
-            <div className="grid grid-cols-4 divide-x divide-white/10">
-              <div className="px-4 py-3 text-center">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
-                  Estudiantes
+          {/* Selector de tema + Tira de métricas cristalina */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 self-start lg:self-auto shrink-0">
+            <ThemeTogglePill showLabels />
+
+            <LiquidGlass
+              blur={2}
+              refraction={20}
+              bezel={0.36}
+              saturation={1.65}
+              className="rounded-2xl bg-[#050a18]/[0.38] border-white/[0.15] shrink-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)]"
+            >
+              <div className="grid grid-cols-4 divide-x divide-white/10">
+                <div className="px-4 py-3 text-center">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
+                    Estudiantes
+                  </div>
+                  <div className="text-lg font-bold text-white tabular-nums">{students.length}</div>
                 </div>
-                <div className="text-lg font-bold text-white tabular-nums">{students.length}</div>
+                <div className="px-4 py-3 text-center">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
+                    Niveles
+                  </div>
+                  <div className="text-lg font-bold text-white tabular-nums">{totalNiveles}</div>
+                </div>
+                <div className="px-4 py-3 text-center">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-[#67E8F9]">
+                    Completados
+                  </div>
+                  <div className="text-lg font-bold text-white tabular-nums">{totalCompletados}</div>
+                </div>
+                <div className="px-4 py-3 text-center">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-[#FDE68A]">
+                    Estrellas
+                  </div>
+                  <div className="text-lg font-bold text-[#FDE68A] tabular-nums">
+                    {totalEstrellas}
+                  </div>
+                </div>
               </div>
-              <div className="px-4 py-3 text-center">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
-                  Niveles
-                </div>
-                <div className="text-lg font-bold text-white tabular-nums">{totalNiveles}</div>
-              </div>
-              <div className="px-4 py-3 text-center">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-[#67E8F9]">
-                  Completados
-                </div>
-                <div className="text-lg font-bold text-white tabular-nums">{totalCompletados}</div>
-              </div>
-              <div className="px-4 py-3 text-center">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-[#FDE68A]">
-                  Estrellas
-                </div>
-                <div className="text-lg font-bold text-[#FDE68A] tabular-nums">
-                  {totalEstrellas}
-                </div>
-              </div>
-            </div>
-          </LiquidGlass>
+            </LiquidGlass>
+          </div>
         </section>
 
         {/* Hoja cristalina principal: Mis estudiantes */}

@@ -8,6 +8,7 @@ import LiquidGlassToast, {
   type LiquidGlassToastData,
 } from '../components/LiquidGlassToast';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
+import ThemeTogglePill from '../../components/ThemeTogglePill';
 
 interface UsuarioDB {
   id: string;
@@ -154,34 +155,38 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <LiquidGlass
-            blur={2}
-            refraction={20}
-            bezel={0.36}
-            saturation={1.65}
-            className="rounded-2xl bg-[#050a18]/[0.38] border-white/[0.15] self-start md:self-auto shrink-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)]"
-          >
-            <div className="grid grid-cols-3 divide-x divide-white/10">
-              <div className="px-4 py-3 text-center">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
-                  Activos
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 self-start md:self-auto shrink-0">
+            <ThemeTogglePill showLabels />
+
+            <LiquidGlass
+              blur={2}
+              refraction={20}
+              bezel={0.36}
+              saturation={1.65}
+              className="rounded-2xl bg-[#050a18]/[0.38] border-white/[0.15] shrink-0 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)]"
+            >
+              <div className="grid grid-cols-3 divide-x divide-white/10">
+                <div className="px-4 py-3 text-center">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
+                    Activos
+                  </div>
+                  <div className="text-lg font-bold text-white tabular-nums">{usuarios.length}</div>
                 </div>
-                <div className="text-lg font-bold text-white tabular-nums">{usuarios.length}</div>
-              </div>
-              <div className="px-4 py-3 text-center">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-[#67E8F9]">
-                  Tutores
+                <div className="px-4 py-3 text-center">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-[#67E8F9]">
+                    Tutores
+                  </div>
+                  <div className="text-lg font-bold text-white tabular-nums">{totalTutores}</div>
                 </div>
-                <div className="text-lg font-bold text-white tabular-nums">{totalTutores}</div>
-              </div>
-              <div className="px-4 py-3 text-center">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-[#6EE7B7]">
-                  Estudiantes
+                <div className="px-4 py-3 text-center">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-[#6EE7B7]">
+                    Estudiantes
+                  </div>
+                  <div className="text-lg font-bold text-white tabular-nums">{totalEstudiantes}</div>
                 </div>
-                <div className="text-lg font-bold text-white tabular-nums">{totalEstudiantes}</div>
               </div>
-            </div>
-          </LiquidGlass>
+            </LiquidGlass>
+          </div>
         </section>
 
         {/* Hoja cristalina unificada de usuarios activos */}

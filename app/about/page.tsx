@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import PlanetVisual from '../components/PlanetVisual';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
+import { useThemeStore } from '../../lib/theme-store';
 
 const planetasInfo = [
   {
@@ -12,7 +13,9 @@ const planetasInfo = [
     materia: 'Matemáticas',
     desc: 'Números, operaciones, geometría y razonamiento lógico transformados en misiones espaciales paso a paso.',
     accent: '#67E8F9',
+    lightAccent: '#0369A1',
     border: 'rgba(103, 232, 249, 0.36)',
+    lightBorder: 'rgba(2, 132, 199, 0.38)',
     bgClass: 'bg-[#031524]/[0.34]',
     badge: '6 niveles · 2 cursos',
   },
@@ -22,7 +25,9 @@ const planetasInfo = [
     materia: 'Lenguas',
     desc: 'Gramática, vocabulario, ortografía y comprensión lectora con acertijos y aventuras llenas de imaginación.',
     accent: '#D8B4FE',
+    lightAccent: '#7E22CE',
     border: 'rgba(216, 180, 254, 0.38)',
+    lightBorder: 'rgba(147, 51, 234, 0.36)',
     bgClass: 'bg-[#160726]/[0.36]',
     badge: '3 niveles · 1 curso',
   },
@@ -32,7 +37,9 @@ const planetasInfo = [
     materia: 'Ciencias',
     desc: 'Seres vivos, ecosistemas, energía y secretos del universo en recorridos llenos de descubrimientos.',
     accent: '#6EE7B7',
+    lightAccent: '#047857',
     border: 'rgba(110, 231, 183, 0.36)',
+    lightBorder: 'rgba(5, 150, 105, 0.38)',
     bgClass: 'bg-[#031B14]/[0.34]',
     badge: '3 niveles · 1 curso',
   },
@@ -44,24 +51,30 @@ const PILARES = [
     label: 'Modo Offline y Online',
     desc: 'Guarda tus estrellas en el dispositivo y sincronízalas en la nube para no perder nunca tu aventura.',
     accent: '#67E8F9',
+    lightAccent: '#0369A1',
     cardBg: 'bg-[#031524]/[0.34]',
     border: 'rgba(103, 232, 249, 0.34)',
+    lightBorder: 'rgba(2, 132, 199, 0.36)',
   },
   {
     id: 'safe',
     label: 'Aprendizaje sin castigos',
     desc: 'Equivocarse te da pistas útiles y una nueva oportunidad. ¡Aquí cada intento cuenta para aprender!',
     accent: '#6EE7B7',
+    lightAccent: '#047857',
     cardBg: 'bg-[#031B14]/[0.34]',
     border: 'rgba(110, 231, 183, 0.34)',
+    lightBorder: 'rgba(5, 150, 105, 0.36)',
   },
   {
     id: 'age',
     label: 'Primaria de 10 a 12 años',
     desc: 'Retos coloridos, lecturas claras y mecánicas de juego pensadas especialmente para estudiantes de primaria.',
     accent: '#FDE68A',
+    lightAccent: '#B45309',
     cardBg: 'bg-[#1C1405]/[0.36]',
     border: 'rgba(253, 230, 138, 0.34)',
+    lightBorder: 'rgba(217, 119, 6, 0.36)',
   },
 ] as const;
 
@@ -174,6 +187,8 @@ function JoyfulPlanetsStage() {
 
 export default function AboutPage() {
   const prefersReducedMotion = useReducedMotion();
+  const appTheme = useThemeStore((s) => s.theme);
+  const isLight = appTheme === 'light';
 
   return (
     <div className="relative min-h-screen">
@@ -316,13 +331,13 @@ export default function AboutPage() {
                 bezel={0.36}
                 saturation={1.62}
                 className={`rounded-2xl ${pilar.cardBg} p-5 flex items-start gap-3.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.28)]`}
-                style={{ borderColor: pilar.border }}
+                style={{ borderColor: isLight ? pilar.lightBorder : pilar.border }}
               >
                 <div
                   className="w-11 h-11 rounded-xl border bg-white/[0.06] flex items-center justify-center shrink-0"
-                  style={{ borderColor: pilar.border }}
+                  style={{ borderColor: isLight ? pilar.lightBorder : pilar.border }}
                 >
-                  <PillarIcon id={pilar.id} color={pilar.accent} />
+                  <PillarIcon id={pilar.id} color={isLight ? pilar.lightAccent : pilar.accent} />
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-white">{pilar.label}</h3>
@@ -354,7 +369,7 @@ export default function AboutPage() {
                 saturation={1.68}
                 className={`rounded-3xl ${p.bgClass} p-6 flex flex-col items-center text-center justify-between gap-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_28px_-12px_rgba(180,220,255,0.18),0_26px_76px_-30px_rgba(0,0,0,0.78)]`}
                 style={{
-                  borderColor: p.border,
+                  borderColor: isLight ? p.lightBorder : p.border,
                   backgroundImage:
                     'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.22) 100%)',
                 }}
@@ -363,7 +378,7 @@ export default function AboutPage() {
                   <div className="flex items-center justify-between">
                     <span
                       className="font-mono text-[10px] font-bold uppercase tracking-[0.2em]"
-                      style={{ color: p.accent }}
+                      style={{ color: isLight ? p.lightAccent : p.accent }}
                     >
                       {p.materia}
                     </span>
