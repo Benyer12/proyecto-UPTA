@@ -808,7 +808,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               className={
                 rodandoDado || caminando || eligiendoRama
                   ? 'cursor-not-allowed'
-                  : 'cursor-pointer hover:scale-105 transition-transform'
+                  : 'cursor-pointer'
               }
               title="Haz clic para lanzar el dado"
             >

@@ -1,7 +1,6 @@
 'use client';
 
-import { motion, useAnimationControls } from 'framer-motion';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Dado3DProps {
   size?: number;
@@ -142,9 +141,14 @@ export default function Dado3D({
   borderColor,
   pipColor,
 }: Dado3DProps) {
-  const controls = useAnimationControls();
-  const cumulativeSpinRef = useRef({ x: 0, y: 0 });
+  const [rot, setRot] = useState<{ x: number; y: number }>(() => ({
+    x: FACE_ROTATIONS[1].rotateX,
+    y: FACE_ROTATIONS[1].rotateY,
+  }));
+
+  const cumulativeTurnsRef = useRef({ x: 0, y: 0 });
   const isRollingRef = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onRollCompleteRef = useRef(onRollComplete);
   onRollCompleteRef.current = onRollComplete;
 
@@ -155,33 +159,32 @@ export default function Dado3D({
     if (rolling && !isRollingRef.current) {
       isRollingRef.current = true;
       const target = FACE_ROTATIONS[result] || FACE_ROTATIONS[1];
-      // Acumulamos giros completos de 360° hacia adelante para que nunca retroceda ni haga saltos/zooms cortados
-      cumulativeSpinRef.current = {
-        x: cumulativeSpinRef.current.x + 360 * 3,
-        y: cumulativeSpinRef.current.y + 360 * 3,
+
+      // Sumar exactamente 3 giros completos (1080°) en cada eje sobre una única transición CSS nativa
+      // (sin scale3d ni re-interpolación por vértices de Framer Motion, eliminando cualquier zoom/salto)
+      cumulativeTurnsRef.current = {
+        x: cumulativeTurnsRef.current.x + 1080,
+        y: cumulativeTurnsRef.current.y + 1080,
       };
 
-      controls
-        .start({
-          rotateX: target.rotateX + cumulativeSpinRef.current.x,
-          rotateY: target.rotateY + cumulativeSpinRef.current.y,
-          transition: {
-            duration: 1.05,
-            ease: [0.22, 1, 0.36, 1],
-          },
-        })
-        .then(() => {
-          isRollingRef.current = false;
-          onRollCompleteRef.current?.();
-        });
-    } else if (!rolling && !isRollingRef.current) {
-      const target = FACE_ROTATIONS[result] || FACE_ROTATIONS[1];
-      controls.set({
-        rotateX: target.rotateX + cumulativeSpinRef.current.x,
-        rotateY: target.rotateY + cumulativeSpinRef.current.y,
+      setRot({
+        x: target.rotateX + cumulativeTurnsRef.current.x,
+        y: target.rotateY + cumulativeTurnsRef.current.y,
       });
+
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        isRollingRef.current = false;
+        onRollCompleteRef.current?.();
+      }, 1050);
     }
-  }, [rolling, result, controls]);
+  }, [rolling, result]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const faceTransforms: Record<number, string> = {
     1: `translateZ(${half}px)`,
@@ -195,19 +198,22 @@ export default function Dado3D({
   return (
     <div
       className="flex items-center justify-center"
-      style={{ perspective: size * 6, width: size, height: size }}
+      style={{
+        width: size,
+        height: size,
+        perspective: `${size * 9}px`,
+      }}
     >
-      <motion.div
-        initial={{
-          rotateX: FACE_ROTATIONS[1].rotateX,
-          rotateY: FACE_ROTATIONS[1].rotateY,
-        }}
-        animate={controls}
+      <div
         style={{
           width: size,
           height: size,
-          transformStyle: 'preserve-3d',
           position: 'relative',
+          transformStyle: 'preserve-3d',
+          WebkitTransformStyle: 'preserve-3d',
+          transform: `rotateX(${rot.x}deg) rotateY(${rot.y}deg)`,
+          transition: 'transform 1.02s cubic-bezier(0.22, 1, 0.36, 1)',
+          willChange: 'transform',
         }}
       >
         {[1, 2, 3, 4, 5, 6].map((num) => (
@@ -218,6 +224,8 @@ export default function Dado3D({
               height: size,
               transform: faceTransforms[num],
               position: 'absolute',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
             }}
           >
             <DiceFace
@@ -230,7 +238,7 @@ export default function Dado3D({
             />
           </div>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }
