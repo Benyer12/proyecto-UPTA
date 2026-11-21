@@ -255,10 +255,61 @@ function DropdownAntigravityCanvas() {
 }
 
 const PLANET_CHIPS = [
-  { name: 'Numérix', sub: 'Matemáticas', icon: '🔢', color: '#00f5ff', bg: 'rgba(0, 245, 255, 0.09)' },
-  { name: 'Letralia', sub: 'Lenguas', icon: '📖', color: '#bf40ff', bg: 'rgba(191, 64, 255, 0.09)' },
-  { name: 'Naturae', sub: 'Ciencias', icon: '🌿', color: '#00ff88', bg: 'rgba(0, 255, 136, 0.09)' },
-];
+  { id: 'numerix', name: 'Numérix', sub: 'Matemáticas', color: '#67E8F9', bg: 'rgba(0, 245, 255, 0.09)' },
+  { id: 'letralia', name: 'Letralia', sub: 'Lenguas', color: '#D8B4FE', bg: 'rgba(191, 64, 255, 0.09)' },
+  { id: 'naturae', name: 'Naturae', sub: 'Ciencias', color: '#6EE7B7', bg: 'rgba(0, 255, 136, 0.09)' },
+] as const;
+
+function BrandOrbitMark() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true" className="shrink-0">
+      <defs>
+        <linearGradient id="brandCore" x1="6" y1="6" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#67E8F9" />
+          <stop offset="55%" stopColor="#818CF8" />
+          <stop offset="100%" stopColor="#C084FC" />
+        </linearGradient>
+      </defs>
+      <circle cx="16" cy="16" r="8.5" fill="url(#brandCore)" />
+      <ellipse
+        cx="16"
+        cy="16"
+        rx="14"
+        ry="5.2"
+        transform="rotate(-24 16 16)"
+        stroke="#E2EEFF"
+        strokeWidth="1.6"
+        strokeOpacity="0.9"
+      />
+      <circle cx="26.5" cy="10.2" r="2.1" fill="#6EE7B7" />
+    </svg>
+  );
+}
+
+function PlanetChipGlyph({ id, color }: { id: 'numerix' | 'letralia' | 'naturae'; color: string }) {
+  if (id === 'numerix') {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="mx-auto mb-1.5">
+        <rect x="4" y="4" width="16" height="16" rx="4" stroke={color} strokeWidth="1.6" />
+        <path d="M8.5 9H15.5L11.5 12L15.5 15H8.5" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (id === 'letralia') {
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="mx-auto mb-1.5">
+        <path d="M19 5C13.5 5.5 9 9.5 7 16L5.5 19L8.5 17.5C15 15.5 18.5 11 19 5Z" stroke={color} strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="M6.5 18L15 9.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="mx-auto mb-1.5">
+      <path d="M18.5 5.5C12.5 5.5 7.5 9 6.5 16.5C14 15.5 18.5 11.5 18.5 5.5Z" stroke={color} strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M6.5 16.5C8.5 13.5 11.5 11 15 9" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 const ADMIN_NAV_ITEMS = [
   { href: '/admin', label: 'Roles' },
@@ -484,9 +535,11 @@ export default function Header() {
     <>
     <header className="fixed top-0 left-0 w-full z-50 liquid-glass-header">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 text-white no-underline group">
-          <span className="text-2xl transition-transform duration-300 group-hover:scale-110">🌌</span>
-          <span className="font-extrabold text-lg tracking-wide hidden sm:inline bg-gradient-to-r from-white via-slate-100 to-cyan-200 bg-clip-text text-transparent">
+        <Link href="/" className="flex items-center gap-3 text-white no-underline group min-h-[44px]">
+          <span className="transition-transform duration-300 group-hover:scale-105">
+            <BrandOrbitMark />
+          </span>
+          <span className="font-extrabold text-base sm:text-lg tracking-tight hidden sm:inline text-[#F8FAFC]">
             Universo del Conocimiento
           </span>
         </Link>
@@ -585,15 +638,24 @@ export default function Header() {
             </button>
           )}
 
-          {/* Botón menú móvil / tablet */}
+          {/* Botón menú móvil / tablet con etiqueta visible */}
           <button
+            type="button"
+            aria-expanded={mobileMenuOpen}
             className={`${
               token && user?.role === 'admin' ? 'lg:hidden' : 'sm:hidden'
-            } text-white p-2 liquid-glass-pill rounded-lg cursor-pointer`}
+            } min-h-[44px] inline-flex items-center gap-2 text-xs font-bold text-white px-3 py-2 liquid-glass-pill rounded-xl cursor-pointer`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Abrir menú"
+            aria-label={mobileMenuOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'}
           >
-            ☰
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              {mobileMenuOpen ? (
+                <path d="M3.5 3.5L12.5 12.5M12.5 3.5L3.5 12.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+              ) : (
+                <path d="M2.5 4.5H13.5M2.5 8H13.5M2.5 11.5H13.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+              )}
+            </svg>
+            <span>Menú</span>
           </button>
         </div>
       </div>
@@ -675,40 +737,39 @@ export default function Header() {
             <div className="relative z-10 max-w-5xl mx-auto px-6 py-8 md:py-10">
               <div className="grid lg:grid-cols-12 gap-6 items-stretch">
                 {/* Columna Izquierda: Tarjeta de Telemetría y Mundos en Liquid Glass */}
-                <div className="hidden lg:flex lg:col-span-5 flex-col justify-between rounded-3xl liquid-glass p-7">
-                  <div className="space-y-4">
-                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass-pill text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-300">
-                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#00f5ff]" />
-                      Portal de Acceso Estelar
-                    </div>
+                <div className="hidden lg:flex lg:col-span-5 flex-col justify-between rounded-2xl liquid-glass p-7">
+                  <div className="space-y-3.5">
+                    <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#67E8F9] block">
+                      Portal de Acceso
+                    </span>
 
                     <h3 className="text-2xl font-black text-white tracking-tight leading-snug">
-                      Explora el cosmos del aprendizaje
+                      Continúa tu progreso espacial
                     </h3>
 
-                    <p className="text-xs text-slate-300/90 leading-relaxed">
-                      Ingresa con tu cuenta de explorador, tutor o administrador para sincronizar tu progreso, misiones y estrellas en tiempo real.
+                    <p className="text-sm text-[#CBD5E1] leading-relaxed">
+                      Ingresa con tu cuenta de estudiante, tutor o administrador para guardar misiones, niveles y estrellas.
                     </p>
                   </div>
 
                   {/* Mini cápsulas Liquid Glass de los 3 planetas */}
                   <div className="space-y-2.5 my-5">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                      Mundos conectados
+                    <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#94A3B8]">
+                      Mundos disponibles
                     </div>
                     <div className="grid grid-cols-3 gap-2.5">
                       {PLANET_CHIPS.map((p) => (
                         <div
                           key={p.name}
-                          className="liquid-glass-pill rounded-2xl p-3 text-center"
+                          className="liquid-glass-inset rounded-xl p-3 text-center"
                           style={{
-                            background: `linear-gradient(155deg, ${p.bg} 0%, rgba(15, 20, 38, 0.45) 100%)`,
+                            background: `linear-gradient(155deg, ${p.bg} 0%, rgba(10, 14, 30, 0.72) 100%)`,
                             borderColor: `${p.color}40`,
                           }}
                         >
-                          <div className="text-xl mb-1">{p.icon}</div>
+                          <PlanetChipGlyph id={p.id} color={p.color} />
                           <div className="text-xs font-extrabold text-white tracking-wide">{p.name}</div>
-                          <div className="text-[10px] font-semibold" style={{ color: p.color }}>
+                          <div className="text-[11px] font-semibold mt-0.5" style={{ color: p.color }}>
                             {p.sub}
                           </div>
                         </div>
@@ -716,35 +777,53 @@ export default function Header() {
                     </div>
                   </div>
 
-                  {/* Estado del sistema en cápsula Liquid Glass */}
-                  <div className="liquid-glass-pill rounded-2xl px-4 py-3 flex items-center justify-between text-xs">
-                    <span className="text-slate-300 font-medium flex items-center gap-2">
-                      <span>🛡️</span> Sincronización Offline/Online
+                  {/* Estado del sistema */}
+                  <div className="liquid-glass-inset rounded-xl px-4 py-3 flex items-center justify-between text-xs">
+                    <span className="text-[#CBD5E1] font-medium flex items-center gap-2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path
+                          d="M12 3L5 6V11.5C5 16 8 19.8 12 21C16 19.8 19 16 19 11.5V6L12 3Z"
+                          stroke="#6EE7B7"
+                          strokeWidth="1.8"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M9 12L11 14L15.2 9.8"
+                          stroke="#6EE7B7"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      Sincronización en la nube
                     </span>
-                    <span className="text-emerald-300 font-bold tracking-wider uppercase text-[10px]">
-                      ● Activa
+                    <span className="text-[#6EE7B7] font-bold tracking-wider uppercase text-[11px]">
+                      Activa
                     </span>
                   </div>
                 </div>
 
                 {/* Columna Derecha: Cápsula Liquid Glass del Formulario */}
                 <div className="lg:col-span-7">
-                  <div className="rounded-3xl liquid-glass p-6 sm:p-8 h-full flex flex-col justify-center">
+                  <div className="rounded-2xl liquid-glass p-6 sm:p-8 h-full flex flex-col justify-center">
                     <div className="flex items-center justify-between mb-5">
                       <div>
-                        <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-300/90 block">
-                          {tab === 'login' ? 'Bienvenido de vuelta' : 'Nuevo Explorador'}
+                        <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#67E8F9] block">
+                          {tab === 'login' ? 'Acceso a tu cuenta' : 'Registro de estudiante'}
                         </span>
-                        <h4 className="text-xl font-black text-white tracking-wide">
-                          {tab === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta Espacial'}
+                        <h4 className="text-xl font-black text-white tracking-tight mt-0.5">
+                          {tab === 'login' ? 'Iniciar sesión' : 'Crear cuenta nueva'}
                         </h4>
                       </div>
                       <button
+                        type="button"
                         onClick={() => setIsOpen(false)}
-                        className="liquid-glass-pill w-8 h-8 rounded-xl flex items-center justify-center text-slate-300 hover:text-white text-xs font-bold cursor-pointer"
-                        title="Cerrar panel"
+                        className="liquid-glass-pill w-11 h-11 rounded-xl flex items-center justify-center text-slate-300 hover:text-white cursor-pointer"
+                        aria-label="Cerrar panel de acceso"
                       >
-                        ✕
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                        </svg>
                       </button>
                     </div>
 
@@ -811,11 +890,12 @@ export default function Header() {
                         )}
 
                         <button
+                          type="button"
                           onClick={handleLogin}
                           disabled={loading}
-                          className="w-full liquid-glass-btn text-white font-bold py-3 rounded-xl text-sm tracking-wider uppercase disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-2"
+                          className="w-full min-h-[46px] liquid-glass-btn text-white font-bold py-3 rounded-xl text-sm tracking-wider uppercase disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-2"
                         >
-                          {loading ? 'Conectando...' : '🚀 Entrar al Universo'}
+                          {loading ? 'Conectando...' : 'Entrar a mi cuenta'}
                         </button>
                       </div>
                     )}
@@ -845,7 +925,7 @@ export default function Header() {
                                   value={regName}
                                   onChange={(e) => setRegName(e.target.value)}
                                   className="w-full mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-slate-500"
-                                  placeholder="Ej: Juan Pérez"
+                                  placeholder="Tu nombre completo"
                                 />
                               </div>
                               <div>
@@ -899,11 +979,12 @@ export default function Header() {
                             )}
 
                             <button
+                              type="button"
                               onClick={handleRegister}
                               disabled={loading}
-                              className="w-full liquid-glass-btn text-white font-bold py-3 rounded-xl text-sm tracking-wider uppercase disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                              className="w-full min-h-[46px] liquid-glass-btn text-white font-bold py-3 rounded-xl text-sm tracking-wider uppercase disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
-                              {loading ? 'Creando cuenta...' : '✨ Crear cuenta'}
+                              {loading ? 'Creando cuenta...' : 'Registrar cuenta'}
                             </button>
 
                             <p className="text-[11px] text-slate-400 text-center">
