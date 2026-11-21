@@ -686,14 +686,12 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         </div>
 
         {/* ── Lienzo SVG de la Montaña Planetaria y los 20 Cubos Isométricos ── */}
-        <div className="w-full h-full flex items-center justify-center px-3 sm:px-8 py-2">
-          <div className="w-full h-full max-w-[1040px] flex items-center justify-center mx-auto">
-            <MapaMontañaCuantica
-              pos={pos}
-              caminando={caminando}
-              santuarioDesbloqueado={llaveLista}
-            />
-          </div>
+        <div className="w-full h-full flex items-center justify-center p-0">
+          <MapaMontañaCuantica
+            pos={pos}
+            caminando={caminando}
+            santuarioDesbloqueado={llaveLista}
+          />
         </div>
 
         {/* ── Abajo al Centro: Píldora Flotante de Instrucciones en Liquid Glass ── */}

@@ -1065,7 +1065,7 @@ export default function MapaMontañaCuantica({
 
   return (
     <svg
-      viewBox="0 0 900 680"
+      viewBox="-35 28 960 634"
       preserveAspectRatio="xMidYMid meet"
       className="w-full h-full select-none"
       role="img"
@@ -1230,71 +1230,73 @@ export default function MapaMontañaCuantica({
         </linearGradient>
       </defs>
 
-      <EscenarioMontaña />
+      <g transform="translate(80 4) scale(1.03)">
+        <EscenarioMontaña />
 
-      {/* ── RIEL FLUIDO Y ELEGANTE (Azul Crema -> Morado -> Esmeralda) ── */}
-      <g pointerEvents="none">
-        <path
-          d={PATH_RIEL}
-          fill="none"
-          stroke="url(#railFluidGrad)"
-          strokeWidth="16"
-          strokeOpacity="0.18"
-          strokeLinecap="round"
-        />
-        <path
-          d={PATH_RIEL}
-          fill="none"
-          stroke="#131C3E"
-          strokeWidth="9"
-          strokeOpacity="0.92"
-          strokeLinecap="round"
-        />
-        <path
-          d={PATH_RIEL}
-          fill="none"
-          stroke="url(#railFluidGrad)"
-          strokeWidth="3.5"
-          strokeOpacity="0.9"
-          strokeLinecap="round"
-        />
-      </g>
-
-      {/* ── SANTUARIO CASILLA 20 (GUARDIÁN DEL NIVEL) ── */}
-      <SantuarioGuardian
-        x={NODOS_NUMERIX[19].x}
-        y={NODOS_NUMERIX[19].y}
-        activo={pos === 19}
-        desbloqueado={santuarioDesbloqueado}
-      />
-
-      {/* ── PORTAL DE CRISTAL CUÁNTICO EN CASILLA 01 ── */}
-      <PortalInicio x={748} y={528} />
-
-      {/* ── CUBOS ISOMÉTRICOS 01 AL 19 (Ordenados por profundidad Y ascendente) ── */}
-      {[...NODOS_NUMERIX]
-        .filter((n) => n.tipo !== 'boss')
-        .sort((a, b) => a.y - b.y)
-        .map((nodo) => (
-          <CuboIsometricoSVG
-            key={nodo.index}
-            nodo={nodo}
-            activo={nodo.index === pos}
-            visitado={nodo.index < pos}
+        {/* ── RIEL FLUIDO Y ELEGANTE (Azul Crema -> Morado -> Esmeralda) ── */}
+        <g pointerEvents="none">
+          <path
+            d={PATH_RIEL}
+            fill="none"
+            stroke="url(#railFluidGrad)"
+            strokeWidth="16"
+            strokeOpacity="0.18"
+            strokeLinecap="round"
           />
-        ))}
+          <path
+            d={PATH_RIEL}
+            fill="none"
+            stroke="#131C3E"
+            strokeWidth="9"
+            strokeOpacity="0.92"
+            strokeLinecap="round"
+          />
+          <path
+            d={PATH_RIEL}
+            fill="none"
+            stroke="url(#railFluidGrad)"
+            strokeWidth="3.5"
+            strokeOpacity="0.9"
+            strokeLinecap="round"
+          />
+        </g>
 
-      {/* ── TOKEN DEL JUGADOR: EXPLORADOR ESPACIAL CUÁNTICO ── */}
-      <motion.g
-        initial={false}
-        animate={{
-          x: nodoActual.x,
-          y: nodoActual.tipo === 'boss' ? nodoActual.y - 6 : nodoActual.y - 16,
-        }}
-        transition={{ type: 'spring', stiffness: 220, damping: 22 }}
-      >
-        <JovenAstronauta caminando={caminando} />
-      </motion.g>
+        {/* ── SANTUARIO CASILLA 20 (GUARDIÁN DEL NIVEL) ── */}
+        <SantuarioGuardian
+          x={NODOS_NUMERIX[19].x}
+          y={NODOS_NUMERIX[19].y}
+          activo={pos === 19}
+          desbloqueado={santuarioDesbloqueado}
+        />
+
+        {/* ── PORTAL DE CRISTAL CUÁNTICO EN CASILLA 01 ── */}
+        <PortalInicio x={748} y={528} />
+
+        {/* ── CUBOS ISOMÉTRICOS 01 AL 19 (Ordenados por profundidad Y ascendente) ── */}
+        {[...NODOS_NUMERIX]
+          .filter((n) => n.tipo !== 'boss')
+          .sort((a, b) => a.y - b.y)
+          .map((nodo) => (
+            <CuboIsometricoSVG
+              key={nodo.index}
+              nodo={nodo}
+              activo={nodo.index === pos}
+              visitado={nodo.index < pos}
+            />
+          ))}
+
+        {/* ── TOKEN DEL JUGADOR: EXPLORADOR ESPACIAL CUÁNTICO ── */}
+        <motion.g
+          initial={false}
+          animate={{
+            x: nodoActual.x,
+            y: nodoActual.tipo === 'boss' ? nodoActual.y - 6 : nodoActual.y - 16,
+          }}
+          transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+        >
+          <JovenAstronauta caminando={caminando} />
+        </motion.g>
+      </g>
     </svg>
   );
 }
