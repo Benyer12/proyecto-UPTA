@@ -2,11 +2,138 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useMemo } from 'react';
 import { getPlanetById, getLevelProgress } from '../../../lib/mock-data';
 import type { Course, Level } from '../../../shared/types';
 import PlanetVisual from '../../components/PlanetVisual';
+
+function IconArrowLeft({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path
+        d="M19 12H5M12 19L5 12L12 5"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconPlay({ className = 'w-3.5 h-3.5' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className={className} aria-hidden="true">
+      <polygon points="4.5,3 13,8 4.5,13" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IconLock({ className = 'w-3.5 h-3.5' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className={className} aria-hidden="true">
+      <rect
+        x="3.2"
+        y="7.2"
+        width="9.6"
+        height="6.4"
+        rx="1.6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M5.5 7.2V5.3C5.5 3.92 6.62 2.8 8 2.8C9.38 2.8 10.5 3.92 10.5 5.3V7.2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function IconGuardian({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className={className} aria-hidden="true">
+      <path
+        d="M10 2.5L16.5 5.6V10.4C16.5 14.1 13.7 17.1 10 18C6.3 17.1 3.5 14.1 3.5 10.4V5.6L10 2.5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M10 6.5L11.2 9L13.8 9.4L11.9 11.2L12.4 13.8L10 12.5L7.6 13.8L8.1 11.2L6.2 9.4L8.8 9L10 6.5Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+function IconStar({ filled, className = 'w-3.5 h-3.5' }: { filled: boolean; className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className={className} aria-hidden="true">
+      <path
+        d="M10 2.4L12.35 7.16L17.6 7.92L13.8 11.62L14.7 16.85L10 14.38L5.3 16.85L6.2 11.62L2.4 7.92L7.65 7.16L10 2.4Z"
+        fill={filled ? '#FDE68A' : 'none'}
+        stroke={filled ? '#F59E0B' : '#475569'}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function MissingPortalIllustration() {
+  return (
+    <svg
+      viewBox="0 0 200 130"
+      fill="none"
+      className="w-44 h-28 mx-auto"
+      role="img"
+      aria-label="Ilustración de órbita planetaria vacía"
+    >
+      <ellipse
+        cx="100"
+        cy="68"
+        rx="74"
+        ry="24"
+        stroke="#67E8F9"
+        strokeOpacity="0.35"
+        strokeWidth="1.5"
+        strokeDasharray="5 5"
+      />
+      <circle
+        cx="100"
+        cy="68"
+        r="28"
+        fill="#0B1226"
+        stroke="#67E8F9"
+        strokeOpacity="0.45"
+        strokeWidth="1.6"
+      />
+      <path
+        d="M90 58L110 78M110 58L90 78"
+        stroke="#94A3B8"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <circle cx="38" cy="54" r="3.5" fill="#67E8F9" fillOpacity="0.7" />
+      <circle cx="164" cy="78" r="2.5" fill="#D8B4FE" fillOpacity="0.75" />
+      <circle cx="144" cy="30" r="2" fill="#FDE68A" fillOpacity="0.7" />
+    </svg>
+  );
+}
+
+function getReadableAccent(color: string) {
+  const normalized = color.toLowerCase();
+  if (normalized.includes('bf40ff') || normalized.includes('a855f7')) {
+    return { text: '#D8B4FE', border: 'rgba(216, 180, 254, 0.42)', glow: '#BF40FF' };
+  }
+  if (normalized.includes('00ff88') || normalized.includes('10b981') || normalized.includes('34d399')) {
+    return { text: '#6EE7B7', border: 'rgba(110, 231, 183, 0.42)', glow: '#00FF88' };
+  }
+  return { text: '#67E8F9', border: 'rgba(103, 232, 249, 0.42)', glow: color || '#00F5FF' };
+}
 
 function RetroGlassLevelCard({
   level,
@@ -20,147 +147,160 @@ function RetroGlassLevelCard({
   planetId: number;
 }) {
   const numStr = String(level.order).padStart(2, '0');
-  const stageCode = level.isBoss ? `BOSS-0${level.order}` : `STG-${numStr}`;
+  const stageCode = level.isBoss ? `JEFE-0${level.order}` : `FASE-${numStr}`;
+  const accent = getReadableAccent(color);
 
   const cardInner = (
     <div
-      className="relative rounded-3xl liquid-glass p-3 transition-all duration-300"
+      className={`relative rounded-3xl liquid-glass p-2.5 transition-all duration-300 ${
+        available ? 'group-hover:-translate-y-0.5' : ''
+      }`}
       style={{
-        borderColor: available ? `${color}55` : 'rgba(255,255,255,0.08)',
+        borderColor: available ? accent.border : 'rgba(255,255,255,0.09)',
         boxShadow: available
-          ? `0 18px 40px -10px rgba(0,0,0,0.7), 0 0 28px -6px ${color}30, inset 0 1.5px 1px rgba(255,255,255,0.3)`
-          : '0 12px 28px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)',
-        opacity: available ? 1 : 0.62,
+          ? `0 18px 40px -12px rgba(0,0,0,0.72), 0 0 28px -8px ${accent.glow}35, inset 0 1px 0 rgba(255,255,255,0.22)`
+          : '0 12px 28px -12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07)',
+        opacity: available ? 1 : 0.72,
       }}
     >
-      {/* Cápsula interior Liquid Glass Retro (Doble Encapsulado + Pantalla CRT Arcade) */}
+      {/* Cápsula interior Liquid Glass con alta legibilidad */}
       <div
-        className="relative rounded-2xl liquid-glass-pill p-4 sm:p-5 overflow-hidden"
+        className="relative rounded-2xl liquid-glass-inset p-4 sm:p-5 overflow-hidden"
         style={{
           background: available
-            ? `linear-gradient(155deg, ${color}18 0%, rgba(10, 14, 28, 0.72) 55%, rgba(5, 8, 18, 0.86) 100%)`
-            : 'linear-gradient(155deg, rgba(255,255,255,0.03) 0%, rgba(8,10,20,0.75) 100%)',
-          borderColor: available ? `${color}45` : 'rgba(255,255,255,0.07)',
+            ? `linear-gradient(155deg, ${accent.glow}14 0%, rgba(10, 15, 32, 0.84) 50%, rgba(6, 10, 22, 0.94) 100%)`
+            : 'linear-gradient(155deg, rgba(255,255,255,0.02) 0%, rgba(8,12,24,0.88) 100%)',
+          borderColor: available ? `${accent.glow}38` : 'rgba(255,255,255,0.07)',
         }}
       >
-        {/* Efecto Scanlines CRT Retro */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-25"
-          style={{
-            backgroundImage:
-              'repeating-linear-gradient(0deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 3px)',
-          }}
-        />
-
-        {/* Esquinas técnicas Retro-HUD */}
+        {/* Esquinas técnicas del visor */}
         <span
+          aria-hidden="true"
           className="absolute top-2.5 left-2.5 w-2 h-2 border-t-2 border-l-2 pointer-events-none"
-          style={{ borderColor: available ? color : 'rgba(255,255,255,0.2)' }}
+          style={{ borderColor: available ? accent.text : 'rgba(255,255,255,0.18)' }}
         />
         <span
+          aria-hidden="true"
           className="absolute top-2.5 right-2.5 w-2 h-2 border-t-2 border-r-2 pointer-events-none"
-          style={{ borderColor: available ? color : 'rgba(255,255,255,0.2)' }}
+          style={{ borderColor: available ? accent.text : 'rgba(255,255,255,0.18)' }}
         />
         <span
+          aria-hidden="true"
           className="absolute bottom-2.5 left-2.5 w-2 h-2 border-b-2 border-l-2 pointer-events-none"
-          style={{ borderColor: available ? color : 'rgba(255,255,255,0.2)' }}
+          style={{ borderColor: available ? accent.text : 'rgba(255,255,255,0.18)' }}
         />
         <span
+          aria-hidden="true"
           className="absolute bottom-2.5 right-2.5 w-2 h-2 border-b-2 border-r-2 pointer-events-none"
-          style={{ borderColor: available ? color : 'rgba(255,255,255,0.2)' }}
+          style={{ borderColor: available ? accent.text : 'rgba(255,255,255,0.18)' }}
         />
 
-        {/* Cabecera Retro HUD del Cartucho */}
+        {/* Cabecera técnica del nivel */}
         <div className="relative z-10 flex items-center justify-between gap-2 mb-3.5 pb-2.5 border-b border-white/10">
           <div className="flex items-center gap-2">
             <span
-              className="w-2 h-2 rounded-full"
+              aria-hidden="true"
+              className="w-2 h-2 rounded-full shrink-0"
               style={{
-                background: available ? color : '#475569',
-                boxShadow: available ? `0 0 8px ${color}` : 'none',
+                background: available ? accent.text : '#64748B',
+                boxShadow: available ? `0 0 8px ${accent.glow}` : 'none',
               }}
             />
             <span
-              className="font-mono text-[10px] font-bold tracking-[0.22em] uppercase"
-              style={{ color: available ? color : '#64748b' }}
+              className="font-mono text-[11px] font-bold tracking-[0.18em] uppercase"
+              style={{ color: available ? accent.text : '#94A3B8' }}
             >
               {stageCode}
             </span>
           </div>
 
           <span
-            className="font-mono text-[10px] font-bold px-2.5 py-0.5 rounded-md border uppercase tracking-widest"
+            className="inline-flex items-center gap-1.5 font-mono text-[11px] font-bold px-2.5 py-0.5 rounded-md border uppercase tracking-wider"
             style={
               available
                 ? {
-                    color: '#fff',
-                    borderColor: `${color}66`,
-                    background: `${color}22`,
-                    textShadow: `0 0 8px ${color}`,
+                    color: '#F8FAFC',
+                    borderColor: accent.border,
+                    background: `${accent.glow}22`,
                   }
                 : {
-                    color: '#64748b',
-                    borderColor: 'rgba(255,255,255,0.08)',
-                    background: 'rgba(255,255,255,0.03)',
+                    color: '#94A3B8',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.04)',
                   }
             }
           >
-            {available ? (level.isBoss ? '★ BOSS' : '● READY') : '🔒 LOCKED'}
+            {available ? (
+              level.isBoss ? (
+                <>
+                  <IconGuardian className="w-3.5 h-3.5" />
+                  <span>Guardián</span>
+                </>
+              ) : (
+                <>
+                  <IconPlay className="w-3 h-3" />
+                  <span>Disponible</span>
+                </>
+              )
+            ) : (
+              <>
+                <IconLock className="w-3 h-3" />
+                <span>Bloqueado</span>
+              </>
+            )}
           </span>
         </div>
 
-        {/* Cuerpo Principal del Nivel: Monitor Retro Numérico + Info */}
+        {/* Cuerpo del nivel: bloque numérico + descripción */}
         <div className="relative z-10 flex items-center gap-4">
-          {/* Pantalla Numérica Arcade Retro en Cristal Líquido */}
           <div
-            className="relative w-16 h-16 sm:w-18 sm:h-18 rounded-2xl liquid-glass flex flex-col items-center justify-center shrink-0"
+            className="relative w-16 h-16 rounded-2xl liquid-glass flex flex-col items-center justify-center shrink-0"
             style={{
               background: available
-                ? `radial-gradient(circle at 35% 30%, ${color}35 0%, rgba(4, 8, 22, 0.9) 80%)`
-                : 'rgba(5, 8, 18, 0.85)',
-              borderColor: available ? `${color}80` : 'rgba(255,255,255,0.1)',
-              boxShadow: available
-                ? `0 0 20px ${color}35, inset 0 0 14px ${color}25`
-                : 'inset 0 2px 6px rgba(0,0,0,0.7)',
+                ? `radial-gradient(circle at 35% 30%, ${accent.glow}30 0%, rgba(6, 11, 26, 0.94) 82%)`
+                : 'rgba(8, 12, 24, 0.9)',
+              borderColor: available ? accent.border : 'rgba(255,255,255,0.1)',
             }}
           >
             <span
-              className="font-mono text-[9px] font-bold uppercase tracking-widest leading-none mb-0.5"
-              style={{ color: available ? `${color}cc` : '#475569' }}
+              className="font-mono text-[10px] font-bold uppercase tracking-widest leading-none mb-0.5"
+              style={{ color: available ? accent.text : '#94A3B8' }}
             >
-              LVL
+              NIVEL
             </span>
             <span
-              className="font-mono text-2xl sm:text-3xl font-black leading-none tracking-tighter"
+              className="font-mono text-2xl font-black leading-none tracking-tight tabular-nums"
               style={{
-                color: available ? '#ffffff' : '#475569',
-                textShadow: available ? `0 0 14px ${color}, 0 0 4px #ffffff` : 'none',
+                color: available ? '#F8FAFC' : '#94A3B8',
               }}
             >
               {numStr}
             </span>
           </div>
 
-          {/* Detalles de la Misión + Barra de Energía Segmentada Retro */}
           <div className="flex-1 min-w-0 text-left space-y-1.5">
             <div className="flex items-center gap-2">
-              <h3 className="text-base sm:text-lg font-black text-white tracking-wide truncate">
+              <h3 className="text-base sm:text-lg font-black text-[#F8FAFC] tracking-tight truncate">
                 {level.name}
               </h3>
               {level.isBoss && (
-                <span className="text-xs" title="Jefe de Estación">
-                  👾
+                <span
+                  className="shrink-0"
+                  style={{ color: accent.text }}
+                  title="Desafío del guardián"
+                >
+                  <IconGuardian className="w-4 h-4" />
                 </span>
               )}
             </div>
 
-            <p className="text-xs text-slate-300/85 font-medium truncate">
+            <p className="text-xs sm:text-sm text-[#CBD5E1] font-medium truncate">
               {level.description || (level.isBoss ? 'Reto del Comandante' : 'Misión de exploración')}
             </p>
 
-            {/* Barra de energía retro por segmentos + Estrellas arcade */}
+            {/* Indicador de intensidad y estrellas */}
             <div className="pt-1 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1" aria-hidden="true">
                 {[0, 1, 2, 3, 4].map((seg) => (
                   <span
                     key={seg}
@@ -168,53 +308,54 @@ function RetroGlassLevelCard({
                     style={{
                       background: available
                         ? seg < (level.isBoss ? 5 : 3)
-                          ? color
-                          : `${color}30`
-                        : 'rgba(255,255,255,0.08)',
-                      boxShadow:
-                        available && seg < (level.isBoss ? 5 : 3) ? `0 0 6px ${color}` : 'none',
+                          ? accent.text
+                          : `${accent.glow}2A`
+                        : 'rgba(255,255,255,0.1)',
                     }}
                   />
                 ))}
               </div>
 
-              <div className="font-mono text-[11px] tracking-widest" style={{ color: available ? '#facc15' : '#475569' }}>
-                ★★★
+              <div className="flex items-center gap-0.5" aria-label="Tres estrellas posibles">
+                {[0, 1, 2].map((starIdx) => (
+                  <IconStar key={starIdx} filled={available} />
+                ))}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Botón inferior estilo Arcade Retro en Liquid Glass */}
-        <div className="relative z-10 mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400">
-            {level.isBoss ? 'SECTOR GUARDIÁN' : `SECTOR 0${level.order}`}
+        {/* Pie con llamada a la acción clara */}
+        <div className="relative z-10 mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-3">
+          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#94A3B8]">
+            {level.isBoss ? 'Sector Guardián' : `Sector 0${level.order}`}
           </span>
 
           <span
-            className="font-mono text-[11px] font-black uppercase tracking-[0.18em] px-3.5 py-1.5 rounded-xl flex items-center gap-1.5"
+            className="min-h-[40px] px-3.5 py-2 rounded-xl inline-flex items-center gap-1.5 font-mono text-[11px] font-extrabold uppercase tracking-[0.14em] transition-colors"
             style={
               available
                 ? {
-                    background: `linear-gradient(135deg, ${color}38, ${color}18)`,
-                    border: `1px solid ${color}88`,
-                    color: '#ffffff',
-                    boxShadow: `0 0 14px ${color}30`,
+                    background: `linear-gradient(135deg, ${accent.glow}34, ${accent.glow}16)`,
+                    border: `1px solid ${accent.border}`,
+                    color: '#F8FAFC',
                   }
                 : {
                     background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    color: '#64748b',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#94A3B8',
                   }
             }
           >
             {available ? (
               <>
-                <span>▶</span> INICIAR MISIÓN
+                <IconPlay className="w-3 h-3" />
+                <span>Iniciar misión</span>
               </>
             ) : (
               <>
-                <span>🔒</span> BLOQUEADO
+                <IconLock className="w-3 h-3" />
+                <span>Bloqueado</span>
               </>
             )}
           </span>
@@ -225,13 +366,20 @@ function RetroGlassLevelCard({
 
   if (available) {
     return (
-      <Link href={`/juego/${planetId}/${level.id}`} className="block no-underline group">
+      <Link
+        href={`/juego/${planetId}/${level.id}`}
+        className="block no-underline group rounded-3xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#67E8F9]"
+      >
         {cardInner}
       </Link>
     );
   }
 
-  return <div className="cursor-not-allowed select-none">{cardInner}</div>;
+  return (
+    <div className="cursor-not-allowed select-none" aria-disabled="true">
+      {cardInner}
+    </div>
+  );
 }
 
 function CoursePortalSection({
@@ -243,28 +391,33 @@ function CoursePortalSection({
   planetColor: string;
   planetId: number;
 }) {
+  const accent = getReadableAccent(planetColor);
+
   return (
-    <div className="mb-12 last:mb-0 rounded-3xl liquid-glass p-5 sm:p-7">
-      {/* Cabecera del Curso con estética Retro-Arcade en Liquid Glass */}
+    <section
+      aria-labelledby={`course-heading-${course.id}`}
+      className="mb-10 last:mb-0 rounded-3xl liquid-glass liquid-glass-panel p-5 sm:p-7"
+    >
+      {/* Cabecera del Curso */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-7 pb-4 border-b border-white/10">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3.5">
           <div
-            className="w-10 h-10 rounded-xl liquid-glass-pill flex items-center justify-center font-mono text-sm font-black"
+            className="w-11 h-11 rounded-xl liquid-glass-inset flex items-center justify-center font-mono text-sm font-black shrink-0 tabular-nums"
             style={{
-              color: planetColor,
-              borderColor: `${planetColor}55`,
-              boxShadow: `0 0 14px ${planetColor}25`,
+              color: accent.text,
+              borderColor: accent.border,
             }}
           >
             0{course.order}
           </div>
           <div>
-            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400 block">
-              MÓDULO ORBITAL · {course.levels.length} NIVELES
+            <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[#94A3B8] block">
+              Módulo orbital · {course.levels.length}{' '}
+              {course.levels.length === 1 ? 'nivel' : 'niveles'}
             </span>
             <h2
-              className="text-lg sm:text-xl font-black tracking-wide uppercase"
-              style={{ color: '#ffffff', textShadow: `0 0 14px ${planetColor}55` }}
+              id={`course-heading-${course.id}`}
+              className="text-lg sm:text-xl font-black tracking-tight text-[#F8FAFC]"
             >
               {course.name}
             </h2>
@@ -272,21 +425,25 @@ function CoursePortalSection({
         </div>
 
         <span
-          className="self-start sm:self-center inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass-pill font-mono text-[11px] font-bold uppercase tracking-[0.16em]"
-          style={{ color: planetColor, borderColor: `${planetColor}44` }}
+          className="self-start sm:self-center inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass-inset text-xs font-semibold"
+          style={{ color: accent.text, borderColor: accent.border }}
         >
-          <span>◈</span> {course.description}
+          <span
+            aria-hidden="true"
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{ backgroundColor: accent.text }}
+          />
+          <span>{course.description}</span>
         </span>
       </div>
 
-      {/* Ruta Conectada de Cartuchos Liquid Glass Retro */}
+      {/* Ruta conectada de niveles */}
       <div className="relative">
-        {/* Línea conductora central tipo circuito retro */}
         <div
+          aria-hidden="true"
           className="hidden md:block absolute left-1/2 top-6 bottom-6 w-0.5 -translate-x-1/2 pointer-events-none"
           style={{
-            background: `linear-gradient(180deg, ${planetColor}66 0%, ${planetColor}22 50%, rgba(255,255,255,0.06) 100%)`,
-            boxShadow: `0 0 10px ${planetColor}33`,
+            background: `linear-gradient(180deg, ${accent.glow}66 0%, ${accent.glow}24 55%, rgba(255,255,255,0.08) 100%)`,
           }}
         />
 
@@ -310,26 +467,27 @@ function CoursePortalSection({
                         />
                       </div>
 
-                      {/* Conector central de circuito retro */}
-                      <div className="hidden md:flex md:col-span-2 items-center justify-center relative">
+                      <div
+                        aria-hidden="true"
+                        className="hidden md:flex md:col-span-2 items-center justify-center relative"
+                      >
                         <div
                           className="h-0.5 w-1/2"
                           style={{
-                            background: available ? planetColor : 'rgba(255,255,255,0.1)',
-                            boxShadow: available ? `0 0 8px ${planetColor}` : 'none',
+                            background: available ? accent.text : 'rgba(255,255,255,0.12)',
                           }}
                         />
                         <div
                           className="w-5 h-5 rounded-md rotate-45 flex items-center justify-center shrink-0 z-10 border"
                           style={{
-                            background: available ? '#040816' : '#0a0e1a',
-                            borderColor: available ? planetColor : 'rgba(255,255,255,0.15)',
-                            boxShadow: available ? `0 0 12px ${planetColor}` : 'none',
+                            background: '#080D1C',
+                            borderColor: available ? accent.text : 'rgba(255,255,255,0.18)',
+                            boxShadow: available ? `0 0 12px ${accent.glow}66` : 'none',
                           }}
                         >
                           <div
                             className="w-2 h-2 rounded-xs"
-                            style={{ background: available ? planetColor : '#334155' }}
+                            style={{ background: available ? accent.text : '#475569' }}
                           />
                         </div>
                         <div className="h-0.5 w-1/2 bg-transparent" />
@@ -341,27 +499,28 @@ function CoursePortalSection({
                     <>
                       <div className="hidden md:block md:col-span-5" />
 
-                      {/* Conector central de circuito retro */}
-                      <div className="hidden md:flex md:col-span-2 items-center justify-center relative">
+                      <div
+                        aria-hidden="true"
+                        className="hidden md:flex md:col-span-2 items-center justify-center relative"
+                      >
                         <div className="h-0.5 w-1/2 bg-transparent" />
                         <div
                           className="w-5 h-5 rounded-md rotate-45 flex items-center justify-center shrink-0 z-10 border"
                           style={{
-                            background: available ? '#040816' : '#0a0e1a',
-                            borderColor: available ? planetColor : 'rgba(255,255,255,0.15)',
-                            boxShadow: available ? `0 0 12px ${planetColor}` : 'none',
+                            background: '#080D1C',
+                            borderColor: available ? accent.text : 'rgba(255,255,255,0.18)',
+                            boxShadow: available ? `0 0 12px ${accent.glow}66` : 'none',
                           }}
                         >
                           <div
                             className="w-2 h-2 rounded-xs"
-                            style={{ background: available ? planetColor : '#334155' }}
+                            style={{ background: available ? accent.text : '#475569' }}
                           />
                         </div>
                         <div
                           className="h-0.5 w-1/2"
                           style={{
-                            background: available ? planetColor : 'rgba(255,255,255,0.1)',
-                            boxShadow: available ? `0 0 8px ${planetColor}` : 'none',
+                            background: available ? accent.text : 'rgba(255,255,255,0.12)',
                           }}
                         />
                       </div>
@@ -382,104 +541,134 @@ function CoursePortalSection({
           })}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
 export default function PlanetaPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const prefersReducedMotion = useReducedMotion();
   const planetId = parseInt(params.id, 10);
   const planet = useMemo(() => getPlanetById(planetId), [planetId]);
 
   if (!planet) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center px-6">
-        <div className="relative z-10 text-center liquid-glass liquid-glass-panel rounded-3xl p-8 max-w-md w-full">
-          <h1 className="text-2xl font-black text-white mb-2">Portal no encontrado</h1>
-          <p className="text-slate-300 text-sm mb-6">Este planeta no existe en el cosmos conocido...</p>
+      <div className="relative min-h-[75vh] flex items-center justify-center px-6">
+        <div className="relative z-10 text-center liquid-glass liquid-glass-panel rounded-3xl p-8 max-w-md w-full space-y-5">
+          <MissingPortalIllustration />
+          <div className="space-y-2">
+            <h1 className="text-2xl font-black text-[#F8FAFC] tracking-tight">
+              Portal no encontrado
+            </h1>
+            <p className="text-[#CBD5E1] text-sm leading-relaxed">
+              Este planeta no existe en las cartas estelares disponibles.
+            </p>
+          </div>
           <button
+            type="button"
             onClick={() => router.push('/dashboard')}
-            className="liquid-glass-btn px-6 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-widest text-white cursor-pointer"
+            className="min-h-[44px] inline-flex items-center justify-center gap-2 liquid-glass-btn px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest text-[#F8FAFC] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
           >
-            ← Volver al mapa
+            <IconArrowLeft className="w-4 h-4" />
+            <span>Volver al mapa estelar</span>
           </button>
         </div>
       </div>
     );
   }
 
+  const accent = getReadableAccent(planet.color);
+  const totalLevels = planet.courses.reduce((sum, c) => sum + c.levels.length, 0);
+
   return (
     <div className="relative min-h-screen">
-      <div className="relative z-10 px-4 sm:px-6 py-8 pb-20 max-w-4xl mx-auto">
+      <div className="relative z-10 px-4 sm:px-6 py-8 pb-20 max-w-5xl mx-auto">
         <button
+          type="button"
           onClick={() => router.push('/dashboard')}
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-200 hover:text-white liquid-glass-pill px-4 py-2.5 rounded-xl transition-all mb-7 cursor-pointer"
+          className="min-h-[44px] inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#E2E8F0] hover:text-white liquid-glass-pill px-4 py-2.5 rounded-xl transition-all mb-7 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#67E8F9]"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          Mapa estelar
+          <IconArrowLeft className="w-4 h-4" />
+          <span>Volver al mapa estelar</span>
         </button>
 
-        {/* Encabezado del Planeta con el Planeta 3D Real + Doble Encapsulado Liquid Glass */}
-        <div className="mb-10 rounded-3xl liquid-glass p-4 sm:p-5">
+        {/* Encabezado asimétrico del planeta con Doble Encapsulado Liquid Glass */}
+        <section
+          aria-labelledby="planet-page-heading"
+          className="mb-10 rounded-3xl liquid-glass p-3 sm:p-4"
+          style={{ borderColor: accent.border }}
+        >
           <div
-            className="rounded-2xl liquid-glass p-6 sm:p-8 text-center relative overflow-hidden"
+            className="rounded-2xl liquid-glass-inset p-6 sm:p-8 relative overflow-hidden"
             style={{
-              borderColor: `${planet.color}40`,
-              background: `linear-gradient(160deg, ${planet.color}14 0%, rgba(10, 14, 28, 0.38) 55%, rgba(6, 8, 18, 0.48) 100%)`,
+              borderColor: `${accent.glow}35`,
+              background: `linear-gradient(155deg, ${accent.glow}14 0%, rgba(10, 15, 32, 0.78) 52%, rgba(6, 10, 22, 0.9) 100%)`,
             }}
           >
-            {/* Ilustración 3D real del planeta en lugar del cuadrado con símbolo */}
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 140, damping: 14 }}
-              className="flex items-center justify-center -my-3"
-            >
-              <PlanetVisual name={planet.name} className="scale-90 sm:scale-100" />
-            </motion.div>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+              <motion.div
+                initial={prefersReducedMotion ? false : { scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.35 }}
+                className="md:col-span-4 flex items-center justify-center"
+              >
+                <PlanetVisual name={planet.name} className="scale-90 sm:scale-100" />
+              </motion.div>
 
-            <div className="mt-2 space-y-2">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full liquid-glass-pill font-mono text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: planet.color }}>
-                <span>✦</span> SECTOR PLANETARIO · {planet.shortDescription} <span>✦</span>
+              <div className="md:col-span-8 text-center md:text-left space-y-3">
+                <div
+                  className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full liquid-glass-pill font-mono text-[11px] font-bold uppercase tracking-[0.18em]"
+                  style={{ color: accent.text, borderColor: accent.border }}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: accent.text }}
+                  />
+                  <span>Sector planetario · {planet.shortDescription}</span>
+                </div>
+
+                <motion.h1
+                  id="planet-page-heading"
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-3xl sm:text-4xl font-black tracking-tight text-[#F8FAFC]"
+                >
+                  {planet.name}
+                </motion.h1>
+
+                <motion.p
+                  initial={prefersReducedMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.08 }}
+                  className="text-sm sm:text-base text-[#CBD5E1] max-w-xl leading-relaxed mx-auto md:mx-0"
+                >
+                  {planet.description}
+                </motion.p>
+
+                <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
+                  <div className="px-3.5 py-1.5 rounded-xl bg-[#080D1C]/85 border border-white/12 text-xs font-bold text-[#F8FAFC] tabular-nums">
+                    {planet.courses.length}{' '}
+                    {planet.courses.length === 1 ? 'módulo orbital' : 'módulos orbitales'}
+                  </div>
+                  <div className="px-3.5 py-1.5 rounded-xl bg-[#080D1C]/85 border border-white/12 text-xs font-bold text-[#CBD5E1] tabular-nums">
+                    {totalLevels} {totalLevels === 1 ? 'misión' : 'misiones'} en ruta
+                  </div>
+                </div>
               </div>
-
-              <motion.h1
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-3xl md:text-4xl font-black tracking-wide"
-                style={{
-                  background: `linear-gradient(135deg, #fff 30%, ${planet.color} 100%)`,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  filter: `drop-shadow(0 0 18px ${planet.color}44)`,
-                }}
-              >
-                {planet.name}
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.12 }}
-                className="text-sm sm:text-base text-slate-200/90 max-w-lg mx-auto leading-relaxed"
-              >
-                {planet.description}
-              </motion.p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Módulos y Niveles en Liquid Glass Retro */}
+        {/* Módulos y Niveles en Liquid Glass */}
         <div className="space-y-8">
           {planet.courses.map((course, i) => (
             <motion.div
               key={course.id}
-              initial={{ opacity: 0, y: 24 }}
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 + i * 0.12 }}
+              transition={{ delay: prefersReducedMotion ? 0 : 0.1 + i * 0.08 }}
             >
               <CoursePortalSection
                 course={course}

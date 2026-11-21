@@ -286,7 +286,7 @@ function StudentDashboardView({
       };
 
   return (
-    <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-10 sm:space-y-12">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-10 sm:space-y-12">
       {/* ── ALERTA DE ERROR DE SINCRONIZACIÓN (R-27) ── */}
       {progressError && (
         <div
@@ -797,7 +797,7 @@ function StudentDashboardView({
           })}
         </div>
       </section>
-    </main>
+    </div>
   );
 }
 
@@ -846,17 +846,17 @@ export default function Dashboard() {
 
   if (!mounted) {
     return (
-      <main className="relative min-h-[60vh] flex items-center justify-center px-6">
+      <div className="relative min-h-[60vh] flex items-center justify-center px-6">
         <p className="text-sm font-semibold text-[#CBD5E1]" role="status">
           Cargando tu centro de aprendizaje...
         </p>
-      </main>
+      </div>
     );
   }
 
   if (!user) {
     return (
-      <main className="relative min-h-[72vh] flex items-center justify-center px-4 sm:px-6">
+      <div className="relative min-h-[72vh] flex items-center justify-center px-4 sm:px-6">
         <div className="relative z-10 text-center max-w-md w-full mx-auto p-6 sm:p-8 rounded-2xl liquid-glass liquid-glass-panel space-y-5">
           <div className="space-y-2">
             <h1 className="text-2xl font-black text-[#F8FAFC] tracking-tight">
@@ -874,7 +874,7 @@ export default function Dashboard() {
             Volver al inicio para iniciar sesión
           </Link>
         </div>
-      </main>
+      </div>
     );
   }
 
