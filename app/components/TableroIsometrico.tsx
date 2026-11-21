@@ -194,6 +194,15 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
   const [estrellasRegularesFinal, setEstrellasRegularesFinal] = useState(3);
   const [guardandoBD, setGuardandoBD] = useState(false);
 
+  /* ── Estado del Tutor IA Gemma 4 (nivel adaptativo 1..3 + cola de preguntas JSON) ── */
+  const [nivelIA, setNivelIA] = useState<1 | 2 | 3>(1);
+  const [etiquetaNivelIA, setEtiquetaNivelIA] = useState('Nivel 1 · Base Orbital');
+  const [rachaIA, setRachaIA] = useState(0);
+  const [mensajeTutorIA, setMensajeTutorIA] = useState(
+    'Tutor IA Gemma 4 conectado: adaptaré la dificultad según tus respuestas.',
+  );
+  const colaPreguntasIARef = useRef<PreguntaMatematica[]>([]);
+
   /* ── 4 Núcleos Cuánticos (+, −, ×, ÷) ── */
   const [collectedCores, setCollectedCores] = useState<[boolean, boolean, boolean, boolean]>([
     false,
@@ -334,16 +343,62 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     [user, levelId],
   );
 
-  /* ── Registrar respuesta regular y actualizar vista previa de estrellas (1 a 3) ── */
+  /* ── Registrar respuesta regular y actualizar vista previa de estrellas (1 a 3) + Tutor IA Gemma 4 ── */
   const registrarDesempenoRegular = useCallback(
-    (esCorrecta: boolean) => {
+    (esCorrecta: boolean, enunciadoActual?: string, respEstudiante?: string, respCorrecta?: string) => {
       const nuevosAciertos = esCorrecta ? aciertos + 1 : aciertos;
       const nuevoTotal = totalPreguntas + 1;
+      const nuevaRacha = esCorrecta ? rachaIA + 1 : 0;
       setAciertos(nuevosAciertos);
       setTotalPreguntas(nuevoTotal);
+      setRachaIA(nuevaRacha);
       setStars(calcularEstrellasPorPorcentaje(nuevosAciertos, nuevoTotal));
+
+      void fetch('/api/tutor-ia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          estudianteNombre: user?.name || 'Explorador',
+          planeta: 'Numérix',
+          nivelActual: nivelIA,
+          esCorrecta,
+          rachaAciertos: nuevaRacha,
+          aciertos: nuevosAciertos,
+          totalPreguntas: nuevoTotal,
+          preguntaActual: enunciadoActual || '',
+          respuestaEstudiante: respEstudiante || '',
+          respuestaCorrecta: respCorrecta || '',
+          modeloPreferido: 'gemma4:31b',
+        }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.ok) {
+            setNivelIA(data.nuevoNivel);
+            setEtiquetaNivelIA(data.etiquetaNivel);
+            setMensajeTutorIA(data.mensajeTutor);
+            if (data.nuevaPregunta?.enunciado) {
+              colaPreguntasIARef.current.push({
+                id: data.nuevaPregunta.id,
+                operador: data.nuevaPregunta.operador || '+',
+                enunciado: data.nuevaPregunta.enunciado,
+                opciones: data.nuevaPregunta.opciones,
+                indiceRespuestaCorrecta: data.nuevaPregunta.indiceRespuestaCorrecta,
+                pista: data.nuevaPregunta.pista,
+                explicacionBreve: data.nuevaPregunta.explicacionBreve,
+              });
+            }
+            try {
+              const prevRaw = window.localStorage.getItem('universo-reportes-ia');
+              const prev = prevRaw ? JSON.parse(prevRaw) : [];
+              const next = [data.resumenProfesor, ...(Array.isArray(prev) ? prev : [])].slice(0, 20);
+              window.localStorage.setItem('universo-reportes-ia', JSON.stringify(next));
+            } catch {}
+          }
+        })
+        .catch(() => {});
     },
-    [aciertos, totalPreguntas],
+    [aciertos, totalPreguntas, rachaIA, user?.name, nivelIA],
   );
 
   /* ── Otorgar Núcleo Cuántico correspondiente según el avance ── */
@@ -434,7 +489,8 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         setTimeout(() => startTrapMinigame(), 380);
       } else {
         setTimeout(() => {
-          const preg = getRandomPregunta(usadasRef.current);
+          const pregIA = colaPreguntasIARef.current.shift();
+          const preg = pregIA ?? getRandomPregunta(usadasRef.current);
           usadasRef.current.add(preg.id);
           setQuestion(preg);
           setQStatus('idle');
@@ -761,6 +817,12 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             </h1>
             <p className="mt-1.5 text-[10px] font-bold tracking-[0.26em] text-[#93C5FD]/90 uppercase">
               TABLERO CUÁNTICO
+            </p>
+            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#67E8F9]/35 bg-[#041724]/80 px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#67E8F9]">
+              <span>Gemma 4 · {etiquetaNivelIA}</span>
+            </div>
+            <p className="mt-1.5 text-[11px] text-[#CBD5E1] leading-snug line-clamp-2">
+              {mensajeTutorIA}
             </p>
           </div>
 

@@ -164,6 +164,14 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
   const [estrellasTotalesFinal, setEstrellasTotalesFinal] = useState(7);
   const [guardandoBD, setGuardandoBD] = useState(false);
 
+  /* ── Estado del Tutor IA Gemma 4 en Letralia ── */
+  const [nivelIA, setNivelIA] = useState<1 | 2 | 3>(1);
+  const [etiquetaNivelIA, setEtiquetaNivelIA] = useState('Nivel 1 · Base Orbital');
+  const [rachaIA, setRachaIA] = useState(0);
+  const [mensajeTutorIA, setMensajeTutorIA] = useState(
+    'Tutor IA Gemma 4 activo: acompaño tu lectura y ajusto el nivel.',
+  );
+
   const [avisoFlotante, setAvisoFlotante] = useState<string | null>(
     '¡Lanza el dado astral para comenzar tu viaje por Letralia!',
   );
@@ -526,6 +534,39 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         } else {
           playIncorrect();
         }
+
+        const nuevaRacha = res.exito ? rachaIA + 1 : 0;
+        setRachaIA(nuevaRacha);
+
+        void fetch('/api/tutor-ia', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            estudianteNombre: user?.name || 'Explorador',
+            planeta: 'Letralia',
+            nivelActual: nivelIA,
+            esCorrecta: res.exito,
+            rachaAciertos: nuevaRacha,
+            aciertos: nuevosAciertos,
+            totalPreguntas: nuevoTotal,
+            modeloPreferido: 'gemma4:31b',
+          }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data?.ok) {
+              setNivelIA(data.nuevoNivel);
+              setEtiquetaNivelIA(data.etiquetaNivel);
+              setMensajeTutorIA(data.mensajeTutor);
+              try {
+                const prevRaw = window.localStorage.getItem('universo-reportes-ia');
+                const prev = prevRaw ? JSON.parse(prevRaw) : [];
+                const next = [data.resumenProfesor, ...(Array.isArray(prev) ? prev : [])].slice(0, 20);
+                window.localStorage.setItem('universo-reportes-ia', JSON.stringify(next));
+              } catch {}
+            }
+          })
+          .catch(() => {});
       }
 
       if (res.exito && casillaActual) {
@@ -830,6 +871,12 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               <span className="text-[#6D28D9]">◈</span>
               <span>{nombreTramoActual}</span>
             </div>
+            <div className="mt-1.5 text-[10px] font-bold text-[#4C1D95]">
+              Gemma 4 · {etiquetaNivelIA}
+            </div>
+            <p className="mt-0.5 text-[11px] font-semibold text-[#1E1B4B] leading-snug line-clamp-2">
+              {mensajeTutorIA}
+            </p>
           </div>
 
           {/* ── 2. CUENCO DEL DADO 3D ASTRAL ── */}
