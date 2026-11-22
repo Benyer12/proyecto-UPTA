@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useAuthStore } from '../../../lib/auth-store';
@@ -472,11 +472,16 @@ export default function AdminUsuariosPage() {
 
           <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
             <LiquidGlass
-              blur={2}
-              refraction={20}
-              bezel={0.36}
-              saturation={1.65}
-              className="rounded-2xl bg-[#050a18]/[0.38] border-white/[0.15] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)]"
+              blur={5}
+              refraction={8}
+              bezel={0.2}
+              saturation={1.12}
+              className="rounded-2xl bg-white/[0.03] border-white/[0.10] shadow-[0_18px_50px_-28px_rgba(0,0,0,0.65)]"
+              style={
+                {
+                  '--liquid-glass-rim-uniform': 'rgba(255, 255, 255, 0.13)',
+                } as CSSProperties
+              }
             >
               <div className="grid grid-cols-4 divide-x divide-white/10">
                 <div className="px-3.5 py-2.5 text-center">
@@ -513,11 +518,16 @@ export default function AdminUsuariosPage() {
 
         {/* Hoja cristalina unificada con barra de búsqueda y filtros integrados */}
         <LiquidGlass
-          blur={2.5}
-          refraction={20}
-          bezel={0.32}
-          saturation={1.62}
-          className="rounded-3xl bg-[#050a18]/[0.44] border-white/[0.15] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3),inset_0_-14px_28px_-12px_rgba(180,220,255,0.14)]"
+          blur={5}
+          refraction={8}
+          bezel={0.2}
+          saturation={1.12}
+          className="rounded-2xl bg-white/[0.03] border-white/[0.10] shadow-[0_18px_50px_-28px_rgba(0,0,0,0.65)]"
+          style={
+            {
+              '--liquid-glass-rim-uniform': 'rgba(255, 255, 255, 0.13)',
+            } as CSSProperties
+          }
         >
           {/* Barra superior de búsqueda y filtros */}
           <div className="p-4 sm:px-6 border-b border-white/[0.08] bg-white/[0.02] flex flex-col lg:flex-row lg:items-center justify-between gap-3">
