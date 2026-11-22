@@ -25,7 +25,7 @@ export default function StudentTutorIACard({
   const [aciertos, setAciertos] = useState(0);
   const [total, setTotal] = useState(0);
   const [mensajeTutor, setMensajeTutor] = useState(
-    `¡Hola, ${studentName}! Soy tu Tutor IA Gemma 4 en la nube. Responde o pídeme una pregunta nueva.`,
+    `¡Hola, ${studentName}! Soy tu Tutor IA Google Gemini en la nube. Responde o pídeme una pregunta nueva.`,
   );
   const [preguntaActiva, setPreguntaActiva] = useState<PreguntaGeneradaIA | null>(null);
   const [opcionElegida, setOpcionElegida] = useState<number | null>(null);
@@ -171,11 +171,11 @@ export default function StudentTutorIACard({
     >
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div className="flex items-start sm:items-center gap-3.5">
-          <RoleAvatar role="tutor" name="Tutor IA Gemma 4" size={44} />
+          <RoleAvatar role="tutor" name="Tutor IA Google Gemini" size={44} />
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[#67E8F9]">
-                Tutor IA · Gemma 4 Cloud
+                Tutor IA · Google Gemini Cloud
               </span>
               <span className="rounded-full border border-[#6EE7B7]/35 bg-[#041B14]/75 px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#6EE7B7]">
                 {etiquetaNivel}

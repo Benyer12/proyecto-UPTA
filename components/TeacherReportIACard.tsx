@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 import { LiquidGlass } from './ui/glasscn/liquid-glass';
 import LiquidGlassSelect, { type LiquidGlassSelectOption } from './LiquidGlassSelect';
 import RoleAvatar from './RoleAvatar';
@@ -203,7 +203,7 @@ export default function TeacherReportIACard({
     </div>
     <div style="font-size:12px;color:#475569;text-align:right;">
       <div><strong>Fecha:</strong> ${fechaLegible}</div>
-      <div><strong>Motor IA:</strong> Gemma 4 / Gemini Cloud</div>
+      <div><strong>Motor IA:</strong> Google Gemini Cloud</div>
     </div>
   </div>
 
@@ -222,7 +222,7 @@ export default function TeacherReportIACard({
     </div>
   </div>
 
-  <h2>Resumen Pedagógico Personalizado (Gemma 4)</h2>
+  <h2>Resumen Pedagógico Personalizado (Google Gemini)</h2>
   <div class="box">
     <p style="margin:0 0 12px;"><strong>Diagnóstico del estudiante:</strong> ${est.resumenIA}</p>
     <p style="margin:0 0 12px;"><strong>Fortaleza principal:</strong> ${est.fortalezaPrincipal}</p>
@@ -231,7 +231,7 @@ export default function TeacherReportIACard({
 
   <div class="footer">
     <span>Universo del Conocimiento · Plataforma Educativa Gamificada (10 a 12 años)</span>
-    <span>Generado por Tutor IA Gemma 4 (/api/tutor-ia)</span>
+    <span>Generado por Tutor IA Google Gemini (/api/tutor-ia)</span>
   </div>
   <script>
     window.addEventListener('load', function() {
@@ -447,13 +447,13 @@ export default function TeacherReportIACard({
 <body>
   <div class="header">
     <div>
-      <div class="brand">Universo del Conocimiento · Tutor IA Gemma 4 / Gemini Cloud</div>
+      <div class="brand">Universo del Conocimiento · Tutor IA Google Gemini Cloud</div>
       <h1>Reporte Pedagógico del Docente y Resumen por Estudiante</h1>
       <div style="font-size:13px;color:#334155;">Tutor responsable: <strong>${datos.tutorNombre}</strong></div>
     </div>
     <div class="meta">
       <div><strong>Fecha:</strong> ${fechaLegible}</div>
-      <div><strong>Motor IA:</strong> Gemma 4 Cloud</div>
+      <div><strong>Motor IA:</strong> Google Gemini Cloud</div>
       <div><strong>Retos adaptativos:</strong> ${datos.totalPreguntasGeneradasIA} en banco</div>
     </div>
   </div>
@@ -477,7 +477,7 @@ export default function TeacherReportIACard({
     </div>
   </div>
 
-  <h2>Diagnóstico Grupal Generado por Gemma 4</h2>
+  <h2>Diagnóstico Grupal Generado por Google Gemini</h2>
   <div class="diagnosis-box">
     <p style="margin:0 0 8px;">${datos.diagnosticoIA}</p>
     <strong>Recomendaciones pedagógicas para el aula:</strong>
@@ -505,7 +505,7 @@ export default function TeacherReportIACard({
 
   <div class="footer">
     <span>Universo del Conocimiento · Plataforma Educativa Gamificada (10 a 12 años)</span>
-    <span>Generado con Tutor IA Gemma 4 (/api/tutor-ia)</span>
+    <span>Generado con Tutor IA Google Gemini (/api/tutor-ia)</span>
   </div>
   <script>
     window.addEventListener('load', function() {
@@ -526,18 +526,23 @@ export default function TeacherReportIACard({
   return (
     <section aria-labelledby="ai-tutor-report-heading">
       <LiquidGlass
-        blur={2.5}
-        refraction={20}
-        bezel={0.34}
-        saturation={1.65}
-        className="rounded-3xl bg-[#050a18]/[0.44] border-white/[0.16] p-6 sm:p-7 space-y-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)]"
+        blur={5}
+        refraction={8}
+        bezel={0.2}
+        saturation={1.12}
+        className="rounded-2xl bg-white/[0.03] border-white/[0.10] p-6 sm:p-7 space-y-5 shadow-[0_18px_50px_-28px_rgba(0,0,0,0.65)]"
+        style={
+          {
+            '--liquid-glass-rim-uniform': 'rgba(255, 255, 255, 0.13)',
+          } as CSSProperties
+        }
       >
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <RoleAvatar role="tutor" name="Asistente Gemma 4" size={46} />
+            <RoleAvatar role="tutor" name="Asistente Google Gemini" size={46} />
             <div>
               <div className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[#67E8F9]">
-                Copiloto Docente · Gemma 4 / Gemini Cloud
+                Copiloto Docente · Google Gemini Cloud
               </div>
               <h2
                 id="ai-tutor-report-heading"
