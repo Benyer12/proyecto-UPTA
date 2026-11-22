@@ -11,6 +11,7 @@ interface Particle {
   originY: number;
   vx: number;
   vy: number;
+  size: number;
   length: number;
   angle: number;
   targetAngle: number;
@@ -119,7 +120,7 @@ export default function AntigravityParticles() {
 
     const createParticles = (w: number, h: number): Particle[] => {
       const list: Particle[] = [];
-      const spacing = w < 768 ? 102 : 84;
+      const spacing = w < 768 ? 82 : 68;
       const cols = Math.ceil(w / spacing);
       const rows = Math.ceil(h / spacing);
 
@@ -136,15 +137,16 @@ export default function AntigravityParticles() {
             originY: oy,
             vx: 0,
             vy: 0,
-            length: 4.2 + Math.random() * 4.5,
+            size: 1.25 + Math.random() * 1.15,
+            length: 4 + Math.random() * 4.8,
             angle: initialAngle,
             targetAngle: initialAngle,
             strokeStyle: getColorForPosition(ox, oy, w, h),
-            baseAlpha: isLight ? 0.34 + Math.random() * 0.28 : 0.26 + Math.random() * 0.28,
+            baseAlpha: isLight ? 0.32 + Math.random() * 0.3 : 0.24 + Math.random() * 0.28,
             alpha: isLight ? 0.42 : 0.32,
             phase: Math.random() * Math.PI * 2,
             speed: 0.45 + Math.random() * 0.55,
-            orbitRadius: 55 + Math.random() * 125,
+            orbitRadius: 55 + Math.random() * 130,
             orbitOffset: Math.random() * Math.PI * 2,
           });
         }
@@ -212,9 +214,9 @@ export default function AntigravityParticles() {
         return;
       }
 
-      // 45 fps al interactuar con el cursor, 22 fps en reposo para cero lag en tarjetas Glass
+      // 60 fps fluidos al interactuar con el cursor, 28 fps en reposo para cero lag
       const interacting = mouse.active && timestamp - lastMoveAt < 1800;
-      const minInterval = interacting ? 22 : 45;
+      const minInterval = interacting ? 16 : 36;
       if (timestamp - lastFrame < minInterval) {
         animationId = requestAnimationFrame(animate);
         return;
@@ -223,14 +225,13 @@ export default function AntigravityParticles() {
 
       const time = timestamp / 1000;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.lineWidth = 2.5;
       ctx.lineCap = 'round';
 
       if (mouse.active) {
         const prevX = mouse.x;
         const prevY = mouse.y;
-        mouse.x += (mouse.targetX - mouse.x) * 0.14;
-        mouse.y += (mouse.targetY - mouse.y) * 0.14;
+        mouse.x += (mouse.targetX - mouse.x) * 0.13;
+        mouse.y += (mouse.targetY - mouse.y) * 0.13;
         mouse.vx = mouse.x - prevX;
         mouse.vy = mouse.y - prevY;
       } else {
@@ -321,6 +322,7 @@ export default function AntigravityParticles() {
 
         ctx.globalAlpha = p.alpha;
         ctx.strokeStyle = p.strokeStyle;
+        ctx.lineWidth = p.size * 1.5;
         ctx.beginPath();
         ctx.moveTo(p.x - cos * halfLen, p.y - sin * halfLen);
         ctx.lineTo(p.x + cos * halfLen, p.y + sin * halfLen);
