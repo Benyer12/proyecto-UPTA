@@ -28,6 +28,7 @@ import {
   type CondicionAsteroide,
 } from './numerix/ModalesNumerix';
 import {
+  barajarRetoBoss,
   getRandomPregunta,
   getRandomRetoBoss,
   type PreguntaMatematica,
@@ -202,6 +203,34 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     'Tutor IA Gemma 4 conectado: creo preguntas en este tablero y subo el nivel gradualmente si vas muy bien.',
   );
   const colaPreguntasIARef = useRef<PreguntaMatematica[]>([]);
+  const colaBossIARef = useRef<RetoArmilarBoss[]>([]);
+
+  useEffect(() => {
+    void fetch('/api/tutor-ia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'preparar-tablero',
+        planeta: 'Numérix',
+        nivelActual: 1,
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data?.ok) return;
+        if (Array.isArray(data.preguntasNumerix)) {
+          data.preguntasNumerix.forEach((p: PreguntaMatematica) => {
+            if (p?.enunciado) colaPreguntasIARef.current.push(p);
+          });
+        }
+        if (Array.isArray(data.retosBossNumerix)) {
+          data.retosBossNumerix.forEach((b: RetoArmilarBoss) => {
+            if (b?.enunciado) colaBossIARef.current.push(barajarRetoBoss(b));
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   /* ── 4 Núcleos Cuánticos (+, −, ×, ÷) ── */
   const [collectedCores, setCollectedCores] = useState<[boolean, boolean, boolean, boolean]>([
@@ -388,6 +417,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 explicacionBreve: data.nuevaPregunta.explicacionBreve,
               });
             }
+            if (data.nuevoRetoBossNumerix?.enunciado) {
+              colaBossIARef.current.push(barajarRetoBoss(data.nuevoRetoBossNumerix as RetoArmilarBoss));
+            }
             try {
               const prevRaw = window.localStorage.getItem('universo-reportes-ia');
               const prev = prevRaw ? JSON.parse(prevRaw) : [];
@@ -468,7 +500,8 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
   /* ── Iniciar Duelo del Guardián Armilar en la Casilla 20 ── */
   const startBossBattle = useCallback(() => {
     setCollectedCores([true, true, true, true]);
-    const primerReto = getRandomRetoBoss(usadosBossRef.current);
+    const retoIA = colaBossIARef.current.shift();
+    const primerReto = retoIA ?? getRandomRetoBoss(usadosBossRef.current);
     usadosBossRef.current.add(primerReto.id);
     setBossReto(primerReto);
     setBossPhase(1);
@@ -476,7 +509,24 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     setBossStatus('idle');
     setBossBattleActive(true);
     setAvisoFlotante('¡Has llegado a la cima! Alinea los 3 anillos de la Esfera Armilar Dorada.');
-  }, []);
+
+    // Precarga un reto extra del Jefe Final con la IA para las siguientes fases
+    void fetch('/api/tutor-ia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'generar-boss-numerix',
+        nivelActual: nivelIA,
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.ok && data.nuevoRetoBossNumerix?.enunciado) {
+          colaBossIARef.current.push(barajarRetoBoss(data.nuevoRetoBossNumerix as RetoArmilarBoss));
+        }
+      })
+      .catch(() => {});
+  }, [nivelIA]);
 
   /* ── Activar evento de la casilla donde aterriza el astronauta ── */
   const activarEventoCasilla = useCallback(
@@ -649,14 +699,36 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
 
   /* ── Interacción en Tarjeta 3 (Guardián del Nivel — Núcleo Armilar) ── */
   const handleAlinearAnillo = useCallback(async () => {
+    const pedirSiguienteBossIA = (nivelObj: number) => {
+      void fetch('/api/tutor-ia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'generar-boss-numerix',
+          nivelActual: nivelObj,
+        }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.ok && data.nuevoRetoBossNumerix?.enunciado) {
+            colaBossIARef.current.push(
+              barajarRetoBoss(data.nuevoRetoBossNumerix as RetoArmilarBoss),
+            );
+          }
+        })
+        .catch(() => {});
+    };
+
     if (bossStatus === 'correct') {
       if (bossPhase < 3) {
-        const siguienteReto = getRandomRetoBoss(usadosBossRef.current);
+        const retoIA = colaBossIARef.current.shift();
+        const siguienteReto = retoIA ?? getRandomRetoBoss(usadosBossRef.current);
         usadosBossRef.current.add(siguienteReto.id);
         setBossReto(siguienteReto);
         setBossPhase((f) => (f + 1) as 1 | 2 | 3);
         setBossSelectedOpt(null);
         setBossStatus('idle');
+        pedirSiguienteBossIA(nivelIA);
       } else {
         // ¡Jefe Final Superado! Calculamos (Regulares por % + 4 del Jefe) y guardamos en Supabase
         setBossBattleActive(false);
@@ -669,11 +741,13 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     }
 
     if (bossStatus === 'incorrect') {
-      const nuevoReto = getRandomRetoBoss(usadosBossRef.current);
+      const retoIA = colaBossIARef.current.shift();
+      const nuevoReto = retoIA ?? getRandomRetoBoss(usadosBossRef.current);
       usadosBossRef.current.add(nuevoReto.id);
       setBossReto(nuevoReto);
       setBossSelectedOpt(null);
       setBossStatus('idle');
+      pedirSiguienteBossIA(nivelIA);
       return;
     }
 
@@ -681,9 +755,11 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     if (bossSelectedOpt === bossReto.indiceCorrecto) {
       setBossStatus('correct');
       playCorrect();
+      pedirSiguienteBossIA(nivelIA);
     } else {
       setBossStatus('incorrect');
       playIncorrect();
+      pedirSiguienteBossIA(nivelIA);
     }
   }, [
     bossStatus,
@@ -693,6 +769,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     guardarProgresoEnSupabase,
     aciertos,
     totalPreguntas,
+    nivelIA,
   ]);
 
   /* ── Finalizar y redirigir al Dashboard ── */

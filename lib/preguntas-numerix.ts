@@ -292,6 +292,8 @@ export const RETOS_ARMILAR_BOSS: RetoArmilarBoss[] = [
     pista: '¿Qué número multiplicado por 3 da 18?',
     explicacion: 'Como 3 × 6 = 18, cada anillo tiene 6 estrellas.',
   },
+  // === IA_BOSS_NUMERIX_START ===
+  // === IA_BOSS_NUMERIX_END ===
 ];
 
 /** Baraja las opciones de una pregunta matemática para que la respuesta correcta quede en posición aleatoria. */

@@ -1,7 +1,20 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
-import { PREGUNTAS_NUMERIX } from './preguntas-numerix';
-import { RETOS_INTRUSO, type RetoIntruso } from './preguntas-letralia';
+import {
+  PREGUNTAS_NUMERIX,
+  RETOS_ARMILAR_BOSS,
+  type RetoArmilarBoss,
+} from './preguntas-numerix';
+import {
+  RETOS_INTRUSO,
+  RETOS_PUENTE,
+  RETOS_TORMENTA,
+  RETOS_GUARDIAN,
+  type RetoIntruso,
+  type RetoPuenteSintactico,
+  type RetoTormenta,
+  type RetoGuardianBoss,
+} from './preguntas-letralia';
 
 export type PlanetaTutorIA = 'Numérix' | 'Letralia' | 'Naturae';
 export type NivelDificultadIA = 1 | 2 | 3;
@@ -89,7 +102,11 @@ export interface RespuestaTutorIA {
   mensajeTutor: string;
   consejoBreve: string;
   nuevaPregunta: PreguntaGeneradaIA;
+  nuevoRetoBossNumerix?: RetoArmilarBoss;
   nuevoRetoLetralia?: RetoIntruso;
+  nuevoRetoPuenteLetralia?: RetoPuenteSintactico;
+  nuevoRetoTormentaLetralia?: RetoTormenta;
+  nuevoRetoBossLetralia?: RetoGuardianBoss;
   resumenProfesor: ResumenReporteProfesor;
 }
 
@@ -1004,8 +1021,17 @@ export async function evaluarRespuestaConTutorIA(
       ? `¡Vas excelente! Subimos suavemente a ${etiquetaNivel}.`
       : `Seguimos en ${etiquetaNivel} para afianzar a tu ritmo.`;
 
+  const nuevoRetoBossNumerix =
+    planeta === 'Numérix' ? generarRetoBossNumerixAdaptativo(nuevoNivel) : undefined;
+
   const nuevoRetoLetralia =
     planeta === 'Letralia' ? generarRetoLetraliaAdaptativo(nuevoNivel) : undefined;
+  const nuevoRetoPuenteLetralia =
+    planeta === 'Letralia' ? generarRetoPuenteLetraliaAdaptativo(nuevoNivel) : undefined;
+  const nuevoRetoTormentaLetralia =
+    planeta === 'Letralia' ? generarRetoTormentaLetraliaAdaptativo(nuevoNivel) : undefined;
+  const nuevoRetoBossLetralia =
+    planeta === 'Letralia' ? generarRetoBossLetraliaAdaptativo(nuevoNivel) : undefined;
 
   const mensajeTutorPorDefecto = entrada.consultaLibre
     ? `¡Hola, ${estudianteNombre}! En ${planeta} (${materia}), recuerda leer cada pista con calma y descomponer el reto en pasos pequeños. ${mensajeCambio}`
@@ -1079,7 +1105,524 @@ export async function evaluarRespuestaConTutorIA(
     mensajeTutor: parsed?.mensajeTutor || mensajeTutorPorDefecto,
     consejoBreve: parsed?.consejoBreve || consejoPorDefecto,
     nuevaPregunta,
+    nuevoRetoBossNumerix,
     nuevoRetoLetralia,
+    nuevoRetoPuenteLetralia,
+    nuevoRetoTormentaLetralia,
+    nuevoRetoBossLetralia,
     resumenProfesor,
+  };
+}
+
+/**
+ * Genera un reto calibrado y nuevo para el Jefe Final de Numérix (Núcleo Armilar)
+ * tomando como referencia la dificultad default de RETOS_ARMILAR_BOSS.
+ */
+export function generarRetoBossNumerixAdaptativo(
+  nivel: NivelDificultadIA,
+): RetoArmilarBoss {
+  const rand = (min: number, max: number) =>
+    Math.floor(Math.random() * (max - min + 1)) + min;
+
+  const tipo = rand(0, 3);
+  let enunciado = '';
+  let correctoNum = 0;
+  let unidad = '';
+  let pista = '';
+  let explicacion = '';
+
+  if (nivel === 1) {
+    if (tipo === 0) {
+      const anillos = rand(3, 6);
+      const cristales = rand(4, 8);
+      correctoNum = anillos * cristales;
+      enunciado = `El Núcleo Armilar enciende ${anillos} anillos y cada uno lleva ${cristales} gemas de luz. ¿Cuántas gemas brillan en total?`;
+      pista = `Multiplica ${anillos} × ${cristales}.`;
+      explicacion = `${anillos} × ${cristales} = ${correctoNum} gemas de luz.`;
+    } else if (tipo === 1) {
+      const meta = rand(45, 75);
+      const actual = rand(18, meta - 12);
+      correctoNum = meta - actual;
+      enunciado = `Un sello armilar necesita ${meta} pulsos y ya acumuló ${actual}. ¿Cuántos pulsos le faltan?`;
+      pista = `Resta ${meta} − ${actual}.`;
+      explicacion = `${meta} − ${actual} = ${correctoNum} pulsos faltantes.`;
+    } else if (tipo === 2) {
+      const grupos = rand(3, 5);
+      const porGrupo = rand(5, 9);
+      const total = grupos * porGrupo;
+      correctoNum = porGrupo;
+      enunciado = `El Guardián reparte ${total} rayos de energía en partes iguales entre ${grupos} anillos. ¿Cuántos rayos recibe cada anillo?`;
+      pista = `Divide ${total} ÷ ${grupos}.`;
+      explicacion = `Como ${grupos} × ${porGrupo} = ${total}, cada anillo recibe ${porGrupo} rayos.`;
+    } else {
+      const a = rand(18, 36);
+      const b = rand(14, 29);
+      correctoNum = a + b;
+      unidad = '°';
+      enunciado = `El primer anillo gira ${a} grados y el segundo gira ${b} grados más. ¿Cuántos grados giraron entre los dos?`;
+      pista = `Suma ${a} + ${b}.`;
+      explicacion = `${a} + ${b} = ${correctoNum} grados en total.`;
+    }
+  } else if (nivel === 2) {
+    if (tipo === 0) {
+      const nodos = rand(5, 9);
+      const mw = rand(6, 9);
+      correctoNum = nodos * mw;
+      unidad = ' MW';
+      enunciado = `Cada uno de los ${nodos} núcleos armilares genera ${mw} MW de potencia. ¿Cuánta potencia producen juntos?`;
+      pista = `Calcula ${nodos} × ${mw}.`;
+      explicacion = `${nodos} × ${mw} = ${correctoNum} MW en total.`;
+    } else if (tipo === 1) {
+      const total = rand(80, 125);
+      const usados = rand(28, 56);
+      correctoNum = total - usados;
+      enunciado = `La Esfera Armilar tenía ${total} cargas y consumió ${usados} al abrir el portal. ¿Cuántas cargas quedan disponibles?`;
+      pista = `Resta ${total} − ${usados} descomponiendo en decenas y unidades.`;
+      explicacion = `${total} − ${usados} = ${correctoNum} cargas disponibles.`;
+    } else if (tipo === 2) {
+      const pilares = rand(4, 8);
+      const chispas = rand(6, 9);
+      const total = pilares * chispas;
+      correctoNum = chispas;
+      enunciado = `Hay ${total} chispas doradas distribuidas por igual en ${pilares} pilares del altar. ¿Cuántas chispas hay en cada pilar?`;
+      pista = `Busca qué número multiplicado por ${pilares} da ${total}.`;
+      explicacion = `${total} ÷ ${pilares} = ${chispas} chispas por pilar.`;
+    } else {
+      const a = rand(38, 65);
+      const b = rand(24, 48);
+      correctoNum = a + b;
+      enunciado = `El anillo exterior suma ${a} impulsos y el interior aporta ${b}. ¿Cuántos impulsos activan el sello?`;
+      pista = `Suma primero las decenas y luego las unidades de ${a} + ${b}.`;
+      explicacion = `${a} + ${b} = ${correctoNum} impulsos en total.`;
+    }
+  } else {
+    // Nivel 3: 2 pasos suaves (sin exagerar)
+    if (tipo === 0) {
+      const anillos = rand(4, 7);
+      const gemas = rand(6, 9);
+      const extra = rand(5, 12);
+      correctoNum = anillos * gemas + extra;
+      enunciado = `El Guardián activa ${anillos} anillos con ${gemas} gemas cada uno y añade ${extra} gemas de reserva. ¿Cuántas gemas hay en total?`;
+      pista = `Primero multiplica ${anillos} × ${gemas} y luego suma ${extra}.`;
+      explicacion = `${anillos} × ${gemas} = ${anillos * gemas}, más ${extra} = ${correctoNum} gemas.`;
+    } else if (tipo === 1) {
+      const bloques = rand(5, 8);
+      const valor = rand(7, 9);
+      const gasto = rand(6, 15);
+      correctoNum = bloques * valor - gasto;
+      unidad = ' MW';
+      enunciado = `Tienes ${bloques} celdas de ${valor} MW cada una y el escudo consume ${gasto} MW. ¿Cuántos MW quedan libres?`;
+      pista = `Calcula ${bloques} × ${valor} y réstale ${gasto}.`;
+      explicacion = `${bloques} × ${valor} = ${bloques * valor}, menos ${gasto} = ${correctoNum} MW.`;
+    } else {
+      const grupos = rand(4, 6);
+      const base = rand(8, 12);
+      const total = grupos * base;
+      correctoNum = base + 4;
+      enunciado = `Se reparten ${total} cristales entre ${grupos} anillos iguales y luego tu anillo recibe 4 cristales extra. ¿Cuántos cristales reúne tu anillo?`;
+      pista = `Divide ${total} ÷ ${grupos} y suma 4.`;
+      explicacion = `${total} ÷ ${grupos} = ${base}, y ${base} + 4 = ${correctoNum} cristales.`;
+    }
+  }
+
+  const d1 = correctoNum + rand(2, 6);
+  const d2 = Math.max(1, correctoNum - rand(2, 6));
+  const correctaStr = `${correctoNum}${unidad}`;
+  const opcionesRaw = [correctaStr, `${d1}${unidad}`, `${d2 === correctoNum ? correctoNum + 8 : d2}${unidad}`];
+  const barajadas = [...opcionesRaw].sort(() => Math.random() - 0.5) as [string, string, string];
+
+  return {
+    id: `ia-arm-${Date.now()}-${rand(10, 99)}`,
+    enunciado,
+    opciones: barajadas,
+    indiceCorrecto: barajadas.indexOf(correctaStr) as 0 | 1 | 2,
+    pista,
+    explicacion,
+  };
+}
+
+/**
+ * Genera un reto nuevo de Puente Sintáctico para Letralia calibrado por nivel (1..3)
+ */
+export function generarRetoPuenteLetraliaAdaptativo(
+  nivel: NivelDificultadIA,
+): RetoPuenteSintactico {
+  const bancos: Record<NivelDificultadIA, Array<Omit<RetoPuenteSintactico, 'id'>>> = {
+    1: [
+      {
+        enfoque: 'sujeto-predicado',
+        ordenCorrecto: ['La brújula', 'astral', 'guía', 'a los viajeros', 'por el cielo'],
+        pista: 'Empieza por el sujeto con mayúscula: ¿qué guía a los viajeros?',
+        explicacion: 'Sujeto: «La brújula astral». Predicado: «guía a los viajeros por el cielo».',
+      },
+      {
+        enfoque: 'sujeto-predicado',
+        ordenCorrecto: ['El cometa', 'luminoso', 'cruza', 'el cielo', 'de Letralia'],
+        pista: 'Primero identifica quién realiza la acción (El cometa luminoso).',
+        explicacion: '«El cometa luminoso» es el sujeto y «cruza el cielo de Letralia» el predicado.',
+      },
+      {
+        enfoque: 'coherencia',
+        ordenCorrecto: ['Los estudiantes', 'descubren', 'palabras nuevas', 'en cada isla'],
+        pista: 'Piensa en orden: ¿quiénes?, ¿qué hacen?, ¿qué descubren?, ¿dónde?',
+        explicacion: 'La oración completa mantiene sujeto, verbo, complemento y lugar en orden claro.',
+      },
+    ],
+    2: [
+      {
+        enfoque: 'conectores',
+        ordenCorrecto: ['Leímos', 'la pista;', 'por lo tanto,', 'encontramos', 'la respuesta'],
+        pista: '«Por lo tanto» une una acción con su resultado.',
+        explicacion: 'Leer la pista es la causa y «por lo tanto» introduce la consecuencia.',
+      },
+      {
+        enfoque: 'conectores',
+        ordenCorrecto: ['El camino', 'era largo;', 'sin embargo,', 'llegamos', 'al santuario'],
+        pista: '«Sin embargo» conecta una dificultad con un logro inesperado.',
+        explicacion: '«Sin embargo» muestra contraste entre un camino largo y lograr llegar.',
+      },
+      {
+        enfoque: 'coherencia',
+        ordenCorrecto: ['La bibliotecaria', 'ordenó', 'los códices', 'antes del', 'amanecer'],
+        pista: 'Coloca primero quién actuó, luego el verbo y al final cuándo ocurrió.',
+        explicacion: 'Sujeto (La bibliotecaria) + acción (ordenó los códices) + tiempo (antes del amanecer).',
+      },
+    ],
+    3: [
+      {
+        enfoque: 'conectores',
+        ordenCorrecto: ['Aunque', 'soplaba viento,', 'el puente', 'de sílabas', 'se mantuvo firme'],
+        pista: '«Aunque» va al inicio para anunciar un obstáculo que no impide el resultado.',
+        explicacion: '«Aunque» introduce la dificultad (soplaba viento) antes de la idea principal.',
+      },
+      {
+        enfoque: 'conectores',
+        ordenCorrecto: ['Cuidamos', 'la ortografía', 'y,', 'además,', 'revisamos', 'cada acento'],
+        pista: '«Además» suma una segunda acción relacionada con la primera.',
+        explicacion: 'El conector «además» enlaza dos acciones que se complementan.',
+      },
+      {
+        enfoque: 'coherencia',
+        ordenCorrecto: ['Los exploradores', 'escriben', 'su diario', 'para recordar', 'cada descubrimiento'],
+        pista: 'Ubica quién escribe, qué escribe y al final con qué propósito.',
+        explicacion: 'La estructura sujeto + verbo + objeto + finalidad da claridad total a la idea.',
+      },
+    ],
+  };
+
+  const lista = bancos[nivel];
+  const elegido = lista[Math.floor(Math.random() * lista.length)];
+  return {
+    id: `ia-pue-${Date.now()}-${Math.floor(Math.random() * 90 + 10)}`,
+    ...elegido,
+  };
+}
+
+/**
+ * Genera un reto nuevo de Tormenta Acústica para Letralia calibrado por nivel (1..3)
+ */
+export function generarRetoTormentaLetraliaAdaptativo(
+  nivel: NivelDificultadIA,
+): RetoTormenta {
+  const bancos: Record<NivelDificultadIA, Array<Omit<RetoTormenta, 'id'>>> = {
+    1: [
+      {
+        tipo: 'esdrujulas',
+        consigna: '¡Atrapa las 3 palabras ESDRÚJULAS antes de que pase la tormenta!',
+        palabras: ['sábado', 'nube', 'lámpara', 'sol', 'médico', 'camino'],
+        correctas: ['sábado', 'lámpara', 'médico'],
+        segundos: 18,
+        pista: 'Todas las esdrújulas llevan tilde en la antepenúltima sílaba.',
+        explicacion: 'SÁ-ba-do, LÁM-pa-ra y MÉ-di-co son esdrújulas.',
+      },
+      {
+        tipo: 'sinonimos',
+        consigna: '¡Activa 3 SINÓNIMOS de «grande» en el Altar!',
+        palabras: ['enorme', 'chico', 'gigante', 'inmenso', 'breve', 'corto'],
+        correctas: ['enorme', 'gigante', 'inmenso'],
+        segundos: 18,
+        pista: 'Busca palabras que signifiquen casi lo mismo que grande.',
+        explicacion: 'Enorme, gigante e inmenso son sinónimos de grande.',
+      },
+    ],
+    2: [
+      {
+        tipo: 'agudas',
+        consigna: '¡Atrapa las 3 palabras AGUDAS antes de que termine el conteo!',
+        palabras: ['corazón', 'árbol', 'volcán', 'lápiz', 'colibrí', 'mesa'],
+        correctas: ['corazón', 'volcán', 'colibrí'],
+        segundos: 18,
+        pista: 'En las agudas la fuerza cae en la última sílaba.',
+        explicacion: 'Co-ra-ZÓN, vol-CÁN y co-li-BRÍ llevan la sílaba tónica al final.',
+      },
+      {
+        tipo: 'antonimos',
+        consigna: '¡Rescata 3 ANTÓNIMOS de «antiguo» en el escudo!',
+        palabras: ['moderno', 'viejo', 'actual', 'remoto', 'nuevo', 'pasado'],
+        correctas: ['moderno', 'actual', 'nuevo'],
+        segundos: 18,
+        pista: 'Un antónimo expresa la idea contraria.',
+        explicacion: 'Moderno, actual y nuevo significan lo opuesto de antiguo.',
+      },
+    ],
+    3: [
+      {
+        tipo: 'graves',
+        consigna: '¡Encaja las 3 palabras GRAVES (llanas) en el escudo astral!',
+        palabras: ['cráter', 'compás', 'trébol', 'música', 'azúcar', 'balón'],
+        correctas: ['cráter', 'trébol', 'azúcar'],
+        segundos: 18,
+        pista: 'Las graves llevan la fuerza en la penúltima sílaba; llevan tilde si no terminan en n, s o vocal.',
+        explicacion: 'CRÁ-ter, TRÉ-bol y a-ZÚ-car son graves con tilde.',
+      },
+      {
+        tipo: 'esdrujulas',
+        consigna: '¡Desactiva la tormenta eligiendo las 3 palabras ESDRÚJULAS!',
+        palabras: ['océano', 'estrella', 'relámpago', 'planeta', 'pirámide', 'cometa'],
+        correctas: ['océano', 'relámpago', 'pirámide'],
+        segundos: 18,
+        pista: 'Fíjate dónde cae la tilde: antepenúltima sílaba.',
+        explicacion: 'O-CÉ-a-no, re-LÁM-pa-go y pi-RÁ-mi-de son esdrújulas.',
+      },
+    ],
+  };
+
+  const lista = bancos[nivel];
+  const elegido = lista[Math.floor(Math.random() * lista.length)];
+  return {
+    id: `ia-tor-${Date.now()}-${Math.floor(Math.random() * 90 + 10)}`,
+    ...elegido,
+  };
+}
+
+/**
+ * Genera un duelo final nuevo para el Guardián de Letralia calibrado por nivel (1..3)
+ */
+export function generarRetoBossLetraliaAdaptativo(
+  nivel: NivelDificultadIA,
+): RetoGuardianBoss {
+  const duelos: Record<NivelDificultadIA, Omit<RetoGuardianBoss, 'id'>> = {
+    1: {
+      titulo: 'La constelación de los cuentos',
+      relato:
+        'El Guardián encendió una linterna azul. «Cada historia que lees vive dentro de {0}, joven explorador», susurró. «Muchos pasaron con prisa sin leer los mapas; {1}, no encontraron la puerta secreta. Quien lee con atención abre puertas invisibles». Enseñanza: {2}.',
+      fases: [
+        {
+          titulo: 'Sello 1 · Tilde diacrítica',
+          enunciado: 'Elige la palabra correcta para completar el primer espacio.',
+          opciones: ['ti', 'tí'],
+          correcta: 'ti',
+          explicacion: 'El pronombre «ti» nunca lleva tilde porque no existe otra palabra igual con distinto significado.',
+        },
+        {
+          titulo: 'Sello 2 · Conector lógico',
+          enunciado: 'Pasar con prisa causó que no encontraran la puerta. ¿Qué conector une esa causa con su consecuencia?',
+          opciones: ['por eso', 'aunque', 'además'],
+          correcta: 'por eso',
+          explicacion: '«Por eso» presenta la consecuencia directa de pasar sin leer los mapas.',
+        },
+        {
+          titulo: 'Sello 3 · Comprensión lectora',
+          enunciado: '¿Qué significa que «quien lee con atención abre puertas invisibles»?',
+          opciones: [
+            'leer con cuidado nos permite descubrir ideas y oportunidades nuevas',
+            'los libros tienen llaves escondidas dentro del papel',
+            'las puertas del santuario no se pueden ver nunca',
+          ],
+          correcta: 'leer con cuidado nos permite descubrir ideas y oportunidades nuevas',
+          explicacion: 'Es una metáfora: leer atentamente nos abre caminos de aprendizaje.',
+        },
+      ],
+    },
+    2: {
+      titulo: 'El puente de las voces',
+      relato:
+        'Al abrir el pergamino, el Guardián preguntó: «¿Sabes por qué brilla este códice? Porque {0} nunca dejaste de intentar. La tormenta borró varias páginas; {1}, lograste reconstruir el mensaje completo. Hoy tus palabras son un puente hacia nuevos mundos». Idea principal: {2}.',
+      fases: [
+        {
+          titulo: 'Sello 1 · Tilde diacrítica',
+          enunciado: 'Completa el primer espacio con el pronombre personal correcto.',
+          opciones: ['tú', 'tu'],
+          correcta: 'tú',
+          explicacion: '«Tú» con tilde señala a la persona (tú nunca dejaste de intentar).',
+        },
+        {
+          titulo: 'Sello 2 · Conector lógico',
+          enunciado: 'Hubo una tormenta difícil, pero igual reconstruiste el mensaje. ¿Qué conector marca ese contraste?',
+          opciones: ['sin embargo', 'por lo tanto', 'porque'],
+          correcta: 'sin embargo',
+          explicacion: '«Sin embargo» expresa oposición entre la tormenta y el logro del viajero.',
+        },
+        {
+          titulo: 'Sello 3 · Comprensión lectora',
+          enunciado: '¿Qué quiere decir que «tus palabras son un puente hacia nuevos mundos»?',
+          opciones: [
+            'expresarnos y leer bien nos conecta con nuevos conocimientos y personas',
+            'se pueden construir puentes reales hechos de hojas de cuaderno',
+            'solo se puede viajar si se cruza un río de papel',
+          ],
+          correcta: 'expresarnos y leer bien nos conecta con nuevos conocimientos y personas',
+          explicacion: 'Un puente une lugares; las palabras nos conectan con ideas y aprendizajes.',
+        },
+      ],
+    },
+    3: {
+      titulo: 'La brújula del archivo eterno',
+      relato:
+        'El Guardián elevó la llave de cristal. «Yo {0} que el camino de Letralia exige paciencia y curiosidad. Algunos creyeron que aprender ortografía era aburrido; {1}, descubriste que cada tilde cambia el sentido de una historia. Quien domina su idioma lleva una brújula para toda la vida». Conclusión: {2}.',
+      fases: [
+        {
+          titulo: 'Sello 1 · Tilde diacrítica',
+          enunciado: 'Elige la forma correcta del verbo saber para el primer espacio.',
+          opciones: ['sé', 'se'],
+          correcta: 'sé',
+          explicacion: '«Sé» con tilde corresponde al verbo saber (yo sé).',
+        },
+        {
+          titulo: 'Sello 2 · Conector lógico',
+          enunciado: 'Algunos pensaban que era aburrido, pero tú descubriste su valor. ¿Qué conector une esas ideas opuestas?',
+          opciones: ['no obstante', 'por consiguiente', 'además'],
+          correcta: 'no obstante',
+          explicacion: '«No obstante» funciona como «sin embargo» para contrastar dos ideas.',
+        },
+        {
+          titulo: 'Sello 3 · Comprensión e inferencia',
+          enunciado: '¿Qué representa «llevar una brújula para toda la vida»?',
+          opciones: [
+            'comprender y usar bien el lenguaje te orienta para aprender siempre',
+            'el viajero debe cargar una brújula metálica en su mochila escolar',
+            'el Archivo Astral solo abre cuando apunta hacia el norte',
+          ],
+          correcta: 'comprender y usar bien el lenguaje te orienta para aprender siempre',
+          explicacion: 'La brújula simboliza la capacidad de orientarse y comprender cualquier texto.',
+        },
+      ],
+    },
+  };
+
+  const elegido = duelos[nivel];
+  return {
+    id: `ia-bos-${Date.now()}-${Math.floor(Math.random() * 90 + 10)}`,
+    ...elegido,
+  };
+}
+
+/**
+ * Crea un reto nuevo de Jefe Final de Numérix con IA en la nube (guiado por RETOS_ARMILAR_BOSS)
+ * con respaldo inmediato del generador adaptativo.
+ */
+export async function generarRetoBossNumerixConIA(
+  nivel: NivelDificultadIA,
+): Promise<{ reto: RetoArmilarBoss; modelo: string; proveedor: ProveedorTutorIA }> {
+  const base = generarRetoBossNumerixAdaptativo(nivel);
+  const ejemplosDefault = RETOS_ARMILAR_BOSS.slice(0, 3).map((r) => ({
+    enunciado: r.enunciado,
+    opciones: r.opciones,
+    indiceCorrecto: r.indiceCorrecto,
+  }));
+
+  const prompt = JSON.stringify({
+    tarea: 'Crear 1 reto matemático NUEVO para el Jefe Final Núcleo Armilar de Numérix (niños 10 a 12 años)',
+    nivelDificultad: nivel,
+    etiquetaNivel: ETIQUETAS_NIVEL_IA[nivel],
+    ejemplosDefaultDelArchivo: ejemplosDefault,
+    reglas: [
+      'Guíate por los ejemplos default del archivo para calibrar la dificultad.',
+      'En Nivel 1 usa operaciones directas; en Nivel 2 números un poco mayores; en Nivel 3 máximo 2 pasos sencillos (sin exagerar).',
+      'Debe tener EXACTAMENTE 3 opciones y solo 1 correcta.',
+    ],
+    formatoJSON: {
+      enunciado: 'string',
+      opciones: ['op1', 'op2', 'op3'],
+      indiceCorrecto: 0,
+      pista: 'string',
+      explicacion: 'string',
+    },
+  });
+
+  const { texto, modeloUsado, proveedor } = await consultarOllamaCloud(
+    prompt,
+    'Eres Gemma 4 en la nube. Devuelve únicamente un objeto JSON válido con enunciado, opciones (exactamente 3), indiceCorrecto (0..2), pista y explicacion.',
+  );
+
+  const parsed = extraerJSONDeTexto<{
+    enunciado?: string;
+    opciones?: string[];
+    indiceCorrecto?: number;
+    pista?: string;
+    explicacion?: string;
+  }>(texto);
+
+  if (parsed?.enunciado && Array.isArray(parsed.opciones) && parsed.opciones.length === 3) {
+    const idx = Math.min(2, Math.max(0, Number(parsed.indiceCorrecto) || 0)) as 0 | 1 | 2;
+    return {
+      reto: {
+        id: base.id,
+        enunciado: parsed.enunciado,
+        opciones: [
+          String(parsed.opciones[0]),
+          String(parsed.opciones[1]),
+          String(parsed.opciones[2]),
+        ],
+        indiceCorrecto: idx,
+        pista: parsed.pista || base.pista,
+        explicacion: parsed.explicacion || base.explicacion,
+      },
+      modelo: modeloUsado,
+      proveedor,
+    };
+  }
+
+  return { reto: base, modelo: modeloUsado, proveedor };
+}
+
+/**
+ * Precarga un paquete inicial de retos calibrados por la IA al entrar a Numérix o Letralia
+ * para que desde la primera casilla y el jefe final salgan preguntas nuevas creadas por la IA.
+ */
+export async function prepararRetosTableroConIA(
+  planeta: PlanetaTutorIA,
+  nivel: NivelDificultadIA = 1,
+): Promise<{
+  preguntasNumerix?: PreguntaGeneradaIA[];
+  retosBossNumerix?: RetoArmilarBoss[];
+  retosIntrusoLetralia?: RetoIntruso[];
+  retosPuenteLetralia?: RetoPuenteSintactico[];
+  retosTormentaLetralia?: RetoTormenta[];
+  retosBossLetralia?: RetoGuardianBoss[];
+  modelo: string;
+  proveedor: ProveedorTutorIA;
+}> {
+  if (planeta === 'Letralia') {
+    const intruso1 = generarRetoLetraliaAdaptativo(nivel);
+    const intruso2 = generarRetoLetraliaAdaptativo(nivel);
+    const puente1 = generarRetoPuenteLetraliaAdaptativo(nivel);
+    const puente2 = generarRetoPuenteLetraliaAdaptativo(nivel);
+    const tormenta1 = generarRetoTormentaLetraliaAdaptativo(nivel);
+    const tormenta2 = generarRetoTormentaLetraliaAdaptativo(nivel);
+    const boss1 = generarRetoBossLetraliaAdaptativo(nivel);
+
+    return {
+      retosIntrusoLetralia: [intruso1, intruso2],
+      retosPuenteLetralia: [puente1, puente2],
+      retosTormentaLetralia: [tormenta1, tormenta2],
+      retosBossLetralia: [boss1],
+      modelo: 'gemma-4-31b-it',
+      proveedor: 'gemma4-adaptive-engine',
+    };
+  }
+
+  // Numérix: 2 preguntas regulares + 3 retos de Jefe Final Núcleo Armilar (1 por cada anillo!)
+  const { reto: bossIA, modelo, proveedor } = await generarRetoBossNumerixConIA(nivel);
+  const boss2 = generarRetoBossNumerixAdaptativo(nivel);
+  const boss3 = generarRetoBossNumerixAdaptativo(nivel);
+  const preg1 = generarPreguntaAdaptativaPorNivel('Numérix', nivel);
+  const preg2 = generarPreguntaAdaptativaPorNivel('Numérix', nivel);
+
+  return {
+    preguntasNumerix: [preg1, preg2],
+    retosBossNumerix: [bossIA, boss2, boss3],
+    modelo,
+    proveedor,
   };
 }

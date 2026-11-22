@@ -42,7 +42,10 @@ import {
   RETOS_PUENTE,
   RETOS_TORMENTA,
   elegirSinRepetir,
+  type RetoGuardianBoss,
   type RetoIntruso,
+  type RetoPuenteSintactico,
+  type RetoTormenta,
 } from '../../lib/preguntas-letralia';
 
 interface TableroLetraliaProps {
@@ -173,6 +176,46 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
     'Tutor IA Gemma 4 activo: creo retos en este tablero y subo el nivel gradualmente si vas muy bien.',
   );
   const colaRetosIARef = useRef<RetoIntruso[]>([]);
+  const colaPuentesIARef = useRef<RetoPuenteSintactico[]>([]);
+  const colaTormentasIARef = useRef<RetoTormenta[]>([]);
+  const colaBossLetraliaIARef = useRef<RetoGuardianBoss[]>([]);
+
+  useEffect(() => {
+    void fetch('/api/tutor-ia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'preparar-tablero',
+        planeta: 'Letralia',
+        nivelActual: 1,
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data?.ok) return;
+        if (Array.isArray(data.retosIntrusoLetralia)) {
+          data.retosIntrusoLetralia.forEach((r: RetoIntruso) => {
+            if (r?.palabras?.length) colaRetosIARef.current.push(r);
+          });
+        }
+        if (Array.isArray(data.retosPuenteLetralia)) {
+          data.retosPuenteLetralia.forEach((r: RetoPuenteSintactico) => {
+            if (r?.ordenCorrecto?.length) colaPuentesIARef.current.push(r);
+          });
+        }
+        if (Array.isArray(data.retosTormentaLetralia)) {
+          data.retosTormentaLetralia.forEach((r: RetoTormenta) => {
+            if (r?.palabras?.length) colaTormentasIARef.current.push(r);
+          });
+        }
+        if (Array.isArray(data.retosBossLetralia)) {
+          data.retosBossLetralia.forEach((r: RetoGuardianBoss) => {
+            if (r?.fases?.length) colaBossLetraliaIARef.current.push(r);
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const [avisoFlotante, setAvisoFlotante] = useState<string | null>(
     '¡Lanza el dado astral para comenzar tu viaje por Letralia!',
@@ -326,7 +369,8 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
       if (casilla.tipo === 'boss') {
         const faltaIdx = estadoSilabasActual.findIndex((s) => !s);
         if (faltaIdx !== -1) {
-          const retoPuente = elegirSinRepetir(RETOS_PUENTE, usadosPuente.current);
+          const puenteIA = colaPuentesIARef.current.shift();
+          const retoPuente = puenteIA ?? elegirSinRepetir(RETOS_PUENTE, usadosPuente.current);
           setAvisoFlotante(`¡Decodifica la sílaba faltante «${palabraActual.silabas[faltaIdx]}» para abrir el Santuario!`);
           setModalActivo({
             tipo: 'puente',
@@ -336,7 +380,8 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
           });
           return;
         }
-        const retoBoss = elegirSinRepetir(RETOS_GUARDIAN, usadosGuardian.current);
+        const bossIA = colaBossLetraliaIARef.current.shift();
+        const retoBoss = bossIA ?? elegirSinRepetir(RETOS_GUARDIAN, usadosGuardian.current);
         setModalActivo({ tipo: 'boss', reto: retoBoss });
         return;
       }
@@ -349,13 +394,15 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
             : ramaElegida === 'right'
               ? (r: (typeof RETOS_TORMENTA)[number]) => r.tipo === 'sinonimos' || r.tipo === 'antonimos'
               : undefined;
-        const retoTormenta = elegirSinRepetir(RETOS_TORMENTA, usadosTormenta.current, filtro);
+        const tormentaIA = colaTormentasIARef.current.shift();
+        const retoTormenta = tormentaIA ?? elegirSinRepetir(RETOS_TORMENTA, usadosTormenta.current, filtro);
         setModalActivo({ tipo: 'tormenta', reto: retoTormenta });
         return;
       }
 
       if (casilla.mecanica === 'puente' || casilla.mecanica === 'portal') {
-        const retoPuente = elegirSinRepetir(RETOS_PUENTE, usadosPuente.current);
+        const puenteIA = colaPuentesIARef.current.shift();
+        const retoPuente = puenteIA ?? elegirSinRepetir(RETOS_PUENTE, usadosPuente.current);
         setModalActivo({
           tipo: 'puente',
           reto: retoPuente,
@@ -564,6 +611,15 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               if (data.nuevoRetoLetralia?.palabras?.length) {
                 colaRetosIARef.current.push(data.nuevoRetoLetralia as RetoIntruso);
               }
+              if (data.nuevoRetoPuenteLetralia?.ordenCorrecto?.length) {
+                colaPuentesIARef.current.push(data.nuevoRetoPuenteLetralia as RetoPuenteSintactico);
+              }
+              if (data.nuevoRetoTormentaLetralia?.palabras?.length) {
+                colaTormentasIARef.current.push(data.nuevoRetoTormentaLetralia as RetoTormenta);
+              }
+              if (data.nuevoRetoBossLetralia?.fases?.length) {
+                colaBossLetraliaIARef.current.push(data.nuevoRetoBossLetralia as RetoGuardianBoss);
+              }
               try {
                 const prevRaw = window.localStorage.getItem('universo-reportes-ia');
                 const prev = prevRaw ? JSON.parse(prevRaw) : [];
@@ -612,7 +668,8 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
       // Si estaba en `boss_36` desbloqueando una sílaba pendiente y ya completó las 4, abrir el duelo del Guardián
       if (casillaActual?.id === 'boss_36' && nuevasSilabas.every(Boolean)) {
         setTimeout(() => {
-          const retoBoss = elegirSinRepetir(RETOS_GUARDIAN, usadosGuardian.current);
+          const bossIA = colaBossLetraliaIARef.current.shift();
+          const retoBoss = bossIA ?? elegirSinRepetir(RETOS_GUARDIAN, usadosGuardian.current);
           setModalActivo({ tipo: 'boss', reto: retoBoss });
         }, 450);
         return;

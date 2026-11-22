@@ -350,6 +350,8 @@ export const RETOS_PUENTE: RetoPuenteSintactico[] = [
     explicacion:
       'La oración responde: ¿quién? (las ballenas), ¿qué hacen? (cantan), ¿dónde? (bajo el mar) y ¿para qué? (para comunicarse).',
   },
+  // === IA_PUENTES_LETRALIA_START ===
+  // === IA_PUENTES_LETRALIA_END ===
 ];
 
 /* ─────────────── Mecánica 3 · Tormenta de Meteoritos Acústicos ─────────────── */
@@ -454,6 +456,8 @@ export const RETOS_TORMENTA: RetoTormenta[] = [
     explicacion:
       'Claro, luminoso y brillante son lo contrario de «oscuro». Sombrío y tenebroso son sus sinónimos.',
   },
+  // === IA_TORMENTA_LETRALIA_START ===
+  // === IA_TORMENTA_LETRALIA_END ===
 ];
 
 /* ─────────────── Mecánica 4 · El Guardián del Vórtice Gramatical ─────────────── */
@@ -567,6 +571,8 @@ export const RETOS_GUARDIAN: RetoGuardianBoss[] = [
       },
     ],
   },
+  // === IA_BOSS_LETRALIA_START ===
+  // === IA_BOSS_LETRALIA_END ===
 ];
 
 /* ─────────────── Sílabas Clave ─────────────── */
