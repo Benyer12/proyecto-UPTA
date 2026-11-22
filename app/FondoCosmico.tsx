@@ -40,7 +40,7 @@ function createStars(w: number, h: number, isLight: boolean): Star[] {
       x: Math.random() * w,
       y: Math.random() * h,
       radius: isLight ? 1 + Math.random() * 1.6 : Math.random() * 2.0,
-      baseAlpha: isLight ? 0.14 + Math.random() * 0.22 : 0.28 + Math.random() * 0.62,
+      baseAlpha: isLight ? 0.14 + Math.random() * 0.2 : 0.28 + Math.random() * 0.62,
       alpha: 0,
       speed: Math.random() * 0.007 + 0.002,
       phase: Math.random() * Math.PI * 2,
@@ -50,13 +50,14 @@ function createStars(w: number, h: number, isLight: boolean): Star[] {
   return stars;
 }
 
-function drawCoverPrismImage(
+function drawCoverImage(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement,
   w: number,
   h: number,
   time: number,
-  isLight: boolean,
+  composite: GlobalCompositeOperation,
+  alpha: number,
 ) {
   if (!img.complete || img.naturalWidth === 0 || img.naturalHeight === 0) return;
 
@@ -71,15 +72,8 @@ function drawCoverPrismImage(
   const dy = (h - drawH) / 2 + floatY;
 
   ctx.save();
-  if (isLight) {
-    // En modo claro mantiene la calma niebla-perla y proyecta brillos tornasol perlados sin oscurecer
-    ctx.globalCompositeOperation = 'screen';
-    ctx.globalAlpha = 0.42;
-  } else {
-    // En modo oscuro funde el negro puro del render con el cosmos dejando brillar la curva tornasol 3D
-    ctx.globalCompositeOperation = 'screen';
-    ctx.globalAlpha = 0.96;
-  }
+  ctx.globalCompositeOperation = composite;
+  ctx.globalAlpha = alpha;
   ctx.drawImage(img, dx, dy, drawW, drawH);
   ctx.restore();
 }
@@ -90,71 +84,79 @@ function drawCosmicBackdrop(
   h: number,
   time: number,
   isLight: boolean,
-  prismImg: HTMLImageElement | null,
+  darkImg: HTMLImageElement | null,
+  lightImg: HTMLImageElement | null,
 ) {
   const shiftX = Math.sin(time * 0.18) * w * 0.035;
   const shiftY = Math.cos(time * 0.15) * h * 0.03;
 
   if (isLight) {
-    // Base niebla-perla descansada para la vista
+    // Base niebla lavanda-azul descansada mientras carga o como soporte
     const baseGrad = ctx.createLinearGradient(0, 0, w, h);
-    baseGrad.addColorStop(0, '#D9E0EA');
-    baseGrad.addColorStop(0.5, '#E1E6EE');
-    baseGrad.addColorStop(1, '#DCE0EA');
+    baseGrad.addColorStop(0, '#CBD6EE');
+    baseGrad.addColorStop(0.5, '#D7D5EC');
+    baseGrad.addColorStop(1, '#CED8EA');
     ctx.fillStyle = baseGrad;
     ctx.fillRect(0, 0, w, h);
 
-    const lightOrbs: [number, number, number, string, number][] = [
-      [w * 0.18 + shiftX, h * 0.22 + shiftY, Math.max(w, h) * 0.4, '100, 165, 210', 0.12],
-      [w * 0.82 - shiftX, h * 0.2 - shiftY, Math.max(w, h) * 0.38, '148, 122, 200', 0.1],
-      [w * 0.52 + shiftX * 0.6, h * 0.62 - shiftY, Math.max(w, h) * 0.42, '92, 168, 148', 0.09],
+    // Render 3D oficial de modo claro: nebulosa suave + curvas de cristal líquido tornasol
+    if (lightImg) {
+      drawCoverImage(ctx, lightImg, w, h, time, 'source-over', 0.96);
+    }
+
+    // Velos sutiles de nebulosa en movimiento para darle vida orgánica sin saturar la vista
+    const lightNebulas: [number, number, number, string, number][] = [
+      [w * 0.18 + shiftX, h * 0.24 + shiftY, Math.max(w, h) * 0.42, '96, 165, 250', 0.1],
+      [w * 0.82 - shiftX, h * 0.2 - shiftY, Math.max(w, h) * 0.4, '167, 139, 250', 0.1],
+      [w * 0.5 + shiftX * 0.5, h * 0.78 - shiftY, Math.max(w, h) * 0.42, '56, 189, 248', 0.08],
     ];
 
-    for (const [cx, cy, r, rgb, alpha] of lightOrbs) {
+    for (const [cx, cy, r, rgb, alpha] of lightNebulas) {
       const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
       g.addColorStop(0, `rgba(${rgb}, ${alpha})`);
-      g.addColorStop(0.6, `rgba(${rgb}, ${(alpha * 0.3).toFixed(3)})`);
-      g.addColorStop(1, 'rgba(225, 230, 238, 0)');
+      g.addColorStop(0.6, `rgba(${rgb}, ${(alpha * 0.35).toFixed(3)})`);
+      g.addColorStop(1, 'rgba(215, 213, 236, 0)');
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.fill();
     }
-  } else {
-    // Cosmos profundo oscuro para enmarcar el render 3D tornasol
-    const bg = ctx.createRadialGradient(
-      w * 0.5,
-      h * 0.44,
-      0,
-      w * 0.5,
-      h * 0.5,
-      Math.max(w, h) * 0.88,
-    );
-    bg.addColorStop(0, '#040714');
-    bg.addColorStop(0.55, '#02040D');
-    bg.addColorStop(1, '#010105');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, w, h);
-
-    const darkOrbs: [number, number, number, string, number][] = [
-      [w * 0.18 + shiftX, h * 0.24 + shiftY, Math.max(w, h) * 0.36, '0, 190, 255', 0.07],
-      [w * 0.8 - shiftX, h * 0.68 - shiftY, Math.max(w, h) * 0.36, '245, 158, 11', 0.05],
-    ];
-
-    for (const [cx, cy, r, rgb, alpha] of darkOrbs) {
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-      g.addColorStop(0, `rgba(${rgb}, ${alpha})`);
-      g.addColorStop(0.55, `rgba(${rgb}, ${(alpha * 0.3).toFixed(3)})`);
-      g.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    return;
   }
 
-  if (prismImg) {
-    drawCoverPrismImage(ctx, prismImg, w, h, time, isLight);
+  // Modo oscuro: cosmos profundo para enmarcar el render 3D tornasol
+  const bg = ctx.createRadialGradient(
+    w * 0.5,
+    h * 0.44,
+    0,
+    w * 0.5,
+    h * 0.5,
+    Math.max(w, h) * 0.88,
+  );
+  bg.addColorStop(0, '#040714');
+  bg.addColorStop(0.55, '#02040D');
+  bg.addColorStop(1, '#010105');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+
+  const darkOrbs: [number, number, number, string, number][] = [
+    [w * 0.18 + shiftX, h * 0.24 + shiftY, Math.max(w, h) * 0.36, '0, 190, 255', 0.07],
+    [w * 0.8 - shiftX, h * 0.68 - shiftY, Math.max(w, h) * 0.36, '245, 158, 11', 0.05],
+  ];
+
+  for (const [cx, cy, r, rgb, alpha] of darkOrbs) {
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, `rgba(${rgb}, ${alpha})`);
+    g.addColorStop(0.55, `rgba(${rgb}, ${(alpha * 0.32).toFixed(3)})`);
+    g.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if (darkImg) {
+    drawCoverImage(ctx, darkImg, w, h, time, 'screen', 0.96);
   }
 }
 
@@ -175,8 +177,11 @@ export default function FondoCosmico() {
     let stars: Star[] = [];
     let isVisible = true;
 
-    const prismImg = new Image();
-    prismImg.src = '/images/liquid-prism-bg.jpg';
+    const darkImg = new Image();
+    darkImg.src = '/images/liquid-prism-bg.jpg';
+
+    const lightImg = new Image();
+    lightImg.src = '/images/liquid-prism-light-bg.jpg';
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -204,7 +209,7 @@ export default function FondoCosmico() {
       const lightNow = themeRef.current === 'light';
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawCosmicBackdrop(ctx, canvas.width, canvas.height, time, lightNow, prismImg);
+      drawCosmicBackdrop(ctx, canvas.width, canvas.height, time, lightNow, darkImg, lightImg);
 
       for (let i = 0; i < stars.length; i++) {
         const star = stars[i];
@@ -252,7 +257,7 @@ export default function FondoCosmico() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 w-full h-full pointer-events-none -z-10 transition-colors duration-300"
-      style={{ background: theme === 'light' ? '#DCE2EC' : '#010208' }}
+      style={{ background: theme === 'light' ? '#D4D6EC' : '#010208' }}
     />
   );
 }
