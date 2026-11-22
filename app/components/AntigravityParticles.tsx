@@ -11,11 +11,10 @@ interface Particle {
   originY: number;
   vx: number;
   vy: number;
-  size: number;
   length: number;
   angle: number;
   targetAngle: number;
-  color: string;
+  strokeStyle: string;
   baseAlpha: number;
   alpha: number;
   phase: number;
@@ -24,28 +23,28 @@ interface Particle {
   orbitOffset: number;
 }
 
-// Paleta espacial luminosa para modo oscuro
+// Paleta espacial luminosa para modo oscuro (strings precalculados sin asignaciones por frame)
 const DARK_PALETTE = [
-  '0, 245, 255',   // Cyan Numérix
-  '56, 189, 248',  // Azul celeste cósmico
-  '59, 130, 246',  // Azul profundo
-  '191, 64, 255',  // Púrpura Letralia
-  '168, 85, 247',  // Violeta
-  '217, 70, 239',  // Magenta espacial
-  '0, 255, 136',   // Esmeralda Naturae
-  '250, 204, 21',  // Dorado estelar
+  'rgb(0, 245, 255)',   // Cyan Numérix
+  'rgb(56, 189, 248)',  // Azul celeste cósmico
+  'rgb(59, 130, 246)',  // Azul profundo
+  'rgb(191, 64, 255)',  // Púrpura Letralia
+  'rgb(168, 85, 247)',  // Violeta
+  'rgb(217, 70, 239)',  // Magenta espacial
+  'rgb(0, 255, 136)',   // Esmeralda Naturae
+  'rgb(250, 204, 21)',  // Dorado estelar
 ];
 
 // Paleta gema viva de alto contraste para modo claro
 const LIGHT_PALETTE = [
-  '2, 132, 199',   // Cian océano (#0284c7)
-  '37, 99, 235',   // Azul cobalto (#2563eb)
-  '124, 58, 237',  // Violeta real (#7c3aed)
-  '192, 38, 211',  // Fucsia orquídea (#c026d3)
-  '5, 150, 105',   // Esmeralda intensa (#059669)
-  '217, 119, 6',   // Ámbar solar (#d97706)
-  '14, 116, 144',  // Turquesa profundo (#0e7490)
-  '79, 70, 229',   // Índigo luminoso (#4f46e5)
+  'rgb(2, 132, 199)',   // Cian océano (#0284c7)
+  'rgb(37, 99, 235)',   // Azul cobalto (#2563eb)
+  'rgb(124, 58, 237)',  // Violeta real (#7c3aed)
+  'rgb(192, 38, 211)',  // Fucsia orquídea (#c026d3)
+  'rgb(5, 150, 105)',   // Esmeralda intensa (#059669)
+  'rgb(217, 119, 6)',   // Ámbar solar (#d97706)
+  'rgb(14, 116, 144)',  // Turquesa profundo (#0e7490)
+  'rgb(79, 70, 229)',   // Índigo luminoso (#4f46e5)
 ];
 
 const ALLOWED_ROUTES = [
@@ -86,7 +85,7 @@ export default function AntigravityParticles() {
 
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
     if (!ctx) return;
 
     const isLight = theme === 'light';
@@ -97,6 +96,7 @@ export default function AntigravityParticles() {
     let isVisible = true;
     let lastFrame = 0;
     let lastMoveAt = 0;
+    let scrollPauseUntil = 0;
 
     const mouse = {
       x: -9999,
@@ -119,7 +119,7 @@ export default function AntigravityParticles() {
 
     const createParticles = (w: number, h: number): Particle[] => {
       const list: Particle[] = [];
-      const spacing = w < 768 ? 84 : 68;
+      const spacing = w < 768 ? 102 : 84;
       const cols = Math.ceil(w / spacing);
       const rows = Math.ceil(h / spacing);
 
@@ -136,16 +136,15 @@ export default function AntigravityParticles() {
             originY: oy,
             vx: 0,
             vy: 0,
-            size: 1.25 + Math.random() * 1.15,
-            length: 4 + Math.random() * 4.8,
+            length: 4.2 + Math.random() * 4.5,
             angle: initialAngle,
             targetAngle: initialAngle,
-            color: getColorForPosition(ox, oy, w, h),
-            baseAlpha: isLight ? 0.32 + Math.random() * 0.3 : 0.24 + Math.random() * 0.28,
+            strokeStyle: getColorForPosition(ox, oy, w, h),
+            baseAlpha: isLight ? 0.34 + Math.random() * 0.28 : 0.26 + Math.random() * 0.28,
             alpha: isLight ? 0.42 : 0.32,
             phase: Math.random() * Math.PI * 2,
             speed: 0.45 + Math.random() * 0.55,
-            orbitRadius: 55 + Math.random() * 130,
+            orbitRadius: 55 + Math.random() * 125,
             orbitOffset: Math.random() * Math.PI * 2,
           });
         }
@@ -184,6 +183,11 @@ export default function AntigravityParticles() {
       }
     };
 
+    const handleScroll = () => {
+      // Cede prioridad total al compositor durante ráfagas de scroll
+      scrollPauseUntil = performance.now() + 140;
+    };
+
     const handleMouseLeave = () => {
       mouse.active = false;
     };
@@ -195,18 +199,22 @@ export default function AntigravityParticles() {
     let resizeTimer: ReturnType<typeof setTimeout>;
     const handleResize = () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(resize, 150);
+      resizeTimer = setTimeout(resize, 160);
     };
 
+    const attractRadius = 340;
+    const attractRadiusSq = attractRadius * attractRadius;
+    const originRadiusSq = attractRadiusSq * 1.38;
+
     const animate = (timestamp: number) => {
-      if (!isVisible) {
+      if (!isVisible || timestamp < scrollPauseUntil) {
         animationId = requestAnimationFrame(animate);
         return;
       }
 
-      // 60 fps al mover el cursor y 30 fps cuando está en reposo para cero lag
+      // 45 fps al interactuar con el cursor, 22 fps en reposo para cero lag en tarjetas Glass
       const interacting = mouse.active && timestamp - lastMoveAt < 1800;
-      const minInterval = interacting ? 16 : 33;
+      const minInterval = interacting ? 22 : 45;
       if (timestamp - lastFrame < minInterval) {
         animationId = requestAnimationFrame(animate);
         return;
@@ -215,12 +223,14 @@ export default function AntigravityParticles() {
 
       const time = timestamp / 1000;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
 
       if (mouse.active) {
         const prevX = mouse.x;
         const prevY = mouse.y;
-        mouse.x += (mouse.targetX - mouse.x) * 0.13;
-        mouse.y += (mouse.targetY - mouse.y) * 0.13;
+        mouse.x += (mouse.targetX - mouse.x) * 0.14;
+        mouse.y += (mouse.targetY - mouse.y) * 0.14;
         mouse.vx = mouse.x - prevX;
         mouse.vy = mouse.y - prevY;
       } else {
@@ -228,18 +238,15 @@ export default function AntigravityParticles() {
         mouse.vy *= 0.9;
       }
 
-      const attractRadius = 350;
-      const attractRadiusSq = attractRadius * attractRadius;
-
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
-        const floatX = Math.cos(time * p.speed + p.phase) * 5.5;
-        const floatY = Math.sin(time * p.speed * 0.85 + p.phase) * 5.5;
+        const floatX = Math.cos(time * p.speed + p.phase) * 5.2;
+        const floatY = Math.sin(time * p.speed * 0.85 + p.phase) * 5.2;
         const homeX = p.originX + floatX;
         const homeY = p.originY + floatY;
 
-        let targetAlpha = p.baseAlpha * (0.78 + 0.22 * Math.sin(time * 1.4 + p.phase));
+        let targetAlpha = p.baseAlpha * (0.78 + 0.22 * Math.sin(time * 1.3 + p.phase));
         let stretch = 1;
 
         if (mouse.active) {
@@ -251,7 +258,7 @@ export default function AntigravityParticles() {
           const dyOrigin = mouse.y - p.originY;
           const distOriginSq = dxOrigin * dxOrigin + dyOrigin * dyOrigin;
 
-          if (distMouseSq < attractRadiusSq || distOriginSq < attractRadiusSq * 1.38) {
+          if (distMouseSq < attractRadiusSq || distOriginSq < originRadiusSq) {
             const distMouse = Math.sqrt(distMouseSq);
             const distOrigin = Math.sqrt(distOriginSq);
             const effectiveDist = Math.min(distMouse, distOrigin * 0.85);
@@ -264,11 +271,11 @@ export default function AntigravityParticles() {
               const desiredX = mouse.x + Math.cos(orbitAngle) * p.orbitRadius;
               const desiredY = mouse.y + Math.sin(orbitAngle) * p.orbitRadius;
 
-              p.vx += (desiredX - p.x) * 0.025 * smoothInfluence;
-              p.vy += (desiredY - p.y) * 0.025 * smoothInfluence;
+              p.vx += (desiredX - p.x) * 0.028 * smoothInfluence;
+              p.vy += (desiredY - p.y) * 0.028 * smoothInfluence;
 
-              p.vx += mouse.vx * 0.045 * smoothInfluence;
-              p.vy += mouse.vy * 0.045 * smoothInfluence;
+              p.vx += mouse.vx * 0.05 * smoothInfluence;
+              p.vy += mouse.vy * 0.05 * smoothInfluence;
 
               if (distMouse < 40 && distMouse > 0.1) {
                 const push = ((40 - distMouse) / 40) * 0.35;
@@ -282,8 +289,8 @@ export default function AntigravityParticles() {
           }
         }
 
-        p.vx += (homeX - p.x) * 0.015;
-        p.vy += (homeY - p.y) * 0.015;
+        p.vx += (homeX - p.x) * 0.016;
+        p.vy += (homeY - p.y) * 0.016;
 
         p.vx *= 0.88;
         p.vy *= 0.88;
@@ -303,24 +310,24 @@ export default function AntigravityParticles() {
         let angleDiff = p.targetAngle - p.angle;
         while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
         while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-        p.angle += angleDiff * 0.13;
+        p.angle += angleDiff * 0.14;
 
-        p.alpha += (targetAlpha - p.alpha) * 0.14;
+        p.alpha += (targetAlpha - p.alpha) * 0.15;
 
         const currentLen = (p.length + Math.min(6, Math.sqrt(speedSq) * 1.45)) * stretch;
         const halfLen = currentLen * 0.5;
         const cos = Math.cos(p.angle);
         const sin = Math.sin(p.angle);
 
+        ctx.globalAlpha = p.alpha;
+        ctx.strokeStyle = p.strokeStyle;
         ctx.beginPath();
         ctx.moveTo(p.x - cos * halfLen, p.y - sin * halfLen);
         ctx.lineTo(p.x + cos * halfLen, p.y + sin * halfLen);
-        ctx.strokeStyle = `rgba(${p.color}, ${p.alpha.toFixed(3)})`;
-        ctx.lineWidth = p.size * 1.5;
-        ctx.lineCap = 'round';
         ctx.stroke();
       }
 
+      ctx.globalAlpha = 1;
       animationId = requestAnimationFrame(animate);
     };
 
@@ -329,6 +336,7 @@ export default function AntigravityParticles() {
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
     document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('resize', handleResize);
@@ -338,6 +346,7 @@ export default function AntigravityParticles() {
       clearTimeout(resizeTimer);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('resize', handleResize);
