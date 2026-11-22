@@ -36,14 +36,14 @@ const DARK_PALETTE = [
   'rgb(216, 180, 254)', // Plata amatista (#D8B4FE)
 ];
 
-// Paleta sutil de polvo de estrellas para modo claro (dorado, plata y lavanda espacial)
+// Paleta de alto contraste para polvo de estrellas visible en modo claro
 const LIGHT_STARDUST_PALETTE = [
-  'rgb(217, 155, 38)',  // Dorado espacial suave
-  'rgb(245, 180, 65)',  // Oro champán
-  'rgb(148, 163, 184)', // Plateado sutil
-  'rgb(255, 255, 255)', // Destello perla
-  'rgb(139, 92, 246)',  // Violeta prismático
-  'rgb(56, 189, 248)',  // Cian cristalino
+  'rgb(180, 83, 9)',    // Oro ámbar profundo (#B45309)
+  'rgb(217, 119, 6)',   // Dorado cálido intenso (#D97706)
+  'rgb(109, 40, 217)',  // Violeta real profundo (#6D28D9)
+  'rgb(67, 56, 202)',   // Índigo espacial (#4338CA)
+  'rgb(3, 105, 161)',   // Azul zafiro (#0369A1)
+  'rgb(162, 28, 175)',  // Fucsia amatista (#A21CAF)
 ];
 
 const ALLOWED_ROUTES = [
@@ -135,13 +135,13 @@ export default function AntigravityParticles() {
             originY: oy,
             vx: 0,
             vy: 0,
-            size: isLight ? 0.75 + Math.random() * 1.25 : 1.25 + Math.random() * 1.15,
-            length: isLight ? 2.4 + Math.random() * 2.6 : 4 + Math.random() * 4.8,
+            size: isLight ? 1.35 + Math.random() * 1.45 : 1.25 + Math.random() * 1.15,
+            length: isLight ? 3.4 + Math.random() * 3.2 : 4 + Math.random() * 4.8,
             angle: initialAngle,
             targetAngle: initialAngle,
             strokeStyle: getColorForPosition(ox, oy, w, h),
-            baseAlpha: isLight ? 0.28 + Math.random() * 0.4 : 0.26 + Math.random() * 0.3,
-            alpha: isLight ? 0.38 : 0.34,
+            baseAlpha: isLight ? 0.52 + Math.random() * 0.36 : 0.26 + Math.random() * 0.3,
+            alpha: isLight ? 0.65 : 0.34,
             phase: Math.random() * Math.PI * 2,
             speed: isLight ? 0.28 + Math.random() * 0.35 : 0.45 + Math.random() * 0.55,
             orbitRadius: 55 + Math.random() * 130,
@@ -317,10 +317,10 @@ export default function AntigravityParticles() {
           ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fill();
 
-          if (i % 3 === 0 && p.alpha > 0.34) {
-            const crossLen = p.length * 0.75;
+          if (i % 2 === 0 && p.alpha > 0.45) {
+            const crossLen = p.length * 0.9;
             ctx.strokeStyle = p.strokeStyle;
-            ctx.lineWidth = 0.85;
+            ctx.lineWidth = 1.1;
             ctx.beginPath();
             ctx.moveTo(p.x - crossLen, p.y);
             ctx.lineTo(p.x + crossLen, p.y);
