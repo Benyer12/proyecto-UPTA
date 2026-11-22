@@ -24,28 +24,26 @@ interface Particle {
   orbitOffset: number;
 }
 
-// Paleta espacial luminosa para modo oscuro (strings precalculados sin asignaciones por frame)
+// Paleta plateado, púrpura y violeta para modo oscuro (strings precalculados sin asignaciones por frame)
 const DARK_PALETTE = [
-  'rgb(0, 245, 255)',   // Cyan Numérix
-  'rgb(56, 189, 248)',  // Azul celeste cósmico
-  'rgb(59, 130, 246)',  // Azul profundo
-  'rgb(191, 64, 255)',  // Púrpura Letralia
-  'rgb(168, 85, 247)',  // Violeta
-  'rgb(217, 70, 239)',  // Magenta espacial
-  'rgb(0, 255, 136)',   // Esmeralda Naturae
-  'rgb(250, 204, 21)',  // Dorado estelar
+  'rgb(226, 232, 240)', // Plateado estelar (#E2E8F0)
+  'rgb(203, 213, 225)', // Plata suave (#CBD5E1)
+  'rgb(241, 245, 249)', // Blanco plateado (#F1F5F9)
+  'rgb(191, 64, 255)',  // Púrpura vibrante (#BF40FF)
+  'rgb(168, 85, 247)',  // Violeta luminoso (#A855F7)
+  'rgb(139, 92, 246)',  // Violeta profundo (#8B5CF6)
+  'rgb(192, 132, 252)', // Lavanda púrpura (#C084FC)
+  'rgb(216, 180, 254)', // Plata amatista (#D8B4FE)
 ];
 
-// Paleta gema viva de alto contraste para modo claro
-const LIGHT_PALETTE = [
-  'rgb(2, 132, 199)',   // Cian océano (#0284c7)
-  'rgb(37, 99, 235)',   // Azul cobalto (#2563eb)
-  'rgb(124, 58, 237)',  // Violeta real (#7c3aed)
-  'rgb(192, 38, 211)',  // Fucsia orquídea (#c026d3)
-  'rgb(5, 150, 105)',   // Esmeralda intensa (#059669)
-  'rgb(217, 119, 6)',   // Ámbar solar (#d97706)
-  'rgb(14, 116, 144)',  // Turquesa profundo (#0e7490)
-  'rgb(79, 70, 229)',   // Índigo luminoso (#4f46e5)
+// Paleta sutil de polvo de estrellas para modo claro (dorado, plata y lavanda espacial)
+const LIGHT_STARDUST_PALETTE = [
+  'rgb(217, 155, 38)',  // Dorado espacial suave
+  'rgb(245, 180, 65)',  // Oro champán
+  'rgb(148, 163, 184)', // Plateado sutil
+  'rgb(255, 255, 255)', // Destello perla
+  'rgb(139, 92, 246)',  // Violeta prismático
+  'rgb(56, 189, 248)',  // Cian cristalino
 ];
 
 const ALLOWED_ROUTES = [
@@ -90,7 +88,7 @@ export default function AntigravityParticles() {
     if (!ctx) return;
 
     const isLight = theme === 'light';
-    const activePalette = isLight ? LIGHT_PALETTE : DARK_PALETTE;
+    const activePalette = isLight ? LIGHT_STARDUST_PALETTE : DARK_PALETTE;
 
     let animationId: number;
     let particles: Particle[] = [];
@@ -120,7 +118,8 @@ export default function AntigravityParticles() {
 
     const createParticles = (w: number, h: number): Particle[] => {
       const list: Particle[] = [];
-      const spacing = w < 768 ? 82 : 68;
+      // En modo claro: polvo de estrella espaciado y ligero ("no mucho"); en oscuro: densidad equilibrada
+      const spacing = isLight ? (w < 768 ? 118 : 98) : (w < 768 ? 82 : 68);
       const cols = Math.ceil(w / spacing);
       const rows = Math.ceil(h / spacing);
 
@@ -137,15 +136,15 @@ export default function AntigravityParticles() {
             originY: oy,
             vx: 0,
             vy: 0,
-            size: 1.25 + Math.random() * 1.15,
-            length: 4 + Math.random() * 4.8,
+            size: isLight ? 0.85 + Math.random() * 1.15 : 1.25 + Math.random() * 1.15,
+            length: isLight ? 2.4 + Math.random() * 2.4 : 4 + Math.random() * 4.8,
             angle: initialAngle,
             targetAngle: initialAngle,
             strokeStyle: getColorForPosition(ox, oy, w, h),
-            baseAlpha: isLight ? 0.32 + Math.random() * 0.3 : 0.24 + Math.random() * 0.28,
-            alpha: isLight ? 0.42 : 0.32,
+            baseAlpha: isLight ? 0.22 + Math.random() * 0.36 : 0.26 + Math.random() * 0.3,
+            alpha: isLight ? 0.34 : 0.34,
             phase: Math.random() * Math.PI * 2,
-            speed: 0.45 + Math.random() * 0.55,
+            speed: isLight ? 0.28 + Math.random() * 0.35 : 0.45 + Math.random() * 0.55,
             orbitRadius: 55 + Math.random() * 130,
             orbitOffset: Math.random() * Math.PI * 2,
           });
@@ -315,18 +314,40 @@ export default function AntigravityParticles() {
 
         p.alpha += (targetAlpha - p.alpha) * 0.15;
 
-        const currentLen = (p.length + Math.min(6, Math.sqrt(speedSq) * 1.45)) * stretch;
-        const halfLen = currentLen * 0.5;
-        const cos = Math.cos(p.angle);
-        const sin = Math.sin(p.angle);
-
         ctx.globalAlpha = p.alpha;
-        ctx.strokeStyle = p.strokeStyle;
-        ctx.lineWidth = p.size * 1.5;
-        ctx.beginPath();
-        ctx.moveTo(p.x - cos * halfLen, p.y - sin * halfLen);
-        ctx.lineTo(p.x + cos * halfLen, p.y + sin * halfLen);
-        ctx.stroke();
+
+        if (isLight) {
+          // Modo claro: polvo de estrella fino (motes circulares y micro-destellos en cruz cada 4 partículas)
+          ctx.fillStyle = p.strokeStyle;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (i % 4 === 0 && p.alpha > 0.36) {
+            const crossLen = p.length * 0.75;
+            ctx.strokeStyle = p.strokeStyle;
+            ctx.lineWidth = 0.85;
+            ctx.beginPath();
+            ctx.moveTo(p.x - crossLen, p.y);
+            ctx.lineTo(p.x + crossLen, p.y);
+            ctx.moveTo(p.x, p.y - crossLen);
+            ctx.lineTo(p.x, p.y + crossLen);
+            ctx.stroke();
+          }
+        } else {
+          // Modo oscuro: partículas originales en plateado, púrpura y violeta
+          const currentLen = (p.length + Math.min(6, Math.sqrt(speedSq) * 1.45)) * stretch;
+          const halfLen = currentLen * 0.5;
+          const cos = Math.cos(p.angle);
+          const sin = Math.sin(p.angle);
+
+          ctx.strokeStyle = p.strokeStyle;
+          ctx.lineWidth = p.size * 1.5;
+          ctx.beginPath();
+          ctx.moveTo(p.x - cos * halfLen, p.y - sin * halfLen);
+          ctx.lineTo(p.x + cos * halfLen, p.y + sin * halfLen);
+          ctx.stroke();
+        }
       }
 
       ctx.globalAlpha = 1;
