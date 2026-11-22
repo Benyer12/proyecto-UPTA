@@ -989,9 +989,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
           >
             {/* Halo luminoso detrás del dado */}
             <div
-              className="pointer-events-none absolute w-28 h-28 rounded-full blur-xl opacity-65"
+              className="pointer-events-none absolute w-32 h-32 rounded-full opacity-60"
               style={{
-                background: 'radial-gradient(circle, #EDE9FE 0%, transparent 70%)',
+                background: 'radial-gradient(circle, rgba(237, 233, 254, 0.72) 0%, rgba(237, 233, 254, 0.2) 45%, transparent 72%)',
               }}
             />
             <span className="pointer-events-none absolute top-2 left-3.5 text-white/85 text-xs drop-shadow">

@@ -939,10 +939,8 @@ function SantuarioBoss({
           repeatCount="indefinite"
         />
         <circle
-          r={22}
-          fill={abierto ? '#7DD3FC' : '#C4B5FD'}
-          opacity={0.32}
-          filter="url(#halo)"
+          r={26}
+          fill="url(#haloGrad)"
         />
         <polygon
           points="0,-19 12,-4 6.5,15 -6.5,15 -12,-4"
@@ -1171,27 +1169,11 @@ export default function MapaAstral({
             <stop offset="100%" stopColor="#FDBA74" />
           </linearGradient>
         )}
-        <filter id="acuarela" x="-20%" y="-20%" width="140%" height="140%">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.04"
-            numOctaves="2"
-            seed="7"
-            result="ruido"
-          />
-          <feDisplacementMap
-            in="SourceGraphic"
-            in2="ruido"
-            scale="12"
-            xChannelSelector="R"
-            yChannelSelector="G"
-            result="desp"
-          />
-          <feGaussianBlur in="desp" stdDeviation="2.4" />
-        </filter>
-        <filter id="halo" x="-100%" y="-100%" width="300%" height="300%">
-          <feGaussianBlur stdDeviation="6" />
-        </filter>
+        <radialGradient id="haloGrad" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={santuarioAbierto ? '#7DD3FC' : '#C4B5FD'} stopOpacity="0.65" />
+          <stop offset="55%" stopColor={santuarioAbierto ? '#38BDF8' : '#A78BFA'} stopOpacity="0.22" />
+          <stop offset="100%" stopColor={santuarioAbierto ? '#38BDF8' : '#A78BFA'} stopOpacity="0" />
+        </radialGradient>
       </defs>
 
       <DecoracionFondo />
@@ -1265,34 +1247,31 @@ export default function MapaAstral({
             <path
               d={polilineaD(rastroG)}
               stroke="#E0F2FE"
-              strokeWidth={36}
-              strokeOpacity={0.75}
+              strokeWidth={34}
+              strokeOpacity={0.28}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
-              filter="url(#acuarela)"
             />
             <path
               d={polilineaD(rastroG)}
               transform="translate(-4 -3)"
               stroke="#7DD3FC"
               strokeWidth={22}
-              strokeOpacity={0.85}
+              strokeOpacity={0.4}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
-              filter="url(#acuarela)"
             />
             <path
               d={polilineaD(rastroG)}
               transform="translate(5 4)"
               stroke="#FDA4AF"
               strokeWidth={20}
-              strokeOpacity={0.82}
+              strokeOpacity={0.38}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
-              filter="url(#acuarela)"
             />
             <path
               d={polilineaD(rastroG)}

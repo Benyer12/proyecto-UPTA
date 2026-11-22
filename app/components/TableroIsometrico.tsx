@@ -817,16 +817,16 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         }}
       />
 
-      {/* Orbes neón en azul eléctrico brillante */}
+      {/* Orbes neón en azul eléctrico brillante (gradiente suave sin blur-3xl GPU) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-24 -left-24 w-88 h-88 rounded-full blur-3xl opacity-45"
-        style={{ background: 'radial-gradient(circle, #00E5FF 0%, transparent 70%)' }}
+        className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full opacity-45"
+        style={{ background: 'radial-gradient(circle, rgba(0, 229, 255, 0.55) 0%, rgba(0, 229, 255, 0.14) 40%, transparent 72%)' }}
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-24 left-1/3 w-80 h-80 rounded-full blur-3xl opacity-40"
-        style={{ background: 'radial-gradient(circle, #0077FF 0%, transparent 70%)' }}
+        className="pointer-events-none absolute -bottom-24 left-1/3 w-96 h-96 rounded-full opacity-40"
+        style={{ background: 'radial-gradient(circle, rgba(0, 119, 255, 0.55) 0%, rgba(0, 119, 255, 0.14) 40%, transparent 72%)' }}
       />
       {/* ════════════════════ ESCENARIO PRINCIPAL: MONTAÑA CUÁNTICA (IZQUIERDA / CENTRO) ════════════════════ */}
       <div className="relative flex-1 h-[62vh] lg:h-full overflow-hidden flex items-center justify-center">

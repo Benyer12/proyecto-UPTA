@@ -179,9 +179,15 @@ function AgujeroNegroCosmico({ x, y }: { x: number; y: number }) {
             <circle
               cx={p.r}
               cy="0"
+              r={p.size * 1.9}
+              fill={p.color}
+              opacity="0.24"
+            />
+            <circle
+              cx={p.r}
+              cy="0"
               r={p.size}
               fill={p.color}
-              style={{ filter: `drop-shadow(0 0 6px ${p.color})` }}
             />
             <path
               d={`M ${p.r} 0 A ${p.r} ${p.r} 0 0 0 ${p.r * 0.92} ${-p.r * 0.38}`}
@@ -621,8 +627,10 @@ function SantuarioGuardian({
   );
 }
 
+const CUBOS_ORDENADOS: NodoCubo[] = [];
+
 /** Cubo Isométrico 3D Pulcro estilo Liquid-Glass. */
-function CuboIsometricoSVG({
+const CuboIsometricoSVG = memo(function CuboIsometricoSVG({
   nodo,
   activo,
   visitado,
@@ -680,13 +688,19 @@ function CuboIsometricoSVG({
   const rightPts = `${x + W},${y - H} ${x},${y} ${x},${y + D} ${x + W},${y - H + D}`;
 
   return (
-    <g
-      id={`cell-${nodo.index}`}
-      style={{
-        filter: `drop-shadow(0 8px 14px rgba(2, 6, 23, 0.68)) drop-shadow(0 0 ${activo ? 15 : 6}px ${paleta.glow})`,
-      }}
-    >
-      <ellipse cx={x} cy={y + D - 2} rx={W * 0.92} ry={H * 0.85} fill="#020617" opacity="0.48" />
+    <g id={`cell-${nodo.index}`}>
+      <ellipse cx={x} cy={y + D - 2} rx={W * 0.92} ry={H * 0.85} fill="#020617" opacity="0.52" />
+
+      {activo && (
+        <polygon
+          points={`${x},${y - H * 2 - 6} ${x + W + 8},${y - H} ${x},${y + 6} ${x - W - 8},${y - H}`}
+          fill="none"
+          stroke={paleta.glow}
+          strokeWidth="5"
+          strokeOpacity="0.34"
+          strokeLinejoin="round"
+        />
+      )}
 
       {activo && (
         <polygon
@@ -760,7 +774,7 @@ function CuboIsometricoSVG({
       </text>
     </g>
   );
-}
+});
 
 /**
  * Token del Jugador Rediseñado: Explorador Espacial Cuántico con Visor Holográfico,
@@ -933,7 +947,8 @@ const EscenarioMontaña = memo(function EscenarioMontaña() {
         <g>
           <animateTransform attributeName="transform" type="translate" values="0 0; 0 -8; 0 0" dur="2.6s" repeatCount="indefinite" />
           <line x1="0" y1="-22" x2="0" y2="-31" stroke="#00F5FF" strokeWidth="2" />
-          <circle cx="0" cy="-33" r="3.5" fill="#FDE047" style={{ filter: 'drop-shadow(0 0 6px #FDE047)' }} />
+          <circle cx="0" cy="-33" r="6" fill="#FDE047" opacity="0.28" />
+          <circle cx="0" cy="-33" r="3.5" fill="#FDE047" />
           <rect x="-17" y="-22" width="34" height="26" rx="10" fill="#0EA5E9" stroke="#E0F2FE" strokeWidth="1.8" />
           <rect x="-12" y="-17" width="24" height="14" rx="5" fill="#031530" stroke="#00F5FF" strokeWidth="1.2" />
           <circle cx="-5" cy="-10.5" r="2.6" fill="#00FF88" />
@@ -944,8 +959,10 @@ const EscenarioMontaña = memo(function EscenarioMontaña() {
             <animate attributeName="ry" values="2.5;5;2.5" dur="0.5s" repeatCount="indefinite" />
           </ellipse>
         </g>
-        <circle cx="-38" cy="10" r="2.8" fill="#00FF88" style={{ filter: 'drop-shadow(0 0 6px #00FF88)' }} />
-        <circle cx="40" cy="-8" r="3" fill="#FDE047" style={{ filter: 'drop-shadow(0 0 6px #FDE047)' }} />
+        <circle cx="-38" cy="10" r="5.5" fill="#00FF88" opacity="0.24" />
+        <circle cx="-38" cy="10" r="2.8" fill="#00FF88" />
+        <circle cx="40" cy="-8" r="5.8" fill="#FDE047" opacity="0.24" />
+        <circle cx="40" cy="-8" r="3" fill="#FDE047" />
       </g>
 
       {/* ── Cohete Espacial Neón Divertido volando arriba derecha ── */}
@@ -969,29 +986,29 @@ const EscenarioMontaña = memo(function EscenarioMontaña() {
         </g>
       </g>
 
-      {/* ── Símbolos Matemáticos Neón Flotantes alrededor de la isla ── */}
+      {/* ── Símbolos Matemáticos Neón Flotantes alrededor de la isla (sin CSS drop-shadow por frame) ── */}
       <g pointerEvents="none" fontFamily="'Orbitron', sans-serif" fontWeight="900">
-        <text x="16" y="196" fill="#00F5FF" fontSize="22" opacity="0.72" style={{ filter: 'drop-shadow(0 0 10px #00F5FF)' }}>
+        <text x="16" y="196" fill="#00F5FF" fontSize="22" opacity="0.8">
           +
           <animate attributeName="y" values="196;184;196" dur="3.4s" repeatCount="indefinite" />
         </text>
-        <text x="874" y="425" fill="#00FF88" fontSize="22" opacity="0.75" style={{ filter: 'drop-shadow(0 0 10px #00FF88)' }}>
+        <text x="874" y="425" fill="#00FF88" fontSize="22" opacity="0.82">
           ×
           <animate attributeName="y" values="425;412;425" dur="3.8s" repeatCount="indefinite" />
         </text>
-        <text x="28" y="428" fill="#FDE047" fontSize="20" opacity="0.75" style={{ filter: 'drop-shadow(0 0 10px #FDE047)' }}>
+        <text x="28" y="428" fill="#FDE047" fontSize="20" opacity="0.82">
           π
           <animate attributeName="y" values="428;416;428" dur="4.1s" repeatCount="indefinite" />
         </text>
-        <text x="772" y="618" fill="#38BDF8" fontSize="22" opacity="0.78" style={{ filter: 'drop-shadow(0 0 10px #38BDF8)' }}>
+        <text x="772" y="618" fill="#38BDF8" fontSize="22" opacity="0.84">
           ÷
           <animate attributeName="y" values="618;606;618" dur="3.2s" repeatCount="indefinite" />
         </text>
-        <text x="242" y="68" fill="#00FF88" fontSize="18" opacity="0.72" style={{ filter: 'drop-shadow(0 0 8px #00FF88)' }}>
+        <text x="242" y="68" fill="#00FF88" fontSize="18" opacity="0.78">
           100%
           <animate attributeName="y" values="68;58;68" dur="4.4s" repeatCount="indefinite" />
         </text>
-        <text x="698" y="48" fill="#FDE047" fontSize="20" opacity="0.78" style={{ filter: 'drop-shadow(0 0 8px #FDE047)' }}>
+        <text x="698" y="48" fill="#FDE047" fontSize="20" opacity="0.84">
           ★
           <animate attributeName="y" values="48;38;48" dur="2.9s" repeatCount="indefinite" />
         </text>
@@ -1133,12 +1150,18 @@ interface MapaMontañaCuanticaProps {
   santuarioDesbloqueado: boolean;
 }
 
-export default function MapaMontañaCuantica({
+const MapaMontañaCuantica = memo(function MapaMontañaCuantica({
   pos,
   caminando,
   santuarioDesbloqueado,
 }: MapaMontañaCuanticaProps) {
   const nodoActual = NODOS_NUMERIX[Math.min(pos, NODOS_NUMERIX.length - 1)];
+  const cubos = CUBOS_ORDENADOS.length
+    ? CUBOS_ORDENADOS
+    : (CUBOS_ORDENADOS.push(
+        ...[...NODOS_NUMERIX].filter((n) => n.tipo !== 'boss').sort((a, b) => a.y - b.y),
+      ),
+      CUBOS_ORDENADOS);
 
   return (
     <svg
@@ -1362,10 +1385,7 @@ export default function MapaMontañaCuantica({
         <PortalInicio x={748} y={528} />
 
         {/* ── CUBOS ISOMÉTRICOS 01 AL 19 (Ordenados por profundidad Y ascendente) ── */}
-        {[...NODOS_NUMERIX]
-          .filter((n) => n.tipo !== 'boss')
-          .sort((a, b) => a.y - b.y)
-          .map((nodo) => (
+        {cubos.map((nodo) => (
             <CuboIsometricoSVG
               key={nodo.index}
               nodo={nodo}
@@ -1389,4 +1409,6 @@ export default function MapaMontañaCuantica({
       </g>
     </svg>
   );
-}
+});
+
+export default MapaMontañaCuantica;
