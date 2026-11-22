@@ -177,6 +177,16 @@ export default function AsignacionesPage() {
 
   if (!mounted || !user || user.role !== 'admin') return null;
 
+  const tutorIds = new Set(tutores.map((t) => t.id));
+  const estudianteIds = new Set(estudiantes.map((e) => e.id));
+  const relacionesValidasMap = new Map<string, RelacionTutorEstudiante>();
+  for (const r of relaciones) {
+    if (tutorIds.has(r.tutor_id) && estudianteIds.has(r.estudiante_id)) {
+      relacionesValidasMap.set(r.estudiante_id, r);
+    }
+  }
+  const relacionesValidas = Array.from(relacionesValidasMap.values());
+
   const tutorActivo = tutores.find((t) => t.id === tutorSeleccionadoId);
 
   const estudiantesOrdenados = [...estudiantes].sort((a, b) => {
@@ -243,7 +253,7 @@ export default function AsignacionesPage() {
                 <div className="font-mono text-[10px] uppercase tracking-wider text-[#6EE7B7]">
                   Vínculos
                 </div>
-                <div className="text-lg font-bold text-white tabular-nums">{relaciones.length}</div>
+                <div className="text-lg font-bold text-white tabular-nums">{relacionesValidas.length}</div>
               </div>
             </div>
           </LiquidGlass>
@@ -292,7 +302,7 @@ export default function AsignacionesPage() {
 
                 <div className="divide-y divide-white/[0.07]">
                   {tutores.map((t) => {
-                    const cantidadAsignados = relaciones.filter(
+                    const cantidadAsignados = relacionesValidas.filter(
                       (r) => r.tutor_id === t.id
                     ).length;
                     const activo = t.id === tutorSeleccionadoId;
