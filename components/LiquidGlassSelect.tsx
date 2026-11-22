@@ -93,13 +93,13 @@ export default function LiquidGlassSelect({
   return (
     <div ref={triggerRef} className={`relative inline-block min-w-[210px] ${className}`}>
       <LiquidGlass
-        blur={4}
-        refraction={18}
+        blur={1.2}
+        refraction={8}
         bezel={0.44}
-        saturation={1.7}
+        saturation={1.65}
         className={`rounded-full transition-all duration-200 ${
           isLight
-            ? 'bg-white/[0.42] border-white/[0.82] hover:bg-white/[0.58]'
+            ? 'bg-white/[0.16] border-white/[0.78] hover:bg-white/[0.3]'
             : 'bg-white/[0.06] border-white/[0.2] hover:bg-white/[0.1] hover:border-white/[0.34]'
         }`}
       >
@@ -176,17 +176,18 @@ export default function LiquidGlassSelect({
               >
                 <LiquidGlass
                   blur={14}
-                  refraction={22}
+                  refraction={8}
                   bezel={0.36}
-                  saturation={1.8}
+                  saturation={1.75}
+                  readingPriority
                   className={`rounded-2xl p-1.5 ${
                     isLight
-                      ? 'bg-white/[0.64] border-white/[0.88] shadow-[0_24px_60px_-18px_rgba(15,23,42,0.22),inset_0_1px_0_0_rgba(255,255,255,0.96)]'
+                      ? 'bg-white/[0.86] border-slate-900/[0.12] shadow-[0_24px_60px_-18px_rgba(15,23,42,0.2),inset_0_1px_0_0_rgba(255,255,255,0.98)]'
                       : 'bg-white/[0.08] border-white/[0.24] shadow-[0_24px_64px_-16px_rgba(0,0,0,0.72),inset_0_1px_0_0_rgba(255,255,255,0.36)]'
                   }`}
                   style={{
                     backgroundImage: isLight
-                      ? 'linear-gradient(180deg, rgba(255,255,255,0.58) 0%, rgba(241,247,255,0.36) 100%)'
+                      ? 'linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(244,248,255,0.82) 100%)'
                       : 'linear-gradient(180deg, rgba(16,24,48,0.56) 0%, rgba(7,12,28,0.68) 100%)',
                   }}
                 >

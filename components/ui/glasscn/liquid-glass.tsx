@@ -119,13 +119,15 @@ export type LiquidGlassProps = HTMLAttributes<HTMLDivElement> & {
   bezel?: number;
   /** Backdrop saturation. */
   saturation?: number;
+  /** Preserves higher frosted opacity in light mode for reading-priority surfaces (e.g. login/forms). */
+  readingPriority?: boolean;
 };
 
 /**
  * Superficie Liquid Glass fiel a glasscn:
- * - Fondo ultra-transparente (bg-white/[0.045]) para máxima claridad óptica
- * - Desenfoque bajo (2px-3px) + filtro SVG feDisplacementMap (squircle convexo)
- * - Borde direccional iOS 27 de 0.75px con desvanecimiento limpio en esquinas
+ * - Modo oscuro: cristal translúcido profundo con refracción SVG feDisplacementMap
+ * - Modo claro: cristal óptico ultra-transparente (refracción ~7-9, desenfoque ~1px)
+ *   excepto cuando `readingPriority` está activo (formularios / modales de lectura).
  */
 export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function LiquidGlass(
   {
@@ -133,6 +135,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
     refraction = 15,
     bezel = 0.34,
     saturation = 1.32,
+    readingPriority = false,
     className,
     style,
     children,
@@ -196,19 +199,34 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
   }, []);
 
   const refractionActive = supported && mapUrl !== '';
+  const effectiveBlur = isLight
+    ? readingPriority
+      ? Math.max(blur, 14)
+      : Math.min(blur, 1.15)
+    : blur;
+  const effectiveRefraction = isLight
+    ? readingPriority
+      ? Math.min(refraction, 8)
+      : Math.min(refraction, 8)
+    : refraction;
+  const effectiveSaturation = isLight && !readingPriority ? Math.max(saturation, 1.35) : saturation;
+
   const backdropFilter = refractionActive
-    ? `url(#${filterId}) blur(${blur}px) saturate(${saturation})`
-    : `blur(${blur + 2.5}px) saturate(${saturation})`;
+    ? `url(#${filterId}) blur(${effectiveBlur}px) saturate(${effectiveSaturation})`
+    : `blur(${isLight && !readingPriority ? 1.5 : effectiveBlur + 2.5}px) saturate(${effectiveSaturation})`;
 
   return (
     <>
       <div
         ref={setRefs}
         data-liquid-glass="true"
+        data-reading-priority={readingPriority ? 'true' : undefined}
         className={cn(
           'relative overflow-hidden rounded-full',
           isLight
-            ? 'bg-white/[0.48] border border-white/[0.78] shadow-[0_20px_54px_-28px_rgba(15,23,42,0.18),inset_0_1px_0_0_rgba(255,255,255,0.94),inset_0_-10px_22px_-12px_rgba(56,189,248,0.16)]'
+            ? readingPriority
+              ? 'bg-white/[0.90] border border-slate-900/[0.12] shadow-[0_24px_64px_-22px_rgba(15,23,42,0.22),inset_0_1px_0_0_rgba(255,255,255,1)]'
+              : 'bg-white/[0.14] border border-white/[0.72] shadow-[0_14px_38px_-22px_rgba(30,64,175,0.16),inset_0_1px_0_0_rgba(255,255,255,0.88),inset_0_-1px_0_0_rgba(255,255,255,0.28)]'
             : 'bg-white/[0.045] border border-white/[0.10] shadow-[0_24px_80px_-42px_rgba(0,0,0,0.72),inset_0_1px_0_0_rgba(255,255,255,0.18)]',
           className,
         )}
@@ -222,8 +240,11 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
           style={{
             padding: 'var(--liquid-glass-rim-width, 0.75px)',
             background: isLight
-              ? 'linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.96) var(--liquid-glass-rim-fade, 18%), rgba(255,255,255,0.96) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(255,255,255,0)), ' +
-                'linear-gradient(to bottom, rgba(15,23,42,0), rgba(15,23,42,0.14) var(--liquid-glass-rim-fade, 18%), rgba(15,23,42,0.14) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(15,23,42,0))'
+              ? readingPriority
+                ? 'linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.98) var(--liquid-glass-rim-fade, 18%), rgba(255,255,255,0.98) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(255,255,255,0)), ' +
+                  'linear-gradient(to bottom, rgba(15,23,42,0), rgba(15,23,42,0.12) var(--liquid-glass-rim-fade, 18%), rgba(15,23,42,0.12) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(15,23,42,0))'
+                : 'linear-gradient(to right, rgba(255,255,255,0.12), rgba(255,255,255,0.92) var(--liquid-glass-rim-fade, 20%), rgba(255,255,255,0.92) calc(100% - var(--liquid-glass-rim-fade, 20%)), rgba(255,255,255,0.12)), ' +
+                  'linear-gradient(to bottom, rgba(148,163,184,0.06), rgba(30,64,175,0.14) var(--liquid-glass-rim-fade, 20%), rgba(30,64,175,0.14) calc(100% - var(--liquid-glass-rim-fade, 20%)), rgba(148,163,184,0.06))'
               : 'linear-gradient(to right, rgba(255,255,255,0), var(--liquid-glass-rim-light, rgba(255,255,255,0.28)) var(--liquid-glass-rim-fade, 18%), var(--liquid-glass-rim-light, rgba(255,255,255,0.28)) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(255,255,255,0)), ' +
                 'linear-gradient(to bottom, rgba(0,0,0,0), var(--liquid-glass-rim-dark, rgba(255,255,255,0.09)) var(--liquid-glass-rim-fade, 18%), var(--liquid-glass-rim-dark, rgba(255,255,255,0.09)) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(0,0,0,0))',
             WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
@@ -255,12 +276,12 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
             <feDisplacementMap
               in="SourceGraphic"
               in2="map"
-              scale={refraction}
+              scale={effectiveRefraction}
               xChannelSelector="R"
               yChannelSelector="G"
               result="displaced"
             />
-            <feGaussianBlur in="displaced" stdDeviation="0.15" />
+            <feGaussianBlur in="displaced" stdDeviation={isLight && !readingPriority ? '0.08' : '0.15'} />
           </filter>
         </svg>
       )}

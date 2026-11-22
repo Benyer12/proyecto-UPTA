@@ -558,8 +558,9 @@ export default function Dashboard() {
     return (
       <div className="relative min-h-[72vh] flex items-center justify-center px-5 sm:px-6">
         <LiquidGlass
-          blur={8}
-          refraction={14}
+          blur={14}
+          refraction={10}
+          readingPriority
           className="relative z-10 text-center max-w-md w-full mx-auto p-7 sm:p-9 rounded-3xl bg-[#070c1c]/[0.84] border-white/[0.14]"
         >
           <div className="space-y-5">

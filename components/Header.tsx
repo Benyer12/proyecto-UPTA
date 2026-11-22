@@ -818,6 +818,7 @@ export default function Header() {
           />
           <motion.div
             ref={formRef}
+            data-reading-priority="true"
             initial={{ opacity: 0, y: -10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.98 }}
@@ -832,12 +833,6 @@ export default function Header() {
                 {/* Columna Izquierda: Ventana informativa limpia con mayor opacidad */}
                 <div className="hidden lg:flex lg:col-span-5 flex-col justify-between rounded-2xl border border-white/12 bg-[#070b18]/85 p-6">
                   <div className="space-y-3">
-                    <div className="flex items-center gap-1.5 mb-2" aria-hidden="true">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F56]" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#27C93F]" />
-                    </div>
-
                     <span className="font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-white/50 block">
                       Portal de acceso
                     </span>

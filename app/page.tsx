@@ -1,22 +1,54 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import PlanetVisual from './components/PlanetVisual';
 import { LiquidGlass } from '../components/ui/glasscn/liquid-glass';
 import { useThemeStore } from '../lib/theme-store';
+import { playCorrect, playIncorrect, playStep } from '../lib/sound-engine';
 
-const PLANETAS_MUESTRA = [
+interface PlanetShowcase {
+  id: number;
+  nombre: string;
+  materia: string;
+  frase: string;
+  accent: string;
+  lightAccent: string;
+  border: string;
+  lightBorder: string;
+  neonGlowDark: string;
+  neonGlowLight: string;
+  bgClass: string;
+  reto: {
+    pregunta: string;
+    opciones: [string, string, string];
+    correcta: string;
+    pista: string;
+  };
+}
+
+const PLANETAS_MUESTRA: PlanetShowcase[] = [
   {
     id: 1,
     nombre: 'Numérix',
     materia: 'Matemáticas · 6 niveles',
     frase: 'Calcula, resuelve acertijos numéricos y domina las operaciones.',
     accent: '#67E8F9',
-    lightAccent: '#0369A1',
-    border: 'rgba(103, 232, 249, 0.36)',
-    lightBorder: 'rgba(2, 132, 199, 0.38)',
+    lightAccent: '#0284C7',
+    border: 'rgba(103, 232, 249, 0.42)',
+    lightBorder: 'rgba(2, 132, 199, 0.45)',
+    neonGlowDark:
+      '0 0 28px rgba(56, 189, 248, 0.34), 0 0 64px rgba(14, 165, 233, 0.2), inset 0 1px 0 0 rgba(255,255,255,0.38)',
+    neonGlowLight:
+      '0 0 26px rgba(14, 165, 233, 0.24), 0 14px 40px -16px rgba(2, 132, 199, 0.28), inset 0 1px 0 0 rgba(255,255,255,0.92)',
     bgClass: 'bg-[#031524]/[0.34]',
+    reto: {
+      pregunta: '¿Cuánto es 7 × 8?',
+      opciones: ['54', '56', '64'],
+      correcta: '56',
+      pista: '7 × 7 = 49; súmale 7 más para llegar al resultado.',
+    },
   },
   {
     id: 2,
@@ -25,9 +57,19 @@ const PLANETAS_MUESTRA = [
     frase: 'Practica lectura, ortografía y redacción con misiones rápidas.',
     accent: '#D8B4FE',
     lightAccent: '#7E22CE',
-    border: 'rgba(216, 180, 254, 0.38)',
-    lightBorder: 'rgba(147, 51, 234, 0.36)',
+    border: 'rgba(216, 180, 254, 0.44)',
+    lightBorder: 'rgba(147, 51, 234, 0.44)',
+    neonGlowDark:
+      '0 0 28px rgba(192, 132, 252, 0.36), 0 0 64px rgba(168, 85, 247, 0.22), inset 0 1px 0 0 rgba(255,255,255,0.38)',
+    neonGlowLight:
+      '0 0 26px rgba(147, 51, 234, 0.24), 0 14px 40px -16px rgba(126, 34, 206, 0.26), inset 0 1px 0 0 rgba(255,255,255,0.92)',
     bgClass: 'bg-[#160726]/[0.36]',
+    reto: {
+      pregunta: '¿Cuál palabra lleva tilde?',
+      opciones: ['árbol', 'sol', 'pared'],
+      correcta: 'árbol',
+      pista: 'Es una palabra grave terminada en L, por eso lleva tilde.',
+    },
   },
   {
     id: 3,
@@ -36,9 +78,19 @@ const PLANETAS_MUESTRA = [
     frase: 'Descubre el cuerpo humano, los ecosistemas y la ciencia diaria.',
     accent: '#6EE7B7',
     lightAccent: '#047857',
-    border: 'rgba(110, 231, 183, 0.36)',
-    lightBorder: 'rgba(5, 150, 105, 0.38)',
+    border: 'rgba(110, 231, 183, 0.42)',
+    lightBorder: 'rgba(5, 150, 105, 0.44)',
+    neonGlowDark:
+      '0 0 28px rgba(52, 211, 153, 0.34), 0 0 64px rgba(16, 185, 129, 0.2), inset 0 1px 0 0 rgba(255,255,255,0.38)',
+    neonGlowLight:
+      '0 0 26px rgba(16, 185, 129, 0.24), 0 14px 40px -16px rgba(4, 120, 87, 0.26), inset 0 1px 0 0 rgba(255,255,255,0.92)',
     bgClass: 'bg-[#031B14]/[0.34]',
+    reto: {
+      pregunta: '¿Qué órgano bombea la sangre?',
+      opciones: ['Pulmón', 'Corazón', 'Hígado'],
+      correcta: 'Corazón',
+      pista: 'Late todo el día en tu pecho para llevar oxígeno al cuerpo.',
+    },
   },
 ];
 
@@ -65,6 +117,43 @@ const PASOS_RAPIDOS = [
     lightAccent: '#047857',
   },
 ];
+
+function PlanetMiniIcon({ id, color }: { id: number; color: string }) {
+  if (id === 1) {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" className="w-3.5 h-3.5 shrink-0" aria-hidden="true">
+        <path d="M5 7H9M7 5V9" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M11.5 13H15.5" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M12 6L15 9M15 6L12 9" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+        <circle cx="7" cy="13.5" r="1.1" fill={color} />
+      </svg>
+    );
+  }
+  if (id === 2) {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" className="w-3.5 h-3.5 shrink-0" aria-hidden="true">
+        <path
+          d="M4.5 5.2C6.8 4.6 8.8 5.1 10 6.2C11.2 5.1 13.2 4.6 15.5 5.2V14.8C13.2 14.2 11.2 14.7 10 15.8C8.8 14.7 6.8 14.2 4.5 14.8V5.2Z"
+          stroke={color}
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        <path d="M10 6.2V15.5" stroke={color} strokeWidth="1.4" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className="w-3.5 h-3.5 shrink-0" aria-hidden="true">
+      <path
+        d="M15.8 4.4C10.8 4.4 6.6 7.1 5.3 11.8C4.8 13.5 5.5 15 7.2 15.4C11.7 16.4 15.8 12.2 15.8 4.4Z"
+        stroke={color}
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path d="M5.5 14.8L11.5 9.2" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 function StepBadgeIcon({ code, color }: { code: string; color: string }) {
   if (code === '01') {
@@ -109,12 +198,34 @@ export default function Home() {
   const appTheme = useThemeStore((s) => s.theme);
   const isLight = appTheme === 'light';
 
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
+
+  const activePlanet = PLANETAS_MUESTRA[activeIdx];
+  const activeColor = isLight ? activePlanet.lightAccent : activePlanet.accent;
+  const currentChoice = selectedAnswers[activePlanet.id] ?? null;
+  const isChoiceCorrect = currentChoice === activePlanet.reto.correcta;
+
+  const handleSelectPlanet = (idx: number) => {
+    setActiveIdx(idx);
+    playStep();
+  };
+
+  const handleAnswerDemo = (option: string) => {
+    setSelectedAnswers((prev) => ({ ...prev, [activePlanet.id]: option }));
+    if (option === activePlanet.reto.correcta) {
+      playCorrect();
+    } else {
+      playIncorrect();
+    }
+  };
+
   return (
     <div className="relative min-h-screen overflow-x-hidden text-white selection:bg-white/25">
-      {/* ════════════════════ 1. HERO VISUAL Y TARJETA AVENTURA ESPACIAL ════════════════════ */}
+      {/* ════════════════════ 1. HERO VISUAL CON BRILLO NEÓN Y TARJETA INTERACTIVA ════════════════════ */}
       <section className="relative z-10 mx-auto max-w-6xl px-5 sm:px-8 lg:px-10 pt-10 sm:pt-16 pb-14 sm:pb-20">
-        <div className="grid gap-10 lg:grid-cols-[1.08fr_0.97fr] lg:gap-12 items-center">
-          {/* Izquierda: Titular despejado (sin círculo decorativo encima), subtítulo y botones claros */}
+        <div className="grid gap-10 lg:grid-cols-[1.06fr_0.98fr] lg:gap-12 items-center">
+          {/* Izquierda: Titular con brillo neón sincronizado, subtítulo y botones claros */}
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -122,14 +233,19 @@ export default function Home() {
             className="relative space-y-6"
           >
             <div className="relative z-10 space-y-5">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-[#070b18]/75 backdrop-blur-md px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-[#67E8F9]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#67E8F9]" aria-hidden="true" />
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#67E8F9]/35 bg-[#070b18]/65 backdrop-blur-md px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-[#67E8F9]">
+                <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5 shrink-0" aria-hidden="true">
+                  <path
+                    d="M8 1.8L9.6 5.8L13.8 7.5L9.6 9.2L8 13.2L6.4 9.2L2.2 7.5L6.4 5.8L8 1.8Z"
+                    fill="currentColor"
+                  />
+                </svg>
                 <span>Primaria · 10 a 12 años</span>
               </div>
 
-              <h1 className="text-4xl sm:text-6xl xl:text-[64px] font-black tracking-[-0.03em] leading-[0.98] text-white">
+              <h1 className="hero-neon-title text-4xl sm:text-6xl xl:text-[64px] font-black tracking-[-0.03em] leading-[0.98] text-white">
                 UNIVERSO DEL
-                <span className="block bg-gradient-to-r from-white via-[#BAE6FD] to-[#67E8F9] bg-clip-text text-transparent">
+                <span className="hero-neon-accent block bg-gradient-to-r from-white via-[#67E8F9] to-[#C084FC] bg-clip-text text-transparent">
                   CONOCIMIENTO
                 </span>
               </h1>
@@ -142,7 +258,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-3.5 pt-1">
                 <Link
                   href="/dashboard"
-                  className="min-h-[48px] inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-semibold text-black transition-colors hover:bg-white/90"
+                  className="min-h-[48px] inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-semibold text-black transition-all hover:bg-white/90 shadow-[0_0_24px_rgba(103,232,249,0.34)]"
                 >
                   <span>Entrar a jugar</span>
                   <svg viewBox="0 0 16 16" fill="none" className="size-4" aria-hidden="true">
@@ -174,85 +290,252 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Derecha: Tarjeta AVENTURA ESPACIAL optimizada también para pantallas de 375px */}
+          {/* Derecha: Tarjeta interactiva AVENTURA ESPACIAL con brillo neón sincronizado y cero puntos de colores */}
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.06, ease: 'easeOut' }}
             className="relative flex items-center justify-center"
           >
+            {/* Halo ambiental neón que cambia suavemente según el planeta activo */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -inset-3 rounded-[2rem] blur-2xl transition-all duration-500"
+              style={{
+                background: isLight
+                  ? `radial-gradient(circle at 50% 45%, ${activePlanet.lightAccent}26 0%, transparent 72%)`
+                  : `radial-gradient(circle at 50% 45%, ${activePlanet.accent}36 0%, rgba(168, 85, 247, 0.14) 55%, transparent 78%)`,
+              }}
+            />
+
             <LiquidGlass
               blur={2}
-              refraction={24}
-              bezel={0.38}
+              refraction={22}
+              bezel={0.36}
               saturation={1.68}
-              className="w-full max-w-[500px] rounded-3xl bg-[#050a18]/[0.36] border-white/[0.16] p-5 sm:p-7 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_28px_-12px_rgba(180,220,255,0.18),0_26px_76px_-30px_rgba(0,0,0,0.78)]"
+              className="relative w-full max-w-[515px] rounded-3xl bg-[#050a18]/[0.42] p-5 sm:p-6 transition-all duration-500"
               style={{
-                backgroundImage:
-                  'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.22) 100%)',
+                borderColor: isLight ? activePlanet.lightBorder : activePlanet.border,
+                boxShadow: isLight ? activePlanet.neonGlowLight : activePlanet.neonGlowDark,
               }}
             >
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-1.5" aria-hidden="true">
-                  <span className="size-2.5 rounded-full bg-[#FF5F56]" />
-                  <span className="size-2.5 rounded-full bg-[#FFBD2E]" />
-                  <span className="size-2.5 rounded-full bg-[#27C93F]" />
+              {/* Encabezado limpio sin puntos macOS */}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="inline-flex items-center gap-2 min-w-0">
+                  <svg
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    className="w-4 h-4 shrink-0"
+                    style={{
+                      color: activeColor,
+                      filter: `drop-shadow(0 0 8px ${activeColor})`,
+                    }}
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M10 2.2L12.1 7.4L17.6 9.5L12.1 11.6L10 16.8L7.9 11.6L2.4 9.5L7.9 7.4L10 2.2Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  <span
+                    className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] truncate"
+                    style={{
+                      color: activeColor,
+                      textShadow: isLight ? 'none' : `0 0 12px ${activePlanet.accent}90`,
+                    }}
+                  >
+                    Aventura espacial
+                  </span>
                 </div>
-                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/55">
-                  Aventura espacial
+                <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-white/60 shrink-0">
+                  Prueba interactiva
                 </span>
               </div>
 
               <div className="space-y-4">
-                {/* 3 métricas: 2 columnas arriba + 1 abajo en 375px, 3 columnas en >=480px (sm) */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  <div className="rounded-2xl border border-[#67E8F9]/25 bg-[#041724]/70 p-3.5 sm:p-4 text-center flex flex-col justify-center">
-                    <div className="text-2xl font-black text-[#67E8F9] tabular-nums">3</div>
-                    <div className="text-xs font-semibold text-white/85 mt-0.5">Planetas</div>
+                {/* Selector interactivo de planetas (sin puntos de colores) */}
+                <div
+                  role="tablist"
+                  aria-label="Explorar planetas de muestra"
+                  className="grid grid-cols-3 gap-2"
+                >
+                  {PLANETAS_MUESTRA.map((p, idx) => {
+                    const selected = idx === activeIdx;
+                    const pColor = isLight ? p.lightAccent : p.accent;
+                    return (
+                      <button
+                        key={p.nombre}
+                        type="button"
+                        role="tab"
+                        aria-selected={selected}
+                        onClick={() => handleSelectPlanet(idx)}
+                        className="relative min-h-[42px] rounded-xl px-2.5 py-2 flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer border"
+                        style={{
+                          borderColor: selected
+                            ? pColor
+                            : isLight
+                              ? 'rgba(15, 23, 42, 0.14)'
+                              : 'rgba(255, 255, 255, 0.14)',
+                          backgroundColor: selected
+                            ? isLight
+                              ? `${pColor}1A`
+                              : `${p.accent}1C`
+                            : isLight
+                              ? 'rgba(255, 255, 255, 0.24)'
+                              : 'rgba(255, 255, 255, 0.04)',
+                          boxShadow: selected
+                            ? isLight
+                              ? `0 0 14px ${pColor}30`
+                              : `0 0 18px ${p.accent}42, inset 0 0 10px ${p.accent}18`
+                            : 'none',
+                          color: selected ? pColor : undefined,
+                        }}
+                      >
+                        <PlanetMiniIcon id={p.id} color={pColor} />
+                        <span className={selected ? '' : 'text-white/85'}>{p.nombre}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Mini reto interactivo en vivo del planeta seleccionado */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activePlanet.id}
+                    initial={prefersReducedMotion ? false : { opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={prefersReducedMotion ? undefined : { opacity: 0, y: -6 }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    className="rounded-2xl border p-4 space-y-3"
+                    style={{
+                      borderColor: isLight ? activePlanet.lightBorder : `${activePlanet.accent}38`,
+                      backgroundColor: isLight
+                        ? 'rgba(255, 255, 255, 0.26)'
+                        : 'rgba(6, 12, 28, 0.54)',
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className="font-mono text-[10px] font-bold uppercase tracking-[0.18em]"
+                        style={{ color: activeColor }}
+                      >
+                        {activePlanet.materia}
+                      </span>
+                      <span className="font-mono text-[10px] text-white/60">Toca tu respuesta</span>
+                    </div>
+
+                    <p className="text-sm sm:text-base font-bold text-white leading-snug">
+                      {activePlanet.reto.pregunta}
+                    </p>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      {activePlanet.reto.opciones.map((opt) => {
+                        const isPicked = currentChoice === opt;
+                        const isRightOpt = opt === activePlanet.reto.correcta;
+
+                        let borderCol = isLight
+                          ? 'rgba(15, 23, 42, 0.16)'
+                          : 'rgba(255, 255, 255, 0.16)';
+                        let bgCol = isLight
+                          ? 'rgba(255, 255, 255, 0.32)'
+                          : 'rgba(255, 255, 255, 0.05)';
+                        let glow = 'none';
+
+                        if (isPicked && isRightOpt) {
+                          borderCol = '#10B981';
+                          bgCol = isLight ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.24)';
+                          glow = '0 0 16px rgba(16, 185, 129, 0.45)';
+                        } else if (isPicked && !isRightOpt) {
+                          borderCol = '#F59E0B';
+                          bgCol = isLight ? 'rgba(245, 158, 11, 0.18)' : 'rgba(245, 158, 11, 0.2)';
+                        }
+
+                        return (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => handleAnswerDemo(opt)}
+                            className="min-h-[40px] rounded-xl px-2.5 py-2 text-xs sm:text-sm font-bold text-white transition-all cursor-pointer border hover:brightness-110"
+                            style={{
+                              borderColor: borderCol,
+                              backgroundColor: bgCol,
+                              boxShadow: glow,
+                            }}
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {currentChoice && (
+                      <motion.div
+                        initial={prefersReducedMotion ? false : { opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-xl px-3 py-2 text-xs font-medium leading-snug border"
+                        style={
+                          isChoiceCorrect
+                            ? {
+                                borderColor: 'rgba(16, 185, 129, 0.45)',
+                                backgroundColor: isLight
+                                  ? 'rgba(16, 185, 129, 0.14)'
+                                  : 'rgba(16, 185, 129, 0.16)',
+                                color: isLight ? '#047857' : '#A7F3D0',
+                              }
+                            : {
+                                borderColor: 'rgba(245, 158, 11, 0.45)',
+                                backgroundColor: isLight
+                                  ? 'rgba(245, 158, 11, 0.14)'
+                                  : 'rgba(245, 158, 11, 0.14)',
+                                color: isLight ? '#92400E' : '#FDE68A',
+                              }
+                        }
+                      >
+                        {isChoiceCorrect
+                          ? '¡Correcto! Sumaste +1 ★ de prueba. Elige otro planeta o entra a jugar.'
+                          : `Pista: ${activePlanet.reto.pista}`}
+                      </motion.div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* 3 métricas equilibradas y alineadas */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="rounded-xl border border-white/14 bg-white/[0.04] px-2.5 py-2.5 text-center">
+                    <div className="text-lg sm:text-xl font-black text-[#67E8F9] tabular-nums leading-none">
+                      3
+                    </div>
+                    <div className="text-[11px] font-semibold text-white/80 mt-1">Planetas</div>
                   </div>
-                  <div className="rounded-2xl border border-[#D8B4FE]/25 bg-[#160828]/70 p-3.5 sm:p-4 text-center flex flex-col justify-center">
-                    <div className="text-2xl font-black text-[#D8B4FE] tabular-nums">12+</div>
-                    <div className="text-xs font-semibold text-white/85 mt-0.5">Misiones</div>
+                  <div className="rounded-xl border border-white/14 bg-white/[0.04] px-2.5 py-2.5 text-center">
+                    <div className="text-lg sm:text-xl font-black text-[#D8B4FE] tabular-nums leading-none">
+                      12+
+                    </div>
+                    <div className="text-[11px] font-semibold text-white/80 mt-1">Misiones</div>
                   </div>
-                  <div className="col-span-2 sm:col-span-1 rounded-2xl border border-[#FDE68A]/25 bg-[#1B1506]/70 p-3.5 sm:p-4 text-center flex flex-col justify-center">
+                  <div className="rounded-xl border border-white/14 bg-white/[0.04] px-2.5 py-2.5 text-center">
                     <div className="text-sm sm:text-base font-black text-[#FDE68A] leading-tight">
                       Con pistas
                     </div>
-                    <div className="text-[11px] font-medium text-white/80 mt-1 leading-snug">
-                      Si fallas, recibes ayuda sin perder tu progreso.
+                    <div className="text-[10px] font-medium text-white/70 mt-0.5">
+                      Sin castigos
                     </div>
                   </div>
                 </div>
 
-                {/* Píldoras de planetas con flex-wrap para no cortarse en 375px */}
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  {PLANETAS_MUESTRA.map((p) => (
-                    <div
-                      key={p.nombre}
-                      className="flex-1 min-w-[96px] rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 flex items-center justify-center gap-2"
-                    >
-                      <span
-                        className="size-2 rounded-full shrink-0"
-                        style={{ backgroundColor: isLight ? p.lightAccent : p.accent }}
-                        aria-hidden="true"
-                      />
-                      <span className="text-xs font-semibold text-white whitespace-nowrap">
-                        {p.nombre}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center justify-between gap-3">
-                  <span className="text-xs font-medium text-white/75">
-                    Inicia sesión arriba para jugar
+                {/* Pie interactivo de la tarjeta */}
+                <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-2.5 flex items-center justify-between gap-2.5">
+                  <span className="text-xs font-medium text-white/80 truncate">
+                    Inicia sesión arriba para guardar estrellas
                   </span>
-                  <Link
-                    href="/about"
-                    className="shrink-0 min-h-[38px] inline-flex items-center rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black px-3.5 text-xs font-semibold text-white transition-colors"
-                  >
-                    Acerca de
-                  </Link>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Link
+                      href="/about"
+                      className="min-h-[34px] inline-flex items-center rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black px-3 text-xs font-semibold text-white transition-colors"
+                    >
+                      Acerca de
+                    </Link>
+                  </div>
                 </div>
               </div>
             </LiquidGlass>
@@ -281,7 +564,6 @@ export default function Home() {
             </p>
           </div>
           <span className="self-start sm:self-auto inline-flex items-center gap-2 rounded-full border border-white/12 bg-[#070b18]/75 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-white/70 shrink-0">
-            <span className="size-2 rounded-full bg-[#6EE7B7]" aria-hidden="true" />
             <span>Panel estudiante</span>
           </span>
         </div>
@@ -295,14 +577,12 @@ export default function Home() {
             >
               <LiquidGlass
                 blur={2}
-                refraction={24}
+                refraction={22}
                 bezel={0.38}
                 saturation={1.68}
                 className={`mwg-scroll-reveal h-full rounded-3xl ${planeta.bgClass} p-6 sm:p-7 transition-transform duration-300 group-hover:-translate-y-1 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_28px_-12px_rgba(180,220,255,0.18),0_26px_76px_-30px_rgba(0,0,0,0.78)]`}
                 style={{
                   borderColor: isLight ? planeta.lightBorder : planeta.border,
-                  backgroundImage:
-                    'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.22) 100%)',
                 }}
               >
                 <article className="flex flex-col items-center text-center gap-4">
