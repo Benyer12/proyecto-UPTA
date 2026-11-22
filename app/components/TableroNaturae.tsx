@@ -34,30 +34,34 @@ interface PreguntaCiencias {
   pista: string;
 }
 
-const TOTAL_NATURAE = 16;
+const TOTAL_NATURAE = 20;
 
-// Coordenadas calibradas 1:1 sobre el camino de piedra 3D de naturae-island-render.jpg (1200x896)
+// 20 casillas calibradas 1:1 exactamente sobre el centro del camino de piedra 3D (1200x896)
 const COORDS_NATURAE: { x: number; y: number; codigo: string }[] = [
-  { x: 902, y: 690, codigo: 'BIO-01' },
-  { x: 816, y: 618, codigo: 'BIO-02' },
-  { x: 712, y: 628, codigo: 'BIO-03' },
-  { x: 604, y: 622, codigo: 'CEL' },
-  { x: 528, y: 572, codigo: 'BIO-05' },
-  { x: 562, y: 508, codigo: 'SOL' },
-  { x: 648, y: 452, codigo: 'BIO-07' },
-  { x: 722, y: 396, codigo: 'ECO' },
-  { x: 774, y: 332, codigo: 'BIO-09' },
-  { x: 742, y: 268, codigo: 'ENE' },
-  { x: 658, y: 244, codigo: 'BIO-11' },
-  { x: 576, y: 256, codigo: 'ORB' },
-  { x: 496, y: 278, codigo: 'BIO-13' },
-  { x: 432, y: 262, codigo: 'ATM' },
-  { x: 382, y: 222, codigo: 'BIO-15' },
-  { x: 332, y: 174, codigo: 'ADN' },
+  { x: 920, y: 710, codigo: 'BIO-01' },
+  { x: 840, y: 616, codigo: 'BIO-02' },
+  { x: 760, y: 638, codigo: 'BIO-03' },
+  { x: 672, y: 642, codigo: 'CEL' },
+  { x: 590, y: 620, codigo: 'BIO-05' },
+  { x: 546, y: 565, codigo: 'SOL' },
+  { x: 576, y: 504, codigo: 'BIO-07' },
+  { x: 636, y: 460, codigo: 'BIO-08' },
+  { x: 702, y: 416, codigo: 'ECO' },
+  { x: 758, y: 368, codigo: 'BIO-10' },
+  { x: 794, y: 312, codigo: 'ENE' },
+  { x: 768, y: 256, codigo: 'BIO-12' },
+  { x: 702, y: 226, codigo: 'BIO-13' },
+  { x: 628, y: 226, codigo: 'ORB' },
+  { x: 562, y: 248, codigo: 'BIO-15' },
+  { x: 502, y: 266, codigo: 'ATM' },
+  { x: 446, y: 256, codigo: 'BIO-17' },
+  { x: 398, y: 226, codigo: 'BIO-18' },
+  { x: 362, y: 194, codigo: 'BIO-19' },
+  { x: 332, y: 162, codigo: 'ADN' },
 ];
 
-const BIOCORES_IDX = [3, 7, 11];
-const RETOS_IDX = [5, 9, 13];
+const BIOCORES_IDX = [3, 8, 13];
+const RETOS_IDX = [5, 10, 15];
 
 const NODOS_NATURAE: NodoNaturae[] = COORDS_NATURAE.map((c, idx) => ({
   index: idx,
@@ -66,7 +70,7 @@ const NODOS_NATURAE: NodoNaturae[] = COORDS_NATURAE.map((c, idx) => ({
   y: c.y,
   codigo: c.codigo,
   tipo:
-    idx === 15
+    idx === 19
       ? 'boss'
       : BIOCORES_IDX.includes(idx)
         ? 'biocore'
@@ -235,7 +239,7 @@ const MapaNaturaeSVG = memo(function MapaNaturaeSVG({
   santuarioListo: boolean;
 }) {
   const actual = NODOS_NATURAE[Math.min(pos, NODOS_NATURAE.length - 1)];
-  const boss = NODOS_NATURAE[15];
+  const boss = NODOS_NATURAE[19];
 
   return (
     <svg
@@ -282,7 +286,7 @@ const MapaNaturaeSVG = memo(function MapaNaturaeSVG({
       </path>
 
       {/* Halo del Árbol de la Vida */}
-      {(pos === 15 || santuarioListo) && (
+      {(pos === 19 || santuarioListo) && (
         <ellipse
           cx={boss.x}
           cy={boss.y + 6}
@@ -307,7 +311,7 @@ const MapaNaturaeSVG = memo(function MapaNaturaeSVG({
           rx="13"
           fill="#022C22"
           fillOpacity="0.9"
-          stroke={pos === 15 || santuarioListo ? '#00FF88' : '#6EE7B7'}
+          stroke={pos === 19 || santuarioListo ? '#00FF88' : '#6EE7B7'}
           strokeWidth="1.4"
         />
         <text
@@ -655,7 +659,7 @@ export default function TableroNaturae({
             <MapaNaturaeSVG
               pos={pos}
               caminando={caminando}
-              santuarioListo={bioCoresActivos >= 3 || pos === 15}
+              santuarioListo={bioCoresActivos >= 3 || pos === 19}
             />
           </div>
         </div>
