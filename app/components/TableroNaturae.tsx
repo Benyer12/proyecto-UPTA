@@ -23,7 +23,7 @@ interface NodoNaturae {
   x: number;
   y: number;
   tipo: 'normal' | 'biocore' | 'reto' | 'boss';
-  icono: string;
+  codigo: string;
 }
 
 interface PreguntaCiencias {
@@ -37,23 +37,23 @@ interface PreguntaCiencias {
 const TOTAL_NATURAE = 16;
 
 // Coordenadas calibradas 1:1 sobre el camino de piedra 3D de naturae-island-render.jpg (1200x896)
-const COORDS_NATURAE: { x: number; y: number; icono: string }[] = [
-  { x: 902, y: 690, icono: '🌱' }, // 01 Arco Botánico
-  { x: 816, y: 618, icono: '🍃' }, // 02
-  { x: 712, y: 628, icono: '💧' }, // 03
-  { x: 604, y: 622, icono: '🧬' }, // 04 Bio-Núcleo 1
-  { x: 528, y: 572, icono: '🍄' }, // 05
-  { x: 562, y: 508, icono: '☀️' }, // 06 Reto Solar
-  { x: 648, y: 452, icono: '🦋' }, // 07
-  { x: 722, y: 396, icono: '🌿' }, // 08 Bio-Núcleo 2
-  { x: 774, y: 332, icono: '🌊' }, // 09
-  { x: 742, y: 268, icono: '⚡' }, // 10 Reto Energía
-  { x: 658, y: 244, icono: '🐝' }, // 11
-  { x: 576, y: 256, icono: '🌎' }, // 12 Bio-Núcleo 3
-  { x: 496, y: 278, icono: '🔬' }, // 13
-  { x: 432, y: 262, icono: '🌬️' }, // 14 Reto Aire
-  { x: 382, y: 222, icono: '✨' }, // 15
-  { x: 332, y: 174, icono: '🌳' }, // 16 Cúpula Árbol de la Vida
+const COORDS_NATURAE: { x: number; y: number; codigo: string }[] = [
+  { x: 902, y: 690, codigo: 'BIO-01' },
+  { x: 816, y: 618, codigo: 'BIO-02' },
+  { x: 712, y: 628, codigo: 'BIO-03' },
+  { x: 604, y: 622, codigo: 'CEL' },
+  { x: 528, y: 572, codigo: 'BIO-05' },
+  { x: 562, y: 508, codigo: 'SOL' },
+  { x: 648, y: 452, codigo: 'BIO-07' },
+  { x: 722, y: 396, codigo: 'ECO' },
+  { x: 774, y: 332, codigo: 'BIO-09' },
+  { x: 742, y: 268, codigo: 'ENE' },
+  { x: 658, y: 244, codigo: 'BIO-11' },
+  { x: 576, y: 256, codigo: 'ORB' },
+  { x: 496, y: 278, codigo: 'BIO-13' },
+  { x: 432, y: 262, codigo: 'ATM' },
+  { x: 382, y: 222, codigo: 'BIO-15' },
+  { x: 332, y: 174, codigo: 'ADN' },
 ];
 
 const BIOCORES_IDX = [3, 7, 11];
@@ -64,7 +64,7 @@ const NODOS_NATURAE: NodoNaturae[] = COORDS_NATURAE.map((c, idx) => ({
   numero: String(idx + 1).padStart(2, '0'),
   x: c.x,
   y: c.y,
-  icono: c.icono,
+  codigo: c.codigo,
   tipo:
     idx === 15
       ? 'boss'
@@ -194,35 +194,27 @@ function buildPathNaturae(pts: { x: number; y: number }[]): string {
 
 const PATH_NATURAE = buildPathNaturae(COORDS_NATURAE);
 
-const BioExplorerBot = memo(function BioExplorerBot({ caminando }: { caminando: boolean }) {
+/** Marcador cristalino bioluminiscente de posición actual (sin muñecos ni emojis). */
+const BioCrystalBeacon = memo(function BioCrystalBeacon({ caminando }: { caminando: boolean }) {
   return (
-    <g transform="scale(1.16)">
-      <ellipse cx="0" cy="4" rx="14" ry="5" fill="#011A14" opacity="0.58" />
-      <ellipse cx="0" cy="4" rx="11" ry="3.8" fill="#00FF88" opacity="0.34">
-        <animate attributeName="rx" values="9;14;9" dur="1.8s" repeatCount="indefinite" />
+    <g>
+      <ellipse cx="0" cy="4" rx="20" ry="9" fill="none" stroke="#00FF88" strokeWidth="2.2" strokeOpacity="0.9">
+        <animate attributeName="rx" values="17;24;17" dur={caminando ? '0.5s' : '2s'} repeatCount="indefinite" />
+        <animate attributeName="stroke-opacity" values="0.95;0.35;0.95" dur={caminando ? '0.5s' : '2s'} repeatCount="indefinite" />
       </ellipse>
+      <ellipse cx="0" cy="4" rx="11" ry="5" fill="#34D399" fillOpacity="0.36" />
+
       <g>
         <animateTransform
           attributeName="transform"
           type="translate"
-          values={caminando ? '0 0; 0 -7; 0 0' : '0 0; 0 -2.5; 0 0'}
-          dur={caminando ? '0.26s' : '2.2s'}
+          values={caminando ? '0 -8; 0 -18; 0 -8' : '0 -10; 0 -16; 0 -10'}
+          dur={caminando ? '0.32s' : '2.4s'}
           repeatCount="indefinite"
         />
-        {/* Hojas alas bioluminiscentes */}
-        <path d="M-8,-22 Q-22,-32 -18,-16 Z" fill="#34D399" stroke="#ECFDF5" strokeWidth="1" opacity="0.9" />
-        <path d="M8,-22 Q22,-32 18,-16 Z" fill="#34D399" stroke="#ECFDF5" strokeWidth="1" opacity="0.9" />
-        {/* Cuerpo cápsula */}
-        <rect x="-11" y="-28" width="22" height="20" rx="8" fill="#ECFDF5" stroke="#065F46" strokeWidth="1.4" />
-        <rect x="-8" y="-23" width="16" height="10" rx="4.5" fill="#022C22" stroke="#6EE7B7" strokeWidth="1.1" />
-        <circle cx="-3.5" cy="-18" r="2" fill="#00FF88" />
-        <circle cx="3.5" cy="-18" r="2" fill="#00FF88" />
-        {/* Antena brote */}
-        <line x1="0" y1="-28" x2="0" y2="-36" stroke="#6EE7B7" strokeWidth="1.8" />
-        <circle cx="0" cy="-38" r="3.4" fill="#FDE047" />
-        {/* Botas */}
-        <rect x="-8" y="-8" width="6.5" height="6" rx="2.5" fill="#065F46" stroke="#A7F3D0" strokeWidth="1" />
-        <rect x="1.5" y="-8" width="6.5" height="6" rx="2.5" fill="#065F46" stroke="#A7F3D0" strokeWidth="1" />
+        <polygon points="0,-24 12,-6 0,6 -12,-6" fill="#00FF88" stroke="#FFFFFF" strokeWidth="1.4" />
+        <polygon points="0,-24 12,-6 0,6" fill="#059669" opacity="0.72" />
+        <polygon points="0,-24 -12,-6 0,-6" fill="#ECFDF5" opacity="0.88" />
       </g>
     </g>
   );
@@ -245,19 +237,27 @@ const MapaNaturaeSVG = memo(function MapaNaturaeSVG({
       viewBox="0 0 1200 896"
       preserveAspectRatio="xMidYMid meet"
       className="w-full h-full select-none"
-      style={{
-        maskImage: 'radial-gradient(ellipse 95% 94% at 50% 50%, black 78%, transparent 100%)',
-        WebkitMaskImage: 'radial-gradient(ellipse 95% 94% at 50% 50%, black 78%, transparent 100%)',
-      }}
       role="img"
       aria-label="Santuario 3D del Bosque Cósmico de Naturae"
     >
+      <defs>
+        <radialGradient id="naturaeEdgeFade" cx="50%" cy="50%" r="50%">
+          <stop offset="68%" stopColor="white" stopOpacity="1" />
+          <stop offset="88%" stopColor="white" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </radialGradient>
+        <mask id="naturaeSeamlessMask">
+          <rect x="0" y="0" width="1200" height="896" fill="url(#naturaeEdgeFade)" />
+        </mask>
+      </defs>
+
       <image
         href="/images/naturae-island-render.jpg"
         x="0"
         y="0"
         width="1200"
         height="896"
+        mask="url(#naturaeSeamlessMask)"
         preserveAspectRatio="xMidYMid meet"
       />
 
@@ -377,15 +377,15 @@ const MapaNaturaeSVG = memo(function MapaNaturaeSVG({
         );
       })}
 
-      {/* Bio-Explorador */}
+      {/* Marcador de posición cristalino */}
       <g
         style={{
-          transform: `translate3d(${actual.x}px, ${actual.y - 10}px, 0)`,
+          transform: `translate3d(${actual.x}px, ${actual.y - 14}px, 0)`,
           transition: 'transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
           willChange: 'transform',
         }}
       >
-        <BioExplorerBot caminando={caminando} />
+        <BioCrystalBeacon caminando={caminando} />
       </g>
     </svg>
   );
@@ -414,7 +414,7 @@ export default function TableroNaturae({
   const [stars, setStars] = useState(0);
   const [aciertos, setAciertos] = useState(0);
   const [totalPreguntas, setTotalPreguntas] = useState(0);
-  const [aviso, setAviso] = useState('¡Lanza el dado cósmico para explorar el Bosque de Naturae!');
+  const [aviso, setAviso] = useState('Lanza el dado cuántico para explorar el Bosque de Naturae.');
 
   const [preguntaActiva, setPreguntaActiva] = useState<PreguntaCiencias | null>(null);
   const [opcionElegida, setOpcionElegida] = useState<number | null>(null);
@@ -526,13 +526,13 @@ export default function TableroNaturae({
             });
           }
           setStars((s) => s + 1);
-          setAviso(`¡Encontraste un Bio-Núcleo (${nodo.icono})! Responde para cargarlo.`);
+          setAviso(`Bio-Núcleo encontrado (${nodo.codigo}). Responde para activarlo.`);
           abrirReto(false);
         } else if (nodo.tipo === 'boss') {
-          setAviso('¡Llegaste al Árbol de la Vida! Supera el reto final.');
+          setAviso('Has llegado al Árbol de la Vida. Supera el reto final.');
           abrirReto(true);
         } else {
-          setAviso(`Casilla ${nodo.numero}: ¡Desafío de ciencias!`);
+          setAviso(`Casilla ${nodo.numero}: Desafío de ciencias.`);
           abrirReto(false);
         }
       }
@@ -562,7 +562,7 @@ export default function TableroNaturae({
         setVictoria(true);
         guardarProgreso(nextAciertos, nextTotal);
       } else if (esJefeFinal && !ok) {
-        setAviso('¡Casi! Lanza el dado o inténtalo de nuevo en la cúpula.');
+        setAviso('Casi lo logras. Lanza el dado o inténtalo de nuevo en la cúpula.');
       }
     }, 950);
   }, [preguntaActiva, opcionElegida, estadoPregunta, totalPreguntas, aciertos, esJefeFinal, guardarProgreso]);
@@ -571,24 +571,14 @@ export default function TableroNaturae({
     <div
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
-        background: 'radial-gradient(ellipse at 44% 44%, #042E24 0%, #021712 56%, #010806 100%)',
+        background: 'radial-gradient(ellipse at 42% 46%, #011B19 0%, #001010 58%, #000707 100%)',
       }}
     >
-      {/* Escenario 3D Studio CGI Bio-Cristal de Naturae */}
-      <img
-        src="/images/naturae-board-bg.jpg"
-        alt=""
-        aria-hidden="true"
-        decoding="async"
-        fetchPriority="high"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-95 mix-blend-screen"
-      />
-
-      {/* Destellos esmeralda y oro */}
+      {/* Destellos esmeralda sutiles en el espacio profundo */}
       {[
-        { x: '11%', y: '18%', size: 8, color: 'rgba(110, 231, 183, 0.95)', dur: '5.8s', delay: '-1.0s' },
-        { x: '70%', y: '14%', size: 8, color: 'rgba(253, 224, 171, 0.92)', dur: '6.6s', delay: '-2.9s' },
-        { x: '14%', y: '80%', size: 7, color: 'rgba(45, 212, 191, 0.92)', dur: '6.1s', delay: '-3.8s' },
+        { x: '8%', y: '18%', size: 6, color: 'rgba(110, 231, 183, 0.9)', dur: '5.8s', delay: '-1.0s' },
+        { x: '70%', y: '14%', size: 6, color: 'rgba(253, 224, 171, 0.9)', dur: '6.6s', delay: '-2.9s' },
+        { x: '10%', y: '80%', size: 6, color: 'rgba(45, 212, 191, 0.9)', dur: '6.1s', delay: '-3.8s' },
       ].map((g, i) => (
         <span
           key={i}
@@ -601,7 +591,7 @@ export default function TableroNaturae({
               width: `${g.size}px`,
               height: `${g.size}px`,
               '--glint-color': g.color,
-              '--glint-peak': 0.65,
+              '--glint-peak': 0.55,
               '--glint-dur': g.dur,
               '--glint-delay': g.delay,
               background: `radial-gradient(circle, #FFFFFF 0%, ${g.color} 32%, transparent 74%)`,
@@ -632,7 +622,7 @@ export default function TableroNaturae({
               boxShadow: '0 12px 32px -12px rgba(0, 0, 0, 0.72), inset 0 0 16px rgba(0, 255, 136, 0.14)',
             }}
           >
-            <span className="text-xs text-[#FDE047]">🌿</span>
+            <span className="text-xs text-[#FDE047]">✦</span>
             <span
               className="text-xs sm:text-sm font-black tracking-[0.22em] text-white uppercase"
               style={{ fontFamily: "'Orbitron', sans-serif" }}
@@ -762,9 +752,9 @@ export default function TableroNaturae({
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { emoji: '🧬', label: 'Célula' },
-                  { emoji: '🌿', label: 'Ecosistema' },
-                  { emoji: '🌎', label: 'Cosmos' },
+                  { code: 'CEL', label: 'Célula' },
+                  { code: 'ECO', label: 'Ecosistema' },
+                  { code: 'ORB', label: 'Cosmos' },
                 ].map((item, idx) => {
                   const ok = bioCores[idx];
                   return (
@@ -776,7 +766,12 @@ export default function TableroNaturae({
                         background: ok ? 'rgba(16, 185, 129, 0.24)' : 'rgba(1, 22, 16, 0.55)',
                       }}
                     >
-                      <span className={`text-lg ${ok ? '' : 'opacity-40 grayscale'}`}>{item.emoji}</span>
+                      <span
+                        className="font-mono text-xs font-black tracking-wider"
+                        style={{ color: ok ? '#00FF88' : '#64748B' }}
+                      >
+                        {item.code}
+                      </span>
                       <span className="text-[10px] font-bold text-emerald-100 mt-1">{item.label}</span>
                     </div>
                   );
@@ -785,7 +780,7 @@ export default function TableroNaturae({
             </div>
 
             <div className="mt-3 rounded-xl px-3.5 py-2 flex items-center justify-between bg-[#011812]/70 border border-emerald-400/20">
-              <span className="text-xs font-bold text-emerald-100">⭐ Estrellas ganadas</span>
+              <span className="text-xs font-bold text-emerald-100">★ Estrellas ganadas</span>
               <span className="text-sm font-black text-[#FDE047]">{stars}</span>
             </div>
           </div>
@@ -801,7 +796,6 @@ export default function TableroNaturae({
                 borderColor: 'rgba(167, 243, 208, 0.65)',
               }}
             >
-              <span>🎲</span>
               <span>{rolling ? 'CALCULANDO...' : caminando ? 'EXPLORANDO...' : 'INICIAR SALTO'}</span>
             </button>
             <button
@@ -809,7 +803,6 @@ export default function TableroNaturae({
               onClick={() => setMostrarGuia(true)}
               className="w-full py-2.5 rounded-2xl font-bold text-xs tracking-[0.18em] uppercase transition-all cursor-pointer flex items-center justify-center gap-2 liquid-glass-pill text-emerald-100 hover:text-white"
             >
-              <span>🌿</span>
               <span>GUÍA DE CIENCIAS</span>
             </button>
           </div>
@@ -828,12 +821,12 @@ export default function TableroNaturae({
             <div className="w-full max-w-lg rounded-3xl p-6 bg-[#02231B]/95 border border-emerald-400/45 text-white space-y-4 shadow-2xl">
               <div className="flex items-center justify-between">
                 <span className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-xs font-bold text-emerald-200">
-                  {esJefeFinal ? '🌳 Reto Final: Árbol de la Vida' : `🧬 ${preguntaActiva.tema}`}
+                  {esJefeFinal ? 'Reto Final: Árbol de la Vida' : preguntaActiva.tema}
                 </span>
               </div>
               <h3 className="text-lg font-bold leading-snug">{preguntaActiva.pregunta}</h3>
               <p className="text-xs text-emerald-200/80 bg-emerald-950/60 px-3 py-2 rounded-xl border border-emerald-500/20">
-                💡 Pista: {preguntaActiva.pista}
+                Pista: {preguntaActiva.pista}
               </p>
               <div className="space-y-2">
                 {preguntaActiva.opciones.map((opt, idx) => {
@@ -896,19 +889,19 @@ export default function TableroNaturae({
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-md rounded-3xl p-6 bg-[#02231B]/95 border border-emerald-400/45 text-white space-y-3"
             >
-              <h3 className="text-lg font-black text-emerald-200">🌿 Guía del Bosque Cósmico</h3>
+              <h3 className="text-lg font-black text-emerald-200">Guía del Bosque Cósmico</h3>
               <p className="text-sm text-emerald-50/85">
                 Lanza el dado cuántico para avanzar por el sendero luminoso hasta la cúpula del Árbol de la Vida (casilla 16).
               </p>
               <p className="text-sm text-emerald-50/85">
-                Reúne las esencias de <strong>Célula 🧬</strong>, <strong>Ecosistema 🌿</strong> y <strong>Cosmos 🌎</strong> respondiendo los retos de ciencias.
+                Reúne las esencias de <strong>Célula (CEL)</strong>, <strong>Ecosistema (ECO)</strong> y <strong>Cosmos (ORB)</strong> respondiendo los retos de ciencias.
               </p>
               <button
                 type="button"
                 onClick={() => setMostrarGuia(false)}
                 className="w-full py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs uppercase tracking-wider cursor-pointer"
               >
-                ¡Entendido!
+                Entendido
               </button>
             </div>
           </motion.div>
@@ -924,7 +917,7 @@ export default function TableroNaturae({
             className="fixed inset-0 z-[130] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4"
           >
             <div className="w-full max-w-md rounded-3xl p-7 bg-[#02231B]/95 border border-emerald-300/60 text-center text-white space-y-4">
-              <div className="text-4xl">🌳 ⭐ 🧬</div>
+              <div className="text-3xl font-black text-[#FDE047] tracking-widest">★ ★ ★</div>
               <h2 className="text-2xl font-black text-emerald-200">¡Santuario Naturae Restaurado!</h2>
               <p className="text-sm text-emerald-50/85">
                 Respondiste correctamente {aciertos} de {totalPreguntas} retos científicos y llegaste al Árbol de la Vida.

@@ -230,67 +230,27 @@ const CuboIsometricoSVG = memo(function CuboIsometricoSVG({
   );
 });
 
-/** Explorador Espacial Cuántico (Astro-Kid) con levitación y propulsores. */
-const JovenAstronauta = memo(function JovenAstronauta({ caminando }: { caminando: boolean }) {
+/** Marcador geométrico holográfico 3D de posición actual (sin muñecos ni avatares). */
+const QuantumMapBeacon = memo(function QuantumMapBeacon({ caminando }: { caminando: boolean }) {
   return (
-    <g transform="scale(1.18)">
-      <ellipse cx="0" cy="4" rx="14" ry="5" fill="#020617" opacity="0.58" />
-      <ellipse cx="0" cy="4" rx="11" ry="3.8" fill="#00F5FF" opacity="0.34">
-        <animate attributeName="rx" values="9;14;9" dur="1.8s" repeatCount="indefinite" />
+    <g>
+      <ellipse cx="0" cy="4" rx="20" ry="9" fill="none" stroke="#00F5FF" strokeWidth="2.2" strokeOpacity="0.9">
+        <animate attributeName="rx" values="17;24;17" dur={caminando ? '0.5s' : '2s'} repeatCount="indefinite" />
+        <animate attributeName="stroke-opacity" values="0.95;0.35;0.95" dur={caminando ? '0.5s' : '2s'} repeatCount="indefinite" />
       </ellipse>
+      <ellipse cx="0" cy="4" rx="11" ry="5" fill="#00F5FF" fillOpacity="0.35" />
 
       <g>
         <animateTransform
           attributeName="transform"
           type="translate"
-          values={caminando ? '0 0; 0 -7; 0 0' : '0 0; 0 -2.5; 0 0'}
-          dur={caminando ? '0.26s' : '2.4s'}
+          values={caminando ? '0 -8; 0 -18; 0 -8' : '0 -10; 0 -16; 0 -10'}
+          dur={caminando ? '0.32s' : '2.4s'}
           repeatCount="indefinite"
         />
-
-        {/* Jetpack */}
-        <polygon points="-16,-24 -11,-29 -11,-15 -15,-13" fill="#38BDF8" stroke="#E2EEFF" strokeWidth="0.9" />
-        <polygon points="16,-24 11,-29 11,-15 15,-13" fill="#38BDF8" stroke="#E2EEFF" strokeWidth="0.9" />
-        <rect x="-12" y="-31" width="24" height="18" rx="5" fill="#1E2952" stroke="#93C5FD" strokeWidth="1.2" />
-        <ellipse cx="-7" cy="-11" rx="2.8" ry="4.5" fill="#6EE7B7" opacity="0.88">
-          <animate attributeName="ry" values="3.5;6;3.5" dur="0.4s" repeatCount="indefinite" />
-        </ellipse>
-        <ellipse cx="7" cy="-11" rx="2.8" ry="4.5" fill="#00F5FF" opacity="0.88">
-          <animate attributeName="ry" values="4;6.5;4" dur="0.4s" repeatCount="indefinite" />
-        </ellipse>
-
-        {/* Piernas y botas */}
-        <rect x="-7.5" y="-13" width="6.2" height="9.5" rx="3" fill="#E2EEFF" stroke="#1E293B" strokeWidth="1.1" />
-        <rect x="1.3" y="-13" width="6.2" height="9.5" rx="3" fill="#E2EEFF" stroke="#1E293B" strokeWidth="1.1" />
-        <rect x="-8.8" y="-4.5" width="8" height="5" rx="2.4" fill="#0F172A" stroke="#7DD3FC" strokeWidth="1" />
-        <rect x="0.8" y="-4.5" width="8" height="5" rx="2.4" fill="#0F172A" stroke="#7DD3FC" strokeWidth="1" />
-
-        {/* Torso */}
-        <rect x="-10" y="-29" width="20" height="17" rx="6.5" fill="#F8FAFC" stroke="#1E293B" strokeWidth="1.2" />
-        <path d="M -10,-25 C -10,-28.5 -5,-29 0,-29 C 5,-29 10,-28.5 10,-25 Z" fill="#0284C7" />
-        <rect x="-5.5" y="-24" width="11" height="6.2" rx="2" fill="#0F1734" stroke="#67E8F9" strokeWidth="1" />
-        <circle cx="0" cy="-20.9" r="2" fill="#00F5FF" />
-
-        {/* Brazos */}
-        <g transform="translate(-10 -25) rotate(-26)">
-          <rect x="-7.5" y="-2.2" width="8.5" height="5.2" rx="2.6" fill="#F0F6FF" stroke="#1E293B" strokeWidth="1.1" />
-          <circle cx="-8" cy="0.4" r="2.8" fill="#0284C7" stroke="#E2EEFF" strokeWidth="0.9" />
-        </g>
-        <g transform="translate(10 -24) rotate(22)">
-          <rect x="-1" y="-2.2" width="8.5" height="5.2" rx="2.6" fill="#F0F6FF" stroke="#1E293B" strokeWidth="1.1" />
-          <circle cx="8" cy="0.4" r="2.8" fill="#0284C7" stroke="#E2EEFF" strokeWidth="0.9" />
-        </g>
-
-        {/* Casco espacial con visor */}
-        <line x1="9" y1="-52" x2="12" y2="-59" stroke="#93C5FD" strokeWidth="1.5" strokeLinecap="round" />
-        <circle cx="12.5" cy="-60" r="2.3" fill="#FDE047">
-          <animate attributeName="opacity" values="1;0.35;1" dur="1.2s" repeatCount="indefinite" />
-        </circle>
-        <circle cx="0" cy="-42.5" r="13.5" fill="#F8FAFC" stroke="#1E293B" strokeWidth="1.4" />
-        <rect x="-10" y="-49.5" width="20" height="13.5" rx="6.5" fill="#031530" stroke="#67E8F9" strokeWidth="1.2" />
-        <circle cx="-4.2" cy="-43" r="2.2" fill="#67E8F9" />
-        <circle cx="4.2" cy="-43" r="2.2" fill="#67E8F9" />
-        <path d="M -3 -39 Q 0 -36.5 3 -39" stroke="#6EE7B7" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+        <polygon points="0,-24 12,-6 0,6 -12,-6" fill="#00E5FF" stroke="#FFFFFF" strokeWidth="1.4" />
+        <polygon points="0,-24 12,-6 0,6" fill="#0284C7" opacity="0.72" />
+        <polygon points="0,-24 -12,-6 0,-6" fill="#E0F2FE" opacity="0.88" />
       </g>
     </g>
   );
@@ -315,14 +275,19 @@ const MapaMontañaCuantica = memo(function MapaMontañaCuantica({
       viewBox="0 0 1264 848"
       preserveAspectRatio="xMidYMid meet"
       className="w-full h-full select-none"
-      style={{
-        maskImage: 'radial-gradient(ellipse 95% 94% at 50% 50%, black 78%, transparent 100%)',
-        WebkitMaskImage: 'radial-gradient(ellipse 95% 94% at 50% 50%, black 78%, transparent 100%)',
-      }}
       role="img"
       aria-label="Montaña Cuántica 3D de Numérix"
     >
       <defs>
+        <radialGradient id="numerixEdgeFade" cx="50%" cy="50%" r="50%">
+          <stop offset="68%" stopColor="white" stopOpacity="1" />
+          <stop offset="88%" stopColor="white" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </radialGradient>
+        <mask id="numerixSeamlessMask">
+          <rect x="0" y="0" width="1264" height="848" fill="url(#numerixEdgeFade)" />
+          <ellipse cx="1180" cy="705" rx="102" ry="155" fill="black" />
+        </mask>
         <linearGradient id="cubeTopNormal" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.9" />
           <stop offset="55%" stopColor="#0284C7" stopOpacity="0.84" />
@@ -358,13 +323,14 @@ const MapaMontañaCuantica = memo(function MapaMontañaCuantica({
         </linearGradient>
       </defs>
 
-      {/* Escenario 3D Studio Renderizado de Numérix */}
+      {/* Escenario 3D fundido sin bordes rectangulares en el espacio */}
       <image
         href="/images/numerix-island-render.jpg"
         x="0"
         y="0"
         width="1264"
         height="848"
+        mask="url(#numerixSeamlessMask)"
         preserveAspectRatio="xMidYMid meet"
       />
 
@@ -434,17 +400,17 @@ const MapaMontañaCuantica = memo(function MapaMontañaCuantica({
         />
       ))}
 
-      {/* Explorador Espacial Cuántico */}
+      {/* Marcador de posición cristalino */}
       <g
         style={{
           transform: `translate3d(${nodoActual.x}px, ${
-            nodoActual.tipo === 'boss' ? nodoActual.y - 4 : nodoActual.y - 14
+            nodoActual.tipo === 'boss' ? nodoActual.y - 4 : nodoActual.y - 20
           }px, 0)`,
           transition: 'transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
           willChange: 'transform',
         }}
       >
-        <JovenAstronauta caminando={caminando} />
+        <QuantumMapBeacon caminando={caminando} />
       </g>
     </svg>
   );

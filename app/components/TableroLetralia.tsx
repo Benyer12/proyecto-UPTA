@@ -792,36 +792,14 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
         background:
-          'radial-gradient(ellipse at 42% 40%, #1F2656 0%, #11163A 54%, #080B20 100%)',
+          'radial-gradient(ellipse at 42% 44%, #101242 0%, #0C0E36 58%, #070922 100%)',
       }}
     >
-      {/* Escenario 3D Studio CGI Astral Crystal de Letralia fijo en GPU */}
-      <img
-        src="/images/letralia-board-bg.jpg"
-        alt=""
-        aria-hidden="true"
-        decoding="async"
-        fetchPriority="high"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-95 mix-blend-screen"
-      />
-
-      {/* Viñeta central suave para realzar las islas flotantes y pergaminos de Letralia */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 68% 72% at 40% 50%, rgba(16, 20, 52, 0.25) 0%, rgba(12, 16, 42, 0.08) 65%, rgba(6, 9, 26, 0.45) 100%)',
-        }}
-      />
-
-      {/* Destellos minuciosos tornasol amatista/oro sobre las cintas 3D astrales */}
+      {/* Destellos estelares finos en el cielo crepuscular */}
       {[
-        { x: '10%', y: '14%', size: 8, color: 'rgba(192, 132, 252, 0.95)', dur: '6.0s', delay: '-1.0s' },
-        { x: '70%', y: '14%', size: 8, color: 'rgba(253, 224, 171, 0.92)', dur: '6.8s', delay: '-2.9s' },
-        { x: '14%', y: '80%', size: 7, color: 'rgba(167, 139, 250, 0.92)', dur: '5.7s', delay: '-4.1s' },
-        { x: '72%', y: '82%', size: 8, color: 'rgba(125, 211, 252, 0.92)', dur: '6.4s', delay: '-1.8s' },
-        { x: '45%', y: '9%', size: 6, color: 'rgba(255, 255, 255, 0.92)', dur: '7.2s', delay: '-3.5s' },
+        { x: '8%', y: '14%', size: 6, color: 'rgba(192, 132, 252, 0.9)', dur: '6.0s', delay: '-1.0s' },
+        { x: '70%', y: '14%', size: 6, color: 'rgba(253, 224, 171, 0.9)', dur: '6.8s', delay: '-2.9s' },
+        { x: '12%', y: '82%', size: 6, color: 'rgba(167, 139, 250, 0.9)', dur: '5.7s', delay: '-4.1s' },
       ].map((g, i) => (
         <span
           key={i}
@@ -834,7 +812,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               width: `${g.size}px`,
               height: `${g.size}px`,
               '--glint-color': g.color,
-              '--glint-peak': 0.65,
+              '--glint-peak': 0.55,
               '--glint-dur': g.dur,
               '--glint-delay': g.delay,
               background: `radial-gradient(circle, #FFFFFF 0%, ${g.color} 32%, transparent 74%)`,
@@ -1185,7 +1163,10 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                 }}
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-base shrink-0">{santuarioAbierto ? '🗝️' : '🔒'}</span>
+                  <span
+                    className="w-2.5 h-2.5 rotate-45 rounded-[2px] shrink-0"
+                    style={{ background: santuarioAbierto ? '#10B981' : '#8C6D53' }}
+                  />
                   <div className="leading-tight min-w-0">
                     <p className="text-[11px] font-black uppercase tracking-wider text-[#1E1B4B]">
                       {santuarioAbierto ? '¡Llave del Guardián Activa!' : 'Llave del Santuario'}
@@ -1199,7 +1180,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                 </div>
                 {estrellasVistaPrevia > 0 && (
                   <span className="inline-flex items-center gap-1 whitespace-nowrap shrink-0 text-xs font-black text-amber-950 bg-amber-200 border border-amber-400 px-2.5 py-0.5 rounded-full shadow-2xs">
-                    <span>⭐</span>
+                    <span>★</span>
                     <span>{estrellasVistaPrevia}</span>
                   </span>
                 )}
@@ -1228,12 +1209,12 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               }}
             >
               {rodandoDado
-                ? '🎲 RODANDO...'
+                ? 'RODANDO...'
                 : caminando
-                  ? '✨ AVANZANDO...'
+                  ? 'AVANZANDO...'
                   : eligiendoRama
-                    ? '↖ ELIGE TU CAMINO'
-                    : '🎲 LANZAR DADO'}
+                    ? 'ELIGE TU CAMINO'
+                    : 'LANZAR DADO'}
             </motion.button>
 
             <motion.button
@@ -1249,7 +1230,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                 color: '#2E2546',
               }}
             >
-              📜 SÍLABAS Y GUÍA
+              SÍLABAS Y GUÍA
             </motion.button>
           </div>
         </div>
@@ -1286,7 +1267,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
             >
               <div className="flex items-center justify-between border-b-2 border-[#E6D5B8] pb-3 mb-4">
                 <h3 className="text-lg sm:text-xl font-black tracking-wide">
-                  📜 Códice del Viajero — Letralia
+                  Códice del Viajero — Letralia
                 </h3>
                 <button
                   type="button"
@@ -1300,7 +1281,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               <div className="space-y-2.5 text-xs sm:text-sm">
                 <div className="p-3 rounded-xl bg-[#F4E6C8] border border-[#D5BE97]">
                   <p className="font-black text-indigo-950 mb-1">
-                    🗝️ Palabra Llave en decodificación ({cantidadSilabas}/4):
+                    Palabra Llave en decodificación ({cantidadSilabas}/4):
                   </p>
                   <div className="flex gap-2 mt-1">
                     {palabraActual.silabas.map((s, i) => (
@@ -1377,9 +1358,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                     initial={{ scale: 0, rotate: -30 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ delay: 0.15 + i * 0.15, type: 'spring', stiffness: 300 }}
-                    className="text-4xl sm:text-5xl drop-shadow-[0_4px_8px_rgba(245,158,11,0.5)]"
+                    className="text-4xl sm:text-5xl text-amber-500 drop-shadow-[0_4px_8px_rgba(245,158,11,0.5)]"
                   >
-                    ⭐
+                    ★
                   </motion.span>
                 ))}
               </div>
@@ -1417,15 +1398,15 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                       : 100}
                     % aciertos):
                   </span>
-                  <span className="font-black text-amber-800">+{estrellasRegularesFinal} ⭐</span>
+                  <span className="font-black text-amber-800">+{estrellasRegularesFinal} ★</span>
                 </div>
                 <div className="flex justify-between font-semibold">
                   <span>Bonificación Guardián Final:</span>
-                  <span className="font-black text-indigo-900">+{BONUS_JEFE_FINAL} ⭐</span>
+                  <span className="font-black text-indigo-900">+{BONUS_JEFE_FINAL} ★</span>
                 </div>
                 <div className="border-t border-[#D5BE97] pt-1.5 mt-1.5 flex justify-between text-base font-black text-[#4C1D95]">
                   <span>Estrellas Totales del Nivel:</span>
-                  <span>⭐ {estrellasTotalesFinal}</span>
+                  <span>★ {estrellasTotalesFinal}</span>
                 </div>
               </div>
 
@@ -1435,7 +1416,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                   onClick={handleNuevaPartida}
                   className="px-6 py-3 rounded-2xl font-black text-sm uppercase tracking-wider bg-gradient-to-b from-[#FDE68A] to-[#F59E0B] border-2 border-[#92400E] text-[#1E1B4B] shadow-[0_4px_0_#92400E] cursor-pointer"
                 >
-                  🔄 Nueva Partida
+                  Nueva Partida
                 </button>
                 <button
                   type="button"
@@ -1443,7 +1424,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                   onClick={handleIrAlDashboard}
                   className="px-6 py-3 rounded-2xl font-black text-sm uppercase tracking-wider bg-gradient-to-b from-[#DDD6FE] to-[#A78BFA] border-2 border-[#4C1D95] text-[#1E1B4B] shadow-[0_4px_0_#4C1D95] cursor-pointer disabled:opacity-50"
                 >
-                  {guardandoBD ? 'Guardando...' : '🚀 Ir al Dashboard'}
+                  {guardandoBD ? 'Guardando...' : 'Ir al Dashboard'}
                 </button>
               </div>
             </motion.div>

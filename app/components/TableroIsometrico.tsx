@@ -801,49 +801,15 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
         background:
-          'radial-gradient(ellipse at 44% 44%, #061A4A 0%, #020C28 54%, #010410 100%)',
+          'radial-gradient(ellipse at 42% 48%, #021230 0%, #000D21 56%, #000714 100%)',
       }}
     >
-      {/* Escenario 3D Studio CGI Liquid Glass de Numérix fijo en GPU */}
-      <img
-        src="/images/numerix-board-bg.jpg"
-        alt=""
-        aria-hidden="true"
-        decoding="async"
-        fetchPriority="high"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-95 mix-blend-screen"
-      />
-
-      {/* Viñeta sutil central para máximo contraste de los cubos 3D y retícula holográfica */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 68% 72% at 40% 50%, rgba(1, 10, 32, 0.35) 0%, rgba(2, 12, 40, 0.08) 65%, rgba(1, 4, 16, 0.45) 100%)',
-        }}
-      />
-
-      {/* Cuadrícula cibernética holográfica sutil en cian cristalino */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-24"
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, rgba(56, 212, 255, 0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(56, 212, 255, 0.22) 1px, transparent 1px)',
-          backgroundSize: '48px 48px',
-          maskImage: 'radial-gradient(ellipse 76% 74% at 40% 50%, black 28%, transparent 92%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 76% 74% at 40% 50%, black 28%, transparent 92%)',
-        }}
-      />
-
-      {/* Destellos minuciosos tornasol sobre las cintas 3D de la arena */}
+      {/* Destellos estelares finos en el cosmos profundo */}
       {[
-        { x: '11%', y: '18%', size: 8, color: 'rgba(103, 232, 249, 0.95)', dur: '5.8s', delay: '-1.1s' },
-        { x: '38%', y: '10%', size: 7, color: 'rgba(255, 255, 255, 0.95)', dur: '6.6s', delay: '-3.4s' },
-        { x: '72%', y: '16%', size: 8, color: 'rgba(253, 230, 138, 0.9)', dur: '6.2s', delay: '-2.0s' },
-        { x: '8%', y: '78%', size: 7, color: 'rgba(56, 189, 248, 0.92)', dur: '7.1s', delay: '-4.2s' },
-        { x: '68%', y: '86%', size: 8, color: 'rgba(103, 232, 249, 0.95)', dur: '5.5s', delay: '-0.7s' },
+        { x: '8%', y: '18%', size: 6, color: 'rgba(103, 232, 249, 0.9)', dur: '5.8s', delay: '-1.1s' },
+        { x: '42%', y: '8%', size: 6, color: 'rgba(255, 255, 255, 0.9)', dur: '6.6s', delay: '-3.4s' },
+        { x: '70%', y: '14%', size: 6, color: 'rgba(147, 197, 253, 0.9)', dur: '6.2s', delay: '-2.0s' },
+        { x: '7%', y: '82%', size: 6, color: 'rgba(56, 189, 248, 0.9)', dur: '7.1s', delay: '-4.2s' },
       ].map((g, i) => (
         <span
           key={i}
@@ -856,7 +822,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               width: `${g.size}px`,
               height: `${g.size}px`,
               '--glint-color': g.color,
-              '--glint-peak': 0.68,
+              '--glint-peak': 0.55,
               '--glint-dur': g.dur,
               '--glint-delay': g.delay,
               background: `radial-gradient(circle, #FFFFFF 0%, ${g.color} 32%, transparent 74%)`,
@@ -890,7 +856,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 '0 12px 32px -12px rgba(0, 0, 0, 0.72), inset 0 0 16px rgba(103, 232, 249, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.2)',
             }}
           >
-            <span className="text-xs text-[#FDE047]">⚡</span>
+            <span className="text-xs text-[#FDE047]">✦</span>
             <span
               className="text-xs sm:text-sm font-black tracking-[0.22em] text-white uppercase"
               style={{
@@ -1093,14 +1059,14 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 }}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="text-base shrink-0">{llaveLista ? '🗝️' : '🔒'}</span>
+                  <span className="w-2.5 h-2.5 rotate-45 rounded-[2px] shrink-0" style={{ background: llaveLista ? '#00F5FF' : '#64748B' }} />
                   <p className="text-xs font-black uppercase tracking-wider text-[#F0F9FF] truncate">
                     LLAVE DEL GUARDIÁN
                   </p>
                 </div>
                 {stars > 0 && (
                   <span className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 text-xs font-black text-cyan-100 bg-cyan-400/18 border border-cyan-300/45 px-2.5 py-1 rounded-full leading-none">
-                    <span>⭐</span>
+                    <span>★</span>
                     <span>{stars}</span>
                   </span>
                 )}
@@ -1122,7 +1088,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 boxShadow: '0 0 22px rgba(14, 165, 233, 0.38)',
               }}
             >
-              <span>🎲</span>
               <span>
                 {rolling
                   ? 'CALCULANDO...'
@@ -1137,7 +1102,6 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               onClick={() => setMostrarGuia(true)}
               className="w-full py-2.5 rounded-2xl font-bold text-xs tracking-[0.18em] uppercase transition-all cursor-pointer flex items-center justify-center gap-2 liquid-glass-pill text-[#E0F2FE] hover:text-white"
             >
-              <span>📐</span>
               <span>FÓRMULAS Y GUÍA</span>
             </button>
           </div>
@@ -1222,7 +1186,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             >
               <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
                 <h3 className="text-lg sm:text-xl font-black tracking-wider text-[#F0F6FF]">
-                  📐 Manual Cuántico de Numérix
+                  Manual Cuántico de Numérix
                 </h3>
                 <button
                   type="button"
@@ -1255,7 +1219,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
 
                 <div className="p-3.5 rounded-2xl liquid-glass-pill">
                   <p className="font-black text-amber-300 mb-0.5">
-                    ⚠️ Cubos Ámbar Plasma (Casillas 06, 10 y 14 · Alerta de Impacto):
+                    Cubos Ámbar Plasma (Casillas 06, 10 y 14 · Alerta de Impacto):
                   </p>
                   <p className="text-slate-200/90">
                     Dispara con el cañón al asteroide que cumpla la condición (Par, Impar o Múltiplo)
@@ -1265,7 +1229,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
 
                 <div className="p-3.5 rounded-2xl liquid-glass-pill">
                   <p className="font-black text-cyan-300 mb-0.5">
-                    🌐 Cima Casilla 20 (Guardián del Nivel · Núcleo Armilar):
+                    Cima Casilla 20 (Guardián del Nivel · Núcleo Armilar):
                   </p>
                   <p className="text-slate-200/90">
                     Resuelve las 3 fases para alinear los 3 anillos de la Esfera Armilar y
@@ -1309,9 +1273,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                     initial={{ scale: 0, rotate: -25 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ delay: 0.15 + i * 0.15, type: 'spring', stiffness: 300 }}
-                    className="text-4xl sm:text-5xl drop-shadow-[0_0_14px_rgba(110,231,183,0.75)]"
+                    className="text-4xl sm:text-5xl text-amber-300 drop-shadow-[0_0_14px_rgba(110,231,183,0.75)]"
                   >
-                    ⭐
+                    ★
                   </motion.span>
                 ))}
               </div>
@@ -1338,15 +1302,15 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                     Preguntas Regulares (
                     {totalPreguntas > 0 ? Math.round((aciertos / totalPreguntas) * 100) : 100}% aciertos):
                   </span>
-                  <span className="font-black text-emerald-300">+{estrellasRegularesFinal} ⭐</span>
+                  <span className="font-black text-emerald-300">+{estrellasRegularesFinal} ★</span>
                 </div>
                 <div className="flex justify-between text-[#E2EEFF]">
                   <span>Bonificación Jefe Final:</span>
-                  <span className="font-black text-purple-300">+{BONUS_JEFE_FINAL} ⭐</span>
+                  <span className="font-black text-purple-300">+{BONUS_JEFE_FINAL} ★</span>
                 </div>
                 <div className="border-t border-white/10 pt-1.5 mt-1.5 flex justify-between text-base font-black text-[#F0F6FF]">
                   <span>Estrellas Totales del Nivel:</span>
-                  <span className="text-emerald-300">⭐ {stars}</span>
+                  <span className="text-emerald-300">★ {stars}</span>
                 </div>
               </div>
 
@@ -1368,7 +1332,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                   onClick={handleRestart}
                   className="px-6 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider liquid-glass-pill text-[#E2EEFF] hover:text-white cursor-pointer"
                 >
-                  🔄 Jugar de Nuevo
+                  Jugar de Nuevo
                 </button>
                 <button
                   type="button"
@@ -1376,7 +1340,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                   onClick={handleIrAlDashboard}
                   className="px-6 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider liquid-glass-btn text-white cursor-pointer disabled:opacity-50"
                 >
-                  {guardandoBD ? 'Guardando...' : '🚀 Ir al Dashboard'}
+                  {guardandoBD ? 'Guardando...' : 'Ir al Dashboard'}
                 </button>
               </div>
             </motion.div>

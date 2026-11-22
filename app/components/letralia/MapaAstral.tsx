@@ -2,7 +2,6 @@
 
 import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ElViajero from './ElViajero';
 import {
   ANCHO_CAMINO,
   BOSS_S,
@@ -1106,7 +1105,7 @@ export default function MapaAstral({
   eligiendo,
   onElegir,
   caminando,
-  mirando,
+  mirando: _mirando,
   saltoKey,
   santuarioAbierto,
 }: MapaAstralProps) {
@@ -1121,14 +1120,18 @@ export default function MapaAstral({
       viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
       preserveAspectRatio="xMidYMid meet"
       className="w-full h-full select-none"
-      style={{
-        maskImage: 'radial-gradient(ellipse 95% 94% at 50% 50%, black 78%, transparent 100%)',
-        WebkitMaskImage: 'radial-gradient(ellipse 95% 94% at 50% 50%, black 78%, transparent 100%)',
-      }}
       role="img"
       aria-label="Mapa 3D del Archivo Astral de Letralia"
     >
       <defs>
+        <radialGradient id="letraliaEdgeFade" cx="50%" cy="50%" r="50%">
+          <stop offset="68%" stopColor="white" stopOpacity="1" />
+          <stop offset="88%" stopColor="white" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </radialGradient>
+        <mask id="letraliaSeamlessMask">
+          <rect x="0" y="0" width={VIEW_W} height={VIEW_H} fill="url(#letraliaEdgeFade)" />
+        </mask>
         <radialGradient id="lunaAstralGrad" cx="35%" cy="32%" r="70%">
           <stop offset="0%" stopColor="#FFFDF7" />
           <stop offset="48%" stopColor="#DDD6FE" />
@@ -1197,13 +1200,14 @@ export default function MapaAstral({
         </radialGradient>
       </defs>
 
-      {/* Escenario 3D Studio Renderizado de Islas Flotantes de Letralia */}
+      {/* Escenario 3D fundido sin bordes rectangulares */}
       <image
         href="/images/letralia-island-render.jpg"
         x="0"
         y="0"
         width={VIEW_W}
         height={VIEW_H}
+        mask="url(#letraliaSeamlessMask)"
         preserveAspectRatio="xMidYMid meet"
       />
 
@@ -1363,21 +1367,25 @@ export default function MapaAstral({
         </text>
       </g>
 
-      {/* El Viajero */}
+      {/* Marcador astral cristalino de posición actual (sin muñecos) */}
       <motion.g
         initial={false}
         animate={{ x: posS.x, y: posS.y - 6 }}
         transition={{ type: 'tween', duration: 0.36, ease: 'easeInOut' }}
       >
+        <ellipse cx={0} cy={6} rx={20} ry={9} fill="none" stroke="#FDE68A" strokeWidth={2.2} strokeOpacity={0.9}>
+          <animate attributeName="rx" values="17;24;17" dur={caminando ? '0.5s' : '2s'} repeatCount="indefinite" />
+        </ellipse>
+        <ellipse cx={0} cy={6} rx={11} ry={5} fill="#C4B5FD" fillOpacity={0.45} />
         <motion.g
           key={saltoKey}
           initial={{ y: 0 }}
           animate={{ y: saltoKey > 0 ? [0, -14, 0] : 0 }}
           transition={{ duration: 0.36, ease: 'easeOut' }}
         >
-          <g transform="scale(1.18)">
-            <ElViajero caminando={caminando} mirando={mirando} />
-          </g>
+          <polygon points="0,-24 12,-5 0,7 -12,-5" fill="#FDE68A" stroke="#FFFFFF" strokeWidth={1.5} />
+          <polygon points="0,-24 12,-5 0,7" fill="#D97706" opacity={0.45} />
+          <polygon points="0,-24 -12,-5 0,-5" fill="#FFFFFF" opacity={0.78} />
         </motion.g>
       </motion.g>
 
