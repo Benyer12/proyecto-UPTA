@@ -168,12 +168,12 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
   const [estrellasTotalesFinal, setEstrellasTotalesFinal] = useState(7);
   const [guardandoBD, setGuardandoBD] = useState(false);
 
-  /* ── Estado del Tutor IA Gemma 4 en Letralia ── */
+  /* ── Estado del Tutor IA Google Gemini en Letralia ── */
   const [nivelIA, setNivelIA] = useState<1 | 2 | 3>(1);
   const [etiquetaNivelIA, setEtiquetaNivelIA] = useState('Nivel 1 · Base (Default)');
   const [rachaIA, setRachaIA] = useState(0);
   const [mensajeTutorIA, setMensajeTutorIA] = useState(
-    'Tutor IA Gemma 4 activo: creo retos en este tablero y subo el nivel gradualmente si vas muy bien.',
+    'Tutor IA Google Gemini activo: creo retos en este tablero y subo el nivel gradualmente si vas muy bien.',
   );
   const colaRetosIARef = useRef<RetoIntruso[]>([]);
   const colaPuentesIARef = useRef<RetoPuenteSintactico[]>([]);
@@ -632,7 +632,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
             rachaAciertos: nuevaRacha,
             aciertos: nuevosAciertos,
             totalPreguntas: nuevoTotal,
-            modeloPreferido: 'gemma4:31b',
+            modeloPreferido: 'gemini-4-hydrogen',
             evitarTextos: Array.from(firmasUsadasIARef.current),
           }),
         })

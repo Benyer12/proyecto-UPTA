@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 import {
-  consultarOllamaCloud,
+  consultarGoogleGemini,
   crearPreguntaNuevaConIA,
   evaluarRespuestaConTutorIA,
   generarResumenPorCadaEstudiante,
@@ -487,8 +487,8 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     ok: true,
-    modelo: tieneGeminiKey ? 'gemma-4-31b-it' : process.env.OLLAMA_MODEL || 'gemma4:31b',
-    proveedorActivo: tieneGeminiKey ? 'google-ai-studio-cloud' : 'gemma4-adaptive-cloud',
+    modelo: tieneGeminiKey ? 'gemini-4-hydrogen' : 'gemini-fallback-local',
+    proveedorActivo: tieneGeminiKey ? 'google-ai-studio-cloud' : 'google-gemini-fallback',
     archivoJson: 'data/preguntas-ia.json',
     totalPreguntas: filtradas.length,
     preguntas: filtradas,
@@ -634,9 +634,9 @@ export async function POST(request: Request) {
         })),
       });
 
-      const { texto } = await consultarOllamaCloud(
+      const { texto } = await consultarGoogleGemini(
         promptGrupo,
-        'Eres Gemma 4 en la nube, asistente pedagógico para docentes de primaria (10 a 12 años) en Universo del Conocimiento. Redacta un diagnóstico ejecutivo claro, positivo y accionable de máximo 2 párrafos breves sin bloques markdown.',
+        'Eres Gemini de Google en la nube, asistente pedagógico para docentes de primaria (10 a 12 años) en Universo del Conocimiento. Redacta un diagnóstico ejecutivo claro, positivo y accionable de máximo 2 párrafos breves sin bloques markdown.',
       );
 
       const destacado = [...estudiantes].sort(
@@ -648,7 +648,7 @@ export async function POST(request: Request) {
 
       const diagnosticoPorDefecto =
         totalEstudiantes === 0
-          ? `El grupo del tutor ${tutorNombre} aún no registra estudiantes asignados. Una vez vinculados desde el panel de Asignaciones, Gemma 4 generará métricas detalladas por planeta y nivel adaptativo.`
+          ? `El grupo del tutor ${tutorNombre} aún no registra estudiantes asignados. Una vez vinculados desde el panel de Asignaciones, el Tutor IA Gemini generará métricas detalladas por planeta y nivel adaptativo.`
           : `El grupo a cargo de ${tutorNombre} cuenta con ${totalEstudiantes} ${
               totalEstudiantes === 1 ? 'estudiante activo' : 'estudiantes activos'
             }, acumulando ${totalEstrellas} estrellas y ${totalNivelesCompletados} niveles completados (promedio de ${promedioEstrellas} estrellas por estudiante). ${

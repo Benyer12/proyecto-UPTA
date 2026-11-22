@@ -254,7 +254,7 @@ export default function MaestroPage() {
           </div>
         </section>
 
-        {/* Copiloto Docente Gemma 4 y Reporte PDF del Profesor */}
+        {/* Copiloto Docente Google Gemini y Reporte PDF del Profesor */}
         <TeacherReportIACard
           tutorName={user.name || 'Tutor'}
           students={students}

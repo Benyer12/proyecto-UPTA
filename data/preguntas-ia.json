@@ -11,7 +11,7 @@
     "indiceRespuestaCorrecta": 0,
     "pista": "Suma primero las decenas (20 + 10) y luego las unidades (4 + 8).",
     "explicacionBreve": "20 + 10 = 30 y 4 + 8 = 12. Al sumar 30 + 12 obtenemos 42 cristales.",
-    "creadaPor": "gemma4",
+    "creadaPor": "gemini-4-hydrogen",
     "fechaCreacion": "2026-11-21T17:30:00.000Z"
   },
   {
@@ -26,7 +26,7 @@
     "indiceRespuestaCorrecta": 1,
     "pista": "Multiplica 10 × 6 y luego súmale 4 × 6.",
     "explicacionBreve": "10 × 6 = 60 y 4 × 6 = 24. Sumando ambos resultados: 60 + 24 = 84 megavatios.",
-    "creadaPor": "gemma4",
+    "creadaPor": "gemini-4-hydrogen",
     "fechaCreacion": "2026-11-21T17:30:05.000Z"
   },
   {
@@ -40,7 +40,7 @@
     "indiceRespuestaCorrecta": 0,
     "pista": "Busca la palabra cuya fuerza de voz recae en la antepenúltima sílaba.",
     "explicacionBreve": "Sa-té-li-te tiene el acento en la antepenúltima sílaba (té), por eso es esdrújula y siempre lleva tilde.",
-    "creadaPor": "gemma4",
+    "creadaPor": "gemini-4-hydrogen",
     "fechaCreacion": "2026-11-21T17:30:10.000Z"
   }
 ]

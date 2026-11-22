@@ -1,5 +1,4 @@
 import { GoogleGenAI } from '@google/genai';
-import OpenAI from 'openai';
 import {
   PREGUNTAS_NUMERIX,
   RETOS_ARMILAR_BOSS,
@@ -21,9 +20,7 @@ export type NivelDificultadIA = 1 | 2 | 3;
 
 export type ProveedorTutorIA =
   | 'google-ai-studio-cloud'
-  | 'ollama-cloud-gemma4'
-  | 'ollama-local-gemma4'
-  | 'gemma4-adaptive-engine';
+  | 'google-gemini-fallback';
 
 export interface PreguntaGeneradaIA {
   id: number;
@@ -337,20 +334,19 @@ export function generarRetoLetraliaAdaptativo(
 }
 
 /**
- * Motor en la nube multi-proveedor 100% gratuito:
- * 1) Google AI Studio Cloud (@google/genai Interactions API: gemma-4-31b-it, gemma-4-26b-a4b-it, gemini-4-hydrogen, gemini-3.5-flash-lite)
- * 2) Ollama Cloud (https://ollama.com/v1 con OLLAMA_API_KEY: gemma4:31b, gemma4, deepseek-v4.1-flash)
- * 3) Ollama Local (http://127.0.0.1:11434/v1)
- * 4) Motor Pedagógico Adaptativo Integrado (garantía 100% gratis sin fallos)
+ * Motor en la nube exclusivo con Google Gemini API (@google/genai):
+ * 1) Google AI Studio Cloud (gemini-4-hydrogen, gemini-3.5-flash-lite, gemini-3.1-flash-lite)
+ * 2) Respaldo adaptativo local si no hay clave configurada o la red falla temporalmente
  */
-export async function consultarOllamaCloud(
+export async function consultarGoogleGemini(
   prompt: string,
-  systemPrompt = 'Eres el Tutor IA Espacial de Universo del Conocimiento para niños de primaria (10 a 12 años). Responde siempre en español claro, motivador y estructurado en JSON.',
+  systemPrompt = 'Eres Gemini de Google, el Tutor IA Espacial de Universo del Conocimiento para niños de primaria (10 a 12 años). Responde siempre en español claro, motivador y estructurado en JSON.',
   modeloPreferido?: string,
 ): Promise<{
   texto: string | null;
   modeloUsado: string;
   proveedor: ProveedorTutorIA;
+  errorDetalle?: string;
 }> {
   const geminiKey = (
     process.env.GEMINI_API_KEY ||
@@ -358,16 +354,23 @@ export async function consultarOllamaCloud(
     ''
   ).trim();
 
-  // 1. Capa gratuita en la nube de Google AI Studio (@google/genai Interactions API)
+  let ultimoError: string | undefined;
+
   if (geminiKey) {
     try {
       const genai = new GoogleGenAI({ apiKey: geminiKey });
-      const modelosGoogle = [
-        'gemma-4-31b-it',
-        'gemma-4-26b-a4b-it',
+      const modelosBase = [
         'gemini-4-hydrogen',
         'gemini-3.5-flash-lite',
+        'gemini-3.1-flash-lite',
       ];
+      const preferidoValido =
+        modeloPreferido && modeloPreferido.startsWith('gemini-')
+          ? modeloPreferido
+          : undefined;
+      const modelosGoogle = Array.from(
+        new Set(preferidoValido ? [preferidoValido, ...modelosBase] : modelosBase),
+      );
 
       for (const model of modelosGoogle) {
         try {
@@ -385,87 +388,24 @@ export async function consultarOllamaCloud(
               proveedor: 'google-ai-studio-cloud',
             };
           }
-        } catch {
-          // Intenta el siguiente modelo disponible en Google AI Studio
+        } catch (err) {
+          ultimoError = err instanceof Error ? err.message : String(err);
+          console.warn(`[Google Gemini] Falló modelo ${model}:`, ultimoError);
         }
       }
-    } catch {
-      // Continúa a la siguiente capa si la clave no está activa
+    } catch (err) {
+      ultimoError = err instanceof Error ? err.message : String(err);
+      console.warn('[Google Gemini] Error al inicializar cliente:', ultimoError);
     }
-  }
-
-  // 2. Ollama Cloud (https://ollama.com/v1) con OLLAMA_API_KEY
-  const ollamaKey = (process.env.OLLAMA_API_KEY || '').trim();
-  if (ollamaKey) {
-    const cloudClient = new OpenAI({
-      baseURL: process.env.OLLAMA_BASE_URL || 'https://ollama.com/v1',
-      apiKey: ollamaKey,
-    });
-
-    const candidatos = Array.from(
-      new Set([
-        modeloPreferido || process.env.OLLAMA_MODEL || 'gemma4:31b',
-        'gemma4:31b',
-        'gemma4',
-        'deepseek-v4.1-flash',
-      ]),
-    );
-
-    for (const model of candidatos) {
-      try {
-        const response = await cloudClient.chat.completions.create({
-          model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: prompt },
-          ],
-        });
-
-        const content = response.choices?.[0]?.message?.content?.trim();
-        if (content) {
-          return {
-            texto: content,
-            modeloUsado: model,
-            proveedor: 'ollama-cloud-gemma4',
-          };
-        }
-      } catch {
-        // Continúa al siguiente candidato
-      }
-    }
-  }
-
-  // 3. Ollama local gratuito si está activo en la PC (http://127.0.0.1:11434/v1)
-  try {
-    const localClient = new OpenAI({
-      baseURL: 'http://127.0.0.1:11434/v1',
-      apiKey: 'ollama-local',
-    });
-
-    const response = await localClient.chat.completions.create({
-      model: 'gemma4',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: prompt },
-      ],
-    });
-
-    const content = response.choices?.[0]?.message?.content?.trim();
-    if (content) {
-      return {
-        texto: content,
-        modeloUsado: 'gemma4',
-        proveedor: 'ollama-local-gemma4',
-      };
-    }
-  } catch {
-    // Si no hay servidor local activo, usa el motor adaptativo gratuito integrado
+  } else {
+    ultimoError = 'Falta GEMINI_API_KEY o GOOGLE_API_KEY en el entorno.';
   }
 
   return {
     texto: null,
-    modeloUsado: geminiKey ? 'gemma-4-31b-it' : 'gemma4:31b',
-    proveedor: 'gemma4-adaptive-engine',
+    modeloUsado: 'gemini-fallback-local',
+    proveedor: 'google-gemini-fallback',
+    errorDetalle: ultimoError,
   };
 }
 
@@ -504,7 +444,7 @@ export function generarPreguntaAdaptativaPorNivel(
         indiceRespuestaCorrecta: 0,
         pista: `Suma primero las decenas (${Math.floor(a / 10) * 10} + ${Math.floor(b / 10) * 10}) y después las unidades (${a % 10} + ${b % 10}).`,
         explicacionBreve: `Al sumar ${a} + ${b} paso a paso obtenemos ${correcta} cristales en total.`,
-        creadaPor: 'gemma-4-31b-it',
+        creadaPor: 'gemini-fallback-local',
         fechaCreacion,
       };
     }
@@ -531,7 +471,7 @@ export function generarPreguntaAdaptativaPorNivel(
         indiceRespuestaCorrecta: 1,
         pista: `Multiplica ${a} veces ${b} (puedes descomponerlo en sumas rápidas).`,
         explicacionBreve: `${a} paneles por ${b} unidades cada uno producen ${a} × ${b} = ${correcta} unidades de impulso.`,
-        creadaPor: 'gemma-4-31b-it',
+        creadaPor: 'gemini-fallback-local',
         fechaCreacion,
       };
     }
@@ -559,7 +499,7 @@ export function generarPreguntaAdaptativaPorNivel(
       indiceRespuestaCorrecta: 2,
       pista: `Primero divide ${dividendo} ÷ ${divisor} y al resultado súmale ${extra}.`,
       explicacionBreve: `Al dividir ${dividendo} ÷ ${divisor} cada nave recibe ${cociente}. Sumando ${extra}: ${cociente} + ${extra} = ${correcta}.`,
-      creadaPor: 'gemma-4-31b-it',
+      creadaPor: 'gemini-fallback-local',
       fechaCreacion,
     };
   }
@@ -662,7 +602,7 @@ export function generarPreguntaAdaptativaPorNivel(
       indiceRespuestaCorrecta: item.correctaIdx,
       pista: item.pista,
       explicacionBreve: item.explicacion,
-      creadaPor: 'gemma-4-31b-it',
+      creadaPor: 'gemini-fallback-local',
       fechaCreacion,
     };
   }
@@ -741,7 +681,7 @@ export function generarPreguntaAdaptativaPorNivel(
     indiceRespuestaCorrecta: itemNat.correctaIdx,
     pista: itemNat.pista,
     explicacionBreve: itemNat.explicacion,
-    creadaPor: 'gemma-4-31b-it',
+    creadaPor: 'gemini-fallback-local',
     fechaCreacion,
   };
 }
@@ -791,9 +731,9 @@ export async function crearPreguntaNuevaConIA(
     },
   });
 
-  const { texto, modeloUsado, proveedor } = await consultarOllamaCloud(
+  const { texto, modeloUsado, proveedor } = await consultarGoogleGemini(
     prompt,
-    'Eres Gemma 4 en la nube. Devuelve únicamente un objeto JSON válido con enunciado, opciones (4 strings), indiceRespuestaCorrecta (0 a 3), pista y explicacionBreve.',
+    'Eres Gemini de Google en la nube. Devuelve únicamente un objeto JSON válido con enunciado, opciones (4 strings), indiceRespuestaCorrecta (0 a 3), pista y explicacionBreve.',
   );
 
   const parsed = extraerJSONDeTexto<{
@@ -912,8 +852,8 @@ export async function generarResumenPorCadaEstudiante(
   if (estudiantes.length === 0) {
     return {
       resumenes: [],
-      modelo: 'gemma-4-31b-it',
-      proveedor: 'gemma4-adaptive-engine',
+      modelo: 'gemini-fallback-local',
+      proveedor: 'google-gemini-fallback',
     };
   }
 
@@ -940,9 +880,9 @@ export async function generarResumenPorCadaEstudiante(
     },
   });
 
-  const { texto, modeloUsado, proveedor } = await consultarOllamaCloud(
+  const { texto, modeloUsado, proveedor } = await consultarGoogleGemini(
     prompt,
-    'Eres Gemma 4 en la nube. Devuelve únicamente un objeto JSON válido con la lista "estudiantes" y sus campos resumenIA, fortalezaPrincipal y metaRecomendada.',
+    'Eres Gemini de Google en la nube. Devuelve únicamente un objeto JSON válido con la lista "estudiantes" y sus campos resumenIA, fortalezaPrincipal y metaRecomendada.',
   );
 
   const parsed = extraerJSONDeTexto<{
@@ -1065,9 +1005,9 @@ export async function evaluarRespuestaConTutorIA(
     },
   });
 
-  const { texto, modeloUsado, proveedor } = await consultarOllamaCloud(
+  const { texto, modeloUsado, proveedor } = await consultarGoogleGemini(
     promptIA,
-    'Eres Gemma 4, el Tutor IA Pedagógico de Universo del Conocimiento. Devuelve únicamente un objeto JSON válido con las claves solicitadas, sin bloques markdown adicionales.',
+    'Eres Gemini de Google, el Tutor IA Pedagógico de Universo del Conocimiento. Devuelve únicamente un objeto JSON válido con las claves solicitadas, sin bloques markdown adicionales.',
     entrada.modeloPreferido,
   );
 
@@ -1785,9 +1725,9 @@ export async function generarRetoBossNumerixConIA(
     },
   });
 
-  const { texto, modeloUsado, proveedor } = await consultarOllamaCloud(
+  const { texto, modeloUsado, proveedor } = await consultarGoogleGemini(
     prompt,
-    'Eres Gemma 4 en la nube. Devuelve únicamente un objeto JSON válido con enunciado, opciones (exactamente 3), indiceCorrecto (0..2), pista y explicacion.',
+    'Eres Gemini de Google en la nube. Devuelve únicamente un objeto JSON válido con enunciado, opciones (exactamente 3), indiceCorrecto (0..2), pista y explicacion.',
   );
 
   const parsed = extraerJSONDeTexto<{
@@ -1863,22 +1803,24 @@ export async function prepararRetosTableroConIA(
       retosPuenteLetralia: [puente1, puente2],
       retosTormentaLetralia: [tormenta1, tormenta2],
       retosBossLetralia: [boss1],
-      modelo: 'gemma-4-31b-it',
-      proveedor: 'gemma4-adaptive-engine',
+      modelo: 'gemini-fallback-local',
+      proveedor: 'google-gemini-fallback',
     };
   }
 
-  // Numérix: 2 preguntas regulares + 3 retos de Jefe Final Núcleo Armilar (1 por cada anillo!)
-  const { reto: bossIA, modelo, proveedor } = await generarRetoBossNumerixConIA(nivel);
+  // Numérix: 2 preguntas regulares + 3 retos de Jefe Final Núcleo Armilar (1 por cada anillo)
+  const [bossResult, pregResult] = await Promise.all([
+    generarRetoBossNumerixConIA(nivel),
+    crearPreguntaNuevaConIA('Numérix', nivel),
+  ]);
   const boss2 = generarRetoBossNumerixAdaptativo(nivel);
   const boss3 = generarRetoBossNumerixAdaptativo(nivel);
-  const preg1 = generarPreguntaAdaptativaPorNivel('Numérix', nivel);
   const preg2 = generarPreguntaAdaptativaPorNivel('Numérix', nivel);
 
   return {
-    preguntasNumerix: [preg1, preg2],
-    retosBossNumerix: [bossIA, boss2, boss3],
-    modelo,
-    proveedor,
+    preguntasNumerix: [pregResult.pregunta, preg2],
+    retosBossNumerix: [bossResult.reto, boss2, boss3],
+    modelo: pregResult.proveedor === 'google-ai-studio-cloud' ? pregResult.modelo : bossResult.modelo,
+    proveedor: pregResult.proveedor === 'google-ai-studio-cloud' ? pregResult.proveedor : bossResult.proveedor,
   };
 }

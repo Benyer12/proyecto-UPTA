@@ -195,12 +195,12 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
   const [estrellasRegularesFinal, setEstrellasRegularesFinal] = useState(3);
   const [guardandoBD, setGuardandoBD] = useState(false);
 
-  /* ── Estado del Tutor IA Gemma 4 (nivel adaptativo 1..3 + cola de preguntas JSON) ── */
+  /* ── Estado del Tutor IA Google Gemini (nivel adaptativo 1..3 + cola de preguntas JSON) ── */
   const [nivelIA, setNivelIA] = useState<1 | 2 | 3>(1);
   const [etiquetaNivelIA, setEtiquetaNivelIA] = useState('Nivel 1 · Base (Default)');
   const [rachaIA, setRachaIA] = useState(0);
   const [mensajeTutorIA, setMensajeTutorIA] = useState(
-    'Tutor IA Gemma 4 conectado: creo preguntas en este tablero y subo el nivel gradualmente si vas muy bien.',
+    'Tutor IA Google Gemini conectado: creo preguntas en este tablero y subo el nivel gradualmente si vas muy bien.',
   );
   const colaPreguntasIARef = useRef<PreguntaMatematica[]>([]);
   const colaBossIARef = useRef<RetoArmilarBoss[]>([]);
@@ -372,7 +372,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     [user, levelId],
   );
 
-  /* ── Registrar respuesta regular y actualizar vista previa de estrellas (1 a 3) + Tutor IA Gemma 4 ── */
+  /* ── Registrar respuesta regular y actualizar vista previa de estrellas (1 a 3) + Tutor IA Google Gemini ── */
   const registrarDesempenoRegular = useCallback(
     (esCorrecta: boolean, enunciadoActual?: string, respEstudiante?: string, respCorrecta?: string) => {
       const nuevosAciertos = esCorrecta ? aciertos + 1 : aciertos;
@@ -397,7 +397,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
           preguntaActual: enunciadoActual || '',
           respuestaEstudiante: respEstudiante || '',
           respuestaCorrecta: respCorrecta || '',
-          modeloPreferido: 'gemma4:31b',
+          modeloPreferido: 'gemini-4-hydrogen',
         }),
       })
         .then((r) => r.json())
@@ -407,7 +407,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             setEtiquetaNivelIA(data.etiquetaNivel);
             setMensajeTutorIA(data.mensajeTutor);
             if (data.nuevaPregunta?.enunciado) {
-              colaPreguntasIARef.current.push({
+              colaPreguntasIARef.current.unshift({
                 id: data.nuevaPregunta.id,
                 operador: data.nuevaPregunta.operador || '+',
                 enunciado: data.nuevaPregunta.enunciado,
