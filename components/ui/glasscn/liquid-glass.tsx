@@ -21,8 +21,8 @@ type MapGeometry = {
   bezel: number;
 };
 
-const MAX_TEXTURE_SIZE = 480;
-const EDGE_TAPER_PX = 1.25;
+const MAX_TEXTURE_SIZE = 720;
+const EDGE_TAPER_PX = 2.0;
 
 const displacementMapCache = new Map<string, string>();
 
@@ -33,8 +33,10 @@ function supportsSvgBackdropFilter() {
   return isChromium && !/Firefox/.test(ua);
 }
 
-function convexSquircle(x: number) {
-  return Math.pow(1 - Math.pow(1 - x, 4), 0.25);
+/** Curva óptica suave y simétrica para los 4 bordes sin escalonamiento. */
+function symmetricRimCurve(t: number) {
+  const inv = Math.max(0, 1 - t);
+  return inv * inv * (1.25 - 0.25 * inv);
 }
 
 function createDisplacementMap({ width, height, radius, bezel }: MapGeometry) {
@@ -57,7 +59,8 @@ function createDisplacementMap({ width, height, radius, bezel }: MapGeometry) {
   const halfWidth = width / 2;
   const halfHeight = height / 2;
   const r = Math.min(radius, halfWidth, halfHeight);
-  const bezelPx = Math.max(1, bezel * Math.min(halfWidth, halfHeight));
+  // Grosor físico uniforme en los 4 lados independiente de la proporción ancho/alto
+  const bezelPx = Math.max(10, Math.min(26, bezel * 54, Math.min(halfWidth, halfHeight) * 0.65));
 
   for (let ty = 0; ty < texHeight; ty += 1) {
     for (let tx = 0; tx < texWidth; tx += 1) {
@@ -94,11 +97,11 @@ function createDisplacementMap({ width, height, radius, bezel }: MapGeometry) {
       }
 
       const t = Math.min(1, inside / bezelPx);
-      let magnitude = 1 - convexSquircle(t);
+      let magnitude = symmetricRimCurve(t);
       magnitude *= Math.min(1, inside / EDGE_TAPER_PX);
 
-      data[index] = Math.round(128 + dirX * magnitude * 127);
-      data[index + 1] = Math.round(128 + dirY * magnitude * 127);
+      data[index] = Math.round(128 + dirX * magnitude * 118);
+      data[index + 1] = Math.round(128 + dirY * magnitude * 118);
       data[index + 2] = 128;
       data[index + 3] = 255;
     }
@@ -225,9 +228,9 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
           'relative overflow-hidden rounded-full',
           isLight
             ? readingPriority
-              ? 'bg-white/[0.90] border border-slate-900/[0.12] shadow-[0_24px_64px_-22px_rgba(15,23,42,0.22),inset_0_1px_0_0_rgba(255,255,255,1)]'
-              : 'bg-white/[0.14] border border-white/[0.72] shadow-[0_14px_38px_-22px_rgba(30,64,175,0.16),inset_0_1px_0_0_rgba(255,255,255,0.88),inset_0_-1px_0_0_rgba(255,255,255,0.28)]'
-            : 'bg-white/[0.045] border border-white/[0.10] shadow-[0_24px_80px_-42px_rgba(0,0,0,0.72),inset_0_1px_0_0_rgba(255,255,255,0.18)]',
+              ? 'bg-white/[0.90] border border-slate-900/[0.12] shadow-[0_24px_64px_-22px_rgba(15,23,42,0.22),inset_0_0_20px_rgba(255,255,255,0.85)]'
+              : 'bg-white/[0.14] border border-white/[0.72] shadow-[0_14px_38px_-22px_rgba(30,64,175,0.16),inset_0_0_20px_rgba(255,255,255,0.34),inset_0_0_0_1px_rgba(255,255,255,0.42)]'
+            : 'bg-white/[0.045] border border-white/[0.16] shadow-[0_24px_80px_-42px_rgba(0,0,0,0.72),inset_0_0_22px_rgba(255,255,255,0.09),inset_0_0_0_1px_rgba(255,255,255,0.16)]',
           className,
         )}
         style={{ ...style, backdropFilter, WebkitBackdropFilter: backdropFilter } as CSSProperties}
@@ -238,15 +241,12 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 rounded-[inherit]"
           style={{
-            padding: 'var(--liquid-glass-rim-width, 0.75px)',
+            padding: 'var(--liquid-glass-rim-width, 1px)',
             background: isLight
               ? readingPriority
-                ? 'linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.98) var(--liquid-glass-rim-fade, 18%), rgba(255,255,255,0.98) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(255,255,255,0)), ' +
-                  'linear-gradient(to bottom, rgba(15,23,42,0), rgba(15,23,42,0.12) var(--liquid-glass-rim-fade, 18%), rgba(15,23,42,0.12) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(15,23,42,0))'
-                : 'linear-gradient(to right, rgba(255,255,255,0.12), rgba(255,255,255,0.92) var(--liquid-glass-rim-fade, 20%), rgba(255,255,255,0.92) calc(100% - var(--liquid-glass-rim-fade, 20%)), rgba(255,255,255,0.12)), ' +
-                  'linear-gradient(to bottom, rgba(148,163,184,0.06), rgba(30,64,175,0.14) var(--liquid-glass-rim-fade, 20%), rgba(30,64,175,0.14) calc(100% - var(--liquid-glass-rim-fade, 20%)), rgba(148,163,184,0.06))'
-              : 'linear-gradient(to right, rgba(255,255,255,0), var(--liquid-glass-rim-light, rgba(255,255,255,0.28)) var(--liquid-glass-rim-fade, 18%), var(--liquid-glass-rim-light, rgba(255,255,255,0.28)) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(255,255,255,0)), ' +
-                'linear-gradient(to bottom, rgba(0,0,0,0), var(--liquid-glass-rim-dark, rgba(255,255,255,0.09)) var(--liquid-glass-rim-fade, 18%), var(--liquid-glass-rim-dark, rgba(255,255,255,0.09)) calc(100% - var(--liquid-glass-rim-fade, 18%)), rgba(0,0,0,0))',
+                ? 'rgba(15, 23, 42, 0.14)'
+                : 'rgba(255, 255, 255, 0.86)'
+              : 'var(--liquid-glass-rim-uniform, rgba(255, 255, 255, 0.34))',
             WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
             WebkitMaskComposite: 'xor',
             mask: 'linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0)',

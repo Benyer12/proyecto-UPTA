@@ -551,7 +551,7 @@ export default function Home() {
                 refraction={22}
                 bezel={0.38}
                 saturation={1.68}
-                className={`mwg-scroll-reveal h-full rounded-3xl ${planeta.bgClass} p-6 sm:p-7 transition-transform duration-300 group-hover:-translate-y-1 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_28px_-12px_rgba(180,220,255,0.18),0_26px_76px_-30px_rgba(0,0,0,0.78)]`}
+                className={`mwg-scroll-reveal h-full rounded-3xl ${planeta.bgClass} p-6 sm:p-7 transition-transform duration-300 group-hover:-translate-y-1`}
                 style={{
                   borderColor: isLight ? planeta.lightBorder : planeta.border,
                 }}
@@ -599,7 +599,7 @@ export default function Home() {
               refraction={20}
               bezel={0.36}
               saturation={1.62}
-              className="mwg-scroll-reveal rounded-2xl bg-[#050a18]/[0.36] border-white/[0.14] p-5 space-y-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.28),inset_0_-12px_22px_-12px_rgba(180,220,255,0.14)]"
+              className="mwg-scroll-reveal rounded-2xl bg-[#050a18]/[0.36] border-white/[0.14] p-5 space-y-2.5"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl border border-white/14 bg-white/[0.06] flex items-center justify-center shrink-0">

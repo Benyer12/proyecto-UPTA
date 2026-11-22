@@ -158,25 +158,25 @@ function renderLiquidPrismLayer(w: number, h: number, isLight: boolean): HTMLCan
     softBlurPx: number,
   ) => {
     ctx.save();
-    if (softBlurPx > 0) {
-      ctx.filter = `blur(${softBlurPx}px)`;
-    }
+    ctx.filter = `blur(${Math.max(2.5, softBlurPx)}px)`;
     ctx.globalAlpha = alphaScale;
 
     for (let i = 0; i < pts.length - 1; i++) {
       const a = pts[i];
       const b = pts[i + 1];
 
-      // Extender ligeramente cada segmento para evitar micro-costuras entre quads
+      // Suavizado continuo sin costuras ni rayas transversales al pasar por Liquid Glass
       const tx = b.x - a.x;
       const ty = b.y - a.y;
-      const bx = b.x + tx * 0.28;
-      const by = b.y + ty * 0.28;
+      const ax = a.x - tx * 0.25;
+      const ay = a.y - ty * 0.25;
+      const bx = b.x + tx * 0.35;
+      const by = b.y + ty * 0.35;
 
-      const x1 = a.x - a.nx * a.r;
-      const y1 = a.y - a.ny * a.r;
-      const x2 = a.x + a.nx * a.r;
-      const y2 = a.y + a.ny * a.r;
+      const x1 = ax - a.nx * a.r;
+      const y1 = ay - a.ny * a.r;
+      const x2 = ax + a.nx * a.r;
+      const y2 = ay + a.ny * a.r;
 
       const grad = ctx.createLinearGradient(x1, y1, x2, y2);
       const shift = Math.sin(a.t * Math.PI * 2.2) * 0.05;
@@ -235,11 +235,11 @@ function renderLiquidPrismLayer(w: number, h: number, isLight: boolean): HTMLCan
     ctx.restore();
   };
 
-  const backPts = buildSplinePoints(backControl, 150);
-  const mainPts = buildSplinePoints(mainControl, 220);
+  const backPts = buildSplinePoints(backControl, 240);
+  const mainPts = buildSplinePoints(mainControl, 380);
 
-  drawRibbon(backPts, isLight ? 0.24 : 0.28, 10);
-  drawRibbon(mainPts, isLight ? 0.46 : 0.86, 0);
+  drawRibbon(backPts, isLight ? 0.24 : 0.28, 12);
+  drawRibbon(mainPts, isLight ? 0.46 : 0.86, 3);
 
   return off;
 }
