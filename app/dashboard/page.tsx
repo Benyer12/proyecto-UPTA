@@ -71,8 +71,12 @@ interface PlanetTheme {
   accent: string;
   border: string;
   cardBg: string;
+  spotlight: string;
+  ringColor: string;
+  cardGlow: string;
   btnBg: string;
   btnBorder: string;
+  btnGlow: string;
 }
 
 function getPlanetTheme(name: string, isLight: boolean): PlanetTheme {
@@ -81,18 +85,26 @@ function getPlanetTheme(name: string, isLight: boolean): PlanetTheme {
       ? {
           discipline: 'MATEMÁTICAS',
           accent: '#0369A1',
-          border: 'rgba(14, 165, 233, 0.42)',
-          cardBg: 'bg-[#031524]/[0.34]',
-          btnBg: 'rgba(14, 165, 233, 0.14)',
-          btnBorder: 'rgba(2, 132, 199, 0.48)',
+          border: 'rgba(14, 165, 233, 0.56)',
+          cardBg: 'bg-[#F4F8FF]/80',
+          spotlight: 'radial-gradient(circle, rgba(14, 165, 233, 0.28) 0%, rgba(56, 189, 248, 0.1) 48%, transparent 74%)',
+          ringColor: 'rgba(14, 165, 233, 0.26)',
+          cardGlow: '0 24px 64px -26px rgba(14, 165, 233, 0.35)',
+          btnBg: 'rgba(2, 132, 199, 0.92)',
+          btnBorder: 'rgba(56, 189, 248, 0.85)',
+          btnGlow: '0 10px 26px -6px rgba(14, 165, 233, 0.5)',
         }
       : {
           discipline: 'MATEMÁTICAS',
           accent: '#67E8F9',
-          border: 'rgba(103, 232, 249, 0.36)',
-          cardBg: 'bg-[#031524]/[0.34]',
-          btnBg: 'rgba(0, 245, 255, 0.16)',
-          btnBorder: 'rgba(103, 232, 249, 0.5)',
+          border: 'rgba(56, 189, 248, 0.58)',
+          cardBg: 'bg-[#020B18]/[0.76]',
+          spotlight: 'radial-gradient(circle, rgba(0, 245, 255, 0.34) 0%, rgba(14, 165, 233, 0.14) 46%, transparent 74%)',
+          ringColor: 'rgba(103, 232, 249, 0.28)',
+          cardGlow: '0 24px 70px -24px rgba(0, 245, 255, 0.38)',
+          btnBg: 'linear-gradient(135deg, rgba(6, 182, 212, 0.42) 0%, rgba(2, 132, 199, 0.55) 100%)',
+          btnBorder: 'rgba(103, 232, 249, 0.72)',
+          btnGlow: '0 10px 28px -6px rgba(0, 245, 255, 0.45)',
         };
   }
   if (name.includes('Letralia')) {
@@ -100,36 +112,52 @@ function getPlanetTheme(name: string, isLight: boolean): PlanetTheme {
       ? {
           discipline: 'LENGUAS',
           accent: '#7E22CE',
-          border: 'rgba(147, 51, 234, 0.38)',
-          cardBg: 'bg-[#160726]/[0.36]',
-          btnBg: 'rgba(147, 51, 234, 0.14)',
-          btnBorder: 'rgba(126, 34, 206, 0.46)',
+          border: 'rgba(147, 51, 234, 0.52)',
+          cardBg: 'bg-[#FAF5FF]/80',
+          spotlight: 'radial-gradient(circle, rgba(192, 132, 252, 0.32) 0%, rgba(168, 85, 247, 0.1) 48%, transparent 74%)',
+          ringColor: 'rgba(168, 85, 247, 0.26)',
+          cardGlow: '0 24px 64px -26px rgba(147, 51, 234, 0.32)',
+          btnBg: 'rgba(126, 34, 206, 0.92)',
+          btnBorder: 'rgba(216, 180, 254, 0.82)',
+          btnGlow: '0 10px 26px -6px rgba(147, 51, 234, 0.48)',
         }
       : {
           discipline: 'LENGUAS',
-          accent: '#D8B4FE',
-          border: 'rgba(216, 180, 254, 0.38)',
-          cardBg: 'bg-[#160726]/[0.36]',
-          btnBg: 'rgba(191, 64, 255, 0.18)',
-          btnBorder: 'rgba(216, 180, 254, 0.52)',
+          accent: '#E9D5FF',
+          border: 'rgba(217, 70, 239, 0.56)',
+          cardBg: 'bg-[#100422]/[0.78]',
+          spotlight: 'radial-gradient(circle, rgba(232, 121, 249, 0.34) 0%, rgba(168, 85, 247, 0.15) 46%, transparent 74%)',
+          ringColor: 'rgba(232, 121, 249, 0.28)',
+          cardGlow: '0 24px 70px -24px rgba(217, 70, 239, 0.38)',
+          btnBg: 'linear-gradient(135deg, rgba(192, 38, 211, 0.42) 0%, rgba(126, 34, 206, 0.56) 100%)',
+          btnBorder: 'rgba(240, 171, 252, 0.72)',
+          btnGlow: '0 10px 28px -6px rgba(217, 70, 239, 0.45)',
         };
   }
   return isLight
     ? {
         discipline: 'CIENCIAS',
         accent: '#047857',
-        border: 'rgba(16, 185, 129, 0.4)',
-        cardBg: 'bg-[#031B14]/[0.34]',
-        btnBg: 'rgba(16, 185, 129, 0.14)',
-        btnBorder: 'rgba(5, 150, 105, 0.48)',
+        border: 'rgba(16, 185, 129, 0.54)',
+        cardBg: 'bg-[#F2FBF7]/80',
+        spotlight: 'radial-gradient(circle, rgba(16, 185, 129, 0.28) 0%, rgba(45, 212, 191, 0.1) 48%, transparent 74%)',
+        ringColor: 'rgba(16, 185, 129, 0.26)',
+        cardGlow: '0 24px 64px -26px rgba(16, 185, 129, 0.32)',
+        btnBg: 'rgba(5, 150, 105, 0.92)',
+        btnBorder: 'rgba(110, 231, 183, 0.85)',
+        btnGlow: '0 10px 26px -6px rgba(16, 185, 129, 0.48)',
       }
     : {
         discipline: 'CIENCIAS',
         accent: '#6EE7B7',
-        border: 'rgba(110, 231, 183, 0.36)',
-        cardBg: 'bg-[#031B14]/[0.34]',
-        btnBg: 'rgba(0, 255, 136, 0.16)',
-        btnBorder: 'rgba(110, 231, 183, 0.5)',
+        border: 'rgba(16, 185, 129, 0.56)',
+        cardBg: 'bg-[#02130D]/[0.76]',
+        spotlight: 'radial-gradient(circle, rgba(0, 255, 136, 0.32) 0%, rgba(16, 185, 129, 0.14) 46%, transparent 74%)',
+        ringColor: 'rgba(110, 231, 183, 0.28)',
+        cardGlow: '0 24px 70px -24px rgba(16, 185, 129, 0.38)',
+        btnBg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.42) 0%, rgba(5, 150, 105, 0.56) 100%)',
+        btnBorder: 'rgba(110, 231, 183, 0.72)',
+        btnGlow: '0 10px 28px -6px rgba(16, 185, 129, 0.45)',
       };
 }
 
@@ -339,9 +367,9 @@ function StudentDashboardView({
         </p>
       </div>
 
-      {/* 3. TARJETAS DE LOS 3 PLANETAS (LIMPIAS, CON MAYOR OPACIDAD Y LIQUID GLASS MODERNO) */}
+      {/* 3. TARJETAS DE LOS 3 PLANETAS (PLANETAS COMO PROTAGONISTAS CON ESCENARIO LUMINOSO) */}
       <section aria-label="Planetas disponibles">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-7">
           {planets.map((planet) => {
             const theme = getPlanetTheme(planet.name, isLight);
             const isExpanded = expandedPlanetId === planet.id;
@@ -350,40 +378,62 @@ function StudentDashboardView({
             return (
               <LiquidGlass
                 key={planet.id}
-                blur={2}
+                blur={2.5}
                 refraction={24}
-                bezel={0.38}
-                saturation={1.68}
-                className={`rounded-3xl ${theme.cardBg} p-6 sm:p-7 flex flex-col justify-between shadow-[inset_0_1px_0_0_rgba(255,255,255,0.34),inset_0_-14px_28px_-12px_rgba(180,220,255,0.18),0_26px_76px_-30px_rgba(0,0,0,0.78)]`}
+                bezel={0.42}
+                saturation={1.65}
+                className={`group rounded-3xl ${theme.cardBg} p-6 sm:p-7 flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1.5`}
                 style={{
                   borderColor: theme.border,
+                  boxShadow: isLight
+                    ? `inset 0 1px 0 0 rgba(255,255,255,0.85), ${theme.cardGlow}`
+                    : `inset 0 1px 0 0 rgba(255,255,255,0.36), inset 0 -16px 32px -14px rgba(180,220,255,0.16), ${theme.cardGlow}`,
                   backgroundImage: isLight
-                    ? 'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.22) 45%, transparent 74%), linear-gradient(180deg, rgba(255,255,255,0.52) 0%, rgba(241,247,255,0.28) 100%)'
-                    : 'radial-gradient(120% 80% at 18% 8%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.22) 100%)',
+                    ? 'radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.36) 46%, transparent 76%)'
+                    : 'radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 44%, transparent 74%), linear-gradient(180deg, rgba(4,9,24,0.35) 0%, rgba(2,5,16,0.72) 100%)',
                 }}
               >
                 <article
                   aria-labelledby={`planet-title-${planet.id}`}
                   className="flex flex-col items-center text-center h-full justify-between gap-6"
                 >
-                  {/* Figura 3D del planeta */}
-                  <div className="pt-2">
-                    <div className="w-44 h-44 flex items-center justify-center mx-auto">
-                      <div className="scale-95">
+                  {/* Escenario focal y figura 3D protagonista del planeta */}
+                  <div className="pt-1 w-full flex flex-col items-center">
+                    <div className="relative w-52 h-52 flex items-center justify-center mx-auto">
+                      {/* Spotlight cósmico propio detrás del planeta */}
+                      <div
+                        aria-hidden="true"
+                        className="absolute -inset-3 rounded-full pointer-events-none transition-transform duration-500 group-hover:scale-110"
+                        style={{ background: theme.spotlight }}
+                      />
+                      {/* Órbita estelar sutil alrededor del planeta */}
+                      <div
+                        aria-hidden="true"
+                        className="absolute w-48 h-48 rounded-full border border-dashed pointer-events-none transition-transform duration-700 group-hover:rotate-12"
+                        style={{ borderColor: theme.ringColor }}
+                      />
+                      <div className="relative z-10 scale-[1.12] sm:scale-[1.15] transition-transform duration-500 group-hover:scale-[1.22]">
                         <PlanetVisual name={planet.name} />
                       </div>
                     </div>
 
-                    <div className="mt-4 space-y-1">
+                    <div className="mt-3 space-y-2">
                       <h3
                         id={`planet-title-${planet.id}`}
-                        className="text-2xl sm:text-3xl font-black text-white tracking-tight"
+                        className="text-3xl sm:text-[32px] font-black text-white tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]"
                       >
                         {planet.name}
                       </h3>
-                      <p className="font-mono text-xs font-semibold uppercase tracking-[0.22em] text-white/65">
+                      <span
+                        className="inline-flex items-center px-3 py-1 rounded-full font-mono text-[11px] font-bold uppercase tracking-[0.22em] border"
+                        style={{
+                          color: theme.accent,
+                          borderColor: theme.ringColor,
+                          backgroundColor: isLight ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.05)',
+                        }}
+                      >
                         {theme.discipline}
-                      </p>
+                      </span>
                     </div>
                   </div>
 
@@ -391,10 +441,12 @@ function StudentDashboardView({
                   <div className="w-full space-y-3">
                     <Link
                       href={`/planeta/${planet.id}`}
-                      className="glance min-h-[48px] w-full inline-flex items-center justify-center gap-2 rounded-full text-xs sm:text-sm font-extrabold uppercase tracking-[0.14em] text-white transition-all hover:brightness-115"
+                      data-keep-light-text="true"
+                      className="glance min-h-[50px] w-full inline-flex items-center justify-center gap-2 rounded-full text-xs sm:text-sm font-extrabold uppercase tracking-[0.14em] text-white transition-all hover:brightness-115 active:scale-[0.98]"
                       style={{
-                        backgroundColor: theme.btnBg,
+                        background: theme.btnBg,
                         border: `1.5px solid ${theme.btnBorder}`,
+                        boxShadow: theme.btnGlow,
                       }}
                     >
                       <IconExplore className="w-4 h-4 shrink-0" />

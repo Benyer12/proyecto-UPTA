@@ -82,15 +82,25 @@ export default function FondoCosmico() {
           : 'radial-gradient(ellipse at 50% 44%, #040714 0%, #02040D 55%, #010105 100%)',
       }}
     >
-      {/* Curva / Nebulosa 3D tornasol fija en un solo lugar, decodificada una sola vez en GPU */}
+      {/* Curva / Nebulosa 3D tornasol fija en un solo lugar, atenuada para dar protagonismo a los planetas */}
       <img
         src={isLight ? '/images/liquid-prism-light-bg.jpg' : '/images/liquid-prism-bg.jpg'}
         alt=""
         decoding="async"
         fetchPriority="high"
         className={`absolute inset-0 h-full w-full object-cover object-center ${
-          isLight ? 'opacity-[0.98]' : 'mix-blend-screen opacity-95'
+          isLight ? 'opacity-[0.68]' : 'mix-blend-screen opacity-[0.52]'
         }`}
+      />
+
+      {/* Viñeta focal suave detrás del área central para que los planetas resalten sin competir con el fondo */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: isLight
+            ? 'radial-gradient(ellipse 78% 66% at 50% 58%, rgba(236, 242, 255, 0.56) 0%, rgba(226, 234, 248, 0.24) 58%, transparent 100%)'
+            : 'radial-gradient(ellipse 76% 64% at 50% 58%, rgba(2, 5, 16, 0.72) 0%, rgba(2, 5, 16, 0.34) 58%, transparent 100%)',
+        }}
       />
 
       {/* Destellos minuciosos, sutiles y elegantes del tornasol (solo opacity/transform en GPU) */}

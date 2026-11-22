@@ -11,12 +11,13 @@ export default function PlanetVisual({ name, className = '' }: PlanetVisualProps
   if (name.includes('Numérix')) {
     return (
       <div className={`relative w-48 h-48 flex items-center justify-center select-none ${className}`}>
-        {/* Resplandor atmosférico profundo */}
+        {/* Resplandor atmosférico profundo y llamativo */}
         <div
-          className="absolute w-36 h-36 rounded-full pointer-events-none"
+          className="absolute w-44 h-44 rounded-full pointer-events-none"
           style={{
-            background: 'radial-gradient(circle, rgba(0,245,255,0.32) 0%, rgba(0,102,255,0.12) 55%, transparent 75%)',
-            filter: 'blur(18px)',
+            background:
+              'radial-gradient(circle, rgba(0,245,255,0.56) 0%, rgba(56,189,248,0.28) 42%, rgba(2,132,199,0.12) 65%, transparent 78%)',
+            filter: 'blur(20px)',
           }}
         />
 
@@ -66,7 +67,7 @@ export default function PlanetVisual({ name, className = '' }: PlanetVisualProps
             background:
               'radial-gradient(circle at 30% 26%, #e0f2fe 0%, #38bdf8 18%, #0284c7 46%, #0f172a 78%, #020617 100%)',
             boxShadow:
-              'inset -16px -16px 28px rgba(2, 6, 23, 0.96), inset 6px 6px 16px rgba(186, 230, 253, 0.65), 0 0 28px rgba(0, 245, 255, 0.35), 0 0 2px 1px rgba(125, 211, 252, 0.45)',
+              'inset -16px -16px 28px rgba(2, 6, 23, 0.94), inset 7px 7px 18px rgba(224, 242, 254, 0.78), 0 0 46px rgba(0, 245, 255, 0.58), 0 0 3px 1.5px rgba(165, 243, 252, 0.65)',
           }}
         >
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 128 128" fill="none">
@@ -241,10 +242,11 @@ export default function PlanetVisual({ name, className = '' }: PlanetVisualProps
       <div className={`relative w-48 h-48 flex items-center justify-center select-none ${className}`}>
         {/* Nebulosa púrpura/magenta/dorada envolvente */}
         <div
-          className="absolute w-36 h-36 rounded-full pointer-events-none"
+          className="absolute w-44 h-44 rounded-full pointer-events-none"
           style={{
-            background: 'radial-gradient(circle, rgba(217,70,239,0.34) 0%, rgba(147,51,234,0.14) 55%, transparent 75%)',
-            filter: 'blur(18px)',
+            background:
+              'radial-gradient(circle, rgba(232,121,249,0.58) 0%, rgba(168,85,247,0.28) 42%, rgba(251,191,36,0.12) 64%, transparent 78%)',
+            filter: 'blur(20px)',
           }}
         />
 
@@ -281,7 +283,7 @@ export default function PlanetVisual({ name, className = '' }: PlanetVisualProps
             background:
               'radial-gradient(circle at 32% 24%, #fae8ff 0%, #e879f9 20%, #a855f7 46%, #4c1d95 76%, #1e0538 100%)',
             boxShadow:
-              'inset -16px -16px 28px rgba(18, 2, 36, 0.96), inset 6px 6px 16px rgba(250, 232, 255, 0.65), 0 0 28px rgba(217, 70, 239, 0.38), 0 0 2px 1px rgba(240, 171, 252, 0.45)',
+              'inset -16px -16px 28px rgba(18, 2, 36, 0.94), inset 7px 7px 18px rgba(250, 232, 255, 0.78), 0 0 46px rgba(217, 70, 239, 0.58), 0 0 3px 1.5px rgba(245, 208, 254, 0.65)',
           }}
         >
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 128 128" fill="none">
@@ -429,10 +431,11 @@ export default function PlanetVisual({ name, className = '' }: PlanetVisualProps
       <div className={`relative w-48 h-48 flex items-center justify-center select-none ${className}`}>
         {/* Atmósfera bioluminiscente esmeralda/turquesa */}
         <div
-          className="absolute w-36 h-36 rounded-full pointer-events-none"
+          className="absolute w-44 h-44 rounded-full pointer-events-none"
           style={{
-            background: 'radial-gradient(circle, rgba(16,185,129,0.34) 0%, rgba(6,182,212,0.14) 55%, transparent 75%)',
-            filter: 'blur(18px)',
+            background:
+              'radial-gradient(circle, rgba(16,185,129,0.58) 0%, rgba(45,212,191,0.28) 42%, rgba(5,150,105,0.12) 64%, transparent 78%)',
+            filter: 'blur(20px)',
           }}
         />
 
@@ -469,7 +472,7 @@ export default function PlanetVisual({ name, className = '' }: PlanetVisualProps
             background:
               'radial-gradient(circle at 30% 25%, #ccfbf1 0%, #2dd4bf 20%, #0d9488 46%, #064e3b 76%, #022c22 100%)',
             boxShadow:
-              'inset -16px -16px 28px rgba(1, 20, 14, 0.96), inset 6px 6px 16px rgba(204, 251, 241, 0.65), 0 0 28px rgba(0, 255, 136, 0.35), 0 0 2px 1px rgba(110, 231, 183, 0.45)',
+              'inset -16px -16px 28px rgba(1, 20, 14, 0.94), inset 7px 7px 18px rgba(204, 251, 241, 0.78), 0 0 46px rgba(0, 255, 136, 0.56), 0 0 3px 1.5px rgba(167, 243, 208, 0.65)',
           }}
         >
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 128 128" fill="none">
