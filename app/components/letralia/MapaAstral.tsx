@@ -157,9 +157,23 @@ function Isla({ cfg }: { cfg: IslaCfg }) {
         d={superficie}
         fill={estilo === 'lavanda' ? 'url(#cespedLav)' : 'url(#cespedMenta)'}
         stroke="#FFFFFF"
-        strokeOpacity={0.55}
-        strokeWidth={1.5}
+        strokeOpacity={0.72}
+        strokeWidth={1.6}
       />
+      {/* Halo interior iridiscente y anillos rúnicos sobre las islas amplias */}
+      {rx >= 80 && (
+        <ellipse
+          cx={cx}
+          cy={cy}
+          rx={rx * 0.62}
+          ry={ry * 0.58}
+          fill="none"
+          stroke={estilo === 'lavanda' ? '#FDE68A' : '#E0F2FE'}
+          strokeOpacity={0.28}
+          strokeWidth={1.1}
+          strokeDasharray="6 5"
+        />
+      )}
       {motas.map((m, i) => (
         <ellipse
           key={i}
@@ -228,21 +242,24 @@ function CristalDeco({
 }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`}>
+      <ellipse cx={0} cy={3} rx={14} ry={4.5} fill={color} opacity={0.26} />
       <polygon
-        points="0,-17 6.5,-5 4.2,3 -4.2,3 -6.5,-5"
+        points="0,-19 7,-5 4.4,3 -4.4,3 -7,-5"
         fill={color}
         stroke="#FFFFFF"
-        strokeOpacity={0.75}
-        strokeWidth={1}
+        strokeOpacity={0.85}
+        strokeWidth={1.1}
       />
-      <polygon points="0,-17 6.5,-5 0,-3" fill="#FFFFFF" opacity={0.55} />
+      <polygon points="0,-19 7,-5 0,-3" fill="#FFFFFF" opacity={0.6} />
+      <polygon points="0,-19 -7,-5 0,-3" fill="#0F172A" opacity={0.14} />
       <polygon
-        points="9,-8 12.5,-2 11,3 7,3 6,-2"
+        points="9,-9 13,-2 11,3 7,3 6,-2"
         fill={color}
         stroke="#FFFFFF"
-        strokeOpacity={0.5}
-        strokeWidth={0.7}
+        strokeOpacity={0.62}
+        strokeWidth={0.8}
       />
+      <polygon points="9,-9 13,-2 9.5,-1" fill="#FFFFFF" opacity={0.5} />
     </g>
   );
 }

@@ -648,33 +648,29 @@ const CuboIsometricoSVG = memo(function CuboIsometricoSVG({
 
   const paleta = {
     normal: {
-      top: activo
-        ? 'rgba(0, 245, 255, 0.72)'
-        : visitado
-          ? 'rgba(0, 180, 255, 0.56)'
-          : 'rgba(0, 128, 255, 0.44)',
-      left: visitado ? 'rgba(0, 102, 235, 0.96)' : 'rgba(0, 74, 186, 0.96)',
-      right: visitado ? 'rgba(0, 68, 168, 0.98)' : 'rgba(0, 48, 132, 0.98)',
-      strokeTop: activo ? '#FFFFFF' : '#00F5FF',
+      top: activo ? 'url(#cubeTopActive)' : visitado ? 'url(#cubeTopVisited)' : 'url(#cubeTopNormal)',
+      left: 'url(#cubeLeftNormal)',
+      right: 'url(#cubeRightNormal)',
+      strokeTop: activo ? '#FFFFFF' : '#38BDF8',
       strokeSide: activo ? '#7DD3FC' : 'rgba(56, 212, 255, 0.85)',
       textTop: '#FFFFFF',
       textSide: '#BAE6FD',
       glow: activo ? 'rgba(0, 245, 255, 0.95)' : 'rgba(0, 136, 255, 0.72)',
     },
     especial: {
-      top: activo ? 'rgba(0, 255, 136, 0.68)' : 'rgba(16, 235, 145, 0.45)',
-      left: 'rgba(6, 95, 70, 0.92)',
-      right: 'rgba(4, 62, 48, 0.96)',
-      strokeTop: activo ? '#FFFFFF' : '#00FF88',
+      top: activo ? 'url(#cubeTopActive)' : 'url(#cubeTopEspecial)',
+      left: 'rgba(6, 95, 70, 0.94)',
+      right: 'rgba(3, 52, 40, 0.98)',
+      strokeTop: activo ? '#FFFFFF' : '#34D399',
       strokeSide: 'rgba(52, 211, 153, 0.85)',
       textTop: '#FFFFFF',
       textSide: '#6EE7B7',
       glow: 'rgba(0, 255, 136, 0.78)',
     },
     trampa: {
-      top: activo ? 'rgba(255, 230, 80, 0.72)' : 'rgba(255, 145, 0, 0.5)',
-      left: 'rgba(180, 72, 10, 0.94)',
-      right: 'rgba(130, 48, 8, 0.97)',
+      top: activo ? 'url(#cubeTopActive)' : 'url(#cubeTopTrampa)',
+      left: 'rgba(180, 72, 10, 0.95)',
+      right: 'rgba(116, 40, 6, 0.98)',
       strokeTop: activo ? '#FFFFFF' : '#FDE047',
       strokeSide: 'rgba(251, 191, 36, 0.88)',
       textTop: '#FFFBEB',
@@ -1126,6 +1122,110 @@ const EscenarioMontaña = memo(function EscenarioMontaña() {
       <ellipse cx="665" cy="410" rx="110" ry="34" fill="url(#mistSoftGrad)" />
       <ellipse cx="410" cy="585" rx="155" ry="32" fill="url(#mistSoftGrad)" />
 
+      {/* ── Arquitectura 3D de Circuitos Cuánticos, Cascadas de Plasma y Facetas Esculpidas ── */}
+      <g pointerEvents="none">
+        {/* Retícula isométrica y trazos de circuitos cuánticos grabados sobre Terraza 1 y 2 */}
+        <path
+          d="M 255 462 L 365 442 L 420 468 L 545 452 L 620 486"
+          fill="none"
+          stroke="#38BDF8"
+          strokeOpacity="0.28"
+          strokeWidth="1.4"
+          strokeDasharray="5 4"
+        />
+        <path
+          d="M 305 512 L 415 486 L 520 492 L 605 524"
+          fill="none"
+          stroke="#67E8F9"
+          strokeOpacity="0.24"
+          strokeWidth="1.2"
+        />
+        <path
+          d="M 355 215 L 468 188 L 585 208 M 468 188 L 448 134 M 468 188 L 520 236"
+          fill="none"
+          stroke="#00F5FF"
+          strokeOpacity="0.3"
+          strokeWidth="1.3"
+        />
+
+        {/* Facetas cristalinas esculpidas en los acantilados (rompen el azul plano) */}
+        <polygon points="155,480 230,522 205,556 135,512" fill="#073D99" fillOpacity="0.52" stroke="#60A5FA" strokeOpacity="0.22" strokeWidth="0.8" />
+        <polygon points="275,542 352,570 330,602 252,572" fill="#042466" fillOpacity="0.6" stroke="#38BDF8" strokeOpacity="0.2" strokeWidth="0.8" />
+        <polygon points="480,582 572,566 550,606 462,616" fill="#0744AD" fillOpacity="0.52" stroke="#67E8F9" strokeOpacity="0.22" strokeWidth="0.8" />
+        <polygon points="620,545 715,500 735,532 642,578" fill="#031D54" fillOpacity="0.62" stroke="#38BDF8" strokeOpacity="0.22" strokeWidth="0.8" />
+
+        {/* Cascadas de energía / plasma cuántico cayendo entre terrazas */}
+        {[
+          { x: 368, y1: 432, y2: 492 },
+          { x: 584, y1: 358, y2: 432 },
+        ].map((wf, idx) => (
+          <g key={idx}>
+            <path
+              d={`M ${wf.x - 10} ${wf.y1} Q ${wf.x - 4} ${(wf.y1 + wf.y2) / 2} ${wf.x - 12} ${wf.y2} L ${wf.x + 12} ${wf.y2} Q ${wf.x + 4} ${(wf.y1 + wf.y2) / 2} ${wf.x + 10} ${wf.y1} Z`}
+              fill="url(#waterfallPlasmaGrad)"
+              opacity="0.72"
+            />
+            <line
+              x1={wf.x}
+              y1={wf.y1 + 2}
+              x2={wf.x}
+              y2={wf.y2 - 2}
+              stroke="#E0F2FE"
+              strokeWidth="2.2"
+              strokeDasharray="6 6"
+              opacity="0.85"
+            >
+              <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.4s" repeatCount="indefinite" />
+            </line>
+            <ellipse cx={wf.x} cy={wf.y2} rx="22" ry="7" fill="none" stroke="#67E8F9" strokeWidth="1.2" opacity="0.65" />
+            <ellipse cx={wf.x} cy={wf.y2} rx="12" ry="3.5" fill="#E0F2FE" opacity="0.45" />
+          </g>
+        ))}
+
+        {/* ── CENTRO DE TERRAZA 2 (468, 188): REACTOR GIROSCÓPICO CUÁNTICO 3D ── */}
+        <g transform="translate(468 188)">
+          <ellipse cx="0" cy="4" rx="76" ry="34" fill="url(#portalFloorGlow)" opacity="0.75" />
+          <ellipse cx="0" cy="2" rx="64" ry="28" fill="#02194A" fillOpacity="0.84" stroke="url(#glassBevelStroke)" strokeWidth="1.5" />
+          <ellipse cx="0" cy="0" rx="46" ry="20" fill="#042E7A" fillOpacity="0.85" stroke="#67E8F9" strokeOpacity="0.72" strokeWidth="1.2" />
+          <ellipse cx="0" cy="-1" rx="28" ry="12" fill="none" stroke="#E0F2FE" strokeOpacity="0.65" strokeWidth="1" strokeDasharray="4 4" />
+          {/* Anillos giroscópicos inclinados */}
+          <g transform="translate(0 -16) rotate(-14)">
+            <ellipse rx="36" ry="11" fill="none" stroke="#00F5FF" strokeOpacity="0.78" strokeWidth="1.5" strokeDasharray="10 6">
+              <animateTransform attributeName="transform" type="rotate" values="0;360" dur="12s" repeatCount="indefinite" />
+            </ellipse>
+          </g>
+          <g transform="translate(0 -16) rotate(22)">
+            <ellipse rx="28" ry="9" fill="none" stroke="#FDE68A" strokeOpacity="0.72" strokeWidth="1.3" />
+          </g>
+          {/* Cristal prisma 3D levitando sobre el reactor */}
+          <g transform="translate(0 -20)">
+            <animateTransform attributeName="transform" type="translate" values="0 -18; 0 -24; 0 -18" dur="3.2s" repeatCount="indefinite" />
+            <polygon points="0,-20 11,-3 0,14 -11,-3" fill="#00E5FF" stroke="#FFFFFF" strokeWidth="1.1" />
+            <polygon points="0,-20 11,-3 0,14" fill="#0284C7" opacity="0.65" />
+            <polygon points="0,-20 -11,-3 0,-2" fill="#E0F2FE" opacity="0.85" />
+            <polygon points="0,-20 11,-3 0,-2" fill="#67E8F9" opacity="0.65" />
+          </g>
+          {/* Runas matemáticas flotantes sutiles en órbita */}
+          <text x="-52" y="12" fill="#67E8F9" fontSize="11" fontWeight="800" opacity="0.7">∑</text>
+          <text x="44" y="-8" fill="#FDE68A" fontSize="11" fontWeight="800" opacity="0.72">π</text>
+        </g>
+
+        {/* ── CENTRO DE TERRAZA 1 (468, 474): PLAZA HOLOGRÁFICA Y FARO CRISTALINO ── */}
+        <g transform="translate(468 474)">
+          <ellipse cx="0" cy="4" rx="88" ry="34" fill="url(#portalFloorGlow)" opacity="0.6" />
+          <ellipse cx="0" cy="2" rx="72" ry="26" fill="#021847" fillOpacity="0.82" stroke="url(#glassBevelStroke)" strokeOpacity="0.7" strokeWidth="1.4" />
+          <ellipse cx="0" cy="0" rx="50" ry="18" fill="#043082" fillOpacity="0.78" stroke="#38BDF8" strokeOpacity="0.55" strokeWidth="1.1" />
+          <ellipse cx="0" cy="-1" rx="28" ry="10" fill="none" stroke="#6EE7B7" strokeOpacity="0.6" strokeWidth="1" strokeDasharray="5 4" />
+          {/* Obelisco cristalino central */}
+          <polygon points="-8,2 -4,-22 0,-30 4,-22 8,2" fill="#0EA5E9" stroke="#E0F2FE" strokeWidth="1" />
+          <polygon points="0,-30 4,-22 8,2 0,4" fill="#0369A1" opacity="0.75" />
+          <polygon points="-4,-22 0,-30 0,-12" fill="#FFFFFF" opacity="0.75" />
+          {/* Pilares satélites */}
+          <polygon points="-46,4 -44,-10 -41,-14 -38,-10 -36,4" fill="#6EE7B7" stroke="#ECFDF5" strokeWidth="0.8" />
+          <polygon points="36,4 38,-10 41,-14 44,-10 46,4" fill="#C4B5FD" stroke="#F5F3FF" strokeWidth="0.8" />
+        </g>
+      </g>
+
       {/* ── Arcos Orbitales Limpios ── */}
       <path
         d="M 68 242 C 8 348, 20 506, 142 596"
@@ -1271,6 +1371,45 @@ const MapaMontañaCuantica = memo(function MapaMontañaCuantica({
           <stop offset="32%" stopColor="#00F5FF" />
           <stop offset="68%" stopColor="#60A5FA" />
           <stop offset="100%" stopColor="#FDE68A" />
+        </linearGradient>
+        <linearGradient id="waterfallPlasmaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#E0F2FE" stopOpacity="0.92" />
+          <stop offset="45%" stopColor="#00F5FF" stopOpacity="0.72" />
+          <stop offset="100%" stopColor="#0284C7" stopOpacity="0.18" />
+        </linearGradient>
+        {/* Gradientes 3D especulares para los 20 cubos isométricos */}
+        <linearGradient id="cubeTopNormal" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.88" />
+          <stop offset="55%" stopColor="#0284C7" stopOpacity="0.78" />
+          <stop offset="100%" stopColor="#0369A1" stopOpacity="0.86" />
+        </linearGradient>
+        <linearGradient id="cubeTopVisited" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#67E8F9" stopOpacity="0.92" />
+          <stop offset="55%" stopColor="#0EA5E9" stopOpacity="0.84" />
+          <stop offset="100%" stopColor="#0284C7" stopOpacity="0.9" />
+        </linearGradient>
+        <linearGradient id="cubeTopActive" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.96" />
+          <stop offset="45%" stopColor="#00F5FF" stopOpacity="0.92" />
+          <stop offset="100%" stopColor="#0EA5E9" stopOpacity="0.95" />
+        </linearGradient>
+        <linearGradient id="cubeTopEspecial" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#6EE7B7" stopOpacity="0.85" />
+          <stop offset="60%" stopColor="#10B981" stopOpacity="0.74" />
+          <stop offset="100%" stopColor="#047857" stopOpacity="0.84" />
+        </linearGradient>
+        <linearGradient id="cubeTopTrampa" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FDE047" stopOpacity="0.86" />
+          <stop offset="60%" stopColor="#F59E0B" stopOpacity="0.76" />
+          <stop offset="100%" stopColor="#D97706" stopOpacity="0.86" />
+        </linearGradient>
+        <linearGradient id="cubeLeftNormal" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#0052CC" />
+          <stop offset="100%" stopColor="#002B7A" />
+        </linearGradient>
+        <linearGradient id="cubeRightNormal" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#003694" />
+          <stop offset="100%" stopColor="#001B52" />
         </linearGradient>
         <linearGradient id="cliffBaseGrad" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#03266B" />
