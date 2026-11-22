@@ -510,7 +510,10 @@ export async function POST(request: Request) {
       const nivel: NivelDificultadIA =
         nivelNum <= 1 ? 1 : nivelNum >= 3 ? 3 : 2;
 
-      const pack = await prepararRetosTableroConIA(planeta, nivel);
+      const evitarTextos = Array.isArray(body?.evitarTextos)
+        ? body.evitarTextos.map((x: unknown) => String(x))
+        : [];
+      const pack = await prepararRetosTableroConIA(planeta, nivel, evitarTextos);
 
       await sincronizarPreguntaEnArchivoPlaneta(
         planeta,
@@ -703,6 +706,9 @@ export async function POST(request: Request) {
       respuestaCorrecta: body?.respuestaCorrecta,
       consultaLibre: body?.consultaLibre,
       modeloPreferido: body?.modeloPreferido,
+      evitarTextos: Array.isArray(body?.evitarTextos)
+        ? body.evitarTextos.map((x: unknown) => String(x))
+        : [],
     };
 
     const resultado = await evaluarRespuestaConTutorIA(entrada);

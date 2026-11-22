@@ -89,6 +89,7 @@ export interface EntradaEvaluacionTutorIA {
   respuestaCorrecta?: string;
   consultaLibre?: string;
   modeloPreferido?: string;
+  evitarTextos?: string[];
 }
 
 export interface RespuestaTutorIA {
@@ -152,12 +153,36 @@ export function calcularNuevoNivelAdaptativo(
   return { nivelAnterior, nuevoNivel, cambioNivel };
 }
 
+function elegirSinDuplicar<T>(
+  nivel: NivelDificultadIA,
+  bancoPorNivel: Record<NivelDificultadIA, T[]>,
+  getFirma: (item: T) => string,
+  evitarTextos: string[] = [],
+): T {
+  const evitarSet = new Set(evitarTextos.map((t) => t.trim().toLowerCase()));
+  const delNivel = bancoPorNivel[nivel].filter(
+    (item) => !evitarSet.has(getFirma(item).trim().toLowerCase()),
+  );
+  if (delNivel.length > 0) {
+    return delNivel[Math.floor(Math.random() * delNivel.length)];
+  }
+  const todos: T[] = [...bancoPorNivel[1], ...bancoPorNivel[2], ...bancoPorNivel[3]];
+  const restantes = todos.filter(
+    (item) => !evitarSet.has(getFirma(item).trim().toLowerCase()),
+  );
+  const pool = restantes.length > 0 ? restantes : bancoPorNivel[nivel];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 /**
  * Genera un RetoIntruso nativo para Letralia guiado por el estilo y dificultad default de RETOS_INTRUSO,
- * aumentando suavemente la dificultad según el nivel (1, 2 o 3) sin exagerar.
+ * evitando repetir retos ya mostrados en la partida.
  */
-export function generarRetoLetraliaAdaptativo(nivel: NivelDificultadIA): RetoIntruso {
-  const id = `int-ia-${Date.now().toString(36)}`;
+export function generarRetoLetraliaAdaptativo(
+  nivel: NivelDificultadIA,
+  evitarTextos: string[] = [],
+): RetoIntruso {
+  const id = `int-ia-${Date.now().toString(36)}-${Math.floor(Math.random() * 90 + 10)}`;
   const bancoPorNivel: Record<NivelDificultadIA, Omit<RetoIntruso, 'id'>[]> = {
     1: [
       {
@@ -178,6 +203,33 @@ export function generarRetoLetraliaAdaptativo(nivel: NivelDificultadIA): RetoInt
         pista: '«Estrellas» está en plural; el adjetivo debe coincidir en número.',
         explicacion: 'Como «estrellas» es plural, el adjetivo correcto es «brillantes».',
       },
+      {
+        categoria: 'ortografia',
+        palabras: ['El', 'explorador', 'vio', 'una', 'nube', 'vlanca', 'en', 'el', 'cielo.'],
+        indiceIntruso: 5,
+        opciones: ['blanca', 'blamca', 'vlanka'],
+        correcta: 'blanca',
+        pista: 'Antes de la letra L siempre se escribe B, nunca V.',
+        explicacion: '«Blanca» se escribe con b porque va seguida de l (bl).',
+      },
+      {
+        categoria: 'concordancia',
+        palabras: ['Unos', 'planetas', 'lejana', 'giran', 'alrededor', 'del', 'Sol.'],
+        indiceIntruso: 2,
+        opciones: ['lejanos', 'lejano', 'lejanas'],
+        correcta: 'lejanos',
+        pista: '«Planetas» es masculino y plural.',
+        explicacion: 'El adjetivo debe concordar en género y número: «planetas lejanos».',
+      },
+      {
+        categoria: 'ortografia',
+        palabras: ['Mi', 'amigo', 'toca', 'el', 'tanbor', 'en', 'la', 'fiesta.'],
+        indiceIntruso: 4,
+        opciones: ['tambor', 'tamvor', 'tanvor'],
+        correcta: 'tambor',
+        pista: 'Antes de B o P siempre se escribe M, nunca N.',
+        explicacion: '«Tambor» lleva m antes de b por regla ortográfica.',
+      },
     ],
     2: [
       {
@@ -191,12 +243,39 @@ export function generarRetoLetraliaAdaptativo(nivel: NivelDificultadIA): RetoInt
       },
       {
         categoria: 'ortografia',
-        palabras: ['Nuestro', 'equipo', 'decidió', 'explorar', 'el', 'bosque', 'cercano', 'ayer', 'por', 'la', 'noche.'].slice(0, 7),
+        palabras: ['Nuestro', 'equipo', 'desidió', 'explorar', 'el', 'bosque', 'cercano.'],
         indiceIntruso: 2,
-        opciones: ['decidió', 'desidió', 'decidio'],
+        opciones: ['decidió', 'desidio', 'decidio'],
         correcta: 'decidió',
         pista: 'Viene de «decidir» (con c) y lleva tilde en la última sílaba.',
         explicacion: '«Decidió» se escribe con c y tilde en la o por ser aguda terminada en vocal.',
+      },
+      {
+        categoria: 'acentuacion',
+        palabras: ['Escuchamos', 'una', 'musica', 'suave', 'dentro', 'del', 'santuario.'],
+        indiceIntruso: 2,
+        opciones: ['música', 'musíca', 'musicá'],
+        correcta: 'música',
+        pista: 'Mú-si-ca lleva la fuerza en la antepenúltima sílaba.',
+        explicacion: '«Música» es esdrújula y siempre lleva tilde en la ú.',
+      },
+      {
+        categoria: 'ortografia',
+        palabras: ['La', 'viajera', 'hiso', 'un', 'dibujo', 'del', 'cometa.'],
+        indiceIntruso: 2,
+        opciones: ['hizo', 'izo', 'hisó'],
+        correcta: 'hizo',
+        pista: 'Viene del verbo «hacer» y se escribe con h y con z.',
+        explicacion: '«Hizo» es pasado de hacer y siempre lleva h y z.',
+      },
+      {
+        categoria: 'concordancia',
+        palabras: ['La', 'linterna', 'mágico', 'iluminó', 'todo', 'el', 'sendero.'],
+        indiceIntruso: 2,
+        opciones: ['mágica', 'mágicos', 'mágicas'],
+        correcta: 'mágica',
+        pista: '«Linterna» es femenino singular.',
+        explicacion: 'El adjetivo concuerda con «la linterna»: «mágica».',
       },
     ],
     3: [
@@ -218,22 +297,42 @@ export function generarRetoLetraliaAdaptativo(nivel: NivelDificultadIA): RetoInt
         pista: 'Piensa si se refiere a un cilindro hueco o al verbo «tener» en pasado.',
         explicacion: '«Tuvo» con v viene del verbo «tener»; «tubo» con b es un objeto cilíndrico.',
       },
+      {
+        categoria: 'acentuacion',
+        palabras: ['Yo', 'se', 'donde', 'guardaron', 'la', 'llave', 'dorada.'],
+        indiceIntruso: 1,
+        opciones: ['sé', 'sed', 'ser'],
+        correcta: 'sé',
+        pista: 'Cuando viene del verbo saber (yo sé), lleva tilde diacrítica.',
+        explicacion: '«Sé» con tilde es del verbo saber; «se» sin tilde es pronombre.',
+      },
+      {
+        categoria: 'ortografia',
+        palabras: ['Mañana', 'habra', 'una', 'lluvia', 'de', 'meteoritos', 'azules.'],
+        indiceIntruso: 1,
+        opciones: ['habrá', 'abrá', 'hávra'],
+        correcta: 'habrá',
+        pista: 'Viene del verbo «haber» (con h y b) y es aguda terminada en vocal.',
+        explicacion: '«Habrá» lleva h, b y tilde en la última sílaba.',
+      },
+      {
+        categoria: 'ortografia',
+        palabras: ['El', 'guardián', 'hechó', 'polvo', 'de', 'estrellas', 'al', 'altar.'],
+        indiceIntruso: 2,
+        opciones: ['echó', 'echò', 'hecho'],
+        correcta: 'echó',
+        pista: 'El verbo «echar» (lanzar o arrojar) nunca lleva h.',
+        explicacion: '«Echó» viene del verbo echar y se escribe sin h.',
+      },
     ],
   };
 
-  // Ajuste seguro para el caso 2 de nivel 2 (poner palabra con error visible)
-  const candidatos = bancoPorNivel[nivel].map((item) =>
-    item.palabras[item.indiceIntruso] === item.correcta
-      ? {
-          ...item,
-          palabras: item.palabras.map((w, i) =>
-            i === item.indiceIntruso ? 'desidió' : w,
-          ),
-        }
-      : item,
+  const elegido = elegirSinDuplicar(
+    nivel,
+    bancoPorNivel,
+    (r) => r.palabras.join(' '),
+    evitarTextos,
   );
-
-  const elegido = candidatos[Math.floor(Math.random() * candidatos.length)];
   return { id, ...elegido };
 }
 
@@ -1021,17 +1120,19 @@ export async function evaluarRespuestaConTutorIA(
       ? `¡Vas excelente! Subimos suavemente a ${etiquetaNivel}.`
       : `Seguimos en ${etiquetaNivel} para afianzar a tu ritmo.`;
 
+  const evitar = Array.isArray(entrada.evitarTextos) ? entrada.evitarTextos : [];
+
   const nuevoRetoBossNumerix =
     planeta === 'Numérix' ? generarRetoBossNumerixAdaptativo(nuevoNivel) : undefined;
 
   const nuevoRetoLetralia =
-    planeta === 'Letralia' ? generarRetoLetraliaAdaptativo(nuevoNivel) : undefined;
+    planeta === 'Letralia' ? generarRetoLetraliaAdaptativo(nuevoNivel, evitar) : undefined;
   const nuevoRetoPuenteLetralia =
-    planeta === 'Letralia' ? generarRetoPuenteLetraliaAdaptativo(nuevoNivel) : undefined;
+    planeta === 'Letralia' ? generarRetoPuenteLetraliaAdaptativo(nuevoNivel, evitar) : undefined;
   const nuevoRetoTormentaLetralia =
-    planeta === 'Letralia' ? generarRetoTormentaLetraliaAdaptativo(nuevoNivel) : undefined;
+    planeta === 'Letralia' ? generarRetoTormentaLetraliaAdaptativo(nuevoNivel, evitar) : undefined;
   const nuevoRetoBossLetralia =
-    planeta === 'Letralia' ? generarRetoBossLetraliaAdaptativo(nuevoNivel) : undefined;
+    planeta === 'Letralia' ? generarRetoBossLetraliaAdaptativo(nuevoNivel, evitar) : undefined;
 
   const mensajeTutorPorDefecto = entrada.consultaLibre
     ? `¡Hola, ${estudianteNombre}! En ${planeta} (${materia}), recuerda leer cada pista con calma y descomponer el reto en pasos pequeños. ${mensajeCambio}`
@@ -1246,6 +1347,7 @@ export function generarRetoBossNumerixAdaptativo(
  */
 export function generarRetoPuenteLetraliaAdaptativo(
   nivel: NivelDificultadIA,
+  evitarTextos: string[] = [],
 ): RetoPuenteSintactico {
   const bancos: Record<NivelDificultadIA, Array<Omit<RetoPuenteSintactico, 'id'>>> = {
     1: [
@@ -1267,6 +1369,18 @@ export function generarRetoPuenteLetraliaAdaptativo(
         pista: 'Piensa en orden: ¿quiénes?, ¿qué hacen?, ¿qué descubren?, ¿dónde?',
         explicacion: 'La oración completa mantiene sujeto, verbo, complemento y lugar en orden claro.',
       },
+      {
+        enfoque: 'sujeto-predicado',
+        ordenCorrecto: ['El telescopio', 'de cristal', 'muestra', 'planetas', 'lejanos'],
+        pista: 'Busca primero el objeto con mayúscula y después la acción que realiza.',
+        explicacion: 'Sujeto: «El telescopio de cristal». Predicado: «muestra planetas lejanos».',
+      },
+      {
+        enfoque: 'coherencia',
+        ordenCorrecto: ['Mi hermana', 'escribe', 'cuentos divertidos', 'en su cuaderno'],
+        pista: 'Empieza por quién escribe y termina diciendo dónde lo hace.',
+        explicacion: 'El orden sujeto + verbo + objeto + lugar hace la frase completamente clara.',
+      },
     ],
     2: [
       {
@@ -1286,6 +1400,18 @@ export function generarRetoPuenteLetraliaAdaptativo(
         ordenCorrecto: ['La bibliotecaria', 'ordenó', 'los códices', 'antes del', 'amanecer'],
         pista: 'Coloca primero quién actuó, luego el verbo y al final cuándo ocurrió.',
         explicacion: 'Sujeto (La bibliotecaria) + acción (ordenó los códices) + tiempo (antes del amanecer).',
+      },
+      {
+        enfoque: 'conectores',
+        ordenCorrecto: ['Practicamos', 'las tildes;', 'por eso,', 'mejoramos', 'nuestra escritura'],
+        pista: '«Por eso» anuncia el resultado positivo de practicar.',
+        explicacion: 'Practicar las tildes es la causa y mejorar la escritura es su consecuencia.',
+      },
+      {
+        enfoque: 'sujeto-predicado',
+        ordenCorrecto: ['Las naves', 'de papel', 'volaron', 'muy alto', 'sobre el patio'],
+        pista: 'Primero coloca de qué hablamos y después qué hicieron.',
+        explicacion: 'Sujeto: «Las naves de papel». Predicado: «volaron muy alto sobre el patio».',
       },
     ],
     3: [
@@ -1307,11 +1433,27 @@ export function generarRetoPuenteLetraliaAdaptativo(
         pista: 'Ubica quién escribe, qué escribe y al final con qué propósito.',
         explicacion: 'La estructura sujeto + verbo + objeto + finalidad da claridad total a la idea.',
       },
+      {
+        enfoque: 'conectores',
+        ordenCorrecto: ['El mapa', 'estaba roto;', 'no obstante,', 'logramos', 'hallar la ruta'],
+        pista: '«No obstante» funciona igual que «sin embargo» para unir ideas opuestas.',
+        explicacion: 'A pesar de que el mapa estaba roto, lograron hallar la ruta.',
+      },
+      {
+        enfoque: 'coherencia',
+        ordenCorrecto: ['Antes de', 'despegar,', 'la capitana', 'revisó', 'todos los motores'],
+        pista: 'Empieza por la frase de tiempo con mayúscula y luego quién actuó.',
+        explicacion: 'El complemento temporal «Antes de despegar» ordena cuándo ocurrió la acción.',
+      },
     ],
   };
 
-  const lista = bancos[nivel];
-  const elegido = lista[Math.floor(Math.random() * lista.length)];
+  const elegido = elegirSinDuplicar(
+    nivel,
+    bancos,
+    (r) => r.ordenCorrecto.join(' '),
+    evitarTextos,
+  );
   return {
     id: `ia-pue-${Date.now()}-${Math.floor(Math.random() * 90 + 10)}`,
     ...elegido,
@@ -1319,10 +1461,11 @@ export function generarRetoPuenteLetraliaAdaptativo(
 }
 
 /**
- * Genera un reto nuevo de Tormenta Acústica para Letralia calibrado por nivel (1..3)
+ * Genera un reto nuevo de Tormenta Acústica para Letralia calibrado por nivel (1..3) sin repetir
  */
 export function generarRetoTormentaLetraliaAdaptativo(
   nivel: NivelDificultadIA,
+  evitarTextos: string[] = [],
 ): RetoTormenta {
   const bancos: Record<NivelDificultadIA, Array<Omit<RetoTormenta, 'id'>>> = {
     1: [
@@ -1344,6 +1487,24 @@ export function generarRetoTormentaLetraliaAdaptativo(
         pista: 'Busca palabras que signifiquen casi lo mismo que grande.',
         explicacion: 'Enorme, gigante e inmenso son sinónimos de grande.',
       },
+      {
+        tipo: 'antonimos',
+        consigna: '¡Atrapa 3 ANTÓNIMOS de «frío» antes de que pase la tormenta!',
+        palabras: ['caliente', 'helado', 'cálido', 'gélido', 'tibio', 'congelado'],
+        correctas: ['caliente', 'cálido', 'tibio'],
+        segundos: 18,
+        pista: 'Busca palabras que expresen calor, lo contrario de frío.',
+        explicacion: 'Caliente, cálido y tibio se oponen a frío.',
+      },
+      {
+        tipo: 'agudas',
+        consigna: '¡Activa las 3 palabras AGUDAS en el escudo!',
+        palabras: ['mamá', 'casa', 'papel', 'nube', 'ratón', 'libro'],
+        correctas: ['mamá', 'papel', 'ratón'],
+        segundos: 18,
+        pista: 'En las agudas la sílaba más fuerte es la última.',
+        explicacion: 'Ma-MÁ, pa-PEL y ra-TÓN llevan la fuerza al final.',
+      },
     ],
     2: [
       {
@@ -1363,6 +1524,24 @@ export function generarRetoTormentaLetraliaAdaptativo(
         segundos: 18,
         pista: 'Un antónimo expresa la idea contraria.',
         explicacion: 'Moderno, actual y nuevo significan lo opuesto de antiguo.',
+      },
+      {
+        tipo: 'sinonimos',
+        consigna: '¡Encuentra 3 SINÓNIMOS de «inteligente» antes de que pase la tormenta!',
+        palabras: ['listo', 'lento', 'astuto', 'sabio', 'torpe', 'distraído'],
+        correctas: ['listo', 'astuto', 'sabio'],
+        segundos: 18,
+        pista: 'Son palabras parecidas en significado a inteligente.',
+        explicacion: 'Listo, astuto y sabio son sinónimos de inteligente.',
+      },
+      {
+        tipo: 'esdrujulas',
+        consigna: '¡Rescata 3 palabras ESDRÚJULAS de la lluvia estelar!',
+        palabras: ['teléfono', 'ventana', 'plátano', 'puerta', 'máquina', 'cielo'],
+        correctas: ['teléfono', 'plátano', 'máquina'],
+        segundos: 18,
+        pista: 'Fíjate en las que llevan tilde en la antepenúltima sílaba.',
+        explicacion: 'Te-LÉ-fo-no, PLÁ-ta-no y MÁ-qui-na son esdrújulas.',
       },
     ],
     3: [
@@ -1384,11 +1563,33 @@ export function generarRetoTormentaLetraliaAdaptativo(
         pista: 'Fíjate dónde cae la tilde: antepenúltima sílaba.',
         explicacion: 'O-CÉ-a-no, re-LÁM-pa-go y pi-RÁ-mi-de son esdrújulas.',
       },
+      {
+        tipo: 'sinonimos',
+        consigna: '¡Atrapa 3 SINÓNIMOS de «asombroso» en el Altar!',
+        palabras: ['increíble', 'común', 'admirable', 'fascinante', 'aburrido', 'simple'],
+        correctas: ['increíble', 'admirable', 'fascinante'],
+        segundos: 18,
+        pista: 'Busca adjetivos que expresen admiración o sorpresa.',
+        explicacion: 'Increíble, admirable y fascinante son sinónimos de asombroso.',
+      },
+      {
+        tipo: 'antonimos',
+        consigna: '¡Activa 3 ANTÓNIMOS de «abundante» antes del impacto!',
+        palabras: ['escaso', 'mucho', 'poco', 'insuficiente', 'lleno', 'sobrante'],
+        correctas: ['escaso', 'poco', 'insuficiente'],
+        segundos: 18,
+        pista: 'Piensa en palabras que indiquen falta o poca cantidad.',
+        explicacion: 'Escaso, poco e insuficiente son contrarios a abundante.',
+      },
     ],
   };
 
-  const lista = bancos[nivel];
-  const elegido = lista[Math.floor(Math.random() * lista.length)];
+  const elegido = elegirSinDuplicar(
+    nivel,
+    bancos,
+    (r) => r.consigna,
+    evitarTextos,
+  );
   return {
     id: `ia-tor-${Date.now()}-${Math.floor(Math.random() * 90 + 10)}`,
     ...elegido,
@@ -1396,111 +1597,155 @@ export function generarRetoTormentaLetraliaAdaptativo(
 }
 
 /**
- * Genera un duelo final nuevo para el Guardián de Letralia calibrado por nivel (1..3)
+ * Genera un duelo final nuevo para el Guardián de Letralia calibrado por nivel (1..3) sin repetir
  */
 export function generarRetoBossLetraliaAdaptativo(
   nivel: NivelDificultadIA,
+  evitarTextos: string[] = [],
 ): RetoGuardianBoss {
-  const duelos: Record<NivelDificultadIA, Omit<RetoGuardianBoss, 'id'>> = {
-    1: {
-      titulo: 'La constelación de los cuentos',
-      relato:
-        'El Guardián encendió una linterna azul. «Cada historia que lees vive dentro de {0}, joven explorador», susurró. «Muchos pasaron con prisa sin leer los mapas; {1}, no encontraron la puerta secreta. Quien lee con atención abre puertas invisibles». Enseñanza: {2}.',
-      fases: [
-        {
-          titulo: 'Sello 1 · Tilde diacrítica',
-          enunciado: 'Elige la palabra correcta para completar el primer espacio.',
-          opciones: ['ti', 'tí'],
-          correcta: 'ti',
-          explicacion: 'El pronombre «ti» nunca lleva tilde porque no existe otra palabra igual con distinto significado.',
-        },
-        {
-          titulo: 'Sello 2 · Conector lógico',
-          enunciado: 'Pasar con prisa causó que no encontraran la puerta. ¿Qué conector une esa causa con su consecuencia?',
-          opciones: ['por eso', 'aunque', 'además'],
-          correcta: 'por eso',
-          explicacion: '«Por eso» presenta la consecuencia directa de pasar sin leer los mapas.',
-        },
-        {
-          titulo: 'Sello 3 · Comprensión lectora',
-          enunciado: '¿Qué significa que «quien lee con atención abre puertas invisibles»?',
-          opciones: [
-            'leer con cuidado nos permite descubrir ideas y oportunidades nuevas',
-            'los libros tienen llaves escondidas dentro del papel',
-            'las puertas del santuario no se pueden ver nunca',
-          ],
-          correcta: 'leer con cuidado nos permite descubrir ideas y oportunidades nuevas',
-          explicacion: 'Es una metáfora: leer atentamente nos abre caminos de aprendizaje.',
-        },
-      ],
-    },
-    2: {
-      titulo: 'El puente de las voces',
-      relato:
-        'Al abrir el pergamino, el Guardián preguntó: «¿Sabes por qué brilla este códice? Porque {0} nunca dejaste de intentar. La tormenta borró varias páginas; {1}, lograste reconstruir el mensaje completo. Hoy tus palabras son un puente hacia nuevos mundos». Idea principal: {2}.',
-      fases: [
-        {
-          titulo: 'Sello 1 · Tilde diacrítica',
-          enunciado: 'Completa el primer espacio con el pronombre personal correcto.',
-          opciones: ['tú', 'tu'],
-          correcta: 'tú',
-          explicacion: '«Tú» con tilde señala a la persona (tú nunca dejaste de intentar).',
-        },
-        {
-          titulo: 'Sello 2 · Conector lógico',
-          enunciado: 'Hubo una tormenta difícil, pero igual reconstruiste el mensaje. ¿Qué conector marca ese contraste?',
-          opciones: ['sin embargo', 'por lo tanto', 'porque'],
-          correcta: 'sin embargo',
-          explicacion: '«Sin embargo» expresa oposición entre la tormenta y el logro del viajero.',
-        },
-        {
-          titulo: 'Sello 3 · Comprensión lectora',
-          enunciado: '¿Qué quiere decir que «tus palabras son un puente hacia nuevos mundos»?',
-          opciones: [
-            'expresarnos y leer bien nos conecta con nuevos conocimientos y personas',
-            'se pueden construir puentes reales hechos de hojas de cuaderno',
-            'solo se puede viajar si se cruza un río de papel',
-          ],
-          correcta: 'expresarnos y leer bien nos conecta con nuevos conocimientos y personas',
-          explicacion: 'Un puente une lugares; las palabras nos conectan con ideas y aprendizajes.',
-        },
-      ],
-    },
-    3: {
-      titulo: 'La brújula del archivo eterno',
-      relato:
-        'El Guardián elevó la llave de cristal. «Yo {0} que el camino de Letralia exige paciencia y curiosidad. Algunos creyeron que aprender ortografía era aburrido; {1}, descubriste que cada tilde cambia el sentido de una historia. Quien domina su idioma lleva una brújula para toda la vida». Conclusión: {2}.',
-      fases: [
-        {
-          titulo: 'Sello 1 · Tilde diacrítica',
-          enunciado: 'Elige la forma correcta del verbo saber para el primer espacio.',
-          opciones: ['sé', 'se'],
-          correcta: 'sé',
-          explicacion: '«Sé» con tilde corresponde al verbo saber (yo sé).',
-        },
-        {
-          titulo: 'Sello 2 · Conector lógico',
-          enunciado: 'Algunos pensaban que era aburrido, pero tú descubriste su valor. ¿Qué conector une esas ideas opuestas?',
-          opciones: ['no obstante', 'por consiguiente', 'además'],
-          correcta: 'no obstante',
-          explicacion: '«No obstante» funciona como «sin embargo» para contrastar dos ideas.',
-        },
-        {
-          titulo: 'Sello 3 · Comprensión e inferencia',
-          enunciado: '¿Qué representa «llevar una brújula para toda la vida»?',
-          opciones: [
-            'comprender y usar bien el lenguaje te orienta para aprender siempre',
-            'el viajero debe cargar una brújula metálica en su mochila escolar',
-            'el Archivo Astral solo abre cuando apunta hacia el norte',
-          ],
-          correcta: 'comprender y usar bien el lenguaje te orienta para aprender siempre',
-          explicacion: 'La brújula simboliza la capacidad de orientarse y comprender cualquier texto.',
-        },
-      ],
-    },
+  const duelos: Record<NivelDificultadIA, Array<Omit<RetoGuardianBoss, 'id'>>> = {
+    1: [
+      {
+        titulo: 'La constelación de los cuentos',
+        relato:
+          'El Guardián encendió una linterna azul. «Cada historia que lees vive dentro de {0}, joven explorador», susurró. «Muchos pasaron con prisa sin leer los mapas; {1}, no encontraron la puerta secreta. Quien lee con atención abre puertas invisibles». Enseñanza: {2}.',
+        fases: [
+          {
+            titulo: 'Sello 1 · Tilde diacrítica',
+            enunciado: 'Elige la palabra correcta para completar el primer espacio.',
+            opciones: ['ti', 'tí'],
+            correcta: 'ti',
+            explicacion: 'El pronombre «ti» nunca lleva tilde porque no existe otra palabra igual con distinto significado.',
+          },
+          {
+            titulo: 'Sello 2 · Conector lógico',
+            enunciado: 'Pasar con prisa causó que no encontraran la puerta. ¿Qué conector une esa causa con su consecuencia?',
+            opciones: ['por eso', 'aunque', 'además'],
+            correcta: 'por eso',
+            explicacion: '«Por eso» presenta la consecuencia directa de pasar sin leer los mapas.',
+          },
+          {
+            titulo: 'Sello 3 · Comprensión lectora',
+            enunciado: '¿Qué significa que «quien lee con atención abre puertas invisibles»?',
+            opciones: [
+              'leer con cuidado nos permite descubrir ideas y oportunidades nuevas',
+              'los libros tienen llaves escondidas dentro del papel',
+              'las puertas del santuario no se pueden ver nunca',
+            ],
+            correcta: 'leer con cuidado nos permite descubrir ideas y oportunidades nuevas',
+            explicacion: 'Es una metáfora: leer atentamente nos abre caminos de aprendizaje.',
+          },
+        ],
+      },
+      {
+        titulo: 'El jardín de las letras',
+        relato:
+          'Una brisa dorada abrió las páginas del libro. «Este mensaje fue escrito para {0}», dijo el Guardián. «Sembraste curiosidad en cada casilla; {1}, hoy florece el jardín de Letralia. Cada libro leído es una semilla que da luz». Idea clave: {2}.',
+        fases: [
+          {
+            titulo: 'Sello 1 · Tilde diacrítica',
+            enunciado: 'Elige la palabra correcta para el primer espacio.',
+            opciones: ['mí', 'mi'],
+            correcta: 'mí',
+            explicacion: '«Mí» con tilde es pronombre personal (para mí). «Mi» sin tilde indica pertenencia (mi libro).',
+          },
+          {
+            titulo: 'Sello 2 · Conector lógico',
+            enunciado: 'Sembrar curiosidad produjo que el jardín floreciera. ¿Qué conector indica ese resultado?',
+            opciones: ['por lo tanto', 'sin embargo', 'aunque'],
+            correcta: 'por lo tanto',
+            explicacion: '«Por lo tanto» une la causa (sembrar curiosidad) con su resultado (florece el jardín).',
+          },
+          {
+            titulo: 'Sello 3 · Comprensión lectora',
+            enunciado: '¿Qué quiere decir que «cada libro leído es una semilla que da luz»?',
+            opciones: [
+              'cada lectura hace crecer nuestro conocimiento y claridad mental',
+              'los libros deben plantarse en macetas con agua',
+              'las semillas brillan por la noche en la biblioteca',
+            ],
+            correcta: 'cada lectura hace crecer nuestro conocimiento y claridad mental',
+            explicacion: 'Es lenguaje figurado para expresar cómo la lectura nos hace crecer y aprender.',
+          },
+        ],
+      },
+    ],
+    2: [
+      {
+        titulo: 'El puente de las voces',
+        relato:
+          'Al abrir el pergamino, el Guardián preguntó: «¿Sabes por qué brilla este códice? Porque {0} nunca dejaste de intentar. La tormenta borró varias páginas; {1}, lograste reconstruir el mensaje completo. Hoy tus palabras son un puente hacia nuevos mundos». Idea principal: {2}.',
+        fases: [
+          {
+            titulo: 'Sello 1 · Tilde diacrítica',
+            enunciado: 'Completa el primer espacio con el pronombre personal correcto.',
+            opciones: ['tú', 'tu'],
+            correcta: 'tú',
+            explicacion: '«Tú» con tilde señala a la persona (tú nunca dejaste de intentar).',
+          },
+          {
+            titulo: 'Sello 2 · Conector lógico',
+            enunciado: 'Hubo una tormenta difícil, pero igual reconstruiste el mensaje. ¿Qué conector marca ese contraste?',
+            opciones: ['sin embargo', 'por lo tanto', 'porque'],
+            correcta: 'sin embargo',
+            explicacion: '«Sin embargo» expresa oposición entre la tormenta y el logro del viajero.',
+          },
+          {
+            titulo: 'Sello 3 · Comprensión lectora',
+            enunciado: '¿Qué quiere decir que «tus palabras son un puente hacia nuevos mundos»?',
+            opciones: [
+              'expresarnos y leer bien nos conecta con nuevos conocimientos y personas',
+              'se pueden construir puentes reales hechos de hojas de cuaderno',
+              'solo se puede viajar si se cruza un río de papel',
+            ],
+            correcta: 'expresarnos y leer bien nos conecta con nuevos conocimientos y personas',
+            explicacion: 'Un puente une lugares; las palabras nos conectan con ideas y aprendizajes.',
+          },
+        ],
+      },
+    ],
+    3: [
+      {
+        titulo: 'La brújula del archivo eterno',
+        relato:
+          'El Guardián elevó la llave de cristal. «Yo {0} que el camino de Letralia exige paciencia y curiosidad. Algunos creyeron que aprender ortografía era aburrido; {1}, descubriste que cada tilde cambia el sentido de una historia. Quien domina su idioma lleva una brújula para toda la vida». Conclusión: {2}.',
+        fases: [
+          {
+            titulo: 'Sello 1 · Tilde diacrítica',
+            enunciado: 'Elige la forma correcta del verbo saber para el primer espacio.',
+            opciones: ['sé', 'se'],
+            correcta: 'sé',
+            explicacion: '«Sé» con tilde corresponde al verbo saber (yo sé).',
+          },
+          {
+            titulo: 'Sello 2 · Conector lógico',
+            enunciado: 'Algunos pensaban que era aburrido, pero tú descubriste su valor. ¿Qué conector une esas ideas opuestas?',
+            opciones: ['no obstante', 'por consiguiente', 'además'],
+            correcta: 'no obstante',
+            explicacion: '«No obstante» funciona como «sin embargo» para contrastar dos ideas.',
+          },
+          {
+            titulo: 'Sello 3 · Comprensión e inferencia',
+            enunciado: '¿Qué representa «llevar una brújula para toda la vida»?',
+            opciones: [
+              'comprender y usar bien el lenguaje te orienta para aprender siempre',
+              'el viajero debe cargar una brújula metálica en su mochila escolar',
+              'el Archivo Astral solo abre cuando apunta hacia el norte',
+            ],
+            correcta: 'comprender y usar bien el lenguaje te orienta para aprender siempre',
+            explicacion: 'La brújula simboliza la capacidad de orientarse y comprender cualquier texto.',
+          },
+        ],
+      },
+    ],
   };
 
-  const elegido = duelos[nivel];
+  const elegido = elegirSinDuplicar(
+    nivel,
+    duelos,
+    (r) => r.titulo,
+    evitarTextos,
+  );
   return {
     id: `ia-bos-${Date.now()}-${Math.floor(Math.random() * 90 + 10)}`,
     ...elegido,
@@ -1583,6 +1828,7 @@ export async function generarRetoBossNumerixConIA(
 export async function prepararRetosTableroConIA(
   planeta: PlanetaTutorIA,
   nivel: NivelDificultadIA = 1,
+  evitarTextos: string[] = [],
 ): Promise<{
   preguntasNumerix?: PreguntaGeneradaIA[];
   retosBossNumerix?: RetoArmilarBoss[];
@@ -1594,13 +1840,23 @@ export async function prepararRetosTableroConIA(
   proveedor: ProveedorTutorIA;
 }> {
   if (planeta === 'Letralia') {
-    const intruso1 = generarRetoLetraliaAdaptativo(nivel);
-    const intruso2 = generarRetoLetraliaAdaptativo(nivel);
-    const puente1 = generarRetoPuenteLetraliaAdaptativo(nivel);
-    const puente2 = generarRetoPuenteLetraliaAdaptativo(nivel);
-    const tormenta1 = generarRetoTormentaLetraliaAdaptativo(nivel);
-    const tormenta2 = generarRetoTormentaLetraliaAdaptativo(nivel);
-    const boss1 = generarRetoBossLetraliaAdaptativo(nivel);
+    const vistos = [...evitarTextos];
+    const intruso1 = generarRetoLetraliaAdaptativo(nivel, vistos);
+    vistos.push(intruso1.palabras.join(' '));
+    const intruso2 = generarRetoLetraliaAdaptativo(nivel, vistos);
+    vistos.push(intruso2.palabras.join(' '));
+
+    const puente1 = generarRetoPuenteLetraliaAdaptativo(nivel, vistos);
+    vistos.push(puente1.ordenCorrecto.join(' '));
+    const puente2 = generarRetoPuenteLetraliaAdaptativo(nivel, vistos);
+    vistos.push(puente2.ordenCorrecto.join(' '));
+
+    const tormenta1 = generarRetoTormentaLetraliaAdaptativo(nivel, vistos);
+    vistos.push(tormenta1.consigna);
+    const tormenta2 = generarRetoTormentaLetraliaAdaptativo(nivel, vistos);
+    vistos.push(tormenta2.consigna);
+
+    const boss1 = generarRetoBossLetraliaAdaptativo(nivel, vistos);
 
     return {
       retosIntrusoLetralia: [intruso1, intruso2],

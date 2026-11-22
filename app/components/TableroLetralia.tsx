@@ -179,6 +179,33 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
   const colaPuentesIARef = useRef<RetoPuenteSintactico[]>([]);
   const colaTormentasIARef = useRef<RetoTormenta[]>([]);
   const colaBossLetraliaIARef = useRef<RetoGuardianBoss[]>([]);
+  const firmasUsadasIARef = useRef<Set<string>>(new Set());
+
+  const encolarSinDuplicado = useCallback(
+    <T,>(cola: T[], item: T, getFirma: (x: T) => string) => {
+      const firma = getFirma(item).trim().toLowerCase();
+      if (!firma) return;
+      if (firmasUsadasIARef.current.has(firma)) return;
+      if (cola.some((q) => getFirma(q).trim().toLowerCase() === firma)) return;
+      cola.push(item);
+    },
+    [],
+  );
+
+  const tomarDeColaSinRepetir = useCallback(
+    <T,>(cola: T[], getFirma: (x: T) => string): T | null => {
+      while (cola.length > 0) {
+        const next = cola.shift()!;
+        const firma = getFirma(next).trim().toLowerCase();
+        if (!firmasUsadasIARef.current.has(firma)) {
+          firmasUsadasIARef.current.add(firma);
+          return next;
+        }
+      }
+      return null;
+    },
+    [],
+  );
 
   useEffect(() => {
     void fetch('/api/tutor-ia', {
@@ -188,6 +215,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         action: 'preparar-tablero',
         planeta: 'Letralia',
         nivelActual: 1,
+        evitarTextos: Array.from(firmasUsadasIARef.current),
       }),
     })
       .then((r) => r.json())
@@ -195,27 +223,27 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         if (!data?.ok) return;
         if (Array.isArray(data.retosIntrusoLetralia)) {
           data.retosIntrusoLetralia.forEach((r: RetoIntruso) => {
-            if (r?.palabras?.length) colaRetosIARef.current.push(r);
+            if (r?.palabras?.length) encolarSinDuplicado(colaRetosIARef.current, r, (x) => x.palabras.join(' '));
           });
         }
         if (Array.isArray(data.retosPuenteLetralia)) {
           data.retosPuenteLetralia.forEach((r: RetoPuenteSintactico) => {
-            if (r?.ordenCorrecto?.length) colaPuentesIARef.current.push(r);
+            if (r?.ordenCorrecto?.length) encolarSinDuplicado(colaPuentesIARef.current, r, (x) => x.ordenCorrecto.join(' '));
           });
         }
         if (Array.isArray(data.retosTormentaLetralia)) {
           data.retosTormentaLetralia.forEach((r: RetoTormenta) => {
-            if (r?.palabras?.length) colaTormentasIARef.current.push(r);
+            if (r?.palabras?.length) encolarSinDuplicado(colaTormentasIARef.current, r, (x) => x.consigna);
           });
         }
         if (Array.isArray(data.retosBossLetralia)) {
           data.retosBossLetralia.forEach((r: RetoGuardianBoss) => {
-            if (r?.fases?.length) colaBossLetraliaIARef.current.push(r);
+            if (r?.fases?.length) encolarSinDuplicado(colaBossLetraliaIARef.current, r, (x) => x.titulo);
           });
         }
       })
       .catch(() => {});
-  }, []);
+  }, [encolarSinDuplicado]);
 
   const [avisoFlotante, setAvisoFlotante] = useState<string | null>(
     '¡Lanza el dado astral para comenzar tu viaje por Letralia!',
@@ -369,8 +397,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
       if (casilla.tipo === 'boss') {
         const faltaIdx = estadoSilabasActual.findIndex((s) => !s);
         if (faltaIdx !== -1) {
-          const puenteIA = colaPuentesIARef.current.shift();
+          const puenteIA = tomarDeColaSinRepetir(colaPuentesIARef.current, (x) => x.ordenCorrecto.join(' '));
           const retoPuente = puenteIA ?? elegirSinRepetir(RETOS_PUENTE, usadosPuente.current);
+          firmasUsadasIARef.current.add(retoPuente.ordenCorrecto.join(' ').toLowerCase());
           setAvisoFlotante(`¡Decodifica la sílaba faltante «${palabraActual.silabas[faltaIdx]}» para abrir el Santuario!`);
           setModalActivo({
             tipo: 'puente',
@@ -380,8 +409,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
           });
           return;
         }
-        const bossIA = colaBossLetraliaIARef.current.shift();
+        const bossIA = tomarDeColaSinRepetir(colaBossLetraliaIARef.current, (x) => x.titulo);
         const retoBoss = bossIA ?? elegirSinRepetir(RETOS_GUARDIAN, usadosGuardian.current);
+        firmasUsadasIARef.current.add(retoBoss.titulo.toLowerCase());
         setModalActivo({ tipo: 'boss', reto: retoBoss });
         return;
       }
@@ -394,15 +424,17 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
             : ramaElegida === 'right'
               ? (r: (typeof RETOS_TORMENTA)[number]) => r.tipo === 'sinonimos' || r.tipo === 'antonimos'
               : undefined;
-        const tormentaIA = colaTormentasIARef.current.shift();
+        const tormentaIA = tomarDeColaSinRepetir(colaTormentasIARef.current, (x) => x.consigna);
         const retoTormenta = tormentaIA ?? elegirSinRepetir(RETOS_TORMENTA, usadosTormenta.current, filtro);
+        firmasUsadasIARef.current.add(retoTormenta.consigna.toLowerCase());
         setModalActivo({ tipo: 'tormenta', reto: retoTormenta });
         return;
       }
 
       if (casilla.mecanica === 'puente' || casilla.mecanica === 'portal') {
-        const puenteIA = colaPuentesIARef.current.shift();
+        const puenteIA = tomarDeColaSinRepetir(colaPuentesIARef.current, (x) => x.ordenCorrecto.join(' '));
         const retoPuente = puenteIA ?? elegirSinRepetir(RETOS_PUENTE, usadosPuente.current);
+        firmasUsadasIARef.current.add(retoPuente.ordenCorrecto.join(' ').toLowerCase());
         setModalActivo({
           tipo: 'puente',
           reto: retoPuente,
@@ -412,15 +444,16 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         return;
       }
 
-      const retoIA = colaRetosIARef.current.shift();
+      const retoIA = tomarDeColaSinRepetir(colaRetosIARef.current, (x) => x.palabras.join(' '));
       const retoIntruso = retoIA ?? elegirSinRepetir(RETOS_INTRUSO, usadosIntruso.current);
+      firmasUsadasIARef.current.add(retoIntruso.palabras.join(' ').toLowerCase());
       setModalActivo({
         tipo: 'intruso',
         reto: retoIntruso,
         otorgaSilaba: silabaInfo?.texto ?? null,
       });
     },
-    [determinarSilabaPendiente, palabraActual, ramaElegida],
+    [determinarSilabaPendiente, palabraActual, ramaElegida, tomarDeColaSinRepetir],
   );
 
   /* ── Animación paso a paso de El Viajero sobre una secuencia de casillas ── */
@@ -600,6 +633,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
             aciertos: nuevosAciertos,
             totalPreguntas: nuevoTotal,
             modeloPreferido: 'gemma4:31b',
+            evitarTextos: Array.from(firmasUsadasIARef.current),
           }),
         })
           .then((r) => r.json())
@@ -609,16 +643,16 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               setEtiquetaNivelIA(data.etiquetaNivel);
               setMensajeTutorIA(data.mensajeTutor);
               if (data.nuevoRetoLetralia?.palabras?.length) {
-                colaRetosIARef.current.push(data.nuevoRetoLetralia as RetoIntruso);
+                encolarSinDuplicado(colaRetosIARef.current, data.nuevoRetoLetralia as RetoIntruso, (x) => x.palabras.join(' '));
               }
               if (data.nuevoRetoPuenteLetralia?.ordenCorrecto?.length) {
-                colaPuentesIARef.current.push(data.nuevoRetoPuenteLetralia as RetoPuenteSintactico);
+                encolarSinDuplicado(colaPuentesIARef.current, data.nuevoRetoPuenteLetralia as RetoPuenteSintactico, (x) => x.ordenCorrecto.join(' '));
               }
               if (data.nuevoRetoTormentaLetralia?.palabras?.length) {
-                colaTormentasIARef.current.push(data.nuevoRetoTormentaLetralia as RetoTormenta);
+                encolarSinDuplicado(colaTormentasIARef.current, data.nuevoRetoTormentaLetralia as RetoTormenta, (x) => x.consigna);
               }
               if (data.nuevoRetoBossLetralia?.fases?.length) {
-                colaBossLetraliaIARef.current.push(data.nuevoRetoBossLetralia as RetoGuardianBoss);
+                encolarSinDuplicado(colaBossLetraliaIARef.current, data.nuevoRetoBossLetralia as RetoGuardianBoss, (x) => x.titulo);
               }
               try {
                 const prevRaw = window.localStorage.getItem('universo-reportes-ia');
