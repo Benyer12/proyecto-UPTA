@@ -801,9 +801,33 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
         background:
-          'radial-gradient(ellipse at 25% 20%, #062856 0%, #031530 52%, #010814 100%)',
+          'radial-gradient(circle at 18% 18%, rgba(0, 245, 255, 0.22) 0%, transparent 40%), radial-gradient(circle at 82% 82%, rgba(0, 255, 136, 0.14) 0%, transparent 42%), radial-gradient(ellipse at 45% 40%, #07326B 0%, #031A3D 52%, #010A1C 100%)',
       }}
     >
+      {/* Cuadrícula cibernética holográfica sutil al fondo del escenario */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-25"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, rgba(0, 245, 255, 0.16) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 245, 255, 0.16) 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+          maskImage: 'radial-gradient(ellipse 80% 75% at 42% 50%, black 35%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 80% 75% at 42% 50%, black 35%, transparent 100%)',
+        }}
+      />
+
+      {/* Orbes neón luminosos en las esquinas para darle vibra arcade espacial */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-24 -left-24 w-80 h-80 rounded-full blur-3xl opacity-35"
+        style={{ background: 'radial-gradient(circle, #00F5FF 0%, transparent 70%)' }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-24 left-1/3 w-72 h-72 rounded-full blur-3xl opacity-25"
+        style={{ background: 'radial-gradient(circle, #00FF88 0%, transparent 70%)' }}
+      />
       {/* ════════════════════ ESCENARIO PRINCIPAL: MONTAÑA CUÁNTICA (IZQUIERDA / CENTRO) ════════════════════ */}
       <div className="relative flex-1 h-[62vh] lg:h-full overflow-hidden flex items-center justify-center">
         {/* ── Arriba a la Izquierda: Botón Cápsula Liquid Glass "← Mapa" ── */}
@@ -818,25 +842,28 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
           </button>
         </div>
 
-        {/* ── Arriba al Centro: Píldora Liquid Glass Elegante "✦ SALTO CUÁNTICO ✦" ── */}
+        {/* ── Arriba al Centro: Píldora Neón Eléctrica "⚡ SALTO CUÁNTICO ⚡" ── */}
         <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center pointer-events-none">
           <div
             className="liquid-glass-pill px-6 sm:px-8 py-2 rounded-2xl flex items-center gap-3"
             style={{
               background:
-                'linear-gradient(135deg, rgba(2, 132, 199, 0.28) 0%, rgba(14, 165, 233, 0.24) 50%, rgba(0, 245, 255, 0.18) 100%)',
-              borderColor: 'rgba(125, 211, 252, 0.42)',
-              boxShadow: '0 0 22px rgba(14, 165, 233, 0.24)',
+                'linear-gradient(135deg, rgba(2, 132, 199, 0.44) 0%, rgba(14, 165, 233, 0.36) 50%, rgba(0, 245, 255, 0.28) 100%)',
+              borderColor: 'rgba(0, 245, 255, 0.72)',
+              boxShadow: '0 0 28px rgba(0, 245, 255, 0.42), inset 0 0 12px rgba(0, 245, 255, 0.24)',
             }}
           >
-            <span className="text-xs text-[#00F5FF]">✦</span>
+            <span className="text-xs text-[#FDE047]">⚡</span>
             <span
-              className="text-xs sm:text-sm font-black tracking-[0.22em] text-[#F0F9FF] uppercase"
-              style={{ fontFamily: "'Orbitron', sans-serif" }}
+              className="text-xs sm:text-sm font-black tracking-[0.22em] text-white uppercase"
+              style={{
+                fontFamily: "'Orbitron', sans-serif",
+                textShadow: '0 0 14px rgba(0, 245, 255, 0.9)',
+              }}
             >
               SALTO CUÁNTICO
             </span>
-            <span className="text-xs text-[#38BDF8]">✦</span>
+            <span className="text-xs text-[#00FF88]">✦</span>
           </div>
         </div>
 
@@ -872,9 +899,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
           className="relative w-full h-full max-h-[820px] rounded-3xl liquid-glass liquid-glass-panel p-4 sm:p-5 flex flex-col justify-between overflow-x-hidden overflow-y-auto"
           style={{
             background:
-              'linear-gradient(165deg, rgba(7, 36, 76, 0.76) 0%, rgba(4, 22, 48, 0.86) 55%, rgba(2, 11, 26, 0.94) 100%)',
-            borderColor: 'rgba(56, 189, 248, 0.32)',
-            boxShadow: '0 0 36px rgba(14, 165, 233, 0.16), inset 0 1px 0 rgba(186, 230, 253, 0.25)',
+              'linear-gradient(165deg, rgba(8, 44, 92, 0.82) 0%, rgba(4, 24, 54, 0.9) 55%, rgba(2, 12, 30, 0.95) 100%)',
+            borderColor: 'rgba(0, 245, 255, 0.5)',
+            boxShadow: '0 0 42px rgba(0, 245, 255, 0.24), inset 0 1px 0 rgba(186, 230, 253, 0.4)',
           }}
         >
           {/* ── 1. CABECERA: NUMÉRIX — TABLERO CUÁNTICO ── */}

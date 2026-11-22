@@ -641,37 +641,37 @@ function CuboIsometricoSVG({
   const paleta = {
     normal: {
       top: activo
-        ? 'rgba(191, 219, 254, 0.45)'
+        ? 'rgba(0, 245, 255, 0.62)'
         : visitado
-          ? 'rgba(147, 197, 253, 0.30)'
-          : 'rgba(59, 130, 246, 0.20)',
-      left: visitado ? 'rgba(30, 58, 118, 0.88)' : 'rgba(17, 32, 68, 0.90)',
-      right: visitado ? 'rgba(20, 40, 86, 0.94)' : 'rgba(11, 22, 48, 0.96)',
-      strokeTop: activo ? '#FFFFFF' : '#BFDBFE',
-      strokeSide: activo ? '#93C5FD' : 'rgba(147, 197, 253, 0.45)',
-      textTop: '#F0F6FF',
-      textSide: '#93C5FD',
-      glow: activo ? 'rgba(147, 197, 253, 0.6)' : 'rgba(59, 130, 246, 0.24)',
+          ? 'rgba(56, 189, 248, 0.44)'
+          : 'rgba(14, 165, 233, 0.32)',
+      left: visitado ? 'rgba(7, 89, 133, 0.94)' : 'rgba(8, 47, 73, 0.94)',
+      right: visitado ? 'rgba(3, 60, 102, 0.96)' : 'rgba(4, 28, 56, 0.97)',
+      strokeTop: activo ? '#FFFFFF' : '#00F5FF',
+      strokeSide: activo ? '#67E8F9' : 'rgba(56, 189, 248, 0.72)',
+      textTop: '#FFFFFF',
+      textSide: '#67E8F9',
+      glow: activo ? 'rgba(0, 245, 255, 0.95)' : 'rgba(14, 165, 233, 0.52)',
     },
     especial: {
-      top: activo ? 'rgba(110, 231, 183, 0.50)' : 'rgba(16, 185, 129, 0.32)',
-      left: 'rgba(6, 78, 59, 0.88)',
-      right: 'rgba(4, 52, 40, 0.94)',
-      strokeTop: activo ? '#FFFFFF' : '#6EE7B7',
-      strokeSide: 'rgba(110, 231, 183, 0.55)',
-      textTop: '#ECFDF5',
+      top: activo ? 'rgba(0, 255, 136, 0.68)' : 'rgba(16, 235, 145, 0.45)',
+      left: 'rgba(6, 95, 70, 0.92)',
+      right: 'rgba(4, 62, 48, 0.96)',
+      strokeTop: activo ? '#FFFFFF' : '#00FF88',
+      strokeSide: 'rgba(52, 211, 153, 0.85)',
+      textTop: '#FFFFFF',
       textSide: '#6EE7B7',
-      glow: 'rgba(52, 211, 153, 0.45)',
+      glow: 'rgba(0, 255, 136, 0.78)',
     },
     trampa: {
-      top: activo ? 'rgba(253, 224, 71, 0.54)' : 'rgba(245, 158, 11, 0.36)',
-      left: 'rgba(146, 64, 14, 0.90)',
-      right: 'rgba(120, 53, 15, 0.95)',
+      top: activo ? 'rgba(255, 230, 80, 0.72)' : 'rgba(255, 145, 0, 0.5)',
+      left: 'rgba(180, 72, 10, 0.94)',
+      right: 'rgba(130, 48, 8, 0.97)',
       strokeTop: activo ? '#FFFFFF' : '#FDE047',
-      strokeSide: 'rgba(251, 191, 36, 0.62)',
+      strokeSide: 'rgba(251, 191, 36, 0.88)',
       textTop: '#FFFBEB',
-      textSide: '#FCD34D',
-      glow: 'rgba(245, 158, 11, 0.52)',
+      textSide: '#FDE047',
+      glow: 'rgba(255, 153, 0, 0.8)',
     },
   }[tipo];
 
@@ -922,16 +922,79 @@ const EscenarioMontaña = memo(function EscenarioMontaña() {
         <ChoqueMeteoritos x={0} y={0} />
       </g>
 
-      {/* ── Estación Satelital & Nebulosa Derecha (cierra y equilibra el espacio derecho) ── */}
+      {/* ── Estación Satelital & Mini-Robot Mascota Feliz (Derecha) ── */}
       <g transform="translate(836 530)">
-        <ellipse rx="72" ry="42" fill="url(#purpleNebulaGrad)" />
+        <ellipse rx="78" ry="46" fill="url(#purpleNebulaGrad)" />
         <g transform="rotate(-16)">
-          <ellipse rx="46" ry="13" fill="none" stroke="#93C5FD" strokeOpacity="0.45" strokeWidth="1.2" strokeDasharray="6 4" />
-          <ellipse rx="30" ry="8" fill="none" stroke="#6EE7B7" strokeOpacity="0.5" strokeWidth="1" />
+          <ellipse rx="50" ry="15" fill="none" stroke="#00F5FF" strokeOpacity="0.65" strokeWidth="1.5" strokeDasharray="6 4" />
+          <ellipse rx="34" ry="10" fill="none" stroke="#00FF88" strokeOpacity="0.65" strokeWidth="1.2" />
         </g>
-        <polygon points="0,-18 11,-4 4,15 -9,10 -11,-6" fill="#312E81" stroke="#E2EEFF" strokeWidth="1.1" />
-        <circle cx="-36" cy="8" r="2.2" fill="#6EE7B7" />
-        <circle cx="38" cy="-7" r="2.5" fill="#E879F9" />
+        {/* Mini Robot Mascota flotante con ojos felices */}
+        <g>
+          <animateTransform attributeName="transform" type="translate" values="0 0; 0 -8; 0 0" dur="2.6s" repeatCount="indefinite" />
+          <line x1="0" y1="-22" x2="0" y2="-31" stroke="#00F5FF" strokeWidth="2" />
+          <circle cx="0" cy="-33" r="3.5" fill="#FDE047" style={{ filter: 'drop-shadow(0 0 6px #FDE047)' }} />
+          <rect x="-17" y="-22" width="34" height="26" rx="10" fill="#0EA5E9" stroke="#E0F2FE" strokeWidth="1.8" />
+          <rect x="-12" y="-17" width="24" height="14" rx="5" fill="#031530" stroke="#00F5FF" strokeWidth="1.2" />
+          <circle cx="-5" cy="-10.5" r="2.6" fill="#00FF88" />
+          <circle cx="5" cy="-10.5" r="2.6" fill="#00FF88" />
+          <path d="M -4 -6 Q 0 -3 4 -6" stroke="#00F5FF" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          {/* Propulsor neón */}
+          <ellipse cx="0" cy="8" rx="6" ry="3.5" fill="#00F5FF" opacity="0.8">
+            <animate attributeName="ry" values="2.5;5;2.5" dur="0.5s" repeatCount="indefinite" />
+          </ellipse>
+        </g>
+        <circle cx="-38" cy="10" r="2.8" fill="#00FF88" style={{ filter: 'drop-shadow(0 0 6px #00FF88)' }} />
+        <circle cx="40" cy="-8" r="3" fill="#FDE047" style={{ filter: 'drop-shadow(0 0 6px #FDE047)' }} />
+      </g>
+
+      {/* ── Cohete Espacial Neón Divertido volando arriba derecha ── */}
+      <g transform="translate(865 225) rotate(-32)">
+        <animateTransform attributeName="transform" type="translate" values="865 225; 848 205; 865 225" dur="4.2s" repeatCount="indefinite" />
+        <g transform="rotate(-32)">
+          {/* Llama turbo neón */}
+          <path d="M -6,18 L 0,34 L 6,18 Z" fill="#FDE047" opacity="0.92">
+            <animate attributeName="opacity" values="0.95;0.5;0.95" dur="0.35s" repeatCount="indefinite" />
+          </path>
+          <path d="M -3.5,18 L 0,28 L 3.5,18 Z" fill="#00F5FF" />
+          {/* Aletas */}
+          <polygon points="-10,6 -18,18 -9,16" fill="#FF6B35" stroke="#FDE047" strokeWidth="1" />
+          <polygon points="10,6 18,18 9,16" fill="#FF6B35" stroke="#FDE047" strokeWidth="1" />
+          {/* Cuerpo del cohete */}
+          <path d="M 0,-24 C 9,-14 11,0 10,16 L -10,16 C -11,0 -9,-14 0,-24 Z" fill="#E0F2FE" stroke="#00F5FF" strokeWidth="1.6" />
+          <path d="M 0,-24 C 5,-18 7,-12 8,-8 L -8,-8 C -7,-12 -5,-18 0,-24 Z" fill="#0EA5E9" />
+          {/* Ventanilla */}
+          <circle cx="0" cy="0" r="5" fill="#031530" stroke="#00F5FF" strokeWidth="1.8" />
+          <circle cx="-1.5" cy="-1.5" r="1.5" fill="#FFFFFF" opacity="0.85" />
+        </g>
+      </g>
+
+      {/* ── Símbolos Matemáticos Neón Flotantes alrededor de la isla ── */}
+      <g pointerEvents="none" fontFamily="'Orbitron', sans-serif" fontWeight="900">
+        <text x="16" y="196" fill="#00F5FF" fontSize="22" opacity="0.72" style={{ filter: 'drop-shadow(0 0 10px #00F5FF)' }}>
+          +
+          <animate attributeName="y" values="196;184;196" dur="3.4s" repeatCount="indefinite" />
+        </text>
+        <text x="874" y="425" fill="#00FF88" fontSize="22" opacity="0.75" style={{ filter: 'drop-shadow(0 0 10px #00FF88)' }}>
+          ×
+          <animate attributeName="y" values="425;412;425" dur="3.8s" repeatCount="indefinite" />
+        </text>
+        <text x="28" y="428" fill="#FDE047" fontSize="20" opacity="0.75" style={{ filter: 'drop-shadow(0 0 10px #FDE047)' }}>
+          π
+          <animate attributeName="y" values="428;416;428" dur="4.1s" repeatCount="indefinite" />
+        </text>
+        <text x="772" y="618" fill="#38BDF8" fontSize="22" opacity="0.78" style={{ filter: 'drop-shadow(0 0 10px #38BDF8)' }}>
+          ÷
+          <animate attributeName="y" values="618;606;618" dur="3.2s" repeatCount="indefinite" />
+        </text>
+        <text x="242" y="68" fill="#00FF88" fontSize="18" opacity="0.72" style={{ filter: 'drop-shadow(0 0 8px #00FF88)' }}>
+          100%
+          <animate attributeName="y" values="68;58;68" dur="4.4s" repeatCount="indefinite" />
+        </text>
+        <text x="698" y="48" fill="#FDE047" fontSize="20" opacity="0.78" style={{ filter: 'drop-shadow(0 0 8px #FDE047)' }}>
+          ★
+          <animate attributeName="y" values="48;38;48" dur="2.9s" repeatCount="indefinite" />
+        </text>
       </g>
 
       {/* ══════════════════ 1. BASE ESCULTÓRICA CENTRADA DE LA ISLA FLOTANTE ══════════════════ */}
@@ -1247,32 +1310,44 @@ export default function MapaMontañaCuantica({
       <g transform="translate(8 0)">
         <EscenarioMontaña />
 
-        {/* ── RIEL FLUIDO Y ELEGANTE (Azul Crema -> Morado -> Esmeralda) ── */}
+        {/* ── RIEL FLUIDO NEÓN CON PULSOS DE ENERGÍA ANIMADOS ── */}
         <g pointerEvents="none">
           <path
             d={PATH_RIEL}
             fill="none"
             stroke="url(#railFluidGrad)"
-            strokeWidth="16"
-            strokeOpacity="0.18"
+            strokeWidth="20"
+            strokeOpacity="0.28"
             strokeLinecap="round"
           />
           <path
             d={PATH_RIEL}
             fill="none"
-            stroke="#131C3E"
-            strokeWidth="9"
-            strokeOpacity="0.92"
+            stroke="#062856"
+            strokeWidth="10"
+            strokeOpacity="0.94"
             strokeLinecap="round"
           />
           <path
             d={PATH_RIEL}
             fill="none"
             stroke="url(#railFluidGrad)"
-            strokeWidth="3.5"
-            strokeOpacity="0.9"
+            strokeWidth="4.2"
+            strokeOpacity="0.96"
             strokeLinecap="round"
           />
+          {/* Pulso neón brillante viajando por toda la pista */}
+          <path
+            d={PATH_RIEL}
+            fill="none"
+            stroke="#FFFFFF"
+            strokeWidth="2.8"
+            strokeDasharray="18 54"
+            strokeLinecap="round"
+            opacity="0.9"
+          >
+            <animate attributeName="stroke-dashoffset" from="720" to="0" dur="10s" repeatCount="indefinite" />
+          </path>
         </g>
 
         {/* ── SANTUARIO CASILLA 20 (GUARDIÁN DEL NIVEL) ── */}
