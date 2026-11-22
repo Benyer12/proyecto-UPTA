@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google/genai": "^3.6.1",
     "@powersync/react": "^1.10.0",
     "@powersync/web": "^1.38.6",
     "@supabase/ssr": "^0.12.7",

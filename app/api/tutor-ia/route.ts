@@ -3,8 +3,12 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import {
   consultarOllamaCloud,
+  crearPreguntaNuevaConIA,
   evaluarRespuestaConTutorIA,
+  generarResumenPorCadaEstudiante,
   type EntradaEvaluacionTutorIA,
+  type NivelDificultadIA,
+  type PlanetaTutorIA,
   type PreguntaGeneradaIA,
   type ResumenReporteProfesor,
 } from '../../../lib/ai-tutor';
@@ -60,7 +64,6 @@ async function guardarNuevaPreguntaEnJSON(
     await fs.writeFile(JSON_FILE_PATH, jsonFormatted, 'utf8');
     guardadaEnDisco = true;
   } catch {
-    // En entornos serverless de solo lectura (Vercel), respaldamos en /tmp
     try {
       await fs.writeFile(TMP_JSON_FILE_PATH, jsonFormatted, 'utf8');
       guardadaEnDisco = true;
@@ -84,9 +87,14 @@ export async function GET(request: Request) {
     return coincidePlaneta && coincideNivel;
   });
 
+  const tieneGeminiKey = Boolean(
+    (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '').trim(),
+  );
+
   return NextResponse.json({
     ok: true,
-    modelo: process.env.OLLAMA_MODEL || 'gemma4:31b',
+    modelo: tieneGeminiKey ? 'gemma-4-31b-it' : process.env.OLLAMA_MODEL || 'gemma4:31b',
+    proveedorActivo: tieneGeminiKey ? 'google-ai-studio-cloud' : 'gemma4-adaptive-cloud',
     archivoJson: 'data/preguntas-ia.json',
     totalPreguntas: filtradas.length,
     preguntas: filtradas,
@@ -98,9 +106,38 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Modo especial: Diagnóstico grupal de Gemma 4 para el Reporte PDF del Profesor en /maestro
+    // Acción 1: Crear una pregunta nueva bajo demanda con la IA y guardarla en data/preguntas-ia.json
+    if (body?.action === 'generar-pregunta') {
+      const planeta: PlanetaTutorIA =
+        body.planeta === 'Letralia' || body.planeta === 'Naturae'
+          ? body.planeta
+          : 'Numérix';
+      const nivelNum = Number(body.nivelActual) || 1;
+      const nivel: NivelDificultadIA =
+        nivelNum <= 1 ? 1 : nivelNum >= 3 ? 3 : 2;
+
+      const { pregunta, modelo, proveedor } = await crearPreguntaNuevaConIA(
+        planeta,
+        nivel,
+      );
+      const { totalGuardadas, guardadaEnDisco } =
+        await guardarNuevaPreguntaEnJSON(pregunta);
+
+      return NextResponse.json({
+        ok: true,
+        modelo,
+        proveedor,
+        nuevaPregunta: pregunta,
+        archivoJson: 'data/preguntas-ia.json',
+        totalPreguntasEnJson: totalGuardadas,
+        guardadaEnDisco,
+      });
+    }
+
+    // Acción 2: Diagnóstico grupal + Resumen IA de CADA estudiante + Datos listos para Reporte PDF
     if (body?.action === 'reporte-profesor') {
       const tutorNombre = String(body.tutorNombre || 'Docente');
+      const totalNiveles = Number(body.totalNiveles) || 12;
       const estudiantes: Array<{
         id?: string;
         nombre: string;
@@ -121,10 +158,16 @@ export async function POST(request: Request) {
         0,
       );
       const promedioEstrellas =
-        totalEstudiantes > 0 ? Number((totalEstrellas / totalEstudiantes).toFixed(1)) : 0;
+        totalEstudiantes > 0
+          ? Number((totalEstrellas / totalEstudiantes).toFixed(1))
+          : 0;
+
+      const { resumenes: resumenesPorEstudiante, modelo, proveedor } =
+        await generarResumenPorCadaEstudiante(estudiantes, totalNiveles);
 
       const promptGrupo = JSON.stringify({
-        tarea: 'Generar diagnóstico pedagógico ejecutivo en español para el Reporte PDF del Profesor',
+        tarea:
+          'Generar diagnóstico pedagógico ejecutivo en español para el Reporte PDF del Profesor',
         tutorNombre,
         totalEstudiantes,
         totalEstrellas,
@@ -137,10 +180,9 @@ export async function POST(request: Request) {
         })),
       });
 
-      const { texto, modeloUsado, proveedor } = await consultarOllamaCloud(
+      const { texto } = await consultarOllamaCloud(
         promptGrupo,
-        'Eres Gemma 4, asistente pedagógico para docentes de primaria (10 a 12 años) en Universo del Conocimiento. Redacta un diagnóstico claro, positivo y accionable de máximo 3 párrafos breves sin bloques markdown complejos.',
-        'gemma4:31b',
+        'Eres Gemma 4 en la nube, asistente pedagógico para docentes de primaria (10 a 12 años) en Universo del Conocimiento. Redacta un diagnóstico ejecutivo claro, positivo y accionable de máximo 2 párrafos breves sin bloques markdown.',
       );
 
       const destacado = [...estudiantes].sort(
@@ -169,10 +211,11 @@ export async function POST(request: Request) {
 
       return NextResponse.json({
         ok: true,
-        modelo: modeloUsado,
+        modelo,
         proveedor,
         resumenPDF: {
-          tituloReporte: 'Reporte Pedagógico e Inteligencia Adaptativa · Universo del Conocimiento',
+          tituloReporte:
+            'Reporte Pedagógico e Inteligencia Adaptativa · Universo del Conocimiento',
           tutorNombre,
           fechaEmision: new Date().toISOString(),
           totalEstudiantes,
@@ -180,19 +223,22 @@ export async function POST(request: Request) {
           totalNivelesCompletados,
           promedioEstrellas,
           totalPreguntasGeneradasIA: preguntasGuardadas.length,
-          diagnosticoIA: (texto || diagnosticoPorDefecto).replace(/```[a-z]*|```/gi, '').trim(),
+          diagnosticoIA: (texto || diagnosticoPorDefecto)
+            .replace(/```[a-z]*|```/gi, '')
+            .trim(),
           recomendacionesClave: [
             'Alternar sesiones de Numérix (cálculo mental) con Letralia (comprensión y ortografía) cada 20 minutos.',
-            'Utilizar las nuevas preguntas adaptativas guardadas en data/preguntas-ia.json para reforzar niveles con menor puntaje.',
+            'Utilizar las preguntas adaptativas guardadas en data/preguntas-ia.json para reforzar niveles con menor puntaje.',
             'Premiar la constancia de intentos sin penalizar errores para sostener la motivación del grupo.',
           ],
+          resumenesPorEstudiante,
           ultimasPreguntasIA: preguntasGuardadas.slice(0, 6),
           historialIndividual: memoriaReportesCache.slice(0, 15),
         },
       });
     }
 
-    // Modo principal: Evaluar respuesta del niño, subir/bajar nivel, responder como tutor, guardar en .json y devolver resumen PDF
+    // Acción 3 (por defecto): Evaluar respuesta del niño, subir/bajar nivel, responder como tutor, guardar nueva pregunta en .json y devolver resumen PDF
     const entrada: EntradaEvaluacionTutorIA = {
       estudianteNombre: body?.estudianteNombre,
       planeta: body?.planeta,
@@ -205,7 +251,7 @@ export async function POST(request: Request) {
       respuestaEstudiante: body?.respuestaEstudiante,
       respuestaCorrecta: body?.respuestaCorrecta,
       consultaLibre: body?.consultaLibre,
-      modeloPreferido: body?.modeloPreferido || 'gemma4:31b',
+      modeloPreferido: body?.modeloPreferido,
     };
 
     const resultado = await evaluarRespuestaConTutorIA(entrada);

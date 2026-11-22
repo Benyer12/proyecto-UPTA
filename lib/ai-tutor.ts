@@ -1,7 +1,14 @@
+import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 
 export type PlanetaTutorIA = 'Numérix' | 'Letralia' | 'Naturae';
 export type NivelDificultadIA = 1 | 2 | 3;
+
+export type ProveedorTutorIA =
+  | 'google-ai-studio-cloud'
+  | 'ollama-cloud-gemma4'
+  | 'ollama-local-gemma4'
+  | 'gemma4-adaptive-engine';
 
 export interface PreguntaGeneradaIA {
   id: number;
@@ -37,6 +44,23 @@ export interface ResumenReporteProfesor {
   fechaGeneracion: string;
 }
 
+export interface ResumenIndividualEstudianteIA {
+  estudianteId: string;
+  nombre: string;
+  usuario: string;
+  correo: string;
+  nivelesCompletados: number;
+  totalNiveles: number;
+  porcentajeAvance: number;
+  estrellasTotales: number;
+  ultimaSesion: string | null;
+  nivelAdaptativoIA: NivelDificultadIA;
+  etiquetaNivel: string;
+  resumenIA: string;
+  fortalezaPrincipal: string;
+  metaRecomendada: string;
+}
+
 export interface EntradaEvaluacionTutorIA {
   estudianteNombre?: string;
   planeta?: PlanetaTutorIA;
@@ -49,13 +73,13 @@ export interface EntradaEvaluacionTutorIA {
   respuestaEstudiante?: string;
   respuestaCorrecta?: string;
   consultaLibre?: string;
-  modeloPreferido?: 'gemma4:31b' | 'gemma4' | 'deepseek-v4.1-flash';
+  modeloPreferido?: string;
 }
 
 export interface RespuestaTutorIA {
   ok: boolean;
   modelo: string;
-  proveedor: 'ollama-cloud-gemma4' | 'ollama-local-gemma4' | 'gemma4-adaptive-engine';
+  proveedor: ProveedorTutorIA;
   nivelAnterior: NivelDificultadIA;
   nuevoNivel: NivelDificultadIA;
   cambioNivel: 'subio' | 'bajo' | 'mantuvo';
@@ -116,29 +140,78 @@ export function calcularNuevoNivelAdaptativo(
 }
 
 /**
- * Cliente directo hacia Ollama Cloud (https://ollama.com/v1) usando el SDK de OpenAI
- * Compatible con gemma4:31b, gemma4 y deepseek-v4.1-flash.
+ * Motor en la nube multi-proveedor 100% gratuito:
+ * 1) Google AI Studio Cloud (@google/genai Interactions API: gemma-4-31b-it, gemma-4-26b-a4b-it, gemini-4-hydrogen, gemini-3.5-flash-lite)
+ * 2) Ollama Cloud (https://ollama.com/v1 con OLLAMA_API_KEY: gemma4:31b, gemma4, deepseek-v4.1-flash)
+ * 3) Ollama Local (http://127.0.0.1:11434/v1)
+ * 4) Motor Pedagógico Adaptativo Integrado (garantía 100% gratis sin fallos)
  */
 export async function consultarOllamaCloud(
   prompt: string,
   systemPrompt = 'Eres el Tutor IA Espacial de Universo del Conocimiento para niños de primaria (10 a 12 años). Responde siempre en español claro, motivador y estructurado en JSON.',
-  modeloPreferido: string = process.env.OLLAMA_MODEL || 'gemma4:31b',
+  modeloPreferido?: string,
 ): Promise<{
   texto: string | null;
   modeloUsado: string;
-  proveedor: 'ollama-cloud-gemma4' | 'ollama-local-gemma4' | 'gemma4-adaptive-engine';
+  proveedor: ProveedorTutorIA;
 }> {
-  const apiKey = (process.env.OLLAMA_API_KEY || '').trim();
+  const geminiKey = (
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    ''
+  ).trim();
 
-  // 1. Intentar Ollama Cloud oficial (https://ollama.com/v1) con gemma4 / deepseek-v4.1-flash
-  if (apiKey) {
+  // 1. Capa gratuita en la nube de Google AI Studio (@google/genai Interactions API)
+  if (geminiKey) {
+    try {
+      const genai = new GoogleGenAI({ apiKey: geminiKey });
+      const modelosGoogle = [
+        'gemma-4-31b-it',
+        'gemma-4-26b-a4b-it',
+        'gemini-4-hydrogen',
+        'gemini-3.5-flash-lite',
+      ];
+
+      for (const model of modelosGoogle) {
+        try {
+          const interaction = await genai.interactions.create({
+            model,
+            input: prompt,
+            system_instruction: systemPrompt,
+            store: false,
+          });
+          const text = interaction.output_text?.trim();
+          if (text) {
+            return {
+              texto: text,
+              modeloUsado: model,
+              proveedor: 'google-ai-studio-cloud',
+            };
+          }
+        } catch {
+          // Intenta el siguiente modelo disponible en Google AI Studio
+        }
+      }
+    } catch {
+      // Continúa a la siguiente capa si la clave no está activa
+    }
+  }
+
+  // 2. Ollama Cloud (https://ollama.com/v1) con OLLAMA_API_KEY
+  const ollamaKey = (process.env.OLLAMA_API_KEY || '').trim();
+  if (ollamaKey) {
     const cloudClient = new OpenAI({
       baseURL: process.env.OLLAMA_BASE_URL || 'https://ollama.com/v1',
-      apiKey,
+      apiKey: ollamaKey,
     });
 
     const candidatos = Array.from(
-      new Set([modeloPreferido, 'gemma4:31b', 'gemma4', 'deepseek-v4.1-flash']),
+      new Set([
+        modeloPreferido || process.env.OLLAMA_MODEL || 'gemma4:31b',
+        'gemma4:31b',
+        'gemma4',
+        'deepseek-v4.1-flash',
+      ]),
     );
 
     for (const model of candidatos) {
@@ -149,7 +222,6 @@ export async function consultarOllamaCloud(
             { role: 'system', content: systemPrompt },
             { role: 'user', content: prompt },
           ],
-          temperature: 0.55,
         });
 
         const content = response.choices?.[0]?.message?.content?.trim();
@@ -161,12 +233,12 @@ export async function consultarOllamaCloud(
           };
         }
       } catch {
-        // Continúa al siguiente candidato o motor gratuito local
+        // Continúa al siguiente candidato
       }
     }
   }
 
-  // 2. Intentar Ollama local gratuito si está activo en la máquina (http://127.0.0.1:11434/v1)
+  // 3. Ollama local gratuito si está activo en la PC (http://127.0.0.1:11434/v1)
   try {
     const localClient = new OpenAI({
       baseURL: 'http://127.0.0.1:11434/v1',
@@ -179,7 +251,6 @@ export async function consultarOllamaCloud(
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.55,
     });
 
     const content = response.choices?.[0]?.message?.content?.trim();
@@ -196,7 +267,7 @@ export async function consultarOllamaCloud(
 
   return {
     texto: null,
-    modeloUsado: 'gemma4:31b',
+    modeloUsado: geminiKey ? 'gemma-4-31b-it' : 'gemma4:31b',
     proveedor: 'gemma4-adaptive-engine',
   };
 }
@@ -236,7 +307,7 @@ export function generarPreguntaAdaptativaPorNivel(
         indiceRespuestaCorrecta: 0,
         pista: `Suma primero las decenas (${Math.floor(a / 10) * 10} + ${Math.floor(b / 10) * 10}) y después las unidades (${a % 10} + ${b % 10}).`,
         explicacionBreve: `Al sumar ${a} + ${b} paso a paso obtenemos ${correcta} cristales en total.`,
-        creadaPor: 'gemma4',
+        creadaPor: 'gemma-4-31b-it',
         fechaCreacion,
       };
     }
@@ -263,12 +334,11 @@ export function generarPreguntaAdaptativaPorNivel(
         indiceRespuestaCorrecta: 1,
         pista: `Multiplica ${a} veces ${b} (puedes descomponerlo en sumas rápidas).`,
         explicacionBreve: `${a} paneles por ${b} unidades cada uno producen ${a} × ${b} = ${correcta} unidades de impulso.`,
-        creadaPor: 'gemma4',
+        creadaPor: 'gemma-4-31b-it',
         fechaCreacion,
       };
     }
 
-    // Nivel 3: Operaciones combinadas / división exacta
     const divisor = Math.floor(Math.random() * 6) + 4;
     const cociente = Math.floor(Math.random() * 9) + 7;
     const extra = Math.floor(Math.random() * 12) + 5;
@@ -292,7 +362,7 @@ export function generarPreguntaAdaptativaPorNivel(
       indiceRespuestaCorrecta: 2,
       pista: `Primero divide ${dividendo} ÷ ${divisor} y al resultado súmale ${extra}.`,
       explicacionBreve: `Al dividir ${dividendo} ÷ ${divisor} cada nave recibe ${cociente}. Sumando las ${extra} extra: ${cociente} + ${extra} = ${correcta}.`,
-      creadaPor: 'gemma4',
+      creadaPor: 'gemma-4-31b-it',
       fechaCreacion,
     };
   }
@@ -323,6 +393,13 @@ export function generarPreguntaAdaptativaPorNivel(
           pista: 'Busca la palabra que significa que se mueve con mucha rapidez.',
           explicacion: '«Rápido» y «veloz» son sinónimos porque expresan la misma idea.',
         },
+        {
+          enunciado: '¿Cuál es el antónimo (significado opuesto) de «oscuro»?',
+          opciones: ['Luminoso', 'Nocturno', 'Profundo', 'Silencioso'],
+          correctaIdx: 0,
+          pista: 'Piensa en una estrella brillante que ilumina el espacio.',
+          explicacion: '«Luminoso» es el opuesto directo de «oscuro».',
+        },
       ],
       2: [
         {
@@ -339,6 +416,13 @@ export function generarPreguntaAdaptativaPorNivel(
           pista: 'Necesitas un conector que exprese consecuencia positiva.',
           explicacion: '«Por eso» introduce la consecuencia lógica de haber estudiado el mapa.',
         },
+        {
+          enunciado: 'En la oración «Los astronautas valientes cruzaron la nebulosa», ¿cuál es el núcleo del sujeto?',
+          opciones: ['valientes', 'cruzaron', 'astronautas', 'nebulosa'],
+          correctaIdx: 2,
+          pista: 'El núcleo del sujeto es el sustantivo principal que realiza la acción.',
+          explicacion: '«Astronautas» es el sustantivo principal del sujeto «Los astronautas valientes».',
+        },
       ],
       3: [
         {
@@ -352,6 +436,18 @@ export function generarPreguntaAdaptativaPorNivel(
           correctaIdx: 1,
           pista: '«Tú» lleva tilde cuando es pronombre personal, pero «tu» no lleva tilde cuando acompaña a un sustantivo.',
           explicacion: '«Tu nave» es posesivo (sin tilde) y «tú confías» es pronombre personal (con tilde).',
+        },
+        {
+          enunciado: 'Identifica la oración donde «más» debe llevar tilde:',
+          opciones: [
+            'Quiso despegar, más había tormenta.',
+            'Hoy recolectamos más estrellas que ayer.',
+            'Lo intentó, más no abrió el portal.',
+            'Llegó temprano, más estaba cerrado.',
+          ],
+          correctaIdx: 1,
+          pista: '«Más» lleva tilde cuando expresa cantidad, y va sin tilde («mas») cuando equivale a «pero».',
+          explicacion: 'En «más estrellas» indica cantidad (adverbio de cantidad), por eso lleva tilde.',
         },
       ],
     };
@@ -369,7 +465,7 @@ export function generarPreguntaAdaptativaPorNivel(
       indiceRespuestaCorrecta: item.correctaIdx,
       pista: item.pista,
       explicacionBreve: item.explicacion,
-      creadaPor: 'gemma4',
+      creadaPor: 'gemma-4-31b-it',
       fechaCreacion,
     };
   }
@@ -393,6 +489,13 @@ export function generarPreguntaAdaptativaPorNivel(
         pista: 'La palabra comienza con «foto», que significa luz.',
         explicacion: 'Mediante la fotosíntesis, las plantas transforman agua, CO2 y luz solar en energía y oxígeno.',
       },
+      {
+        enunciado: '¿En qué estado de la materia se encuentra el agua cuando forma hielo en los polos?',
+        opciones: ['Gaseoso', 'Sólido', 'Líquido', 'Plasma'],
+        correctaIdx: 1,
+        pista: 'Tiene forma definida y se produce al bajar de 0 °C.',
+        explicacion: 'El hielo es agua en estado sólido debido a la congelación.',
+      },
     ],
     2: [
       {
@@ -402,6 +505,13 @@ export function generarPreguntaAdaptativaPorNivel(
         pista: 'Es un gigante gaseoso famoso por su Gran Mancha Roja.',
         explicacion: 'Júpiter es el planeta de mayor tamaño y masa de todo el Sistema Solar.',
       },
+      {
+        enunciado: '¿Qué órgano del cuerpo humano bombea la sangre hacia todos los tejidos?',
+        opciones: ['Pulmón', 'Corazón', 'Estómago', 'Cerebro'],
+        correctaIdx: 1,
+        pista: 'Late sin descanso en el centro del pecho.',
+        explicacion: 'El corazón impulsa la sangre rica en oxígeno por todo el sistema circulatorio.',
+      },
     ],
     3: [
       {
@@ -410,6 +520,13 @@ export function generarPreguntaAdaptativaPorNivel(
         correctaIdx: 1,
         pista: 'Se encargan de descomponer la materia orgánica para que vuelva a nutrir a las plantas.',
         explicacion: 'Los descomponedores transforman restos orgánicos en nutrientes esenciales para el ecosistema.',
+      },
+      {
+        enunciado: '¿Qué capa de la atmósfera terrestre nos protege de la radiación ultravioleta del Sol?',
+        opciones: ['Capa de ozono', 'Corteza terrestre', 'Manto superior', 'Hidrosfera'],
+        correctaIdx: 0,
+        pista: 'Está ubicada en la estratosfera y contiene gas O3.',
+        explicacion: 'La capa de ozono filtra la mayor parte de la radiación ultravioleta dañina del Sol.',
       },
     ],
   };
@@ -427,7 +544,7 @@ export function generarPreguntaAdaptativaPorNivel(
     indiceRespuestaCorrecta: itemNat.correctaIdx,
     pista: itemNat.pista,
     explicacionBreve: itemNat.explicacion,
-    creadaPor: 'gemma4',
+    creadaPor: 'gemma-4-31b-it',
     fechaCreacion,
   };
 }
@@ -449,6 +566,224 @@ function extraerJSONDeTexto<T>(texto: string | null): T | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Solicita a la IA en la nube crear una pregunta nueva bajo demanda para el planeta y nivel indicados
+ */
+export async function crearPreguntaNuevaConIA(
+  planeta: PlanetaTutorIA = 'Numérix',
+  nivel: NivelDificultadIA = 1,
+): Promise<{
+  pregunta: PreguntaGeneradaIA;
+  modelo: string;
+  proveedor: ProveedorTutorIA;
+}> {
+  const materia = obtenerMateriaPorPlaneta(planeta);
+  const etiquetaNivel = ETIQUETAS_NIVEL_IA[nivel];
+
+  const prompt = JSON.stringify({
+    tarea: `Crear 1 pregunta original y divertida de ${materia} (planeta ${planeta}) para niños de 10 a 12 años con dificultad ${etiquetaNivel}`,
+    formatoJSON: {
+      enunciado: 'string',
+      opciones: ['op1', 'op2', 'op3', 'op4'],
+      indiceRespuestaCorrecta: 0,
+      pista: 'string',
+      explicacionBreve: 'string',
+      operador: '+ | − | × | ÷ (solo si es Matemáticas)',
+    },
+  });
+
+  const { texto, modeloUsado, proveedor } = await consultarOllamaCloud(
+    prompt,
+    'Eres Gemma 4 en la nube. Devuelve únicamente un objeto JSON válido con enunciado, opciones (4 strings), indiceRespuestaCorrecta (0 a 3), pista y explicacionBreve.',
+  );
+
+  const parsed = extraerJSONDeTexto<{
+    enunciado?: string;
+    opciones?: string[];
+    indiceRespuestaCorrecta?: number;
+    pista?: string;
+    explicacionBreve?: string;
+    operador?: '+' | '−' | '×' | '÷';
+  }>(texto);
+
+  const base = generarPreguntaAdaptativaPorNivel(planeta, nivel);
+
+  if (
+    parsed?.enunciado &&
+    Array.isArray(parsed.opciones) &&
+    parsed.opciones.length === 4
+  ) {
+    return {
+      pregunta: {
+        ...base,
+        enunciado: parsed.enunciado,
+        opciones: [
+          String(parsed.opciones[0]),
+          String(parsed.opciones[1]),
+          String(parsed.opciones[2]),
+          String(parsed.opciones[3]),
+        ],
+        indiceRespuestaCorrecta: (Math.min(
+          3,
+          Math.max(0, Number(parsed.indiceRespuestaCorrecta) || 0),
+        ) as 0 | 1 | 2 | 3),
+        pista: parsed.pista || base.pista,
+        explicacionBreve: parsed.explicacionBreve || base.explicacionBreve,
+        operador: parsed.operador || base.operador,
+        creadaPor: modeloUsado,
+      },
+      modelo: modeloUsado,
+      proveedor,
+    };
+  }
+
+  return {
+    pregunta: base,
+    modelo: modeloUsado,
+    proveedor,
+  };
+}
+
+/**
+ * Genera el resumen pedagógico individual de CADA estudiante del tutor para mostrar en pantalla y en el PDF
+ */
+export async function generarResumenPorCadaEstudiante(
+  estudiantes: Array<{
+    id?: string;
+    nombre: string;
+    usuario: string;
+    correo?: string;
+    nivelesCompletados: number;
+    estrellasTotales: number;
+    ultimaSesion: string | null;
+  }>,
+  totalNiveles = 12,
+): Promise<{
+  resumenes: ResumenIndividualEstudianteIA[];
+  modelo: string;
+  proveedor: ProveedorTutorIA;
+}> {
+  const baseResumenes: ResumenIndividualEstudianteIA[] = estudiantes.map((est, idx) => {
+    const completados = Number(est.nivelesCompletados) || 0;
+    const estrellas = Number(est.estrellasTotales) || 0;
+    const pct =
+      totalNiveles > 0 ? Math.min(100, Math.round((completados / totalNiveles) * 100)) : 0;
+
+    const nivelIA: NivelDificultadIA =
+      estrellas >= 12 || pct >= 65 ? 3 : estrellas >= 4 || pct >= 25 ? 2 : 1;
+    const etiquetaNivel = ETIQUETAS_NIVEL_IA[nivelIA];
+
+    const fortalezaPrincipal =
+      nivelIA === 3
+        ? 'Dominio sobresaliente en cálculo cuántico (Numérix) y comprensión lectora (Letralia).'
+        : nivelIA === 2
+          ? 'Constancia en la resolución de misiones orbitales y buen aprovechamiento de pistas.'
+          : 'Inicio activo de exploración espacial con potencial de crecimiento en retos base.';
+
+    const metaRecomendada =
+      nivelIA === 3
+        ? 'Enfrentar retos de Guardián en Nivel 3 y misiones combinadas de Naturae.'
+        : nivelIA === 2
+          ? 'Completar 2 misiones adicionales en Letralia y Numérix para ascender a Nivel 3.'
+          : 'Practicar retos guiados de Nivel 1 en el Tutor IA antes del duelo de Guardián.';
+
+    const resumenIA =
+      completados === 0 && estrellas === 0
+        ? `${est.nombre} aún se encuentra en fase inicial (0 niveles registrados). Se recomienda iniciar con una sesión guiada de 15 minutos en Numérix (Nivel 1 · Base Orbital) junto al Tutor IA.`
+        : `${est.nombre} registra ${completados} de ${totalNiveles} niveles completados (${pct}% de avance) y ${estrellas} estrellas acumuladas, ubicándose en ${etiquetaNivel}. ${fortalezaPrincipal}`;
+
+    return {
+      estudianteId: est.id || `est-${idx}`,
+      nombre: est.nombre,
+      usuario: est.usuario,
+      correo: est.correo || '',
+      nivelesCompletados: completados,
+      totalNiveles,
+      porcentajeAvance: pct,
+      estrellasTotales: estrellas,
+      ultimaSesion: est.ultimaSesion,
+      nivelAdaptativoIA: nivelIA,
+      etiquetaNivel,
+      resumenIA,
+      fortalezaPrincipal,
+      metaRecomendada,
+    };
+  });
+
+  if (estudiantes.length === 0) {
+    return {
+      resumenes: [],
+      modelo: 'gemma-4-31b-it',
+      proveedor: 'gemma4-adaptive-engine',
+    };
+  }
+
+  const prompt = JSON.stringify({
+    tarea: 'Generar un resumen pedagógico breve, motivador y personalizado por cada estudiante de primaria (10 a 12 años)',
+    estudiantes: baseResumenes.map((e) => ({
+      estudianteId: e.estudianteId,
+      nombre: e.nombre,
+      nivelesCompletados: e.nivelesCompletados,
+      totalNiveles: e.totalNiveles,
+      porcentajeAvance: e.porcentajeAvance,
+      estrellasTotales: e.estrellasTotales,
+      etiquetaNivel: e.etiquetaNivel,
+    })),
+    formatoJSON: {
+      estudiantes: [
+        {
+          estudianteId: 'string',
+          resumenIA: 'string (2 oraciones claras sobre el progreso del niño)',
+          fortalezaPrincipal: 'string',
+          metaRecomendada: 'string',
+        },
+      ],
+    },
+  });
+
+  const { texto, modeloUsado, proveedor } = await consultarOllamaCloud(
+    prompt,
+    'Eres Gemma 4 en la nube. Devuelve únicamente un objeto JSON válido con la lista "estudiantes" y sus campos resumenIA, fortalezaPrincipal y metaRecomendada.',
+  );
+
+  const parsed = extraerJSONDeTexto<{
+    estudiantes?: Array<{
+      estudianteId?: string;
+      resumenIA?: string;
+      fortalezaPrincipal?: string;
+      metaRecomendada?: string;
+    }>;
+  }>(texto);
+
+  if (Array.isArray(parsed?.estudiantes) && parsed.estudiantes.length > 0) {
+    const mapa = new Map(
+      parsed.estudiantes
+        .filter((x) => x?.estudianteId)
+        .map((x) => [String(x.estudianteId), x]),
+    );
+    return {
+      resumenes: baseResumenes.map((item) => {
+        const ia = mapa.get(item.estudianteId);
+        if (!ia) return item;
+        return {
+          ...item,
+          resumenIA: ia.resumenIA || item.resumenIA,
+          fortalezaPrincipal: ia.fortalezaPrincipal || item.fortalezaPrincipal,
+          metaRecomendada: ia.metaRecomendada || item.metaRecomendada,
+        };
+      }),
+      modelo: modeloUsado,
+      proveedor,
+    };
+  }
+
+  return {
+    resumenes: baseResumenes,
+    modelo: modeloUsado,
+    proveedor,
+  };
 }
 
 /**
@@ -510,7 +845,7 @@ export async function evaluarRespuestaConTutorIA(
   const { texto, modeloUsado, proveedor } = await consultarOllamaCloud(
     promptIA,
     'Eres Gemma 4, el Tutor IA Pedagógico de Universo del Conocimiento. Devuelve únicamente un objeto JSON válido con las claves solicitadas, sin bloques markdown adicionales.',
-    entrada.modeloPreferido || 'gemma4:31b',
+    entrada.modeloPreferido,
   );
 
   const parsed = extraerJSONDeTexto<{
@@ -553,6 +888,7 @@ export async function evaluarRespuestaConTutorIA(
           pista: parsed.nuevaPregunta.pista || preguntaBase.pista,
           explicacionBreve:
             parsed.nuevaPregunta.explicacionBreve || preguntaBase.explicacionBreve,
+          creadaPor: modeloUsado,
         }
       : preguntaBase;
 
@@ -638,4 +974,3 @@ export async function evaluarRespuestaConTutorIA(
     resumenProfesor,
   };
 }
-

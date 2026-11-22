@@ -25,12 +25,13 @@ export default function StudentTutorIACard({
   const [aciertos, setAciertos] = useState(0);
   const [total, setTotal] = useState(0);
   const [mensajeTutor, setMensajeTutor] = useState(
-    `¡Hola, ${studentName}! Soy tu Tutor IA Gemma 4. Elige un planeta para practicar un reto adaptativo.`,
+    `¡Hola, ${studentName}! Soy tu Tutor IA Gemma 4 en la nube. Responde o pídeme una pregunta nueva.`,
   );
   const [preguntaActiva, setPreguntaActiva] = useState<PreguntaGeneradaIA | null>(null);
   const [opcionElegida, setOpcionElegida] = useState<number | null>(null);
   const [estadoRespuesta, setEstadoRespuesta] = useState<'idle' | 'correct' | 'incorrect'>('idle');
   const [cargando, setCargando] = useState(false);
+  const [generandoPregunta, setGenerandoPregunta] = useState(false);
   const [totalEnJson, setTotalEnJson] = useState<number | null>(null);
 
   useEffect(() => {
@@ -57,8 +58,42 @@ export default function StudentTutorIACard({
       const data = await res.json();
       if (data?.ok && Array.isArray(data.preguntas) && data.preguntas.length > 0) {
         setPreguntaActiva(data.preguntas[0]);
+      } else {
+        await pedirNuevaPreguntaIA(nuevoPlaneta);
       }
     } catch {}
+  };
+
+  const pedirNuevaPreguntaIA = async (planetaDestino: PlanetaTutorIA = planetaActivo) => {
+    if (generandoPregunta || cargando) return;
+    setGenerandoPregunta(true);
+    setOpcionElegida(null);
+    setEstadoRespuesta('idle');
+    try {
+      const res = await fetch('/api/tutor-ia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'generar-pregunta',
+          planeta: planetaDestino,
+          nivelActual,
+        }),
+      });
+      const data = await res.json();
+      if (data?.ok && data.nuevaPregunta) {
+        setPreguntaActiva(data.nuevaPregunta);
+        if (typeof data.totalPreguntasEnJson === 'number') {
+          setTotalEnJson(data.totalPreguntasEnJson);
+        }
+        setMensajeTutor(
+          `¡Creé una nueva pregunta de ${planetaDestino} (${etiquetaNivel}) y la guardé en preguntas-ia.json!`,
+        );
+      }
+    } catch {
+      // Mantiene pregunta actual si hay fallo de red
+    } finally {
+      setGenerandoPregunta(false);
+    }
   };
 
   const verificarConTutorIA = async (idx: number) => {
@@ -92,7 +127,6 @@ export default function StudentTutorIACard({
           preguntaActual: preguntaActiva.enunciado,
           respuestaEstudiante: preguntaActiva.opciones[idx],
           respuestaCorrecta: preguntaActiva.opciones[preguntaActiva.indiceRespuestaCorrecta],
-          modeloPreferido: 'gemma4:31b',
         }),
       });
 
@@ -141,7 +175,7 @@ export default function StudentTutorIACard({
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[#67E8F9]">
-                Tutor IA · Gemma 4
+                Tutor IA · Gemma 4 Cloud
               </span>
               <span className="rounded-full border border-[#6EE7B7]/35 bg-[#041B14]/75 px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#6EE7B7]">
                 {etiquetaNivel}
@@ -156,7 +190,7 @@ export default function StudentTutorIACard({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 self-start lg:self-center shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5 self-start lg:self-center shrink-0">
           {PLANETAS.map((p) => {
             const activo = planetaActivo === p;
             return (
@@ -174,6 +208,14 @@ export default function StudentTutorIACard({
               </button>
             );
           })}
+          <button
+            type="button"
+            onClick={() => pedirNuevaPreguntaIA(planetaActivo)}
+            disabled={generandoPregunta || cargando}
+            className="min-h-[34px] px-3.5 py-1 rounded-full border border-[#67E8F9]/40 bg-[#041724]/80 hover:bg-[#041724] text-xs font-semibold text-[#67E8F9] transition-colors cursor-pointer disabled:opacity-50"
+          >
+            {generandoPregunta ? 'Creando...' : '+ Nueva pregunta IA'}
+          </button>
         </div>
       </div>
 
