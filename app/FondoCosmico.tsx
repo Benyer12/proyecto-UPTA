@@ -99,16 +99,16 @@ function drawCosmicBackdrop(
     ctx.fillStyle = baseGrad;
     ctx.fillRect(0, 0, w, h);
 
-    // Render 3D oficial de modo claro: nebulosa suave + curvas de cristal líquido tornasol
+    // Render 3D oficial de modo claro: nebulosa dorado espacial tornasol + curvas de cristal líquido
     if (lightImg) {
-      drawCoverImage(ctx, lightImg, w, h, time, 'source-over', 0.96);
+      drawCoverImage(ctx, lightImg, w, h, time, 'source-over', 0.98);
     }
 
-    // Velos sutiles de nebulosa en movimiento para darle vida orgánica sin saturar la vista
+    // Velos sutiles en dorado espacial y lavanda que acompasan la nebulosa sin saturar
     const lightNebulas: [number, number, number, string, number][] = [
-      [w * 0.18 + shiftX, h * 0.24 + shiftY, Math.max(w, h) * 0.42, '96, 165, 250', 0.1],
-      [w * 0.82 - shiftX, h * 0.2 - shiftY, Math.max(w, h) * 0.4, '167, 139, 250', 0.1],
-      [w * 0.5 + shiftX * 0.5, h * 0.78 - shiftY, Math.max(w, h) * 0.42, '56, 189, 248', 0.08],
+      [w * 0.2 + shiftX, h * 0.24 + shiftY, Math.max(w, h) * 0.38, '148, 163, 224', 0.06],
+      [w * 0.56 + shiftX * 0.5, h * 0.54 - shiftY, Math.max(w, h) * 0.4, '245, 198, 110', 0.07],
+      [w * 0.82 - shiftX, h * 0.26 - shiftY, Math.max(w, h) * 0.36, '167, 139, 250', 0.06],
     ];
 
     for (const [cx, cy, r, rgb, alpha] of lightNebulas) {
