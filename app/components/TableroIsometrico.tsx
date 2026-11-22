@@ -904,9 +904,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
           </div>
         </div>
 
-        {/* ── Lienzo SVG de la Montaña Planetaria y los 20 Cubos Isométricos ── */}
-        <div className="w-full h-full flex items-center justify-center px-4 sm:px-6 pt-12 pb-14">
-          <div className="w-full h-full max-w-[1060px] flex items-center justify-center mx-auto">
+        {/* ── Lienzo SVG de la Montaña 3D y los Cubos Holográficos ── */}
+        <div className="w-full h-full flex items-center justify-center px-3 sm:px-5 pt-11 pb-11">
+          <div className="w-full h-full max-w-[1140px] flex items-center justify-center mx-auto">
             <MapaMontañaCuantica
               pos={pos}
               caminando={caminando}

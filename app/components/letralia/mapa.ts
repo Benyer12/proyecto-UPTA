@@ -35,8 +35,8 @@ export interface Casilla {
   angulo: number;
 }
 
-export const VIEW_W = 1000;
-export const VIEW_H = 640;
+export const VIEW_W = 1200;
+export const VIEW_H = 896;
 
 /* Matriz de proyección suelo → pantalla:  x' = a·gx + c·gy,  y' = b·gx + d·gy */
 const A = 1;
@@ -55,21 +55,21 @@ export function toGround(s: Pt): Pt {
 }
 
 /* Medidas de las piezas (unidades de suelo) */
-export const ANCHO_CAMINO = 46;
-export const LARGO_LOSA = 44;
-export const RADIO_HEX = 29;
+export const ANCHO_CAMINO = 44;
+export const LARGO_LOSA = 42;
+export const RADIO_HEX = 27;
 
-/* ─────────── Puntos de control (pantalla) ─────────── */
+/* ─────────── Puntos de control calibrados sobre las islas 3D (1200×896) ─────────── */
 
-export const ORIGEN_S: Pt = { x: 74, y: 552 };
-export const BOSS_S: Pt = { x: 846, y: 106 };
+export const ORIGEN_S: Pt = { x: 185, y: 650 };
+export const BOSS_S: Pt = { x: 938, y: 222 };
 
 const START_WP: Pt[] = [
-  { x: 132, y: 566 },
-  { x: 196, y: 556 },
-  { x: 258, y: 538 },
-  { x: 312, y: 514 },
-  { x: 362, y: 486 },
+  { x: 228, y: 662 },
+  { x: 304, y: 642 },
+  { x: 378, y: 588 },
+  { x: 454, y: 526 },
+  { x: 528, y: 478 },
 ];
 
 const ENCRUCIJADA_S = START_WP[START_WP.length - 1];
@@ -77,42 +77,31 @@ const ENCRUCIJADA_S = START_WP[START_WP.length - 1];
 const RAMA_WP: Record<Rama, Pt[]> = {
   left: [
     ENCRUCIJADA_S,
-    { x: 322, y: 430 },
-    { x: 268, y: 380 },
-    { x: 232, y: 318 },
-    { x: 246, y: 254 },
-    { x: 304, y: 208 },
-    { x: 388, y: 182 },
-    { x: 476, y: 158 },
-    { x: 566, y: 132 },
-    { x: 656, y: 104 },
-    { x: 748, y: 86 },
+    { x: 478, y: 408 },
+    { x: 416, y: 342 },
+    { x: 452, y: 288 },
+    { x: 540, y: 300 },
+    { x: 640, y: 325 },
+    { x: 740, y: 305 },
+    { x: 825, y: 264 },
     BOSS_S,
   ],
   center: [
     ENCRUCIJADA_S,
-    { x: 432, y: 458 },
-    { x: 498, y: 432 },
-    { x: 552, y: 392 },
-    { x: 590, y: 338 },
-    { x: 640, y: 290 },
-    { x: 700, y: 256 },
-    { x: 752, y: 212 },
-    { x: 790, y: 164 },
+    { x: 586, y: 432 },
+    { x: 658, y: 382 },
+    { x: 736, y: 332 },
+    { x: 816, y: 278 },
+    { x: 882, y: 244 },
     BOSS_S,
   ],
   right: [
     ENCRUCIJADA_S,
-    { x: 438, y: 516 },
-    { x: 526, y: 540 },
-    { x: 616, y: 546 },
-    { x: 700, y: 528 },
-    { x: 764, y: 488 },
-    { x: 812, y: 432 },
-    { x: 846, y: 372 },
-    { x: 872, y: 310 },
-    { x: 884, y: 246 },
-    { x: 876, y: 180 },
+    { x: 615, y: 512 },
+    { x: 708, y: 552 },
+    { x: 804, y: 516 },
+    { x: 874, y: 428 },
+    { x: 912, y: 318 },
     BOSS_S,
   ],
 };

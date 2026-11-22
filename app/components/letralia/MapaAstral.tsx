@@ -1121,8 +1121,12 @@ export default function MapaAstral({
       viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
       preserveAspectRatio="xMidYMid meet"
       className="w-full h-full select-none"
+      style={{
+        maskImage: 'radial-gradient(ellipse 95% 94% at 50% 50%, black 78%, transparent 100%)',
+        WebkitMaskImage: 'radial-gradient(ellipse 95% 94% at 50% 50%, black 78%, transparent 100%)',
+      }}
       role="img"
-      aria-label="Mapa del Archivo Astral de Letralia"
+      aria-label="Mapa 3D del Archivo Astral de Letralia"
     >
       <defs>
         <radialGradient id="lunaAstralGrad" cx="35%" cy="32%" r="70%">
@@ -1193,7 +1197,31 @@ export default function MapaAstral({
         </radialGradient>
       </defs>
 
-      <DecoracionFondo />
+      {/* Escenario 3D Studio Renderizado de Islas Flotantes de Letralia */}
+      <image
+        href="/images/letralia-island-render.jpg"
+        x="0"
+        y="0"
+        width={VIEW_W}
+        height={VIEW_H}
+        preserveAspectRatio="xMidYMid meet"
+      />
+
+      {/* Destellos estelares sutiles sobre las islas flotantes */}
+      {[
+        { x: 256, y: 192 },
+        { x: 525, y: 142 },
+        { x: 785, y: 208 },
+        { x: 340, y: 420 },
+        { x: 642, y: 632 },
+        { x: 1055, y: 315 },
+      ].map((pt, i) => (
+        <g key={i} transform={`translate(${pt.x} ${pt.y})`} opacity={0.9}>
+          <path d="M0 -7 L1.6 -1.6 L7 0 L1.6 1.6 L0 7 L-1.6 1.6 L-7 0 L-1.6 -1.6 Z" fill="#FEF3C7">
+            <animate attributeName="opacity" values="0.35;0.95;0.35" dur={`${2.6 + i * 0.5}s`} repeatCount="indefinite" />
+          </path>
+        </g>
+      ))}
 
       {/* Cintas de pergamino (caminos continuos con bisel dorado-arena pulcro) */}
       {tramos.map((t) => {

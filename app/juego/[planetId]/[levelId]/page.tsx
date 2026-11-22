@@ -11,6 +11,7 @@ import { actualizarProgresoUsuario } from '../../../actions/progress';
 import Dado3D from '../../../components/Dado3D';
 import TableroIsometrico from '../../../components/TableroIsometrico';
 import TableroLetralia from '../../../components/TableroLetralia';
+import TableroNaturae from '../../../components/TableroNaturae';
 import SoundTogglePill from '../../../../components/SoundTogglePill';
 import { playDiceLand, playDiceRoll } from '../../../../lib/sound-engine';
 
@@ -254,6 +255,9 @@ export default function JuegoPage() {
   const isLetralia =
     Number(planetId) === 2 ||
     Boolean(planet && /letralia|verbum/i.test(planet.name));
+  const isNaturae =
+    Number(planetId) === 3 ||
+    Boolean(planet && /naturae/i.test(planet.name));
 
   const [diceRolling, setDiceRolling] = useState(false);
   const [diceResult, setDiceResult] = useState(1);
@@ -432,6 +436,14 @@ export default function JuegoPage() {
           planetGlow={planet.glow}
           onPositionChange={handlePositionChange}
         />
+      </div>
+    );
+  }
+
+  if (isNaturae) {
+    return (
+      <div data-game-board="true" className="fixed inset-0 z-[100] h-screen w-screen overflow-hidden bg-[#010C0A]">
+        <TableroNaturae onPositionChange={handlePositionChange} />
       </div>
     );
   }
