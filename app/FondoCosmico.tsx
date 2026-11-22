@@ -1,234 +1,120 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import type { CSSProperties } from 'react';
 import { usePathname } from 'next/navigation';
 import { useThemeStore } from '../lib/theme-store';
 
-interface Star {
-  x: number;
-  y: number;
-  radius: number;
-  baseAlpha: number;
-  alpha: number;
-  speed: number;
-  phase: number;
+interface TornasolGlint {
+  x: string;
+  y: string;
+  size: number;
+  star?: boolean;
   color: string;
+  core: string;
+  peak: number;
+  dur: string;
+  delay: string;
 }
 
-const STAR_COUNT = 72;
-
-const DARK_STAR_COLORS = [
-  '255,255,255',
-  '180,220,255',
-  '200,180,255',
-  '150,255,220',
-  '255,220,180',
+// Destellos minuciosos y sutiles a lo largo de la curva 3D tornasol en modo oscuro
+const DARK_GLINTS: TornasolGlint[] = [
+  { x: '23%', y: '14%', size: 8, star: true, color: 'rgba(255, 255, 255, 0.92)', core: '#FFFFFF', peak: 0.72, dur: '6.2s', delay: '-0.8s' },
+  { x: '16%', y: '27%', size: 3, color: 'rgba(253, 230, 138, 0.95)', core: '#FDE68A', peak: 0.65, dur: '5.4s', delay: '-2.1s' },
+  { x: '13%', y: '41%', size: 7, star: true, color: 'rgba(251, 191, 36, 0.88)', core: '#FEF3C7', peak: 0.62, dur: '7.4s', delay: '-3.5s' },
+  { x: '21%', y: '56%', size: 3, color: 'rgba(253, 224, 150, 0.9)', core: '#FDE68A', peak: 0.58, dur: '5.8s', delay: '-1.4s' },
+  { x: '34%', y: '62%', size: 8, star: true, color: 'rgba(103, 232, 249, 0.92)', core: '#E0F2FE', peak: 0.68, dur: '6.8s', delay: '-4.2s' },
+  { x: '43%', y: '47%', size: 3, color: 'rgba(255, 255, 255, 0.94)', core: '#FFFFFF', peak: 0.64, dur: '5.1s', delay: '-0.4s' },
+  { x: '52%', y: '34%', size: 7, star: true, color: 'rgba(255, 255, 255, 0.94)', core: '#FFFFFF', peak: 0.7, dur: '7.8s', delay: '-5.1s' },
+  { x: '61%', y: '22%', size: 3, color: 'rgba(253, 230, 138, 0.92)', core: '#FEF3C7', peak: 0.6, dur: '6.0s', delay: '-2.7s' },
+  { x: '71%', y: '26%', size: 3, color: 'rgba(103, 232, 249, 0.94)', core: '#67E8F9', peak: 0.66, dur: '5.5s', delay: '-1.1s' },
+  { x: '67%', y: '41%', size: 9, star: true, color: 'rgba(56, 189, 248, 0.95)', core: '#E0F2FE', peak: 0.74, dur: '6.9s', delay: '-3.0s' },
+  { x: '58%', y: '49%', size: 3, color: 'rgba(103, 232, 249, 0.95)', core: '#A5F3FC', peak: 0.64, dur: '4.9s', delay: '-4.6s' },
+  { x: '77%', y: '46%', size: 3, color: 'rgba(196, 181, 253, 0.9)', core: '#EDE9FE', peak: 0.58, dur: '7.1s', delay: '-0.9s' },
+  { x: '81%', y: '60%', size: 7, star: true, color: 'rgba(110, 231, 183, 0.88)', core: '#D1FAE5', peak: 0.62, dur: '6.5s', delay: '-2.3s' },
+  { x: '72%', y: '74%', size: 3, color: 'rgba(56, 189, 248, 0.95)', core: '#BAE6FD', peak: 0.68, dur: '5.7s', delay: '-3.8s' },
+  { x: '64%', y: '86%', size: 8, star: true, color: 'rgba(103, 232, 249, 0.92)', core: '#FFFFFF', peak: 0.66, dur: '7.5s', delay: '-1.9s' },
+  { x: '8%', y: '18%', size: 2, color: 'rgba(186, 230, 253, 0.75)', core: '#E0F2FE', peak: 0.44, dur: '8.2s', delay: '-5.4s' },
+  { x: '87%', y: '21%', size: 2, color: 'rgba(196, 181, 253, 0.75)', core: '#EDE9FE', peak: 0.42, dur: '7.9s', delay: '-2.8s' },
+  { x: '27%', y: '82%', size: 2, color: 'rgba(253, 230, 138, 0.72)', core: '#FEF3C7', peak: 0.44, dur: '8.4s', delay: '-4.7s' },
+  { x: '88%', y: '81%', size: 2, color: 'rgba(103, 232, 249, 0.78)', core: '#CFFAFE', peak: 0.46, dur: '7.3s', delay: '-1.5s' },
+  { x: '47%', y: '15%', size: 2, color: 'rgba(255, 255, 255, 0.75)', core: '#FFFFFF', peak: 0.4, dur: '8.6s', delay: '-6.0s' },
 ];
 
-const LIGHT_MOTE_COLORS = [
-  '2,132,199',
-  '124,58,237',
-  '5,150,105',
-  '217,119,6',
-  '37,99,235',
+// Destellos minuciosos tornasol para nebulosa y cristal 3D en modo claro
+const LIGHT_GLINTS: TornasolGlint[] = [
+  { x: '16%', y: '72%', size: 8, star: true, color: 'rgba(255, 255, 255, 0.96)', core: '#FFFFFF', peak: 0.66, dur: '6.6s', delay: '-1.2s' },
+  { x: '29%', y: '79%', size: 3, color: 'rgba(245, 180, 65, 0.92)', core: '#FEF3C7', peak: 0.56, dur: '5.6s', delay: '-3.1s' },
+  { x: '39%', y: '67%', size: 7, star: true, color: 'rgba(217, 155, 38, 0.88)', core: '#FFFBEB', peak: 0.6, dur: '7.4s', delay: '-0.6s' },
+  { x: '48%', y: '58%', size: 3, color: 'rgba(255, 255, 255, 0.96)', core: '#FFFFFF', peak: 0.62, dur: '5.2s', delay: '-4.0s' },
+  { x: '57%', y: '47%', size: 9, star: true, color: 'rgba(251, 191, 36, 0.9)', core: '#FFFFFF', peak: 0.68, dur: '6.9s', delay: '-2.4s' },
+  { x: '68%', y: '37%', size: 7, star: true, color: 'rgba(56, 189, 248, 0.86)', core: '#F0F9FF', peak: 0.6, dur: '7.6s', delay: '-5.2s' },
+  { x: '77%', y: '39%', size: 3, color: 'rgba(139, 92, 246, 0.82)', core: '#F5F3FF', peak: 0.54, dur: '6.1s', delay: '-1.8s' },
+  { x: '84%', y: '51%', size: 8, star: true, color: 'rgba(255, 255, 255, 0.96)', core: '#FFFFFF', peak: 0.64, dur: '6.4s', delay: '-3.7s' },
+  { x: '71%', y: '62%', size: 3, color: 'rgba(245, 158, 11, 0.86)', core: '#FEF3C7', peak: 0.54, dur: '5.9s', delay: '-0.9s' },
+  { x: '46%', y: '42%', size: 3, color: 'rgba(167, 139, 250, 0.85)', core: '#F5F3FF', peak: 0.52, dur: '7.2s', delay: '-4.4s' },
+  { x: '62%', y: '27%', size: 3, color: 'rgba(253, 224, 71, 0.9)', core: '#FFFFFF', peak: 0.56, dur: '6.7s', delay: '-2.9s' },
+  { x: '82%', y: '21%', size: 7, star: true, color: 'rgba(192, 132, 252, 0.84)', core: '#FFFFFF', peak: 0.58, dur: '7.9s', delay: '-1.5s' },
+  { x: '23%', y: '58%', size: 3, color: 'rgba(56, 189, 248, 0.82)', core: '#E0F2FE', peak: 0.5, dur: '6.3s', delay: '-5.6s' },
+  { x: '11%', y: '48%', size: 2, color: 'rgba(255, 255, 255, 0.9)', core: '#FFFFFF', peak: 0.48, dur: '8.1s', delay: '-2.0s' },
+  { x: '53%', y: '72%', size: 2, color: 'rgba(245, 180, 65, 0.82)', core: '#FEF3C7', peak: 0.46, dur: '7.8s', delay: '-4.9s' },
+  { x: '90%', y: '14%', size: 2, color: 'rgba(167, 139, 250, 0.8)', core: '#F5F3FF', peak: 0.44, dur: '8.4s', delay: '-3.3s' },
 ];
-
-function createStars(w: number, h: number, isLight: boolean): Star[] {
-  const palette = isLight ? LIGHT_MOTE_COLORS : DARK_STAR_COLORS;
-  const stars: Star[] = [];
-  for (let i = 0; i < STAR_COUNT; i++) {
-    stars.push({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      radius: isLight ? 1 + Math.random() * 1.6 : Math.random() * 1.9,
-      baseAlpha: isLight ? 0.14 + Math.random() * 0.2 : 0.28 + Math.random() * 0.6,
-      alpha: 0,
-      speed: Math.random() * 0.007 + 0.002,
-      phase: Math.random() * Math.PI * 2,
-      color: palette[Math.floor(Math.random() * palette.length)],
-    });
-  }
-  return stars;
-}
-
-/**
- * Pre-escala la imagen 3D de fondo al tamaño exacto de pantalla (+ margen para flotación)
- * evitando re-escalar una textura 2K en cada frame.
- */
-function buildPreScaledLayer(
-  img: HTMLImageElement,
-  w: number,
-  h: number,
-  isLight: boolean,
-): HTMLCanvasElement | null {
-  if (!img.complete || img.naturalWidth === 0 || img.naturalHeight === 0) return null;
-
-  const bleed = 32;
-  const offW = w + bleed * 2;
-  const offH = h + bleed * 2;
-  const off = document.createElement('canvas');
-  off.width = offW;
-  off.height = offH;
-  const octx = off.getContext('2d');
-  if (!octx) return null;
-
-  const scale = Math.max(offW / img.naturalWidth, offH / img.naturalHeight);
-  const drawW = img.naturalWidth * scale;
-  const drawH = img.naturalHeight * scale;
-  const dx = (offW - drawW) / 2;
-  const dy = (offH - drawH) / 2;
-
-  if (isLight) {
-    const baseGrad = octx.createLinearGradient(0, 0, offW, offH);
-    baseGrad.addColorStop(0, '#CBD6EE');
-    baseGrad.addColorStop(0.5, '#D7D5EC');
-    baseGrad.addColorStop(1, '#CED8EA');
-    octx.fillStyle = baseGrad;
-    octx.fillRect(0, 0, offW, offH);
-    octx.globalAlpha = 0.98;
-    octx.drawImage(img, dx, dy, drawW, drawH);
-  } else {
-    const bg = octx.createRadialGradient(
-      offW * 0.5,
-      offH * 0.44,
-      0,
-      offW * 0.5,
-      offH * 0.5,
-      Math.max(offW, offH) * 0.88,
-    );
-    bg.addColorStop(0, '#040714');
-    bg.addColorStop(0.55, '#02040D');
-    bg.addColorStop(1, '#010105');
-    octx.fillStyle = bg;
-    octx.fillRect(0, 0, offW, offH);
-
-    octx.globalCompositeOperation = 'screen';
-    octx.globalAlpha = 0.96;
-    octx.drawImage(img, dx, dy, drawW, drawH);
-  }
-
-  return off;
-}
 
 export default function FondoCosmico() {
   const pathname = usePathname();
   const theme = useThemeStore((s) => s.theme);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const themeRef = useRef(theme);
-  themeRef.current = theme;
 
-  // En los tableros de juego (pantalla completa) no dibujamos fondo oculto debajo
-  const isGameRoute = Boolean(pathname?.startsWith('/juego/'));
+  // En los tableros de juego (pantalla completa) no dibujamos fondo debajo
+  if (pathname?.startsWith('/juego/')) return null;
 
-  useEffect(() => {
-    if (isGameRoute) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d', { alpha: false });
-    if (!ctx) return;
-
-    let animationId: number;
-    let stars: Star[] = [];
-    let isVisible = true;
-    let lastDraw = 0;
-
-    let darkScaled: HTMLCanvasElement | null = null;
-    let lightScaled: HTMLCanvasElement | null = null;
-
-    const darkImg = new Image();
-    darkImg.src = '/images/liquid-prism-bg.jpg';
-
-    const lightImg = new Image();
-    lightImg.src = '/images/liquid-prism-light-bg.jpg';
-
-    const rebuildScaledLayers = () => {
-      darkScaled = buildPreScaledLayer(darkImg, canvas.width, canvas.height, false);
-      lightScaled = buildPreScaledLayer(lightImg, canvas.width, canvas.height, true);
-    };
-
-    darkImg.onload = rebuildScaledLayers;
-    lightImg.onload = rebuildScaledLayers;
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      stars = createStars(canvas.width, canvas.height, themeRef.current === 'light');
-      rebuildScaledLayers();
-    };
-
-    const handleVisibility = () => {
-      isVisible = !document.hidden;
-    };
-
-    let resizeTimer: ReturnType<typeof setTimeout>;
-    const handleResize = () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(resize, 160);
-    };
-
-    const drawFrame = (timestamp: number) => {
-      if (!isVisible) {
-        animationId = requestAnimationFrame(drawFrame);
-        return;
-      }
-
-      // 24 fps es totalmente fluido para nebulosas/estrellas lentas y reduce 60% el trabajo de backdrop-filter
-      if (timestamp - lastDraw < 40) {
-        animationId = requestAnimationFrame(drawFrame);
-        return;
-      }
-      lastDraw = timestamp;
-
-      const time = timestamp / 1000;
-      const lightNow = themeRef.current === 'light';
-      const w = canvas.width;
-      const h = canvas.height;
-      const layer = lightNow ? lightScaled : darkScaled;
-
-      if (layer) {
-        const floatX = Math.round(Math.sin(time * 0.2) * 12) - 32;
-        const floatY = Math.round(Math.cos(time * 0.16) * 8) - 32;
-        ctx.drawImage(layer, floatX, floatY);
-      } else {
-        ctx.fillStyle = lightNow ? '#D4D6EC' : '#010208';
-        ctx.fillRect(0, 0, w, h);
-      }
-
-      for (let i = 0; i < stars.length; i++) {
-        const star = stars[i];
-        star.alpha = star.baseAlpha * (0.5 + 0.5 * Math.sin(time * star.speed * 60 + star.phase));
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${star.color}, ${star.alpha.toFixed(2)})`;
-        ctx.fill();
-      }
-
-      animationId = requestAnimationFrame(drawFrame);
-    };
-
-    resize();
-    animationId = requestAnimationFrame(drawFrame);
-
-    document.addEventListener('visibilitychange', handleVisibility);
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      cancelAnimationFrame(animationId);
-      clearTimeout(resizeTimer);
-      document.removeEventListener('visibilitychange', handleVisibility);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [theme, isGameRoute]);
-
-  if (isGameRoute) return null;
+  const isLight = theme === 'light';
+  const glints = isLight ? LIGHT_GLINTS : DARK_GLINTS;
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none -z-10"
-      style={{ background: theme === 'light' ? '#D4D6EC' : '#010208' }}
-    />
+    <div
+      aria-hidden="true"
+      className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none"
+      style={{
+        contain: 'strict',
+        transform: 'translateZ(0)',
+        background: isLight
+          ? 'linear-gradient(135deg, #CBD6EE 0%, #D7D5EC 50%, #CED8EA 100%)'
+          : 'radial-gradient(ellipse at 50% 44%, #040714 0%, #02040D 55%, #010105 100%)',
+      }}
+    >
+      {/* Curva / Nebulosa 3D tornasol fija en un solo lugar, decodificada una sola vez en GPU */}
+      <img
+        src={isLight ? '/images/liquid-prism-light-bg.jpg' : '/images/liquid-prism-bg.jpg'}
+        alt=""
+        decoding="async"
+        fetchPriority="high"
+        className={`absolute inset-0 h-full w-full object-cover object-center ${
+          isLight ? 'opacity-[0.98]' : 'mix-blend-screen opacity-95'
+        }`}
+      />
+
+      {/* Destellos minuciosos, sutiles y elegantes del tornasol (solo opacity/transform en GPU) */}
+      {glints.map((g, idx) => (
+        <span
+          key={`${isLight ? 'l' : 'd'}-${idx}`}
+          className={`tornasol-glint ${g.star ? 'tornasol-glint-star' : ''}`}
+          style={
+            {
+              left: g.x,
+              top: g.y,
+              width: `${g.size}px`,
+              height: `${g.size}px`,
+              '--glint-color': g.color,
+              '--glint-peak': g.peak,
+              '--glint-dur': g.dur,
+              '--glint-delay': g.delay,
+              background: g.star
+                ? `radial-gradient(circle, ${g.core} 0%, ${g.color} 28%, transparent 72%)`
+                : `radial-gradient(circle, ${g.core} 0%, ${g.color} 45%, transparent 100%)`,
+            } as CSSProperties
+          }
+        />
+      ))}
+    </div>
   );
 }
