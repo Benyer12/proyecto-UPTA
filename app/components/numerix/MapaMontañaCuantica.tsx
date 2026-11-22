@@ -1012,10 +1012,6 @@ const EscenarioMontaña = memo(function EscenarioMontaña() {
           ÷
           <animate attributeName="y" values="618;606;618" dur="3.2s" repeatCount="indefinite" />
         </text>
-        <text x="242" y="68" fill="#00FF88" fontSize="18" opacity="0.78">
-          100%
-          <animate attributeName="y" values="68;58;68" dur="4.4s" repeatCount="indefinite" />
-        </text>
         <text x="698" y="48" fill="#FDE047" fontSize="20" opacity="0.84">
           ★
           <animate attributeName="y" values="48;38;48" dur="2.9s" repeatCount="indefinite" />
