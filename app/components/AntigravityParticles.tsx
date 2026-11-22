@@ -95,7 +95,6 @@ export default function AntigravityParticles() {
     let isVisible = true;
     let lastFrame = 0;
     let lastMoveAt = 0;
-    let scrollPauseUntil = 0;
 
     const mouse = {
       x: -9999,
@@ -184,11 +183,6 @@ export default function AntigravityParticles() {
       }
     };
 
-    const handleScroll = () => {
-      // Cede prioridad total al compositor durante ráfagas de scroll
-      scrollPauseUntil = performance.now() + 140;
-    };
-
     const handleMouseLeave = () => {
       mouse.active = false;
     };
@@ -208,7 +202,7 @@ export default function AntigravityParticles() {
     const originRadiusSq = attractRadiusSq * 1.38;
 
     const animate = (timestamp: number) => {
-      if (!isVisible || timestamp < scrollPauseUntil) {
+      if (!isVisible) {
         animationId = requestAnimationFrame(animate);
         return;
       }
@@ -359,7 +353,6 @@ export default function AntigravityParticles() {
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
     document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('resize', handleResize);
@@ -369,7 +362,6 @@ export default function AntigravityParticles() {
       clearTimeout(resizeTimer);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('resize', handleResize);
