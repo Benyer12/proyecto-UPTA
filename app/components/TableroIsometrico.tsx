@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { type CSSProperties, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createBrowserClient } from '@supabase/ssr';
@@ -801,33 +801,69 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
         background:
-          'radial-gradient(circle at 18% 18%, rgba(0, 229, 255, 0.34) 0%, transparent 44%), radial-gradient(circle at 82% 80%, rgba(0, 119, 255, 0.36) 0%, transparent 48%), radial-gradient(ellipse at 45% 42%, #0058E6 0%, #00349A 46%, #00164A 100%)',
+          'radial-gradient(ellipse at 44% 44%, #061A4A 0%, #020C28 54%, #010410 100%)',
       }}
     >
-      {/* Cuadrícula cibernética holográfica en azul eléctrico */}
+      {/* Escenario 3D Studio CGI Liquid Glass de Numérix fijo en GPU */}
+      <img
+        src="/images/numerix-board-bg.jpg"
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+        fetchPriority="high"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-95 mix-blend-screen"
+      />
+
+      {/* Viñeta sutil central para máximo contraste de los cubos 3D y retícula holográfica */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-32"
+        className="pointer-events-none absolute inset-0"
         style={{
-          backgroundImage:
-            'linear-gradient(to right, rgba(56, 212, 255, 0.24) 1px, transparent 1px), linear-gradient(to bottom, rgba(56, 212, 255, 0.24) 1px, transparent 1px)',
-          backgroundSize: '48px 48px',
-          maskImage: 'radial-gradient(ellipse 84% 78% at 42% 50%, black 38%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 84% 78% at 42% 50%, black 38%, transparent 100%)',
+          background:
+            'radial-gradient(ellipse 68% 72% at 40% 50%, rgba(1, 10, 32, 0.35) 0%, rgba(2, 12, 40, 0.08) 65%, rgba(1, 4, 16, 0.45) 100%)',
         }}
       />
 
-      {/* Orbes neón en azul eléctrico brillante (gradiente suave sin blur-3xl GPU) */}
+      {/* Cuadrícula cibernética holográfica sutil en cian cristalino */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full opacity-45"
-        style={{ background: 'radial-gradient(circle, rgba(0, 229, 255, 0.55) 0%, rgba(0, 229, 255, 0.14) 40%, transparent 72%)' }}
+        className="pointer-events-none absolute inset-0 opacity-24"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, rgba(56, 212, 255, 0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(56, 212, 255, 0.22) 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+          maskImage: 'radial-gradient(ellipse 76% 74% at 40% 50%, black 28%, transparent 92%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 76% 74% at 40% 50%, black 28%, transparent 92%)',
+        }}
       />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-24 left-1/3 w-96 h-96 rounded-full opacity-40"
-        style={{ background: 'radial-gradient(circle, rgba(0, 119, 255, 0.55) 0%, rgba(0, 119, 255, 0.14) 40%, transparent 72%)' }}
-      />
+
+      {/* Destellos minuciosos tornasol sobre las cintas 3D de la arena */}
+      {[
+        { x: '11%', y: '18%', size: 8, color: 'rgba(103, 232, 249, 0.95)', dur: '5.8s', delay: '-1.1s' },
+        { x: '38%', y: '10%', size: 7, color: 'rgba(255, 255, 255, 0.95)', dur: '6.6s', delay: '-3.4s' },
+        { x: '72%', y: '16%', size: 8, color: 'rgba(253, 230, 138, 0.9)', dur: '6.2s', delay: '-2.0s' },
+        { x: '8%', y: '78%', size: 7, color: 'rgba(56, 189, 248, 0.92)', dur: '7.1s', delay: '-4.2s' },
+        { x: '68%', y: '86%', size: 8, color: 'rgba(103, 232, 249, 0.95)', dur: '5.5s', delay: '-0.7s' },
+      ].map((g, i) => (
+        <span
+          key={i}
+          aria-hidden="true"
+          className="tornasol-glint tornasol-glint-star"
+          style={
+            {
+              left: g.x,
+              top: g.y,
+              width: `${g.size}px`,
+              height: `${g.size}px`,
+              '--glint-color': g.color,
+              '--glint-peak': 0.68,
+              '--glint-dur': g.dur,
+              '--glint-delay': g.delay,
+              background: `radial-gradient(circle, #FFFFFF 0%, ${g.color} 32%, transparent 74%)`,
+            } as CSSProperties
+          }
+        />
+      ))}
       {/* ════════════════════ ESCENARIO PRINCIPAL: MONTAÑA CUÁNTICA (IZQUIERDA / CENTRO) ════════════════════ */}
       <div className="relative flex-1 h-[62vh] lg:h-full overflow-hidden flex items-center justify-center">
         {/* ── Arriba a la Izquierda: Botón Cápsula Liquid Glass "← Mapa" ── */}
@@ -842,15 +878,16 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
           </button>
         </div>
 
-        {/* ── Arriba al Centro: Píldora Neón Eléctrica "⚡ SALTO CUÁNTICO ⚡" ── */}
+        {/* ── Arriba al Centro: Píldora Cristal Líquido "⚡ SALTO CUÁNTICO ✦" ── */}
         <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center pointer-events-none">
           <div
-            className="liquid-glass-pill px-6 sm:px-8 py-2 rounded-2xl flex items-center gap-3"
+            className="liquid-glass-pill px-6 sm:px-8 py-2 rounded-full flex items-center gap-3 backdrop-blur-md"
             style={{
               background:
-                'linear-gradient(135deg, rgba(2, 132, 199, 0.44) 0%, rgba(14, 165, 233, 0.36) 50%, rgba(0, 245, 255, 0.28) 100%)',
-              borderColor: 'rgba(0, 245, 255, 0.72)',
-              boxShadow: '0 0 28px rgba(0, 245, 255, 0.42), inset 0 0 12px rgba(0, 245, 255, 0.24)',
+                'linear-gradient(135deg, rgba(4, 18, 52, 0.55) 0%, rgba(6, 44, 108, 0.42) 50%, rgba(2, 14, 42, 0.62) 100%)',
+              borderColor: 'rgba(186, 230, 253, 0.48)',
+              boxShadow:
+                '0 12px 32px -12px rgba(0, 0, 0, 0.72), inset 0 0 16px rgba(103, 232, 249, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.2)',
             }}
           >
             <span className="text-xs text-[#FDE047]">⚡</span>
@@ -881,10 +918,11 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         {/* ── Abajo al Centro: Píldora Flotante de Instrucciones en Liquid Glass ── */}
         <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 max-w-[92%] sm:max-w-lg pointer-events-none">
           <div
-            className="px-6 py-2.5 rounded-2xl liquid-glass-pill flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#E0F2FE] text-center"
+            className="px-6 py-2.5 rounded-full liquid-glass-pill backdrop-blur-md flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#E0F2FE] text-center"
             style={{
-              background: 'linear-gradient(135deg, rgba(6, 28, 60, 0.86) 0%, rgba(3, 15, 36, 0.92) 100%)',
-              borderColor: 'rgba(56, 189, 248, 0.34)',
+              background: 'linear-gradient(135deg, rgba(3, 14, 38, 0.62) 0%, rgba(4, 24, 62, 0.52) 100%)',
+              borderColor: 'rgba(186, 230, 253, 0.36)',
+              boxShadow: '0 14px 34px -14px rgba(0, 0, 0, 0.78), inset 0 0 14px rgba(103, 232, 249, 0.1)',
             }}
           >
             <span className="text-[#00F5FF]">✦</span>
@@ -893,15 +931,16 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         </div>
       </div>
 
-      {/* ════════════════════ HUD LATERAL DERECHO EN LIQUID GLASS AZUL FUTURISTA ════════════════════ */}
+      {/* ════════════════════ HUD LATERAL DERECHO EN LIQUID GLASS OBSIDIANA 3D ════════════════════ */}
       <aside className="relative z-30 w-full lg:w-[335px] xl:w-[355px] lg:h-full p-2.5 sm:p-3.5 flex flex-col justify-center shrink-0">
         <div
-          className="relative w-full h-full max-h-[820px] rounded-3xl liquid-glass liquid-glass-panel p-4 sm:p-5 flex flex-col justify-between overflow-x-hidden overflow-y-auto"
+          className="relative w-full h-full max-h-[820px] rounded-3xl liquid-glass liquid-glass-panel p-4 sm:p-5 flex flex-col justify-between overflow-x-clip overflow-y-auto backdrop-blur-lg"
           style={{
             background:
-              'linear-gradient(165deg, rgba(0, 88, 224, 0.72) 0%, rgba(0, 52, 152, 0.84) 55%, rgba(0, 24, 78, 0.92) 100%)',
-            borderColor: 'rgba(0, 229, 255, 0.6)',
-            boxShadow: '0 0 44px rgba(0, 145, 255, 0.36), inset 0 1px 0 rgba(186, 230, 253, 0.48)',
+              'linear-gradient(165deg, rgba(4, 18, 52, 0.62) 0%, rgba(2, 12, 36, 0.72) 55%, rgba(1, 7, 22, 0.82) 100%)',
+            borderColor: 'rgba(186, 230, 253, 0.38)',
+            boxShadow:
+              '0 24px 70px -24px rgba(0, 0, 0, 0.85), inset 0 0 24px rgba(103, 232, 249, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.22)',
           }}
         >
           {/* ── 1. CABECERA: NUMÉRIX — TABLERO CUÁNTICO ── */}
@@ -937,8 +976,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             className="relative my-2.5 py-4 rounded-2xl liquid-glass-pill flex flex-col items-center justify-center overflow-hidden"
             style={{
               background:
-                'radial-gradient(circle at 50% 50%, rgba(0, 140, 255, 0.5) 0%, rgba(0, 72, 178, 0.78) 70%, rgba(0, 34, 96, 0.9) 100%)',
-              borderColor: 'rgba(0, 229, 255, 0.48)',
+                'radial-gradient(circle at 50% 45%, rgba(14, 165, 233, 0.24) 0%, rgba(4, 22, 62, 0.56) 68%, rgba(2, 10, 32, 0.76) 100%)',
+              borderColor: 'rgba(186, 230, 253, 0.34)',
+              boxShadow: 'inset 0 0 22px rgba(103, 232, 249, 0.12)',
             }}
           >
             <span className="pointer-events-none absolute top-2.5 left-3.5 text-[#38BDF8]/80 text-xs">✦</span>
@@ -977,8 +1017,8 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             className="relative rounded-2xl liquid-glass p-3.5 sm:p-4 my-1"
             style={{
               background:
-                'linear-gradient(160deg, rgba(0, 168, 255, 0.14) 0%, rgba(0, 48, 132, 0.72) 100%)',
-              borderColor: 'rgba(0, 212, 255, 0.34)',
+                'linear-gradient(160deg, rgba(14, 165, 233, 0.1) 0%, rgba(3, 18, 52, 0.54) 100%)',
+              borderColor: 'rgba(186, 230, 253, 0.28)',
             }}
           >
             <div className="mb-3.5">

@@ -684,6 +684,7 @@ const CuboIsometricoSVG = memo(function CuboIsometricoSVG({
   }[tipo];
 
   const topPts = `${x},${y - H * 2} ${x + W},${y - H} ${x},${y} ${x - W},${y - H}`;
+  const topInnerPts = `${x},${y - H * 2 + 2.5} ${x + W - 4.5},${y - H} ${x},${y - 2.5} ${x - W + 4.5},${y - H}`;
   const leftPts = `${x - W},${y - H} ${x},${y} ${x},${y + D} ${x - W},${y - H + D}`;
   const rightPts = `${x + W},${y - H} ${x},${y} ${x},${y + D} ${x + W},${y - H + D}`;
 
@@ -733,6 +734,13 @@ const CuboIsometricoSVG = memo(function CuboIsometricoSVG({
         fill={paleta.top}
         stroke={paleta.strokeTop}
         strokeWidth={activo ? 2.2 : 1.5}
+        strokeLinejoin="round"
+      />
+      <polygon
+        points={topInnerPts}
+        fill="none"
+        stroke="rgba(255, 255, 255, 0.45)"
+        strokeWidth="0.9"
         strokeLinejoin="round"
       />
 
@@ -1033,57 +1041,75 @@ const EscenarioMontaña = memo(function EscenarioMontaña() {
         />
       </g>
 
-      {/* ══════════════════ 2. TERRAZA 1: MESETA PRINCIPAL AMPLIA (CUBOS 01..06 Y PORTAL) ══════════════════ */}
+      {/* ══════════════════ 2. TERRAZA 1: MESETA PRINCIPAL EN CRISTAL LÍQUIDO (CUBOS 01..06 Y PORTAL) ══════════════════ */}
       <g>
         <path
           d="M 84 366 C 102 472, 182 558, 332 596 C 492 630, 672 612, 788 520 L 810 416 C 705 556, 496 586, 326 554 C 182 522, 112 434, 84 366 Z"
           fill="url(#cliffWallGrad)"
-          stroke="#93C5FD"
-          strokeOpacity="0.34"
-          strokeWidth="1.3"
+          fillOpacity="0.88"
+          stroke="url(#glassBevelStroke)"
+          strokeOpacity="0.48"
+          strokeWidth="1.4"
         />
         <path
           d="M 84 366 C 74 262, 158 172, 356 102 C 532 54, 704 80, 770 192 C 830 292, 826 432, 754 504 C 654 592, 478 608, 320 572 C 178 540, 94 454, 84 366 Z"
           fill="url(#terrace1TopGrad)"
-          stroke="#BFDBFE"
-          strokeOpacity="0.42"
-          strokeWidth="1.7"
+          fillOpacity="0.82"
+          stroke="url(#glassBevelStroke)"
+          strokeOpacity="0.68"
+          strokeWidth="1.9"
+        />
+        <ellipse
+          cx="458"
+          cy="345"
+          rx="325"
+          ry="188"
+          transform="rotate(-14 458 345)"
+          fill="none"
+          stroke="#67E8F9"
+          strokeOpacity="0.16"
+          strokeWidth="1"
+          strokeDasharray="6 6"
         />
       </g>
 
-      {/* ══════════════════ 3. TERRAZA 2: MESETA INTERMEDIA FLUIDA (CUBOS 07..15) ══════════════════ */}
+      {/* ══════════════════ 3. TERRAZA 2: MESETA INTERMEDIA EN CRISTAL LÍQUIDO (CUBOS 07..15) ══════════════════ */}
       <g>
         <path
           d="M 158 430 C 246 478, 384 474, 510 410 C 632 348, 724 268, 738 178 L 738 220 C 720 308, 628 388, 502 452 C 376 512, 242 510, 158 466 Z"
           fill="url(#innerCliffGrad)"
-          stroke="#A5B4FC"
-          strokeOpacity="0.4"
-          strokeWidth="1.3"
+          fillOpacity="0.88"
+          stroke="url(#glassBevelStroke)"
+          strokeOpacity="0.52"
+          strokeWidth="1.4"
         />
         <path
           d="M 124 356 C 114 246, 212 138, 408 82 C 568 46, 716 78, 738 178 C 724 268, 632 348, 510 410 C 384 474, 236 478, 158 430 C 132 410, 126 384, 124 356 Z"
           fill="url(#terrace2TopGrad)"
-          stroke="#C4B5FD"
-          strokeOpacity="0.5"
-          strokeWidth="1.7"
+          fillOpacity="0.84"
+          stroke="url(#glassBevelStroke)"
+          strokeOpacity="0.72"
+          strokeWidth="1.9"
         />
       </g>
 
-      {/* ══════════════════ 4. TERRAZA 3: CUMBRE DEL GUARDIÁN (CIMA IZQUIERDA) ══════════════════ */}
+      {/* ══════════════════ 4. TERRAZA 3: CUMBRE DEL GUARDIÁN EN CRISTAL LÍQUIDO (CIMA IZQUIERDA) ══════════════════ */}
       <g>
         <path
           d="M 74 282 C 98 350, 196 378, 294 344 C 364 318, 402 260, 388 202 L 388 250 C 400 306, 358 362, 288 388 C 190 422, 94 390, 74 326 Z"
           fill="url(#summitCliffGrad)"
-          stroke="#C4B5FD"
-          strokeOpacity="0.46"
+          fillOpacity="0.9"
+          stroke="url(#glassBevelStroke)"
+          strokeOpacity="0.56"
           strokeWidth="1.4"
         />
         <path
           d="M 74 282 C 66 212, 132 154, 230 148 C 322 142, 380 166, 388 202 C 402 260, 364 318, 294 344 C 196 378, 98 350, 74 282 Z"
           fill="url(#summitTopGrad)"
-          stroke="#E2EEFF"
-          strokeOpacity="0.62"
-          strokeWidth="1.8"
+          fillOpacity="0.86"
+          stroke="url(#glassBevelStroke)"
+          strokeOpacity="0.82"
+          strokeWidth="2"
         />
         <ellipse
           cx="216"
@@ -1091,10 +1117,10 @@ const EscenarioMontaña = memo(function EscenarioMontaña() {
           rx="122"
           ry="64"
           transform="rotate(-8 216 252)"
-          fill="#0044BD"
-          fillOpacity="0.62"
-          stroke="#00E5FF"
-          strokeOpacity="0.65"
+          fill="#02235E"
+          fillOpacity="0.58"
+          stroke="#67E8F9"
+          strokeOpacity="0.72"
           strokeWidth="1.4"
         />
       </g>
@@ -1243,47 +1269,53 @@ const MapaMontañaCuantica = memo(function MapaMontañaCuantica({
           <stop offset="100%" stopColor="#02152E" />
         </linearGradient>
 
-        {/* Gradientes esculturales de la isla-montaña en Azul Eléctrico */}
+        {/* Gradientes esculturales de la isla-montaña en Cristal Zafiro Tornasol */}
+        <linearGradient id="glassBevelStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#E0F2FE" />
+          <stop offset="32%" stopColor="#00F5FF" />
+          <stop offset="68%" stopColor="#60A5FA" />
+          <stop offset="100%" stopColor="#FDE68A" />
+        </linearGradient>
         <linearGradient id="cliffBaseGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0044B8" />
-          <stop offset="50%" stopColor="#002D82" />
-          <stop offset="100%" stopColor="#001A52" />
+          <stop offset="0%" stopColor="#03266B" />
+          <stop offset="50%" stopColor="#021746" />
+          <stop offset="100%" stopColor="#010A24" />
         </linearGradient>
         <linearGradient id="cliffDeepGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#003599" />
-          <stop offset="100%" stopColor="#001440" />
+          <stop offset="0%" stopColor="#021D52" />
+          <stop offset="100%" stopColor="#010920" />
         </linearGradient>
         <linearGradient id="cliffWallGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0055D4" />
-          <stop offset="50%" stopColor="#00389E" />
-          <stop offset="100%" stopColor="#00226B" />
+          <stop offset="0%" stopColor="#053896" />
+          <stop offset="50%" stopColor="#032366" />
+          <stop offset="100%" stopColor="#01123B" />
         </linearGradient>
         <linearGradient id="innerCliffGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0047B8" />
-          <stop offset="50%" stopColor="#0062E3" />
-          <stop offset="100%" stopColor="#007BFF" />
+          <stop offset="0%" stopColor="#043082" />
+          <stop offset="55%" stopColor="#0645B5" />
+          <stop offset="100%" stopColor="#02205E" />
         </linearGradient>
         <linearGradient id="summitCliffGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0055D4" />
-          <stop offset="60%" stopColor="#0077FF" />
-          <stop offset="100%" stopColor="#00A6FF" />
+          <stop offset="0%" stopColor="#053B9C" />
+          <stop offset="60%" stopColor="#0753CC" />
+          <stop offset="100%" stopColor="#022873" />
         </linearGradient>
 
-        {/* Superficies superiores de las 3 terrazas en Azul Eléctrico Vibrante */}
+        {/* Superficies superiores de las 3 terrazas en Cristal Zafiro Profundo */}
         <linearGradient id="terrace1TopGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#005CE6" />
-          <stop offset="55%" stopColor="#0042AD" />
-          <stop offset="100%" stopColor="#002875" />
+          <stop offset="0%" stopColor="#0640AD" />
+          <stop offset="55%" stopColor="#032975" />
+          <stop offset="100%" stopColor="#011647" />
         </linearGradient>
         <linearGradient id="terrace2TopGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0074FF" />
-          <stop offset="55%" stopColor="#0052CC" />
-          <stop offset="100%" stopColor="#003694" />
+          <stop offset="0%" stopColor="#0752D1" />
+          <stop offset="55%" stopColor="#04348F" />
+          <stop offset="100%" stopColor="#021D57" />
         </linearGradient>
         <linearGradient id="summitTopGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0099FF" />
-          <stop offset="55%" stopColor="#006BFF" />
-          <stop offset="100%" stopColor="#0046BD" />
+          <stop offset="0%" stopColor="#0866EC" />
+          <stop offset="55%" stopColor="#0542AD" />
+          <stop offset="100%" stopColor="#02256B" />
         </linearGradient>
 
         {/* Gradiente del Riel Fluido: Azul Hielo -> Cian Eléctrico -> Turquesa */}

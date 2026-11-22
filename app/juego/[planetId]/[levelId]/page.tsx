@@ -73,11 +73,11 @@ function GenericBoard({
       className="relative w-full max-w-sm aspect-square"
     >
       <div
-        className="absolute inset-0 rounded-[32px] overflow-hidden liquid-glass"
+        className="absolute inset-0 rounded-[32px] overflow-hidden liquid-glass backdrop-blur-lg"
         style={{
-          border: `1px solid ${planetColor}44`,
-          background: `radial-gradient(ellipse at 50% 40%, ${planetColor}20, rgba(255,255,255,0.03) 70%), radial-gradient(ellipse at 50% 80%, ${planetColor}10, transparent 50%)`,
-          boxShadow: `inset 0 1px 1.5px rgba(255,255,255,0.28), inset 0 0 80px ${planetColor}12, 0 20px 60px rgba(0,0,0,0.6), 0 0 40px ${planetColor}15`,
+          border: `1.5px solid rgba(167, 243, 208, 0.36)`,
+          background: `radial-gradient(ellipse at 50% 40%, ${planetColor}1E, rgba(2, 20, 16, 0.56) 72%)`,
+          boxShadow: `inset 0 0 24px rgba(110, 231, 183, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.22), 0 24px 68px rgba(0, 0, 0, 0.72), 0 0 44px ${planetColor}1A`,
         }}
       >
         <div className="absolute inset-4 rounded-2xl border border-white/[0.03]" />
@@ -437,8 +437,30 @@ export default function JuegoPage() {
   }
 
   return (
-    <div data-game-board="true" className="fixed inset-0 z-[100] h-screen w-screen overflow-hidden" style={{ background: '#00000a' }}>
-      <FondoCosmico />
+    <div
+      data-game-board="true"
+      className="fixed inset-0 z-[100] h-screen w-screen overflow-hidden"
+      style={{
+        background: 'radial-gradient(ellipse at 50% 45%, #03221B 0%, #01100C 58%, #010606 100%)',
+      }}
+    >
+      {/* Escenario 3D Studio CGI Bio-Cristal para Naturae */}
+      <img
+        src="/images/naturae-board-bg.jpg"
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+        fetchPriority="high"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-95 mix-blend-screen"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(circle at 50% 50%, rgba(1, 16, 12, 0.25) 0%, rgba(1, 10, 8, 0.52) 100%)',
+        }}
+      />
 
       {/* ── HUD HEADER ── */}
       <header

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { type CSSProperties, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createBrowserClient } from '@supabase/ssr';
@@ -792,9 +792,56 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
         background:
-          'radial-gradient(ellipse at 42% 38%, #475F9B 0%, #2E406E 54%, #1A2442 100%)',
+          'radial-gradient(ellipse at 42% 40%, #1F2656 0%, #11163A 54%, #080B20 100%)',
       }}
     >
+      {/* Escenario 3D Studio CGI Astral Crystal de Letralia fijo en GPU */}
+      <img
+        src="/images/letralia-board-bg.jpg"
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+        fetchPriority="high"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-95 mix-blend-screen"
+      />
+
+      {/* Viñeta central suave para realzar las islas flotantes y pergaminos de Letralia */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 68% 72% at 40% 50%, rgba(16, 20, 52, 0.25) 0%, rgba(12, 16, 42, 0.08) 65%, rgba(6, 9, 26, 0.45) 100%)',
+        }}
+      />
+
+      {/* Destellos minuciosos tornasol amatista/oro sobre las cintas 3D astrales */}
+      {[
+        { x: '10%', y: '14%', size: 8, color: 'rgba(192, 132, 252, 0.95)', dur: '6.0s', delay: '-1.0s' },
+        { x: '70%', y: '14%', size: 8, color: 'rgba(253, 224, 171, 0.92)', dur: '6.8s', delay: '-2.9s' },
+        { x: '14%', y: '80%', size: 7, color: 'rgba(167, 139, 250, 0.92)', dur: '5.7s', delay: '-4.1s' },
+        { x: '72%', y: '82%', size: 8, color: 'rgba(125, 211, 252, 0.92)', dur: '6.4s', delay: '-1.8s' },
+        { x: '45%', y: '9%', size: 6, color: 'rgba(255, 255, 255, 0.92)', dur: '7.2s', delay: '-3.5s' },
+      ].map((g, i) => (
+        <span
+          key={i}
+          aria-hidden="true"
+          className="tornasol-glint tornasol-glint-star"
+          style={
+            {
+              left: g.x,
+              top: g.y,
+              width: `${g.size}px`,
+              height: `${g.size}px`,
+              '--glint-color': g.color,
+              '--glint-peak': 0.65,
+              '--glint-dur': g.dur,
+              '--glint-delay': g.delay,
+              background: `radial-gradient(circle, #FFFFFF 0%, ${g.color} 32%, transparent 74%)`,
+            } as CSSProperties
+          }
+        />
+      ))}
       {/* ════════════════════ ÁREA PRINCIPAL DEL MAPA ASTRAL (IZQUIERDA/CENTRO) ════════════════════ */}
       <div className="relative flex-1 h-[62vh] lg:h-full overflow-hidden flex items-center justify-center">
         {/* ── Botón Flotante Superior Izquierda: Volver al Mapa ── */}
@@ -923,15 +970,16 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         </div>
       </div>
 
-      {/* ════════════════════ HUD ESPACIAL LATERAL DERECHO ════════════════════ */}
+      {/* ════════════════════ HUD ESPACIAL LATERAL DERECHO EN CRISTAL ASTRAL ════════════════════ */}
       <aside className="relative z-30 w-full lg:w-[334px] xl:w-[354px] lg:h-full p-2 sm:p-3 flex flex-col justify-center shrink-0">
         <div
-          className="relative w-full h-full max-h-[830px] rounded-[30px] p-3.5 sm:p-4 flex flex-col justify-between overflow-y-auto"
+          className="relative w-full h-full max-h-[830px] rounded-[30px] p-3.5 sm:p-4 flex flex-col justify-between overflow-y-auto backdrop-blur-lg"
           style={{
-            background: 'linear-gradient(180deg, #F3EFFE 0%, #E5DEFC 52%, #D6CBF7 100%)',
-            border: '3px solid #C4B5FD',
+            background:
+              'linear-gradient(180deg, rgba(246, 242, 255, 0.84) 0%, rgba(232, 224, 252, 0.78) 52%, rgba(216, 204, 248, 0.82) 100%)',
+            border: '2px solid rgba(221, 214, 254, 0.85)',
             boxShadow:
-              'inset 0 2px 3px rgba(255, 255, 255, 0.9), inset 0 -3px 8px rgba(109, 40, 217, 0.14), 0 18px 48px rgba(15, 23, 42, 0.6)',
+              'inset 0 0 24px rgba(255, 255, 255, 0.75), inset 0 0 0 1px rgba(253, 230, 138, 0.35), 0 24px 64px -18px rgba(8, 11, 32, 0.75)',
           }}
         >
           <div className="hidden lg:flex absolute left-1.5 top-1/2 -translate-y-1/2 text-[#7C6BC9] text-xs font-black select-none">
