@@ -194,27 +194,32 @@ function buildPathNaturae(pts: { x: number; y: number }[]): string {
 
 const PATH_NATURAE = buildPathNaturae(COORDS_NATURAE);
 
-/** Marcador cristalino bioluminiscente de posición actual (sin muñecos ni emojis). */
-const BioCrystalBeacon = memo(function BioCrystalBeacon({ caminando }: { caminando: boolean }) {
+/** Explorador Bio-Espacial con alitas luminosas. */
+const BioExplorerBot = memo(function BioExplorerBot({ caminando }: { caminando: boolean }) {
   return (
-    <g>
-      <ellipse cx="0" cy="4" rx="20" ry="9" fill="none" stroke="#00FF88" strokeWidth="2.2" strokeOpacity="0.9">
-        <animate attributeName="rx" values="17;24;17" dur={caminando ? '0.5s' : '2s'} repeatCount="indefinite" />
-        <animate attributeName="stroke-opacity" values="0.95;0.35;0.95" dur={caminando ? '0.5s' : '2s'} repeatCount="indefinite" />
+    <g transform="scale(1.16)">
+      <ellipse cx="0" cy="4" rx="14" ry="5" fill="#011A14" opacity="0.58" />
+      <ellipse cx="0" cy="4" rx="11" ry="3.8" fill="#00FF88" opacity="0.34">
+        <animate attributeName="rx" values="9;14;9" dur="1.8s" repeatCount="indefinite" />
       </ellipse>
-      <ellipse cx="0" cy="4" rx="11" ry="5" fill="#34D399" fillOpacity="0.36" />
-
       <g>
         <animateTransform
           attributeName="transform"
           type="translate"
-          values={caminando ? '0 -8; 0 -18; 0 -8' : '0 -10; 0 -16; 0 -10'}
-          dur={caminando ? '0.32s' : '2.4s'}
+          values={caminando ? '0 0; 0 -7; 0 0' : '0 0; 0 -2.5; 0 0'}
+          dur={caminando ? '0.26s' : '2.2s'}
           repeatCount="indefinite"
         />
-        <polygon points="0,-24 12,-6 0,6 -12,-6" fill="#00FF88" stroke="#FFFFFF" strokeWidth="1.4" />
-        <polygon points="0,-24 12,-6 0,6" fill="#059669" opacity="0.72" />
-        <polygon points="0,-24 -12,-6 0,-6" fill="#ECFDF5" opacity="0.88" />
+        <path d="M-8,-22 Q-22,-32 -18,-16 Z" fill="#34D399" stroke="#ECFDF5" strokeWidth="1" opacity="0.9" />
+        <path d="M8,-22 Q22,-32 18,-16 Z" fill="#34D399" stroke="#ECFDF5" strokeWidth="1" opacity="0.9" />
+        <rect x="-11" y="-28" width="22" height="20" rx="8" fill="#ECFDF5" stroke="#065F46" strokeWidth="1.4" />
+        <rect x="-8" y="-23" width="16" height="10" rx="4.5" fill="#022C22" stroke="#6EE7B7" strokeWidth="1.1" />
+        <circle cx="-3.5" cy="-18" r="2" fill="#00FF88" />
+        <circle cx="3.5" cy="-18" r="2" fill="#00FF88" />
+        <line x1="0" y1="-28" x2="0" y2="-36" stroke="#6EE7B7" strokeWidth="1.8" />
+        <circle cx="0" cy="-38" r="3.4" fill="#FDE047" />
+        <rect x="-8" y="-8" width="6.5" height="6" rx="2.5" fill="#065F46" stroke="#A7F3D0" strokeWidth="1" />
+        <rect x="1.5" y="-8" width="6.5" height="6" rx="2.5" fill="#065F46" stroke="#A7F3D0" strokeWidth="1" />
       </g>
     </g>
   );
@@ -379,15 +384,15 @@ const MapaNaturaeSVG = memo(function MapaNaturaeSVG({
         );
       })}
 
-      {/* Marcador de posición cristalino */}
+      {/* Explorador Bio-Espacial */}
       <g
         style={{
-          transform: `translate3d(${actual.x}px, ${actual.y - 14}px, 0)`,
+          transform: `translate3d(${actual.x}px, ${actual.y - 10}px, 0)`,
           transition: 'transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
           willChange: 'transform',
         }}
       >
-        <BioCrystalBeacon caminando={caminando} />
+        <BioExplorerBot caminando={caminando} />
       </g>
     </svg>
   );

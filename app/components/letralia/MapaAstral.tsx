@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ElViajero from './ElViajero';
 import {
   ANCHO_CAMINO,
   BOSS_S,
@@ -1105,7 +1106,7 @@ export default function MapaAstral({
   eligiendo,
   onElegir,
   caminando,
-  mirando: _mirando,
+  mirando,
   saltoKey,
   santuarioAbierto,
 }: MapaAstralProps) {
@@ -1369,25 +1370,21 @@ export default function MapaAstral({
         </text>
       </g>
 
-      {/* Marcador astral cristalino de posición actual (sin muñecos) */}
+      {/* El Viajero */}
       <motion.g
         initial={false}
         animate={{ x: posS.x, y: posS.y - 6 }}
         transition={{ type: 'tween', duration: 0.36, ease: 'easeInOut' }}
       >
-        <ellipse cx={0} cy={6} rx={20} ry={9} fill="none" stroke="#FDE68A" strokeWidth={2.2} strokeOpacity={0.9}>
-          <animate attributeName="rx" values="17;24;17" dur={caminando ? '0.5s' : '2s'} repeatCount="indefinite" />
-        </ellipse>
-        <ellipse cx={0} cy={6} rx={11} ry={5} fill="#C4B5FD" fillOpacity={0.45} />
         <motion.g
           key={saltoKey}
           initial={{ y: 0 }}
           animate={{ y: saltoKey > 0 ? [0, -14, 0] : 0 }}
           transition={{ duration: 0.36, ease: 'easeOut' }}
         >
-          <polygon points="0,-24 12,-5 0,7 -12,-5" fill="#FDE68A" stroke="#FFFFFF" strokeWidth={1.5} />
-          <polygon points="0,-24 12,-5 0,7" fill="#D97706" opacity={0.45} />
-          <polygon points="0,-24 -12,-5 0,-5" fill="#FFFFFF" opacity={0.78} />
+          <g transform="scale(1.18)">
+            <ElViajero caminando={caminando} mirando={mirando} />
+          </g>
         </motion.g>
       </motion.g>
 
