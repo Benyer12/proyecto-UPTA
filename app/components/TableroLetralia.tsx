@@ -1005,7 +1005,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               <span>{nombreTramoActual}</span>
             </div>
             <div className="mt-1.5 text-[10px] font-bold text-[#4C1D95]">
-              Gemma 4 · {etiquetaNivelIA}
+              Tutor IA · {etiquetaNivelIA}
             </div>
             <p className="mt-0.5 text-[11px] font-semibold text-[#1E1B4B] leading-snug line-clamp-2">
               {mensajeTutorIA}

@@ -940,7 +940,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               TABLERO CUÁNTICO
             </p>
             <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#00F5FF]/40 bg-[#03203A]/85 px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#67E8F9]">
-              <span>Gemma 4 · {etiquetaNivelIA}</span>
+              <span>Tutor IA · {etiquetaNivelIA}</span>
             </div>
             <p className="mt-1.5 text-[11px] text-[#BAE6FD]/90 leading-snug line-clamp-2">
               {mensajeTutorIA}
