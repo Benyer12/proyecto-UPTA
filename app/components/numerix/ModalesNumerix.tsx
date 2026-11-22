@@ -12,14 +12,14 @@ function EsferaArmilarMini() {
     <svg width="50" height="50" viewBox="0 0 64 64" className="overflow-visible select-none pointer-events-none shrink-0">
       <defs>
         <radialGradient id="miniArmilarGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#E879F9" stopOpacity="0.85" />
-          <stop offset="50%" stopColor="#818CF8" stopOpacity="0.45" />
-          <stop offset="100%" stopColor="#0F172A" stopOpacity="0" />
+          <stop offset="0%" stopColor="#00F5FF" stopOpacity="0.85" />
+          <stop offset="50%" stopColor="#0EA5E9" stopOpacity="0.48" />
+          <stop offset="100%" stopColor="#02152E" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="miniArmilarRing" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="45%" stopColor="#C084FC" />
-          <stop offset="100%" stopColor="#6EE7B7" />
+          <stop offset="45%" stopColor="#38BDF8" />
+          <stop offset="100%" stopColor="#00F5FF" />
         </linearGradient>
       </defs>
       <circle cx="32" cy="32" r="30" fill="url(#miniArmilarGlow)" />
@@ -50,13 +50,13 @@ function BotonPistaCuantica({
       className="liquid-glass-pill inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-extrabold tracking-wider uppercase cursor-pointer transition-all shrink-0"
       style={{
         background: activa
-          ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.62) 0%, rgba(16, 185, 129, 0.52) 100%)'
-          : 'linear-gradient(135deg, rgba(49, 46, 129, 0.65) 0%, rgba(30, 58, 138, 0.55) 100%)',
-        borderColor: activa ? 'rgba(110, 231, 183, 0.85)' : 'rgba(191, 219, 254, 0.5)',
+          ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.7) 0%, rgba(0, 245, 255, 0.55) 100%)'
+          : 'linear-gradient(135deg, rgba(7, 89, 133, 0.72) 0%, rgba(12, 74, 110, 0.62) 100%)',
+        borderColor: activa ? 'rgba(0, 245, 255, 0.9)' : 'rgba(125, 211, 252, 0.55)',
         color: '#FFFFFF',
         boxShadow: activa
-          ? '0 0 18px rgba(168, 85, 247, 0.55), inset 0 1px 1px rgba(255,255,255,0.45)'
-          : '0 0 14px rgba(147, 197, 253, 0.22), inset 0 1px 1px rgba(255,255,255,0.3)',
+          ? '0 0 18px rgba(0, 245, 255, 0.55), inset 0 1px 1px rgba(255,255,255,0.45)'
+          : '0 0 14px rgba(56, 189, 248, 0.25), inset 0 1px 1px rgba(255,255,255,0.3)',
       }}
       title="Mostrar Pista Cuántica"
     >
@@ -106,40 +106,40 @@ function CuboCuantico3D({
       orb: '#93C5FD',
     },
     amatista: {
-      topStart: '#FAF5FF',
-      topEnd: '#C084FC',
-      leftStart: '#9333EA',
-      leftEnd: '#4C1D95',
-      rightStart: '#7E22CE',
-      rightEnd: '#2E1065',
+      topStart: '#E0F2FE',
+      topEnd: '#38BDF8',
+      leftStart: '#0284C7',
+      leftEnd: '#075985',
+      rightStart: '#0369A1',
+      rightEnd: '#082F49',
       topStroke: '#FFFFFF',
-      sideStroke: '#E9D5FF',
-      aura: 'rgba(192, 132, 252, 0.64)',
-      orb: '#D8B4FE',
+      sideStroke: '#BAE6FD',
+      aura: 'rgba(56, 189, 248, 0.65)',
+      orb: '#38BDF8',
     },
     esmeralda: {
       topStart: '#ECFDF5',
-      topEnd: '#34D399',
-      leftStart: '#10B981',
-      leftEnd: '#065F46',
-      rightStart: '#059669',
-      rightEnd: '#064E3B',
+      topEnd: '#2DD4BF',
+      leftStart: '#0D9488',
+      leftEnd: '#115E59',
+      rightStart: '#0F766E',
+      rightEnd: '#134E4A',
       topStroke: '#FFFFFF',
-      sideStroke: '#A7F3D0',
-      aura: 'rgba(52, 211, 153, 0.62)',
-      orb: '#6EE7B7',
+      sideStroke: '#99F6E4',
+      aura: 'rgba(45, 212, 191, 0.62)',
+      orb: '#5EEAD4',
     },
     magenta: {
-      topStart: '#FDF4FF',
-      topEnd: '#E879F9',
-      leftStart: '#C026D3',
-      leftEnd: '#581C87',
-      rightStart: '#9333EA',
-      rightEnd: '#3B0764',
+      topStart: '#ECFEFF',
+      topEnd: '#00F5FF',
+      leftStart: '#06B6D4',
+      leftEnd: '#155E75',
+      rightStart: '#0891B2',
+      rightEnd: '#164E63',
       topStroke: '#FFFFFF',
-      sideStroke: '#F5D0FE',
-      aura: 'rgba(232, 121, 249, 0.62)',
-      orb: '#F0ABFC',
+      sideStroke: '#A5F3FC',
+      aura: 'rgba(0, 245, 255, 0.64)',
+      orb: '#67E8F9',
     },
   }[tono];
 

@@ -587,7 +587,7 @@ function SantuarioGuardian({
         </g>
 
         <circle r="9.5" fill="#1E1B4B" stroke="#E2EEFF" strokeWidth="1.4" />
-        <circle r="6" fill="#E879F9">
+        <circle r="6" fill="#00F5FF">
           <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" />
         </circle>
         <circle r="2.8" fill="#FFFFFF" />
@@ -600,10 +600,10 @@ function SantuarioGuardian({
           width="144"
           height="22"
           rx="11"
-          fill="#0B1124"
-          fillOpacity="0.92"
-          stroke={activo ? '#6EE7B7' : '#C084FC'}
-          strokeOpacity="0.8"
+          fill="#031530"
+          fillOpacity="0.94"
+          stroke={activo ? '#00F5FF' : '#38BDF8'}
+          strokeOpacity="0.88"
           strokeWidth="1.4"
         />
         <text
@@ -612,7 +612,7 @@ function SantuarioGuardian({
           fontSize="9.5"
           fontWeight="800"
           letterSpacing="1.6"
-          fill="#F3E8FF"
+          fill="#E0F2FE"
         >
           GUARDIÁN DEL NIVEL
         </text>
@@ -664,14 +664,14 @@ function CuboIsometricoSVG({
       glow: 'rgba(52, 211, 153, 0.45)',
     },
     trampa: {
-      top: activo ? 'rgba(240, 171, 252, 0.50)' : 'rgba(192, 38, 211, 0.32)',
-      left: 'rgba(88, 28, 135, 0.88)',
-      right: 'rgba(59, 7, 100, 0.94)',
-      strokeTop: activo ? '#FFFFFF' : '#F0ABFC',
-      strokeSide: 'rgba(232, 121, 249, 0.55)',
-      textTop: '#FAF5FF',
-      textSide: '#E879F9',
-      glow: 'rgba(217, 70, 239, 0.45)',
+      top: activo ? 'rgba(253, 224, 71, 0.54)' : 'rgba(245, 158, 11, 0.36)',
+      left: 'rgba(146, 64, 14, 0.90)',
+      right: 'rgba(120, 53, 15, 0.95)',
+      strokeTop: activo ? '#FFFFFF' : '#FDE047',
+      strokeSide: 'rgba(251, 191, 36, 0.62)',
+      textTop: '#FFFBEB',
+      textSide: '#FCD34D',
+      glow: 'rgba(245, 158, 11, 0.52)',
     },
   }[tipo];
 
@@ -1011,10 +1011,10 @@ const EscenarioMontaña = memo(function EscenarioMontaña() {
           rx="122"
           ry="64"
           transform="rotate(-8 216 252)"
-          fill="#261F52"
-          fillOpacity="0.56"
-          stroke="#C4B5FD"
-          strokeOpacity="0.36"
+          fill="#062856"
+          fillOpacity="0.58"
+          stroke="#38BDF8"
+          strokeOpacity="0.45"
           strokeWidth="1.2"
         />
       </g>
@@ -1041,10 +1041,10 @@ const EscenarioMontaña = memo(function EscenarioMontaña() {
       />
 
       {/* Cristales decorativos armónicos en las terrazas */}
-      <CristalesMontaña x={86} y={280} escala={1.0} variante="violeta" />
+      <CristalesMontaña x={86} y={280} escala={1.0} variante="crema" />
       <CristalesMontaña x={182} y={488} escala={0.92} variante="esmeralda" />
       <CristalesMontaña x={436} y={498} escala={0.9} variante="crema" />
-      <CristalesMontaña x={625} y={392} escala={1.0} variante="violeta" />
+      <CristalesMontaña x={625} y={392} escala={1.0} variante="crema" />
       <CristalesMontaña x={748} y={492} escala={0.86} variante="esmeralda" />
 
       {/* Destellos estelares suaves sobre la montaña */}
@@ -1086,161 +1086,161 @@ export default function MapaMontañaCuantica({
       aria-label="Montaña Cuántica de Numérix"
     >
       <defs>
-        {/* Nebulosas de fondo: Azul Profundo, Morado Amatista y Esmeralda */}
+        {/* Nebulosas de fondo: Azul Tecnológico, Cian Holográfico y Turquesa */}
         <radialGradient id="deepNebulaGrad" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#1E3A8A" stopOpacity="0.32" />
-          <stop offset="55%" stopColor="#0F172A" stopOpacity="0.14" />
-          <stop offset="100%" stopColor="#040714" stopOpacity="0" />
+          <stop offset="0%" stopColor="#0284C7" stopOpacity="0.32" />
+          <stop offset="55%" stopColor="#082F49" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#020B1C" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="purpleNebulaGrad" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.26" />
-          <stop offset="60%" stopColor="#4C1D95" stopOpacity="0.1" />
-          <stop offset="100%" stopColor="#040714" stopOpacity="0" />
+          <stop offset="0%" stopColor="#0EA5E9" stopOpacity="0.28" />
+          <stop offset="60%" stopColor="#0369A1" stopOpacity="0.12" />
+          <stop offset="100%" stopColor="#020B1C" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="emeraldNebulaGrad" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#10B981" stopOpacity="0.22" />
-          <stop offset="60%" stopColor="#065F46" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="#040714" stopOpacity="0" />
+          <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.24" />
+          <stop offset="60%" stopColor="#0E7490" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="#020B1C" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="mistSoftGrad" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#93C5FD" stopOpacity="0.2" />
-          <stop offset="60%" stopColor="#A855F7" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="#0F172A" stopOpacity="0" />
+          <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.24" />
+          <stop offset="60%" stopColor="#00F5FF" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="#082F49" stopOpacity="0" />
         </radialGradient>
 
         {/* Gradientes del Agujero Negro, Planeta Satelital, Cometas y Meteoritos */}
         <radialGradient id="bhOuterGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.45" />
-          <stop offset="45%" stopColor="#3B82F6" stopOpacity="0.22" />
-          <stop offset="75%" stopColor="#10B981" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="#040714" stopOpacity="0" />
+          <stop offset="0%" stopColor="#0EA5E9" stopOpacity="0.48" />
+          <stop offset="45%" stopColor="#0284C7" stopOpacity="0.26" />
+          <stop offset="75%" stopColor="#00F5FF" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="#020B1C" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="bhDiskGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#6EE7B7" stopOpacity="0.85" />
-          <stop offset="30%" stopColor="#93C5FD" stopOpacity="0.95" />
-          <stop offset="65%" stopColor="#E879F9" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#C084FC" stopOpacity="0.85" />
+          <stop offset="0%" stopColor="#00F5FF" stopOpacity="0.9" />
+          <stop offset="35%" stopColor="#38BDF8" stopOpacity="0.95" />
+          <stop offset="70%" stopColor="#0EA5E9" stopOpacity="0.95" />
+          <stop offset="100%" stopColor="#2DD4BF" stopOpacity="0.88" />
         </linearGradient>
         <linearGradient id="bhLensGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#E2EEFF" />
-          <stop offset="50%" stopColor="#C084FC" />
-          <stop offset="100%" stopColor="#6EE7B7" />
+          <stop offset="0%" stopColor="#E0F2FE" />
+          <stop offset="50%" stopColor="#38BDF8" />
+          <stop offset="100%" stopColor="#00F5FF" />
         </linearGradient>
         <radialGradient id="bgPlanetHalo" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#6366F1" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#040714" stopOpacity="0" />
+          <stop offset="0%" stopColor="#0EA5E9" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#020B1C" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="bgPlanetSphere" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#E2EEFF" />
-          <stop offset="35%" stopColor="#6366F1" />
-          <stop offset="75%" stopColor="#1E1B4B" />
-          <stop offset="100%" stopColor="#090D24" />
+          <stop offset="0%" stopColor="#E0F2FE" />
+          <stop offset="35%" stopColor="#0EA5E9" />
+          <stop offset="75%" stopColor="#075985" />
+          <stop offset="100%" stopColor="#02152E" />
         </radialGradient>
         <radialGradient id="impactFlashGrad" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#FDE047" stopOpacity="0.55" />
-          <stop offset="45%" stopColor="#E879F9" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="#040714" stopOpacity="0" />
+          <stop offset="45%" stopColor="#38BDF8" stopOpacity="0.32" />
+          <stop offset="100%" stopColor="#020B1C" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="cometTailEmerald" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#6EE7B7" stopOpacity="0" />
-          <stop offset="60%" stopColor="#93C5FD" stopOpacity="0.45" />
+          <stop offset="0%" stopColor="#00F5FF" stopOpacity="0" />
+          <stop offset="60%" stopColor="#38BDF8" stopOpacity="0.5" />
           <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.95" />
         </linearGradient>
         <linearGradient id="cometTailPurple" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#C084FC" stopOpacity="0" />
-          <stop offset="60%" stopColor="#E879F9" stopOpacity="0.45" />
+          <stop offset="0%" stopColor="#0284C7" stopOpacity="0" />
+          <stop offset="60%" stopColor="#7DD3FC" stopOpacity="0.5" />
           <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.95" />
         </linearGradient>
         <linearGradient id="visorCyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#1E1B4B" />
-          <stop offset="50%" stopColor="#0F172A" />
-          <stop offset="100%" stopColor="#311042" />
+          <stop offset="0%" stopColor="#075985" />
+          <stop offset="50%" stopColor="#082F49" />
+          <stop offset="100%" stopColor="#02152E" />
         </linearGradient>
 
-        {/* Gradientes esculturales de la isla-montaña */}
+        {/* Gradientes esculturales de la isla-montaña en Azul Tecnológico */}
         <linearGradient id="cliffBaseGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0F1B3D" />
-          <stop offset="50%" stopColor="#0B132B" />
-          <stop offset="100%" stopColor="#060A18" />
+          <stop offset="0%" stopColor="#082C58" />
+          <stop offset="50%" stopColor="#051E3E" />
+          <stop offset="100%" stopColor="#020E24" />
         </linearGradient>
         <linearGradient id="cliffDeepGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0C1530" />
-          <stop offset="100%" stopColor="#040712" />
+          <stop offset="0%" stopColor="#062246" />
+          <stop offset="100%" stopColor="#020B1C" />
         </linearGradient>
         <linearGradient id="cliffWallGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#152248" />
-          <stop offset="50%" stopColor="#0D1734" />
-          <stop offset="100%" stopColor="#080E22" />
+          <stop offset="0%" stopColor="#0A3466" />
+          <stop offset="50%" stopColor="#062248" />
+          <stop offset="100%" stopColor="#03142E" />
         </linearGradient>
         <linearGradient id="innerCliffGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#111A3A" />
-          <stop offset="50%" stopColor="#1A2652" />
-          <stop offset="100%" stopColor="#232E66" />
+          <stop offset="0%" stopColor="#072852" />
+          <stop offset="50%" stopColor="#0C3B72" />
+          <stop offset="100%" stopColor="#0E4B8A" />
         </linearGradient>
         <linearGradient id="summitCliffGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#161D42" />
-          <stop offset="60%" stopColor="#232B5E" />
-          <stop offset="100%" stopColor="#2E3675" />
+          <stop offset="0%" stopColor="#08305E" />
+          <stop offset="60%" stopColor="#0E4782" />
+          <stop offset="100%" stopColor="#0284C7" />
         </linearGradient>
 
-        {/* Superficies superiores de las 3 terrazas */}
+        {/* Superficies superiores de las 3 terrazas en Azul Futurista */}
         <linearGradient id="terrace1TopGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#16244D" />
-          <stop offset="55%" stopColor="#101B3B" />
-          <stop offset="100%" stopColor="#0A1228" />
+          <stop offset="0%" stopColor="#0B3568" />
+          <stop offset="55%" stopColor="#07264D" />
+          <stop offset="100%" stopColor="#041834" />
         </linearGradient>
         <linearGradient id="terrace2TopGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#1F2E63" />
-          <stop offset="55%" stopColor="#18234D" />
-          <stop offset="100%" stopColor="#111938" />
+          <stop offset="0%" stopColor="#0E4480" />
+          <stop offset="55%" stopColor="#0A3260" />
+          <stop offset="100%" stopColor="#062044" />
         </linearGradient>
         <linearGradient id="summitTopGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#2D3A7A" />
-          <stop offset="55%" stopColor="#232B61" />
-          <stop offset="100%" stopColor="#181E46" />
+          <stop offset="0%" stopColor="#0284C7" />
+          <stop offset="55%" stopColor="#0C4A7E" />
+          <stop offset="100%" stopColor="#072D56" />
         </linearGradient>
 
-        {/* Gradiente del Riel Fluido */}
+        {/* Gradiente del Riel Fluido: Azul Hielo -> Cian Eléctrico -> Turquesa */}
         <linearGradient id="railFluidGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#93C5FD" />
-          <stop offset="45%" stopColor="#C084FC" />
-          <stop offset="100%" stopColor="#6EE7B7" />
+          <stop offset="0%" stopColor="#38BDF8" />
+          <stop offset="50%" stopColor="#00F5FF" />
+          <stop offset="100%" stopColor="#2DD4BF" />
         </linearGradient>
 
-        {/* Portal y Santuario */}
+        {/* Portal y Santuario en Azul Eléctrico + Cian Holográfico */}
         <radialGradient id="portalFloorGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#93C5FD" stopOpacity="0.45" />
-          <stop offset="100%" stopColor="#93C5FD" stopOpacity="0" />
+          <stop offset="0%" stopColor="#00F5FF" stopOpacity="0.48" />
+          <stop offset="100%" stopColor="#0EA5E9" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="portalArchGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#E2EEFF" />
-          <stop offset="50%" stopColor="#93C5FD" />
-          <stop offset="100%" stopColor="#3B82F6" />
+          <stop offset="0%" stopColor="#E0F2FE" />
+          <stop offset="50%" stopColor="#38BDF8" />
+          <stop offset="100%" stopColor="#0284C7" />
         </linearGradient>
         <radialGradient id="portalEnergyGrad" cx="50%" cy="50%" r="60%">
-          <stop offset="0%" stopColor="#F0F6FF" />
-          <stop offset="55%" stopColor="#A5B4FC" />
-          <stop offset="100%" stopColor="#4F46E5" />
+          <stop offset="0%" stopColor="#FFFFFF" />
+          <stop offset="55%" stopColor="#38BDF8" />
+          <stop offset="100%" stopColor="#0284C7" />
         </radialGradient>
         <radialGradient id="bossHaloGrad" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#C084FC" stopOpacity="0.38" />
-          <stop offset="60%" stopColor="#34D399" stopOpacity="0.16" />
-          <stop offset="100%" stopColor="#1E1B4B" stopOpacity="0" />
+          <stop offset="0%" stopColor="#00F5FF" stopOpacity="0.42" />
+          <stop offset="60%" stopColor="#0EA5E9" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#062044" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="armilarBeamGrad" x1="0" y1="1" x2="0" y2="0">
-          <stop offset="0%" stopColor="#E2EEFF" stopOpacity="0.65" />
-          <stop offset="60%" stopColor="#C084FC" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="#C084FC" stopOpacity="0" />
+          <stop offset="0%" stopColor="#E0F2FE" stopOpacity="0.7" />
+          <stop offset="60%" stopColor="#00F5FF" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#0EA5E9" stopOpacity="0" />
         </linearGradient>
         <radialGradient id="armilarCoreGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#F3E8FF" stopOpacity="0.85" />
-          <stop offset="55%" stopColor="#C084FC" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#7C3AED" stopOpacity="0" />
+          <stop offset="0%" stopColor="#E0F2FE" stopOpacity="0.88" />
+          <stop offset="55%" stopColor="#00F5FF" stopOpacity="0.42" />
+          <stop offset="100%" stopColor="#0284C7" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="goldRingGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#F3E8FF" />
-          <stop offset="50%" stopColor="#C084FC" />
-          <stop offset="100%" stopColor="#7C3AED" />
+          <stop offset="0%" stopColor="#E0F2FE" />
+          <stop offset="50%" stopColor="#00F5FF" />
+          <stop offset="100%" stopColor="#0284C7" />
         </linearGradient>
       </defs>
 

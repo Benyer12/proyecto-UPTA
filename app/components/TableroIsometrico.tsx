@@ -45,10 +45,10 @@ const TOTAL = 20;
 const BONUS_JEFE_FINAL = 4;
 
 const OPERADORES_NUCLEO: { op: '+' | '−' | '×' | '÷'; nombre: string; color: string; glow: string }[] = [
-  { op: '+', nombre: 'Adición', color: '#E2EEFF', glow: 'rgba(226, 238, 255, 0.55)' },
-  { op: '−', nombre: 'Sustracción', color: '#C084FC', glow: 'rgba(192, 132, 252, 0.55)' },
-  { op: '×', nombre: 'Producto', color: '#E879F9', glow: 'rgba(232, 121, 249, 0.55)' },
-  { op: '÷', nombre: 'Cociente', color: '#6EE7B7', glow: 'rgba(110, 231, 183, 0.55)' },
+  { op: '+', nombre: 'Adición', color: '#E0F2FE', glow: 'rgba(224, 242, 254, 0.55)' },
+  { op: '−', nombre: 'Sustracción', color: '#38BDF8', glow: 'rgba(56, 189, 248, 0.6)' },
+  { op: '×', nombre: 'Producto', color: '#00F5FF', glow: 'rgba(0, 245, 255, 0.6)' },
+  { op: '÷', nombre: 'Cociente', color: '#2DD4BF', glow: 'rgba(45, 212, 191, 0.55)' },
 ];
 
 const CONDICIONES_TRAMPA: {
@@ -801,7 +801,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
         background:
-          'radial-gradient(ellipse at 25% 20%, #111A3A 0%, #070C1F 52%, #030611 100%)',
+          'radial-gradient(ellipse at 25% 20%, #062856 0%, #031530 52%, #010814 100%)',
       }}
     >
       {/* ════════════════════ ESCENARIO PRINCIPAL: MONTAÑA CUÁNTICA (IZQUIERDA / CENTRO) ════════════════════ */}
@@ -811,9 +811,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
           <button
             type="button"
             onClick={() => router.push('/dashboard')}
-            className="liquid-glass-pill flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-xs sm:text-sm text-[#E2EEFF] hover:text-white cursor-pointer"
+            className="liquid-glass-pill flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-xs sm:text-sm text-[#E0F2FE] hover:text-white cursor-pointer"
           >
-            <span className="text-[#93C5FD]">←</span>
+            <span className="text-[#38BDF8]">←</span>
             <span>Mapa</span>
           </button>
         </div>
@@ -824,18 +824,19 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             className="liquid-glass-pill px-6 sm:px-8 py-2 rounded-2xl flex items-center gap-3"
             style={{
               background:
-                'linear-gradient(135deg, rgba(147, 197, 253, 0.16) 0%, rgba(168, 85, 247, 0.16) 50%, rgba(52, 211, 153, 0.14) 100%)',
-              borderColor: 'rgba(226, 238, 255, 0.28)',
+                'linear-gradient(135deg, rgba(2, 132, 199, 0.28) 0%, rgba(14, 165, 233, 0.24) 50%, rgba(0, 245, 255, 0.18) 100%)',
+              borderColor: 'rgba(125, 211, 252, 0.42)',
+              boxShadow: '0 0 22px rgba(14, 165, 233, 0.24)',
             }}
           >
-            <span className="text-xs text-[#6EE7B7]">✦</span>
+            <span className="text-xs text-[#00F5FF]">✦</span>
             <span
-              className="text-xs sm:text-sm font-black tracking-[0.22em] text-[#F0F6FF] uppercase"
+              className="text-xs sm:text-sm font-black tracking-[0.22em] text-[#F0F9FF] uppercase"
               style={{ fontFamily: "'Orbitron', sans-serif" }}
             >
               SALTO CUÁNTICO
             </span>
-            <span className="text-xs text-[#C084FC]">✦</span>
+            <span className="text-xs text-[#38BDF8]">✦</span>
           </div>
         </div>
 
@@ -853,52 +854,53 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         {/* ── Abajo al Centro: Píldora Flotante de Instrucciones en Liquid Glass ── */}
         <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 max-w-[92%] sm:max-w-lg pointer-events-none">
           <div
-            className="px-6 py-2.5 rounded-2xl liquid-glass-pill flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#E2EEFF] text-center"
+            className="px-6 py-2.5 rounded-2xl liquid-glass-pill flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#E0F2FE] text-center"
             style={{
-              background: 'linear-gradient(135deg, rgba(15, 23, 52, 0.84) 0%, rgba(9, 14, 34, 0.9) 100%)',
-              borderColor: 'rgba(191, 219, 254, 0.28)',
+              background: 'linear-gradient(135deg, rgba(6, 28, 60, 0.86) 0%, rgba(3, 15, 36, 0.92) 100%)',
+              borderColor: 'rgba(56, 189, 248, 0.34)',
             }}
           >
-            <span className="text-[#6EE7B7]">✦</span>
+            <span className="text-[#00F5FF]">✦</span>
             <span>{avisoFlotante}</span>
           </div>
         </div>
       </div>
 
-      {/* ════════════════════ HUD LATERAL DERECHO EN LIQUID GLASS ════════════════════ */}
+      {/* ════════════════════ HUD LATERAL DERECHO EN LIQUID GLASS AZUL FUTURISTA ════════════════════ */}
       <aside className="relative z-30 w-full lg:w-[335px] xl:w-[355px] lg:h-full p-2.5 sm:p-3.5 flex flex-col justify-center shrink-0">
         <div
           className="relative w-full h-full max-h-[820px] rounded-3xl liquid-glass liquid-glass-panel p-4 sm:p-5 flex flex-col justify-between overflow-x-hidden overflow-y-auto"
           style={{
             background:
-              'linear-gradient(165deg, rgba(22, 32, 70, 0.68) 0%, rgba(11, 17, 38, 0.82) 55%, rgba(6, 10, 24, 0.9) 100%)',
-            borderColor: 'rgba(191, 219, 254, 0.24)',
+              'linear-gradient(165deg, rgba(7, 36, 76, 0.76) 0%, rgba(4, 22, 48, 0.86) 55%, rgba(2, 11, 26, 0.94) 100%)',
+            borderColor: 'rgba(56, 189, 248, 0.32)',
+            boxShadow: '0 0 36px rgba(14, 165, 233, 0.16), inset 0 1px 0 rgba(186, 230, 253, 0.25)',
           }}
         >
           {/* ── 1. CABECERA: NUMÉRIX — TABLERO CUÁNTICO ── */}
-          <div className="relative text-center pt-0.5 pb-3 border-b border-white/10">
+          <div className="relative text-center pt-0.5 pb-3 border-b border-sky-300/15">
             <div className="absolute right-0 top-0">
               <SoundTogglePill />
             </div>
             <h1
               className="text-2xl sm:text-3xl font-black tracking-wider leading-none select-none"
               style={{
-                background: 'linear-gradient(135deg, #F0F6FF 0%, #BFDBFE 45%, #C4B5FD 100%)',
+                background: 'linear-gradient(135deg, #FFFFFF 0%, #7DD3FC 48%, #00F5FF 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                filter: 'drop-shadow(0 2px 14px rgba(147, 197, 253, 0.28))',
+                filter: 'drop-shadow(0 0 16px rgba(0, 245, 255, 0.38))',
                 fontFamily: "'Orbitron', sans-serif",
               }}
             >
               NUMÉRIX
             </h1>
-            <p className="mt-1.5 text-[10px] font-bold tracking-[0.26em] text-[#93C5FD]/90 uppercase">
+            <p className="mt-1.5 text-[10px] font-bold tracking-[0.26em] text-[#7DD3FC] uppercase">
               TABLERO CUÁNTICO
             </p>
-            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#67E8F9]/35 bg-[#041724]/80 px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#67E8F9]">
+            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#00F5FF]/40 bg-[#03203A]/85 px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#67E8F9]">
               <span>Gemma 4 · {etiquetaNivelIA}</span>
             </div>
-            <p className="mt-1.5 text-[11px] text-[#CBD5E1] leading-snug line-clamp-2">
+            <p className="mt-1.5 text-[11px] text-[#BAE6FD]/90 leading-snug line-clamp-2">
               {mensajeTutorIA}
             </p>
           </div>
@@ -908,17 +910,17 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             className="relative my-2.5 py-4 rounded-2xl liquid-glass-pill flex flex-col items-center justify-center overflow-hidden"
             style={{
               background:
-                'radial-gradient(circle at 50% 50%, rgba(49, 46, 129, 0.42) 0%, rgba(15, 23, 52, 0.72) 70%, rgba(7, 11, 26, 0.88) 100%)',
-              borderColor: 'rgba(196, 181, 253, 0.28)',
+                'radial-gradient(circle at 50% 50%, rgba(14, 116, 180, 0.44) 0%, rgba(6, 32, 68, 0.78) 70%, rgba(3, 15, 36, 0.9) 100%)',
+              borderColor: 'rgba(56, 189, 248, 0.38)',
             }}
           >
-            <span className="pointer-events-none absolute top-2.5 left-3.5 text-[#C4B5FD]/70 text-xs">✦</span>
-            <span className="pointer-events-none absolute bottom-2.5 right-3.5 text-[#6EE7B7]/70 text-xs">✦</span>
+            <span className="pointer-events-none absolute top-2.5 left-3.5 text-[#38BDF8]/80 text-xs">✦</span>
+            <span className="pointer-events-none absolute bottom-2.5 right-3.5 text-[#00F5FF]/80 text-xs">✦</span>
 
             <div
-              className="pointer-events-none absolute bottom-2 w-28 h-5 rounded-full opacity-45"
+              className="pointer-events-none absolute bottom-2 w-28 h-5 rounded-full opacity-55"
               style={{
-                background: 'radial-gradient(ellipse, #A855F7 0%, transparent 75%)',
+                background: 'radial-gradient(ellipse, #00F5FF 0%, transparent 75%)',
               }}
             />
 
@@ -936,9 +938,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 rolling={rolling}
                 result={diceResult}
                 onRollComplete={handleRollComplete}
-                faceColor="#152046"
-                borderColor="#BFDBFE"
-                pipColor="#E2EEFF"
+                faceColor="#082854"
+                borderColor="#7DD3FC"
+                pipColor="#E0F2FE"
               />
             </div>
           </div>
@@ -948,27 +950,27 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             className="relative rounded-2xl liquid-glass p-3.5 sm:p-4 my-1"
             style={{
               background:
-                'linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(12, 18, 40, 0.65) 100%)',
-              borderColor: 'rgba(191, 219, 254, 0.18)',
+                'linear-gradient(160deg, rgba(14, 165, 233, 0.08) 0%, rgba(4, 22, 48, 0.72) 100%)',
+              borderColor: 'rgba(56, 189, 248, 0.24)',
             }}
           >
             <div className="mb-3.5">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] font-bold tracking-[0.18em] text-[#E2EEFF] uppercase">
+                <span className="text-[11px] font-bold tracking-[0.18em] text-[#E0F2FE] uppercase">
                   PROGRESO
                 </span>
-                <span className="text-xs font-black text-[#93C5FD]">
+                <span className="text-xs font-black text-[#38BDF8]">
                   {progresoPct}% ({pos + 1}/{TOTAL})
                 </span>
               </div>
 
-              <div className="relative h-4 rounded-full bg-[#060A18]/90 border border-white/15 p-0.5 shadow-inner">
+              <div className="relative h-4 rounded-full bg-[#020B1C]/90 border border-sky-300/20 p-0.5 shadow-inner">
                 <div
                   className="h-full rounded-full transition-[width] duration-300 ease-out"
                   style={{
                     width: `${Math.max(6, progresoPct)}%`,
-                    background: 'linear-gradient(90deg, #6366F1 0%, #A855F7 50%, #34D399 100%)',
-                    boxShadow: '0 0 12px rgba(168, 85, 247, 0.5)',
+                    background: 'linear-gradient(90deg, #0284C7 0%, #0EA5E9 48%, #00F5FF 100%)',
+                    boxShadow: '0 0 14px rgba(0, 245, 255, 0.58)',
                   }}
                 />
                 {[32, 66, 95].map((pct, idx) => {
@@ -979,10 +981,10 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                       className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black"
                       style={{
                         left: `${pct}%`,
-                        background: alcanzada ? '#34D399' : '#0F1734',
-                        color: alcanzada ? '#042F2E' : '#93C5FD',
-                        border: alcanzada ? '1.5px solid #A7F3D0' : '1px solid rgba(147, 197, 253, 0.35)',
-                        boxShadow: alcanzada ? '0 0 10px rgba(52, 211, 153, 0.6)' : 'none',
+                        background: alcanzada ? '#00F5FF' : '#062044',
+                        color: alcanzada ? '#021526' : '#7DD3FC',
+                        border: alcanzada ? '1.5px solid #E0F2FE' : '1px solid rgba(56, 189, 248, 0.4)',
+                        boxShadow: alcanzada ? '0 0 12px rgba(0, 245, 255, 0.72)' : 'none',
                       }}
                     >
                       ★
@@ -994,10 +996,10 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
 
             <div className="mt-3">
               <div className="flex items-center justify-between mb-2.5">
-                <span className="text-[11px] font-bold tracking-[0.16em] text-[#E2EEFF] uppercase">
+                <span className="text-[11px] font-bold tracking-[0.16em] text-[#E0F2FE] uppercase">
                   NÚCLEOS CUÁNTICOS
                 </span>
-                <span className="text-[10px] font-bold text-[#C4B5FD] liquid-glass-pill px-2.5 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold text-[#67E8F9] liquid-glass-pill px-2.5 py-0.5 rounded-full">
                   {nucleosActivosCount}/4 Cristales
                 </span>
               </div>
@@ -1018,19 +1020,19 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 className="mt-3 rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-2 liquid-glass-pill transition-all"
                 style={{
                   background: llaveLista
-                    ? 'linear-gradient(90deg, rgba(16,185,129,0.22) 0%, rgba(168,85,247,0.22) 100%)'
-                    : 'rgba(8, 13, 30, 0.68)',
-                  borderColor: llaveLista ? 'rgba(110, 231, 183, 0.55)' : 'rgba(191, 219, 254, 0.16)',
+                    ? 'linear-gradient(90deg, rgba(14,165,233,0.28) 0%, rgba(0,245,255,0.24) 100%)'
+                    : 'rgba(3, 18, 40, 0.74)',
+                  borderColor: llaveLista ? 'rgba(0, 245, 255, 0.65)' : 'rgba(56, 189, 248, 0.22)',
                 }}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span className="text-base shrink-0">{llaveLista ? '🗝️' : '🔒'}</span>
-                  <p className="text-xs font-black uppercase tracking-wider text-[#F0F6FF] truncate">
+                  <p className="text-xs font-black uppercase tracking-wider text-[#F0F9FF] truncate">
                     LLAVE DEL GUARDIÁN
                   </p>
                 </div>
                 {stars > 0 && (
-                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 text-xs font-black text-emerald-200 bg-emerald-400/15 border border-emerald-300/40 px-2.5 py-1 rounded-full leading-none">
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 text-xs font-black text-cyan-100 bg-cyan-400/18 border border-cyan-300/45 px-2.5 py-1 rounded-full leading-none">
                     <span>⭐</span>
                     <span>{stars}</span>
                   </span>
@@ -1048,8 +1050,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               className="w-full py-3 rounded-2xl font-black text-sm tracking-[0.18em] uppercase transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 liquid-glass-btn text-white"
               style={{
                 background:
-                  'linear-gradient(135deg, rgba(99, 102, 241, 0.55) 0%, rgba(168, 85, 247, 0.45) 50%, rgba(16, 185, 129, 0.42) 100%)',
-                borderColor: 'rgba(226, 238, 255, 0.45)',
+                  'linear-gradient(135deg, rgba(2, 132, 199, 0.78) 0%, rgba(14, 165, 233, 0.68) 52%, rgba(0, 245, 255, 0.52) 100%)',
+                borderColor: 'rgba(186, 230, 253, 0.65)',
+                boxShadow: '0 0 22px rgba(14, 165, 233, 0.38)',
               }}
             >
               <span>🎲</span>
@@ -1065,7 +1068,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             <button
               type="button"
               onClick={() => setMostrarGuia(true)}
-              className="w-full py-2.5 rounded-2xl font-bold text-xs tracking-[0.18em] uppercase transition-all cursor-pointer flex items-center justify-center gap-2 liquid-glass-pill text-[#E2EEFF] hover:text-white"
+              className="w-full py-2.5 rounded-2xl font-bold text-xs tracking-[0.18em] uppercase transition-all cursor-pointer flex items-center justify-center gap-2 liquid-glass-pill text-[#E0F2FE] hover:text-white"
             >
               <span>📐</span>
               <span>FÓRMULAS Y GUÍA</span>
@@ -1184,8 +1187,8 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 </div>
 
                 <div className="p-3.5 rounded-2xl liquid-glass-pill">
-                  <p className="font-black text-fuchsia-300 mb-0.5">
-                    ⚠️ Cubos Magenta/Morado (Casillas 06, 10 y 14 — Alerta de Impacto):
+                  <p className="font-black text-amber-300 mb-0.5">
+                    ⚠️ Cubos Ámbar Plasma (Casillas 06, 10 y 14 · Alerta de Impacto):
                   </p>
                   <p className="text-slate-200/90">
                     Dispara con el cañón al asteroide que cumpla la condición (Par, Impar o Múltiplo)
@@ -1194,8 +1197,8 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 </div>
 
                 <div className="p-3.5 rounded-2xl liquid-glass-pill">
-                  <p className="font-black text-purple-300 mb-0.5">
-                    🌐 Cima Casilla 20 (Guardián del Nivel — Núcleo Armilar):
+                  <p className="font-black text-cyan-300 mb-0.5">
+                    🌐 Cima Casilla 20 (Guardián del Nivel · Núcleo Armilar):
                   </p>
                   <p className="text-slate-200/90">
                     Resuelve las 3 fases para alinear los 3 anillos de la Esfera Armilar y
