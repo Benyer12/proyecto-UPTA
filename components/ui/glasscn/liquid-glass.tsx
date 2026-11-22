@@ -21,7 +21,7 @@ type MapGeometry = {
   bezel: number;
 };
 
-const MAX_TEXTURE_SIZE = 720;
+const MAX_TEXTURE_SIZE = 160;
 const EDGE_TAPER_PX = 2.0;
 
 const displacementMapCache = new Map<string, string>();
@@ -168,12 +168,20 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
     if (!el) return;
     const measure = () => {
       const rect = el.getBoundingClientRect();
-      const width = Math.round(rect.width);
-      const height = Math.round(rect.height);
-      if (!width || !height) return;
+      // Cuantizar a múltiplos de 16px para evitar regenerar texturas por micro-cambios
+      const rawW = Math.round(rect.width);
+      const rawH = Math.round(rect.height);
+      if (!rawW || !rawH) return;
+      const width = Math.max(16, Math.round(rawW / 16) * 16);
+      const height = Math.max(16, Math.round(rawH / 16) * 16);
+      // Solo tarjetas/paneles grandes necesitan mapa SVG de refracción
+      if (width < 150 || height < 76) {
+        setGeometry((prev) => (prev === null ? prev : null));
+        return;
+      }
       const parsed = Number.parseFloat(getComputedStyle(el).borderTopLeftRadius);
       const radius = Math.min(
-        Number.isFinite(parsed) ? parsed : Math.min(width, height) / 2,
+        Number.isFinite(parsed) ? Math.round(parsed / 4) * 4 : Math.min(width, height) / 2,
         width / 2,
         height / 2,
       );
@@ -201,22 +209,18 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
     setSupported(supportsSvgBackdropFilter());
   }, []);
 
-  const refractionActive = supported && mapUrl !== '';
+  const refractionActive = supported && !readingPriority && mapUrl !== '';
   const effectiveBlur = isLight
     ? readingPriority
       ? Math.max(blur, 14)
       : Math.min(blur, 1.15)
     : blur;
-  const effectiveRefraction = isLight
-    ? readingPriority
-      ? Math.min(refraction, 8)
-      : Math.min(refraction, 8)
-    : refraction;
+  const effectiveRefraction = isLight ? Math.min(refraction, 8) : refraction;
   const effectiveSaturation = isLight ? 1.04 : saturation;
 
   const backdropFilter = refractionActive
     ? `url(#${filterId}) blur(${effectiveBlur}px) saturate(${effectiveSaturation})`
-    : `blur(${isLight && !readingPriority ? 1.5 : effectiveBlur + 2.5}px) saturate(${effectiveSaturation})`;
+    : `blur(${isLight && !readingPriority ? 1.5 : effectiveBlur + 2}px) saturate(${effectiveSaturation})`;
 
   return (
     <>
@@ -233,7 +237,14 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
             : 'bg-white/[0.045] border border-white/[0.16] shadow-[0_24px_80px_-42px_rgba(0,0,0,0.72),inset_0_0_22px_rgba(255,255,255,0.09),inset_0_0_0_1px_rgba(255,255,255,0.16)]',
           className,
         )}
-        style={{ ...style, backdropFilter, WebkitBackdropFilter: backdropFilter } as CSSProperties}
+        style={
+          {
+            contain: 'layout style',
+            ...style,
+            backdropFilter,
+            WebkitBackdropFilter: backdropFilter,
+          } as CSSProperties
+        }
         {...props}
       >
         {children}
@@ -279,9 +290,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
               scale={effectiveRefraction}
               xChannelSelector="R"
               yChannelSelector="G"
-              result="displaced"
             />
-            <feGaussianBlur in="displaced" stdDeviation={isLight && !readingPriority ? '0.08' : '0.15'} />
           </filter>
         </svg>
       )}

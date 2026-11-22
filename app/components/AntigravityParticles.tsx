@@ -95,6 +95,8 @@ export default function AntigravityParticles() {
     let animationId: number;
     let particles: Particle[] = [];
     let isVisible = true;
+    let lastFrame = 0;
+    let lastMoveAt = 0;
 
     const mouse = {
       x: -9999,
@@ -117,7 +119,7 @@ export default function AntigravityParticles() {
 
     const createParticles = (w: number, h: number): Particle[] => {
       const list: Particle[] = [];
-      const spacing = w < 768 ? 68 : 54;
+      const spacing = w < 768 ? 84 : 68;
       const cols = Math.ceil(w / spacing);
       const rows = Math.ceil(h / spacing);
 
@@ -158,6 +160,7 @@ export default function AntigravityParticles() {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
+      lastMoveAt = performance.now();
       mouse.targetX = e.clientX;
       mouse.targetY = e.clientY;
       if (!mouse.active) {
@@ -169,6 +172,7 @@ export default function AntigravityParticles() {
 
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length > 0) {
+        lastMoveAt = performance.now();
         const t = e.touches[0];
         mouse.targetX = t.clientX;
         mouse.targetY = t.clientY;
@@ -200,6 +204,15 @@ export default function AntigravityParticles() {
         return;
       }
 
+      // 60 fps al mover el cursor y 30 fps cuando está en reposo para cero lag
+      const interacting = mouse.active && timestamp - lastMoveAt < 1800;
+      const minInterval = interacting ? 16 : 33;
+      if (timestamp - lastFrame < minInterval) {
+        animationId = requestAnimationFrame(animate);
+        return;
+      }
+      lastFrame = timestamp;
+
       const time = timestamp / 1000;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -216,6 +229,7 @@ export default function AntigravityParticles() {
       }
 
       const attractRadius = 350;
+      const attractRadiusSq = attractRadius * attractRadius;
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
@@ -231,36 +245,40 @@ export default function AntigravityParticles() {
         if (mouse.active) {
           const dxMouse = mouse.x - p.x;
           const dyMouse = mouse.y - p.y;
-          const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+          const distMouseSq = dxMouse * dxMouse + dyMouse * dyMouse;
 
           const dxOrigin = mouse.x - p.originX;
           const dyOrigin = mouse.y - p.originY;
-          const distOrigin = Math.sqrt(dxOrigin * dxOrigin + dyOrigin * dyOrigin);
+          const distOriginSq = dxOrigin * dxOrigin + dyOrigin * dyOrigin;
 
-          const effectiveDist = Math.min(distMouse, distOrigin * 0.85);
+          if (distMouseSq < attractRadiusSq || distOriginSq < attractRadiusSq * 1.38) {
+            const distMouse = Math.sqrt(distMouseSq);
+            const distOrigin = Math.sqrt(distOriginSq);
+            const effectiveDist = Math.min(distMouse, distOrigin * 0.85);
 
-          if (effectiveDist < attractRadius) {
-            const influence = 1 - effectiveDist / attractRadius;
-            const smoothInfluence = influence * influence;
+            if (effectiveDist < attractRadius) {
+              const influence = 1 - effectiveDist / attractRadius;
+              const smoothInfluence = influence * influence;
 
-            const orbitAngle = p.orbitOffset + time * 0.4;
-            const desiredX = mouse.x + Math.cos(orbitAngle) * p.orbitRadius;
-            const desiredY = mouse.y + Math.sin(orbitAngle) * p.orbitRadius;
+              const orbitAngle = p.orbitOffset + time * 0.4;
+              const desiredX = mouse.x + Math.cos(orbitAngle) * p.orbitRadius;
+              const desiredY = mouse.y + Math.sin(orbitAngle) * p.orbitRadius;
 
-            p.vx += (desiredX - p.x) * 0.025 * smoothInfluence;
-            p.vy += (desiredY - p.y) * 0.025 * smoothInfluence;
+              p.vx += (desiredX - p.x) * 0.025 * smoothInfluence;
+              p.vy += (desiredY - p.y) * 0.025 * smoothInfluence;
 
-            p.vx += mouse.vx * 0.045 * smoothInfluence;
-            p.vy += mouse.vy * 0.045 * smoothInfluence;
+              p.vx += mouse.vx * 0.045 * smoothInfluence;
+              p.vy += mouse.vy * 0.045 * smoothInfluence;
 
-            if (distMouse < 40 && distMouse > 0.1) {
-              const push = ((40 - distMouse) / 40) * 0.35;
-              p.vx -= (dxMouse / distMouse) * push;
-              p.vy -= (dyMouse / distMouse) * push;
+              if (distMouse < 40 && distMouse > 0.1) {
+                const push = ((40 - distMouse) / 40) * 0.35;
+                p.vx -= (dxMouse / distMouse) * push;
+                p.vy -= (dyMouse / distMouse) * push;
+              }
+
+              targetAlpha = Math.min(isLight ? 0.92 : 0.88, p.baseAlpha + smoothInfluence * 0.48);
+              stretch = 1 + smoothInfluence * 0.85;
             }
-
-            targetAlpha = Math.min(isLight ? 0.92 : 0.88, p.baseAlpha + smoothInfluence * 0.48);
-            stretch = 1 + smoothInfluence * 0.85;
           }
         }
 
