@@ -23,14 +23,13 @@
 @layer base {
   html {
     color-scheme: dark;
-    scroll-behavior: smooth;
   }
 
   body {
     color: var(--text-star);
     background: linear-gradient(145deg, var(--space-bg-dark) 0%, var(--space-bg-deep) 100%);
     margin: 0;
-    overflow-x: hidden;
+    overflow-x: clip;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -925,10 +924,9 @@ li {
   text-wrap: pretty;
 }
 
-/* Below-the-fold rendering deferral (strictly paired with contain-intrinsic-size) */
+/* Below-the-fold sections kept rendered cleanly so scrolling never hitches mid-way */
 .mwg-defer-section {
-  content-visibility: auto;
-  contain-intrinsic-size: auto none auto 420px;
+  contain: layout style;
 }
 
 /* Decorative hairline scroll progress bar (compositor-only, progressive enhancement) */
@@ -964,24 +962,9 @@ li {
     }
   }
 
-  /* Subtle compositor-only scroll entry effect for below-the-fold cards */
-  @supports ((animation-timeline: view()) and (animation-range: entry)) {
-    @keyframes mwg-card-enter {
-      from {
-        opacity: 0.25;
-        transform: translateY(18px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .mwg-scroll-reveal {
-      animation: mwg-card-enter auto linear backwards;
-      animation-timeline: view(block);
-      animation-range: entry 0% entry 36%;
-    }
+  /* Clean GPU cards without scroll-timeline backdrop-filter invalidation */
+  .mwg-scroll-reveal {
+    contain: layout style;
   }
 }
 

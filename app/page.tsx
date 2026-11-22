@@ -205,7 +205,7 @@ export default function Home() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden text-white selection:bg-white/25">
+    <div className="relative min-h-screen overflow-x-clip text-white selection:bg-white/25">
       {/* ════════════════════ 1. HERO VISUAL CON BRILLO NEÓN Y TARJETA INTERACTIVA ════════════════════ */}
       <section className="relative z-10 mx-auto max-w-6xl px-5 sm:px-8 lg:px-10 pt-10 sm:pt-16 pb-14 sm:pb-20">
         <div className="grid gap-10 lg:grid-cols-[1.06fr_0.98fr] lg:gap-12 items-center">
@@ -281,14 +281,14 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.06, ease: 'easeOut' }}
             className="relative flex items-center justify-center"
           >
-            {/* Halo exterior neón súper vívido en modo oscuro y sutil en modo claro */}
+            {/* Halo exterior neón súper vívido en modo oscuro y sutil en modo claro (sin blur-3xl GPU) */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -inset-4 rounded-[2.25rem] blur-3xl transition-all duration-500"
+              className="pointer-events-none absolute -inset-8 rounded-[2.5rem] transition-opacity duration-500"
               style={{
                 background: isLight
-                  ? `radial-gradient(circle at 35% 35%, ${activePlanet.lightAccent}1C 0%, transparent 72%)`
-                  : `radial-gradient(circle at 35% 35%, ${activePlanet.orbitColorA}58 0%, ${activePlanet.orbitColorB}38 50%, transparent 78%)`,
+                  ? `radial-gradient(circle at 42% 42%, ${activePlanet.lightAccent}1C 0%, transparent 68%)`
+                  : `radial-gradient(circle at 42% 42%, ${activePlanet.orbitColorA}40 0%, ${activePlanet.orbitColorB}24 42%, transparent 72%)`,
               }}
             />
 
