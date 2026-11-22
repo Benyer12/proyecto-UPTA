@@ -554,7 +554,7 @@ export default function Header() {
 
   return (
     <>
-    <header className="fixed top-3 left-0 w-full z-50 px-3 sm:px-6 pointer-events-none">
+    <header className="fixed top-3 left-0 w-full z-40 px-3 sm:px-6 pointer-events-none">
       {/* Barra flotante Liquid Glass estilo glasscn (píldora suspendida con refracción SVG) */}
       <div className="mx-auto max-w-5xl pointer-events-auto">
         <LiquidGlass
@@ -562,7 +562,7 @@ export default function Header() {
           refraction={20}
           bezel={0.4}
           saturation={1.65}
-          className="h-13 rounded-full bg-[#050814]/[0.34] border-white/[0.16] px-3 sm:px-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3),inset_0_-10px_20px_-10px_rgba(180,220,255,0.16),0_18px_48px_-22px_rgba(0,0,0,0.75)]"
+          className="h-14 rounded-full bg-[#050814]/[0.34] border-white/[0.16] px-3.5 sm:px-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3),inset_0_-10px_20px_-10px_rgba(180,220,255,0.16),0_18px_48px_-22px_rgba(0,0,0,0.75)]"
         >
           <div className="h-full flex items-center justify-between gap-3">
             <Link
@@ -577,7 +577,7 @@ export default function Header() {
               </span>
             </Link>
 
-            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
               {!(token && user?.role === 'admin') && (
                 <nav className="hidden sm:flex items-center gap-1">
                   <Link
@@ -689,11 +689,12 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={() => {
+                    setTab('login');
                     setIsOpen(!isOpen);
                     resetLoginForm();
                     resetRegForm();
                   }}
-                  className="min-h-[36px] bg-white hover:bg-white/90 text-black text-xs sm:text-[13px] font-semibold px-4 py-1.5 rounded-full transition-colors cursor-pointer whitespace-nowrap"
+                  className="min-h-[40px] bg-white hover:bg-white/90 text-black text-xs sm:text-[13px] font-semibold px-4 py-1.5 rounded-full transition-colors cursor-pointer whitespace-nowrap"
                 >
                   Iniciar sesión
                 </button>
@@ -709,7 +710,7 @@ export default function Header() {
                 aria-expanded={mobileMenuOpen}
                 className={`${
                   token && user?.role === 'admin' ? 'lg:hidden' : 'sm:hidden'
-                } min-h-[36px] inline-flex items-center gap-1.5 text-xs font-semibold text-white px-3 py-1.5 rounded-full bg-white/[0.07] hover:bg-white/[0.14] border border-white/12 cursor-pointer`}
+                } min-h-[40px] inline-flex items-center gap-1.5 text-xs font-semibold text-white px-3.5 py-1.5 rounded-full bg-white/[0.07] hover:bg-white/[0.14] border border-white/12 cursor-pointer`}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label={mobileMenuOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'}
               >
@@ -782,11 +783,11 @@ export default function Header() {
                   </Link>
                 </>
               )}
-              <div className="pt-2 mt-1 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 px-2">
+              <div className="pt-2 mt-1 border-t border-white/10 flex flex-wrap items-center justify-between gap-2.5 px-2">
                 <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/55">
                   Preferencias
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <SoundTogglePill showLabels />
                   <ThemeTogglePill showLabels />
                 </div>
@@ -795,35 +796,41 @@ export default function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+    </header>
 
-      {/* Panel Desplegable de Autenticación con velo de fondo y mayor opacidad para lectura perfecta */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setIsOpen(false)}
-              className="pointer-events-auto fixed inset-0 -z-10 bg-black/60 backdrop-blur-sm"
-              aria-hidden="true"
-            />
-            <motion.div
-              ref={formRef}
-              initial={{ opacity: 0, y: -10, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.98 }}
-              transition={{ duration: 0.26, ease: 'easeOut' }}
-              className="pointer-events-auto relative mx-auto max-w-4xl mt-3 overflow-hidden rounded-3xl liquid-glass-dropdown"
-            >
-              {/* Lienzo de partículas Antigravity dentro del panel desplegable */}
-              <DropdownAntigravityCanvas />
+    {/* Modal de Autenticación por encima de la barra superior (z-[90]) con scroll interno en móvil */}
+    <AnimatePresence>
+      {isOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={tab === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
+          className="fixed inset-0 z-[90] flex items-center justify-center p-3 sm:p-6"
+        >
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setIsOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            aria-hidden="true"
+          />
+          <motion.div
+            ref={formRef}
+            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ duration: 0.24, ease: 'easeOut' }}
+            className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden rounded-3xl liquid-glass-dropdown"
+          >
+            {/* Lienzo de partículas Antigravity dentro del panel desplegable */}
+            <DropdownAntigravityCanvas />
 
-              <div className="relative z-10 p-5 sm:p-8">
-                <div className="grid lg:grid-cols-12 gap-6 items-stretch">
-                  {/* Columna Izquierda: Ventana informativa limpia con mayor opacidad */}
-                  <div className="hidden lg:flex lg:col-span-5 flex-col justify-between rounded-2xl border border-white/12 bg-[#070b18]/85 p-6">
+            <div className="relative z-20 p-5 sm:p-8">
+              <div className="grid lg:grid-cols-12 gap-6 items-stretch">
+                {/* Columna Izquierda: Ventana informativa limpia con mayor opacidad */}
+                <div className="hidden lg:flex lg:col-span-5 flex-col justify-between rounded-2xl border border-white/12 bg-[#070b18]/85 p-6">
                   <div className="space-y-3">
                     <div className="flex items-center gap-1.5 mb-2" aria-hidden="true">
                       <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F56]" />
@@ -899,11 +906,21 @@ export default function Header() {
                     </div>
 
                     {/* Selector de pestañas estilo segmented pill */}
-                    <div className="flex mb-6 p-1 rounded-full border border-white/10 bg-white/[0.04]">
+                    <div
+                      role="tablist"
+                      aria-label="Modo de acceso"
+                      className="relative z-20 flex mb-6 p-1 rounded-full border border-white/10 bg-white/[0.04]"
+                    >
                       <button
                         type="button"
-                        onClick={() => { setTab('login'); resetRegForm(); }}
-                        className={`flex-1 min-h-[38px] py-2 text-xs sm:text-sm font-semibold rounded-full transition-all cursor-pointer ${
+                        role="tab"
+                        aria-selected={tab === 'login'}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={() => {
+                          setTab('login');
+                          resetRegForm();
+                        }}
+                        className={`flex-1 min-h-[40px] py-2 text-xs sm:text-sm font-semibold rounded-full transition-all cursor-pointer ${
                           tab === 'login'
                             ? 'bg-white text-black'
                             : 'text-white/65 hover:text-white'
@@ -913,8 +930,14 @@ export default function Header() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => { setTab('register'); resetLoginForm(); }}
-                        className={`flex-1 min-h-[38px] py-2 text-xs sm:text-sm font-semibold rounded-full transition-all cursor-pointer ${
+                        role="tab"
+                        aria-selected={tab === 'register'}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={() => {
+                          setTab('register');
+                          resetLoginForm();
+                        }}
+                        className={`flex-1 min-h-[40px] py-2 text-xs sm:text-sm font-semibold rounded-full transition-all cursor-pointer ${
                           tab === 'register'
                             ? 'bg-white text-black'
                             : 'text-white/65 hover:text-white'
@@ -1072,10 +1095,9 @@ export default function Header() {
               </div>
             </div>
           </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </header>
+        </div>
+      )}
+    </AnimatePresence>
     <LiquidGlassToast toast={authToast} onClose={() => setAuthToast(null)} />
     </>
   );
