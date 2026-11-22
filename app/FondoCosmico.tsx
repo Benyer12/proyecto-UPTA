@@ -61,43 +61,43 @@ function drawAuroraWave(
   const shiftY = Math.cos(time * 0.15) * h * 0.035;
 
   if (isLight) {
-    // Fondo diurno perlado luminoso con ondas iridiscentes pastel ideales para Liquid Glass
+    // Fondo diurno suave tono niebla-perla (descansado para la vista, sin blanco deslumbrante)
     const baseGrad = ctx.createLinearGradient(0, 0, w, h);
-    baseGrad.addColorStop(0, '#F5F8FF');
-    baseGrad.addColorStop(0.5, '#EEF3FF');
-    baseGrad.addColorStop(1, '#F6F2FF');
+    baseGrad.addColorStop(0, '#D9E0EA');
+    baseGrad.addColorStop(0.5, '#E1E6EE');
+    baseGrad.addColorStop(1, '#DCE0EA');
     ctx.fillStyle = baseGrad;
     ctx.fillRect(0, 0, w, h);
 
     const lightOrbs: [number, number, number, string, number][] = [
-      [w * 0.16 + shiftX, h * 0.2 + shiftY, Math.max(w, h) * 0.42, '56, 189, 248', 0.3],
-      [w * 0.84 - shiftX, h * 0.18 - shiftY, Math.max(w, h) * 0.4, '168, 85, 247', 0.24],
-      [w * 0.52 + shiftX * 0.6, h * 0.54 - shiftY, Math.max(w, h) * 0.45, '52, 211, 153', 0.22],
-      [w * 0.22 - shiftX * 0.5, h * 0.82 + shiftY, Math.max(w, h) * 0.38, '251, 191, 36', 0.22],
-      [w * 0.82 + shiftX * 0.7, h * 0.8 - shiftY * 0.8, Math.max(w, h) * 0.42, '96, 165, 250', 0.26],
+      [w * 0.16 + shiftX, h * 0.2 + shiftY, Math.max(w, h) * 0.42, '100, 165, 210', 0.12],
+      [w * 0.84 - shiftX, h * 0.18 - shiftY, Math.max(w, h) * 0.4, '148, 122, 200', 0.1],
+      [w * 0.52 + shiftX * 0.6, h * 0.54 - shiftY, Math.max(w, h) * 0.45, '92, 168, 148', 0.09],
+      [w * 0.22 - shiftX * 0.5, h * 0.82 + shiftY, Math.max(w, h) * 0.38, '196, 174, 134', 0.08],
+      [w * 0.82 + shiftX * 0.7, h * 0.8 - shiftY * 0.8, Math.max(w, h) * 0.42, '118, 152, 208', 0.11],
     ];
 
     for (const [cx, cy, r, rgb, alpha] of lightOrbs) {
       const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
       g.addColorStop(0, `rgba(${rgb}, ${alpha})`);
       g.addColorStop(0.55, `rgba(${rgb}, ${(alpha * 0.35).toFixed(3)})`);
-      g.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      g.addColorStop(1, 'rgba(225, 230, 238, 0)');
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Cinta prismática diagonal suave para potenciar el efecto liquid-refract en bordes
+    // Cinta prismática muy sutil para la refracción sin saturar la vista
     ctx.save();
     ctx.translate(w * 0.5 + shiftX * 0.5, h * 0.48 + shiftY * 0.5);
     ctx.rotate(-0.28);
     const ribbonGrad = ctx.createLinearGradient(-w * 0.6, 0, w * 0.6, 0);
-    ribbonGrad.addColorStop(0, 'rgba(56, 189, 248, 0)');
-    ribbonGrad.addColorStop(0.25, 'rgba(14, 165, 233, 0.16)');
-    ribbonGrad.addColorStop(0.5, 'rgba(168, 85, 247, 0.16)');
-    ribbonGrad.addColorStop(0.75, 'rgba(16, 185, 129, 0.14)');
-    ribbonGrad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+    ribbonGrad.addColorStop(0, 'rgba(100, 165, 210, 0)');
+    ribbonGrad.addColorStop(0.25, 'rgba(100, 165, 210, 0.06)');
+    ribbonGrad.addColorStop(0.5, 'rgba(148, 122, 200, 0.06)');
+    ribbonGrad.addColorStop(0.75, 'rgba(92, 168, 148, 0.05)');
+    ribbonGrad.addColorStop(1, 'rgba(196, 174, 134, 0)');
     ctx.fillStyle = ribbonGrad;
     ctx.fillRect(-w * 0.75, -h * 0.14, w * 1.5, h * 0.28);
     ctx.restore();
@@ -245,7 +245,7 @@ export default function FondoCosmico() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 w-full h-full pointer-events-none -z-10 transition-colors duration-300"
-      style={{ background: theme === 'light' ? '#F3F7FF' : '#020410' }}
+      style={{ background: theme === 'light' ? '#DCE2EC' : '#020410' }}
     />
   );
 }

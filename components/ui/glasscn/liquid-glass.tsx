@@ -209,7 +209,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
       ? Math.min(refraction, 8)
       : Math.min(refraction, 8)
     : refraction;
-  const effectiveSaturation = isLight && !readingPriority ? Math.max(saturation, 1.35) : saturation;
+  const effectiveSaturation = isLight ? 1.04 : saturation;
 
   const backdropFilter = refractionActive
     ? `url(#${filterId}) blur(${effectiveBlur}px) saturate(${effectiveSaturation})`

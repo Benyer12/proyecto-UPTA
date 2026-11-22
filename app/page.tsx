@@ -281,13 +281,13 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.06, ease: 'easeOut' }}
             className="relative flex items-center justify-center"
           >
-            {/* Halo exterior neón súper vívido sincronizado con el planeta activo */}
+            {/* Halo exterior neón súper vívido en modo oscuro y sutil en modo claro */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute -inset-4 rounded-[2.25rem] blur-3xl transition-all duration-500"
               style={{
                 background: isLight
-                  ? `radial-gradient(circle at 35% 35%, ${activePlanet.orbitColorA}42 0%, ${activePlanet.orbitColorB}28 50%, transparent 76%)`
+                  ? `radial-gradient(circle at 35% 35%, ${activePlanet.lightAccent}1C 0%, transparent 72%)`
                   : `radial-gradient(circle at 35% 35%, ${activePlanet.orbitColorA}58 0%, ${activePlanet.orbitColorB}38 50%, transparent 78%)`,
               }}
             />
@@ -309,7 +309,7 @@ export default function Home() {
                 className="pointer-events-none absolute inset-0 rounded-[inherit] transition-all duration-500"
                 style={{
                   backgroundImage: activePlanet.vividGradient,
-                  opacity: isLight ? 0.55 : 0.92,
+                  opacity: isLight ? 0.16 : 0.92,
                 }}
               />
 
