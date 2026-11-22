@@ -1124,13 +1124,15 @@ export default function MapaAstral({
       aria-label="Mapa 3D del Archivo Astral de Letralia"
     >
       <defs>
-        <radialGradient id="letraliaEdgeFade" cx="50%" cy="50%" r="50%">
-          <stop offset="68%" stopColor="white" stopOpacity="1" />
-          <stop offset="88%" stopColor="white" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="white" stopOpacity="0" />
-        </radialGradient>
+        <filter id="letraliaMaskBlur" x="-10%" y="-10%" width="120%" height="120%">
+          <feGaussianBlur stdDeviation="22" />
+        </filter>
         <mask id="letraliaSeamlessMask">
-          <rect x="0" y="0" width={VIEW_W} height={VIEW_H} fill="url(#letraliaEdgeFade)" />
+          <path
+            d="M 50 210 Q 130 58 430 52 Q 860 22 1075 55 Q 1165 260 1135 615 Q 920 820 420 860 Q 105 820 48 560 Z"
+            fill="white"
+            filter="url(#letraliaMaskBlur)"
+          />
         </mask>
         <radialGradient id="lunaAstralGrad" cx="35%" cy="32%" r="70%">
           <stop offset="0%" stopColor="#FFFDF7" />

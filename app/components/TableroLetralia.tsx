@@ -792,9 +792,19 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
         background:
-          'radial-gradient(ellipse at 42% 44%, #101242 0%, #0C0E36 58%, #070922 100%)',
+          'radial-gradient(ellipse at 42% 44%, #1A204E 0%, #0D1134 58%, #070922 100%)',
       }}
     >
+      {/* Fondo de curvas 3D tornasol amatista/oro de Letralia debajo del mapa */}
+      <img
+        src="/images/letralia-board-bg.jpg"
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+        fetchPriority="high"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-95 mix-blend-screen"
+      />
+
       {/* Destellos estelares finos en el cielo crepuscular */}
       {[
         { x: '8%', y: '14%', size: 6, color: 'rgba(192, 132, 252, 0.9)', dur: '6.0s', delay: '-1.0s' },

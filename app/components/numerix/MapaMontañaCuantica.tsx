@@ -279,14 +279,15 @@ const MapaMontañaCuantica = memo(function MapaMontañaCuantica({
       aria-label="Montaña Cuántica 3D de Numérix"
     >
       <defs>
-        <radialGradient id="numerixEdgeFade" cx="50%" cy="50%" r="50%">
-          <stop offset="68%" stopColor="white" stopOpacity="1" />
-          <stop offset="88%" stopColor="white" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="white" stopOpacity="0" />
-        </radialGradient>
+        <filter id="numerixMaskBlur" x="-10%" y="-10%" width="120%" height="120%">
+          <feGaussianBlur stdDeviation="22" />
+        </filter>
         <mask id="numerixSeamlessMask">
-          <rect x="0" y="0" width="1264" height="848" fill="url(#numerixEdgeFade)" />
-          <ellipse cx="1180" cy="705" rx="102" ry="155" fill="black" />
+          <path
+            d="M 55 150 Q 150 40 420 42 Q 820 34 1140 82 Q 1215 240 1205 390 Q 1120 510 1075 740 Q 860 828 500 832 Q 200 765 118 575 Q 68 380 55 150 Z"
+            fill="white"
+            filter="url(#numerixMaskBlur)"
+          />
         </mask>
         <linearGradient id="cubeTopNormal" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.9" />

@@ -241,13 +241,15 @@ const MapaNaturaeSVG = memo(function MapaNaturaeSVG({
       aria-label="Santuario 3D del Bosque Cósmico de Naturae"
     >
       <defs>
-        <radialGradient id="naturaeEdgeFade" cx="50%" cy="50%" r="50%">
-          <stop offset="68%" stopColor="white" stopOpacity="1" />
-          <stop offset="88%" stopColor="white" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="white" stopOpacity="0" />
-        </radialGradient>
+        <filter id="naturaeMaskBlur" x="-10%" y="-10%" width="120%" height="120%">
+          <feGaussianBlur stdDeviation="22" />
+        </filter>
         <mask id="naturaeSeamlessMask">
-          <rect x="0" y="0" width="1200" height="896" fill="url(#naturaeEdgeFade)" />
+          <path
+            d="M 162 245 Q 230 35 510 42 Q 820 125 1030 365 Q 1045 725 720 865 Q 300 865 170 615 Q 152 420 162 245 Z"
+            fill="white"
+            filter="url(#naturaeMaskBlur)"
+          />
         </mask>
       </defs>
 
@@ -571,9 +573,19 @@ export default function TableroNaturae({
     <div
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
-        background: 'radial-gradient(ellipse at 42% 46%, #011B19 0%, #001010 58%, #000707 100%)',
+        background: 'radial-gradient(ellipse at 42% 46%, #032E24 0%, #011410 58%, #000707 100%)',
       }}
     >
+      {/* Fondo de curvas 3D tornasol esmeralda de Naturae debajo del mapa */}
+      <img
+        src="/images/naturae-board-bg.jpg"
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+        fetchPriority="high"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-95 mix-blend-screen"
+      />
+
       {/* Destellos esmeralda sutiles en el espacio profundo */}
       {[
         { x: '8%', y: '18%', size: 6, color: 'rgba(110, 231, 183, 0.9)', dur: '5.8s', delay: '-1.0s' },

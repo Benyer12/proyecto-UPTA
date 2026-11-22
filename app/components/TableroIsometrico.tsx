@@ -801,9 +801,19 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
         background:
-          'radial-gradient(ellipse at 42% 48%, #021230 0%, #000D21 56%, #000714 100%)',
+          'radial-gradient(ellipse at 42% 48%, #041944 0%, #010D24 56%, #000612 100%)',
       }}
     >
+      {/* Fondo de curvas 3D tornasol azul eléctrico de Numérix debajo del mapa */}
+      <img
+        src="/images/numerix-board-bg.jpg"
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+        fetchPriority="high"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-95 mix-blend-screen"
+      />
+
       {/* Destellos estelares finos en el cosmos profundo */}
       {[
         { x: '8%', y: '18%', size: 6, color: 'rgba(103, 232, 249, 0.9)', dur: '5.8s', delay: '-1.1s' },
