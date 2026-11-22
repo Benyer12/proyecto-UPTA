@@ -801,32 +801,32 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
         background:
-          'radial-gradient(circle at 18% 18%, rgba(0, 245, 255, 0.22) 0%, transparent 40%), radial-gradient(circle at 82% 82%, rgba(0, 255, 136, 0.14) 0%, transparent 42%), radial-gradient(ellipse at 45% 40%, #07326B 0%, #031A3D 52%, #010A1C 100%)',
+          'radial-gradient(circle at 18% 18%, rgba(0, 229, 255, 0.34) 0%, transparent 44%), radial-gradient(circle at 82% 80%, rgba(0, 119, 255, 0.36) 0%, transparent 48%), radial-gradient(ellipse at 45% 42%, #0058E6 0%, #00349A 46%, #00164A 100%)',
       }}
     >
-      {/* Cuadrícula cibernética holográfica sutil al fondo del escenario */}
+      {/* Cuadrícula cibernética holográfica en azul eléctrico */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-25"
+        className="pointer-events-none absolute inset-0 opacity-32"
         style={{
           backgroundImage:
-            'linear-gradient(to right, rgba(0, 245, 255, 0.16) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 245, 255, 0.16) 1px, transparent 1px)',
+            'linear-gradient(to right, rgba(56, 212, 255, 0.24) 1px, transparent 1px), linear-gradient(to bottom, rgba(56, 212, 255, 0.24) 1px, transparent 1px)',
           backgroundSize: '48px 48px',
-          maskImage: 'radial-gradient(ellipse 80% 75% at 42% 50%, black 35%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 80% 75% at 42% 50%, black 35%, transparent 100%)',
+          maskImage: 'radial-gradient(ellipse 84% 78% at 42% 50%, black 38%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 84% 78% at 42% 50%, black 38%, transparent 100%)',
         }}
       />
 
-      {/* Orbes neón luminosos en las esquinas para darle vibra arcade espacial */}
+      {/* Orbes neón en azul eléctrico brillante */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-24 -left-24 w-80 h-80 rounded-full blur-3xl opacity-35"
-        style={{ background: 'radial-gradient(circle, #00F5FF 0%, transparent 70%)' }}
+        className="pointer-events-none absolute -top-24 -left-24 w-88 h-88 rounded-full blur-3xl opacity-45"
+        style={{ background: 'radial-gradient(circle, #00E5FF 0%, transparent 70%)' }}
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-24 left-1/3 w-72 h-72 rounded-full blur-3xl opacity-25"
-        style={{ background: 'radial-gradient(circle, #00FF88 0%, transparent 70%)' }}
+        className="pointer-events-none absolute -bottom-24 left-1/3 w-80 h-80 rounded-full blur-3xl opacity-40"
+        style={{ background: 'radial-gradient(circle, #0077FF 0%, transparent 70%)' }}
       />
       {/* ════════════════════ ESCENARIO PRINCIPAL: MONTAÑA CUÁNTICA (IZQUIERDA / CENTRO) ════════════════════ */}
       <div className="relative flex-1 h-[62vh] lg:h-full overflow-hidden flex items-center justify-center">
@@ -899,9 +899,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
           className="relative w-full h-full max-h-[820px] rounded-3xl liquid-glass liquid-glass-panel p-4 sm:p-5 flex flex-col justify-between overflow-x-hidden overflow-y-auto"
           style={{
             background:
-              'linear-gradient(165deg, rgba(8, 44, 92, 0.82) 0%, rgba(4, 24, 54, 0.9) 55%, rgba(2, 12, 30, 0.95) 100%)',
-            borderColor: 'rgba(0, 245, 255, 0.5)',
-            boxShadow: '0 0 42px rgba(0, 245, 255, 0.24), inset 0 1px 0 rgba(186, 230, 253, 0.4)',
+              'linear-gradient(165deg, rgba(0, 88, 224, 0.72) 0%, rgba(0, 52, 152, 0.84) 55%, rgba(0, 24, 78, 0.92) 100%)',
+            borderColor: 'rgba(0, 229, 255, 0.6)',
+            boxShadow: '0 0 44px rgba(0, 145, 255, 0.36), inset 0 1px 0 rgba(186, 230, 253, 0.48)',
           }}
         >
           {/* ── 1. CABECERA: NUMÉRIX — TABLERO CUÁNTICO ── */}
@@ -937,8 +937,8 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             className="relative my-2.5 py-4 rounded-2xl liquid-glass-pill flex flex-col items-center justify-center overflow-hidden"
             style={{
               background:
-                'radial-gradient(circle at 50% 50%, rgba(14, 116, 180, 0.44) 0%, rgba(6, 32, 68, 0.78) 70%, rgba(3, 15, 36, 0.9) 100%)',
-              borderColor: 'rgba(56, 189, 248, 0.38)',
+                'radial-gradient(circle at 50% 50%, rgba(0, 140, 255, 0.5) 0%, rgba(0, 72, 178, 0.78) 70%, rgba(0, 34, 96, 0.9) 100%)',
+              borderColor: 'rgba(0, 229, 255, 0.48)',
             }}
           >
             <span className="pointer-events-none absolute top-2.5 left-3.5 text-[#38BDF8]/80 text-xs">✦</span>
@@ -965,7 +965,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
                 rolling={rolling}
                 result={diceResult}
                 onRollComplete={handleRollComplete}
-                faceColor="#082854"
+                faceColor="#0044B8"
                 borderColor="#7DD3FC"
                 pipColor="#E0F2FE"
               />
@@ -977,8 +977,8 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             className="relative rounded-2xl liquid-glass p-3.5 sm:p-4 my-1"
             style={{
               background:
-                'linear-gradient(160deg, rgba(14, 165, 233, 0.08) 0%, rgba(4, 22, 48, 0.72) 100%)',
-              borderColor: 'rgba(56, 189, 248, 0.24)',
+                'linear-gradient(160deg, rgba(0, 168, 255, 0.14) 0%, rgba(0, 48, 132, 0.72) 100%)',
+              borderColor: 'rgba(0, 212, 255, 0.34)',
             }}
           >
             <div className="mb-3.5">

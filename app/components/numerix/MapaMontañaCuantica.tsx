@@ -442,23 +442,23 @@ function CristalesMontaña({
   );
 }
 
-/** Portal de Cristal Elegante en la Casilla 01 (Azul Crema, Morado y Esmeralda). */
+/** Portal de Cristal Elegante en la Casilla 01 en Azul Eléctrico. */
 function PortalInicio({ x, y }: { x: number; y: number }) {
   return (
     <g transform={`translate(${x} ${y})`}>
       <ellipse cx="0" cy="18" rx="44" ry="16" fill="url(#portalFloorGlow)" />
       <polygon
         points="-34,16 -40,-6 -30,-16 -22,12"
-        fill="#312E81"
-        stroke="#C4B5FD"
-        strokeOpacity="0.6"
+        fill="#0055D4"
+        stroke="#7DD3FC"
+        strokeOpacity="0.8"
         strokeWidth="1"
       />
       <polygon
         points="30,18 38,-4 28,-14 20,14"
-        fill="#1E3A8A"
-        stroke="#BFDBFE"
-        strokeOpacity="0.6"
+        fill="#0077FF"
+        stroke="#BAE6FD"
+        strokeOpacity="0.8"
         strokeWidth="1"
       />
       <polygon
@@ -515,41 +515,41 @@ function SantuarioGuardian({
       <ellipse cx="0" cy="16" rx="82" ry="34" fill="url(#bossHaloGrad)" />
 
       {[
-        { dy: 22, w: 62, h: 26, d: 10, fillTop: '#1E2952', fillLeft: '#131B38', fillRight: '#0E142B', stroke: '#93C5FD' },
-        { dy: 12, w: 48, h: 20, d: 9, fillTop: '#2E3B6E', fillLeft: '#1E2749', fillRight: '#151C36', stroke: '#C4B5FD' },
-        { dy: 2, w: 34, h: 14, d: 8, fillTop: '#4C3D8F', fillLeft: '#312564', fillRight: '#231A4A', stroke: '#E2EEFF' },
+        { dy: 22, w: 62, h: 26, d: 10, fillTop: '#0048B8', fillLeft: '#003285', fillRight: '#00225E', stroke: '#38BDF8' },
+        { dy: 12, w: 48, h: 20, d: 9, fillTop: '#0066FF', fillLeft: '#0049BD', fillRight: '#00348A', stroke: '#7DD3FC' },
+        { dy: 2, w: 34, h: 14, d: 8, fillTop: '#008CFF', fillLeft: '#0062D1', fillRight: '#00459E', stroke: '#00F5FF' },
       ].map((step, idx) => (
         <g key={idx} transform={`translate(0 ${step.dy})`}>
           <polygon
             points={`0,${-step.h} ${step.w},0 0,${step.h} ${-step.w},0`}
             fill={step.fillTop}
-            fillOpacity="0.94"
+            fillOpacity="0.96"
             stroke={step.stroke}
-            strokeOpacity="0.65"
+            strokeOpacity="0.82"
             strokeWidth="1.2"
           />
           <polygon
             points={`${-step.w},0 0,${step.h} 0,${step.h + step.d} ${-step.w},${step.d}`}
             fill={step.fillLeft}
             stroke={step.stroke}
-            strokeOpacity="0.45"
+            strokeOpacity="0.58"
             strokeWidth="1"
           />
           <polygon
             points={`${step.w},0 0,${step.h} 0,${step.h + step.d} ${step.w},${step.d}`}
             fill={step.fillRight}
             stroke={step.stroke}
-            strokeOpacity="0.45"
+            strokeOpacity="0.58"
             strokeWidth="1"
           />
         </g>
       ))}
 
-      <polygon points="-44,10 -48,-12 -40,-20 -36,8" fill="#A855F7" fillOpacity="0.75" stroke="#F3E8FF" strokeWidth="0.9" />
-      <polygon points="44,10 48,-12 40,-20 36,8" fill="#34D399" fillOpacity="0.75" stroke="#ECFDF5" strokeWidth="0.9" />
+      <polygon points="-44,10 -48,-12 -40,-20 -36,8" fill="#00B4FF" fillOpacity="0.85" stroke="#E0F2FE" strokeWidth="0.9" />
+      <polygon points="44,10 48,-12 40,-20 36,8" fill="#00FF88" fillOpacity="0.82" stroke="#ECFDF5" strokeWidth="0.9" />
 
-      <ellipse cx="0" cy="-2" rx="24" ry="10" fill="#312E81" stroke="#E2EEFF" strokeOpacity="0.8" strokeWidth="1.4" />
-      <ellipse cx="0" cy="-4" rx="16" ry="6" fill="#C4B5FD" opacity="0.85" />
+      <ellipse cx="0" cy="-2" rx="24" ry="10" fill="#004FC4" stroke="#E0F2FE" strokeOpacity="0.9" strokeWidth="1.4" />
+      <ellipse cx="0" cy="-4" rx="16" ry="6" fill="#00E5FF" opacity="0.92" />
 
       <polygon
         points="-16,-4 -34,-68 34,-68 16,-4"
@@ -641,17 +641,17 @@ function CuboIsometricoSVG({
   const paleta = {
     normal: {
       top: activo
-        ? 'rgba(0, 245, 255, 0.62)'
+        ? 'rgba(0, 245, 255, 0.72)'
         : visitado
-          ? 'rgba(56, 189, 248, 0.44)'
-          : 'rgba(14, 165, 233, 0.32)',
-      left: visitado ? 'rgba(7, 89, 133, 0.94)' : 'rgba(8, 47, 73, 0.94)',
-      right: visitado ? 'rgba(3, 60, 102, 0.96)' : 'rgba(4, 28, 56, 0.97)',
+          ? 'rgba(0, 180, 255, 0.56)'
+          : 'rgba(0, 128, 255, 0.44)',
+      left: visitado ? 'rgba(0, 102, 235, 0.96)' : 'rgba(0, 74, 186, 0.96)',
+      right: visitado ? 'rgba(0, 68, 168, 0.98)' : 'rgba(0, 48, 132, 0.98)',
       strokeTop: activo ? '#FFFFFF' : '#00F5FF',
-      strokeSide: activo ? '#67E8F9' : 'rgba(56, 189, 248, 0.72)',
+      strokeSide: activo ? '#7DD3FC' : 'rgba(56, 212, 255, 0.85)',
       textTop: '#FFFFFF',
-      textSide: '#67E8F9',
-      glow: activo ? 'rgba(0, 245, 255, 0.95)' : 'rgba(14, 165, 233, 0.52)',
+      textSide: '#BAE6FD',
+      glow: activo ? 'rgba(0, 245, 255, 0.95)' : 'rgba(0, 136, 255, 0.72)',
     },
     especial: {
       top: activo ? 'rgba(0, 255, 136, 0.68)' : 'rgba(16, 235, 145, 0.45)',
@@ -1074,11 +1074,11 @@ const EscenarioMontaña = memo(function EscenarioMontaña() {
           rx="122"
           ry="64"
           transform="rotate(-8 216 252)"
-          fill="#062856"
-          fillOpacity="0.58"
-          stroke="#38BDF8"
-          strokeOpacity="0.45"
-          strokeWidth="1.2"
+          fill="#0044BD"
+          fillOpacity="0.62"
+          stroke="#00E5FF"
+          strokeOpacity="0.65"
+          strokeWidth="1.4"
         />
       </g>
 
@@ -1220,47 +1220,47 @@ export default function MapaMontañaCuantica({
           <stop offset="100%" stopColor="#02152E" />
         </linearGradient>
 
-        {/* Gradientes esculturales de la isla-montaña en Azul Tecnológico */}
+        {/* Gradientes esculturales de la isla-montaña en Azul Eléctrico */}
         <linearGradient id="cliffBaseGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#082C58" />
-          <stop offset="50%" stopColor="#051E3E" />
-          <stop offset="100%" stopColor="#020E24" />
+          <stop offset="0%" stopColor="#0044B8" />
+          <stop offset="50%" stopColor="#002D82" />
+          <stop offset="100%" stopColor="#001A52" />
         </linearGradient>
         <linearGradient id="cliffDeepGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#062246" />
-          <stop offset="100%" stopColor="#020B1C" />
+          <stop offset="0%" stopColor="#003599" />
+          <stop offset="100%" stopColor="#001440" />
         </linearGradient>
         <linearGradient id="cliffWallGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0A3466" />
-          <stop offset="50%" stopColor="#062248" />
-          <stop offset="100%" stopColor="#03142E" />
+          <stop offset="0%" stopColor="#0055D4" />
+          <stop offset="50%" stopColor="#00389E" />
+          <stop offset="100%" stopColor="#00226B" />
         </linearGradient>
         <linearGradient id="innerCliffGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#072852" />
-          <stop offset="50%" stopColor="#0C3B72" />
-          <stop offset="100%" stopColor="#0E4B8A" />
+          <stop offset="0%" stopColor="#0047B8" />
+          <stop offset="50%" stopColor="#0062E3" />
+          <stop offset="100%" stopColor="#007BFF" />
         </linearGradient>
         <linearGradient id="summitCliffGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#08305E" />
-          <stop offset="60%" stopColor="#0E4782" />
-          <stop offset="100%" stopColor="#0284C7" />
+          <stop offset="0%" stopColor="#0055D4" />
+          <stop offset="60%" stopColor="#0077FF" />
+          <stop offset="100%" stopColor="#00A6FF" />
         </linearGradient>
 
-        {/* Superficies superiores de las 3 terrazas en Azul Futurista */}
+        {/* Superficies superiores de las 3 terrazas en Azul Eléctrico Vibrante */}
         <linearGradient id="terrace1TopGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0B3568" />
-          <stop offset="55%" stopColor="#07264D" />
-          <stop offset="100%" stopColor="#041834" />
+          <stop offset="0%" stopColor="#005CE6" />
+          <stop offset="55%" stopColor="#0042AD" />
+          <stop offset="100%" stopColor="#002875" />
         </linearGradient>
         <linearGradient id="terrace2TopGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0E4480" />
-          <stop offset="55%" stopColor="#0A3260" />
-          <stop offset="100%" stopColor="#062044" />
+          <stop offset="0%" stopColor="#0074FF" />
+          <stop offset="55%" stopColor="#0052CC" />
+          <stop offset="100%" stopColor="#003694" />
         </linearGradient>
         <linearGradient id="summitTopGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0284C7" />
-          <stop offset="55%" stopColor="#0C4A7E" />
-          <stop offset="100%" stopColor="#072D56" />
+          <stop offset="0%" stopColor="#0099FF" />
+          <stop offset="55%" stopColor="#006BFF" />
+          <stop offset="100%" stopColor="#0046BD" />
         </linearGradient>
 
         {/* Gradiente del Riel Fluido: Azul Hielo -> Cian Eléctrico -> Turquesa */}
@@ -1282,8 +1282,8 @@ export default function MapaMontañaCuantica({
         </linearGradient>
         <radialGradient id="portalEnergyGrad" cx="50%" cy="50%" r="60%">
           <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="55%" stopColor="#38BDF8" />
-          <stop offset="100%" stopColor="#0284C7" />
+          <stop offset="55%" stopColor="#00E5FF" />
+          <stop offset="100%" stopColor="#0066FF" />
         </radialGradient>
         <radialGradient id="bossHaloGrad" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#00F5FF" stopOpacity="0.42" />
