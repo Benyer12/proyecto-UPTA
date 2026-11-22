@@ -118,15 +118,15 @@ export default function AntigravityParticles() {
 
     const createParticles = (w: number, h: number): Particle[] => {
       const list: Particle[] = [];
-      // En modo claro: polvo de estrella espaciado y ligero ("no mucho"); en oscuro: densidad equilibrada
-      const spacing = isLight ? (w < 768 ? 118 : 98) : (w < 768 ? 82 : 68);
+      // En modo claro: polvo de estrella abundante y fino; en oscuro: densidad equilibrada
+      const spacing = isLight ? (w < 768 ? 74 : 58) : (w < 768 ? 82 : 68);
       const cols = Math.ceil(w / spacing);
       const rows = Math.ceil(h / spacing);
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          const ox = (c + 0.5) * spacing + (Math.random() - 0.5) * spacing * 0.82;
-          const oy = (r + 0.5) * spacing + (Math.random() - 0.5) * spacing * 0.82;
+          const ox = (c + 0.5) * spacing + (Math.random() - 0.5) * spacing * 0.85;
+          const oy = (r + 0.5) * spacing + (Math.random() - 0.5) * spacing * 0.85;
           const initialAngle = Math.random() * Math.PI * 2;
 
           list.push({
@@ -136,13 +136,13 @@ export default function AntigravityParticles() {
             originY: oy,
             vx: 0,
             vy: 0,
-            size: isLight ? 0.85 + Math.random() * 1.15 : 1.25 + Math.random() * 1.15,
-            length: isLight ? 2.4 + Math.random() * 2.4 : 4 + Math.random() * 4.8,
+            size: isLight ? 0.75 + Math.random() * 1.25 : 1.25 + Math.random() * 1.15,
+            length: isLight ? 2.4 + Math.random() * 2.6 : 4 + Math.random() * 4.8,
             angle: initialAngle,
             targetAngle: initialAngle,
             strokeStyle: getColorForPosition(ox, oy, w, h),
-            baseAlpha: isLight ? 0.22 + Math.random() * 0.36 : 0.26 + Math.random() * 0.3,
-            alpha: isLight ? 0.34 : 0.34,
+            baseAlpha: isLight ? 0.28 + Math.random() * 0.4 : 0.26 + Math.random() * 0.3,
+            alpha: isLight ? 0.38 : 0.34,
             phase: Math.random() * Math.PI * 2,
             speed: isLight ? 0.28 + Math.random() * 0.35 : 0.45 + Math.random() * 0.55,
             orbitRadius: 55 + Math.random() * 130,
@@ -323,7 +323,7 @@ export default function AntigravityParticles() {
           ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fill();
 
-          if (i % 4 === 0 && p.alpha > 0.36) {
+          if (i % 3 === 0 && p.alpha > 0.34) {
             const crossLen = p.length * 0.75;
             ctx.strokeStyle = p.strokeStyle;
             ctx.lineWidth = 0.85;
