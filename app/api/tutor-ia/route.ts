@@ -12,6 +12,7 @@ import {
   type PreguntaGeneradaIA,
   type ResumenReporteProfesor,
 } from '../../../lib/ai-tutor';
+import type { RetoIntruso } from '../../../lib/preguntas-letralia';
 
 const JSON_FILE_PATH = path.join(process.cwd(), 'data', 'preguntas-ia.json');
 const TMP_JSON_FILE_PATH = '/tmp/preguntas-ia.json';
@@ -65,7 +66,7 @@ async function guardarNuevaPreguntaEnJSON(
     guardadaEnDisco = true;
   } catch {
     try {
-      await fs.writeFile(TMP_JSON_FILE_PATH, jsonFormatted, 'utf8');
+      await fs.writeFile(/*turbopackIgnore: true*/ TMP_JSON_FILE_PATH, jsonFormatted, 'utf8');
       guardadaEnDisco = true;
     } catch {
       guardadaEnDisco = false;
@@ -73,6 +74,171 @@ async function guardarNuevaPreguntaEnJSON(
   }
 
   return { totalGuardadas: actualizadas.length, guardadaEnDisco };
+}
+
+function getSlugPlaneta(planeta: PlanetaTutorIA): 'numerix' | 'letralia' | 'naturae' {
+  if (planeta === 'Letralia') return 'letralia';
+  if (planeta === 'Naturae') return 'naturae';
+  return 'numerix';
+}
+
+function formatearBloqueNumerixTS(preguntas: PreguntaGeneradaIA[]): string {
+  const items = preguntas.slice(0, 12).map((p, idx) => {
+    const op = p.operador || '+';
+    const idNum = 1000 + idx + 1;
+    return [
+      '  {',
+      `    id: ${idNum},`,
+      `    operador: ${JSON.stringify(op)},`,
+      `    enunciado: ${JSON.stringify(p.enunciado)},`,
+      `    opciones: ${JSON.stringify(p.opciones)},`,
+      `    indiceRespuestaCorrecta: ${p.indiceRespuestaCorrecta},`,
+      `    pista: ${JSON.stringify(p.pista)},`,
+      `    explicacionBreve: ${JSON.stringify(p.explicacionBreve)},`,
+      '  },',
+    ].join('\n');
+  });
+
+  if (items.length === 0) {
+    return '  // === IA_PREGUNTAS_NUMERIX_START ===\n  // === IA_PREGUNTAS_NUMERIX_END ===';
+  }
+
+  return [
+    '  // === IA_PREGUNTAS_NUMERIX_START ===',
+    ...items,
+    '  // === IA_PREGUNTAS_NUMERIX_END ===',
+  ].join('\n');
+}
+
+function formatearBloqueLetraliaTS(retos: RetoIntruso[]): string {
+  const items = retos.slice(0, 12).map((r, idx) => {
+    return [
+      '  {',
+      `    id: ${JSON.stringify(`ia-int-${idx + 1}`)},`,
+      `    categoria: ${JSON.stringify(r.categoria)},`,
+      `    palabras: ${JSON.stringify(r.palabras)},`,
+      `    indiceIntruso: ${r.indiceIntruso},`,
+      `    opciones: ${JSON.stringify(r.opciones)},`,
+      `    correcta: ${JSON.stringify(r.correcta)},`,
+      `    pista: ${JSON.stringify(r.pista)},`,
+      `    explicacion: ${JSON.stringify(r.explicacion)},`,
+      '  },',
+    ].join('\n');
+  });
+
+  if (items.length === 0) {
+    return '  // === IA_RETOS_LETRALIA_START ===\n  // === IA_RETOS_LETRALIA_END ===';
+  }
+
+  return [
+    '  // === IA_RETOS_LETRALIA_START ===',
+    ...items,
+    '  // === IA_RETOS_LETRALIA_END ===',
+  ].join('\n');
+}
+
+async function sincronizarPreguntaEnArchivoPlaneta(
+  nuevaPregunta: PreguntaGeneradaIA,
+  nuevoRetoLetralia?: RetoIntruso,
+): Promise<{ archivoPlaneta: string; actualizado: boolean }> {
+  const slug = getSlugPlaneta(nuevaPregunta.planeta);
+  const rutaRelativaJson = `data/planetas/${slug}.json`;
+  const rutaPlanetaJson = path.join(process.cwd(), 'data', 'planetas', `${slug}.json`);
+  let actualizado = false;
+
+  // 1. Guardar / actualizar el banco JSON específico del planeta
+  let existentesPlaneta: PreguntaGeneradaIA[] = [];
+  let retosLetraliaGuardados: RetoIntruso[] = [];
+
+  try {
+    const raw = await fs.readFile(/*turbopackIgnore: true*/ rutaPlanetaJson, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      existentesPlaneta = parsed as PreguntaGeneradaIA[];
+    } else if (parsed && typeof parsed === 'object') {
+      if (Array.isArray(parsed.preguntas)) existentesPlaneta = parsed.preguntas;
+      if (Array.isArray(parsed.retosLetralia)) retosLetraliaGuardados = parsed.retosLetralia;
+    }
+  } catch {}
+
+  const sinDup = existentesPlaneta.filter(
+    (p) => p.enunciado.trim().toLowerCase() !== nuevaPregunta.enunciado.trim().toLowerCase(),
+  );
+  const listaPlaneta = [nuevaPregunta, ...sinDup].slice(0, 40);
+
+  if (nuevoRetoLetralia) {
+    const firmaNueva = nuevoRetoLetralia.palabras.join(' ').toLowerCase();
+    const retosSinDup = retosLetraliaGuardados.filter(
+      (r) => r.palabras.join(' ').toLowerCase() !== firmaNueva,
+    );
+    retosLetraliaGuardados = [nuevoRetoLetralia, ...retosSinDup].slice(0, 20);
+  }
+
+  const payloadPlaneta =
+    slug === 'letralia'
+      ? {
+          planeta: 'Letralia',
+          actualizadoEn: new Date().toISOString(),
+          preguntas: listaPlaneta,
+          retosLetralia: retosLetraliaGuardados,
+        }
+      : {
+          planeta: nuevaPregunta.planeta,
+          actualizadoEn: new Date().toISOString(),
+          preguntas: listaPlaneta,
+        };
+
+  try {
+    await fs.mkdir(/*turbopackIgnore: true*/ path.dirname(rutaPlanetaJson), { recursive: true });
+    await fs.writeFile(
+      /*turbopackIgnore: true*/ rutaPlanetaJson,
+      JSON.stringify(payloadPlaneta, null, 2),
+      'utf8',
+    );
+    actualizado = true;
+  } catch {
+    try {
+      await fs.writeFile(
+        /*turbopackIgnore: true*/ `/tmp/planeta-${slug}.json`,
+        JSON.stringify(payloadPlaneta, null, 2),
+        'utf8',
+      );
+      actualizado = true;
+    } catch {}
+  }
+
+  // 2. En entorno con disco escribible, sincronizar las preguntas calibradas en el archivo .ts del planeta
+  if (slug === 'numerix') {
+    const rutaTs = path.join(process.cwd(), 'lib', 'preguntas-numerix.ts');
+    try {
+      const contenido = await fs.readFile(/*turbopackIgnore: true*/ rutaTs, 'utf8');
+      const regex =
+        /[ \t]*\/\/ === IA_PREGUNTAS_NUMERIX_START ===[\s\S]*?\/\/ === IA_PREGUNTAS_NUMERIX_END ===/;
+      if (regex.test(contenido)) {
+        const nuevoBloque = formatearBloqueNumerixTS(listaPlaneta);
+        const actualizadoTs = contenido.replace(regex, nuevoBloque);
+        await fs.writeFile(/*turbopackIgnore: true*/ rutaTs, actualizadoTs, 'utf8');
+        return { archivoPlaneta: 'lib/preguntas-numerix.ts', actualizado: true };
+      }
+    } catch {}
+  }
+
+  if (slug === 'letralia' && retosLetraliaGuardados.length > 0) {
+    const rutaTs = path.join(process.cwd(), 'lib', 'preguntas-letralia.ts');
+    try {
+      const contenido = await fs.readFile(/*turbopackIgnore: true*/ rutaTs, 'utf8');
+      const regex =
+        /[ \t]*\/\/ === IA_RETOS_LETRALIA_START ===[\s\S]*?\/\/ === IA_RETOS_LETRALIA_END ===/;
+      if (regex.test(contenido)) {
+        const nuevoBloque = formatearBloqueLetraliaTS(retosLetraliaGuardados);
+        const actualizadoTs = contenido.replace(regex, nuevoBloque);
+        await fs.writeFile(/*turbopackIgnore: true*/ rutaTs, actualizadoTs, 'utf8');
+        return { archivoPlaneta: 'lib/preguntas-letralia.ts', actualizado: true };
+      }
+    } catch {}
+  }
+
+  return { archivoPlaneta: rutaRelativaJson, actualizado };
 }
 
 export async function GET(request: Request) {
@@ -106,7 +272,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Acción 1: Crear una pregunta nueva bajo demanda con la IA y guardarla en data/preguntas-ia.json
+    // Acción 1: Crear una pregunta nueva calibrada para un planeta (uso interno / tablero)
     if (body?.action === 'generar-pregunta') {
       const planeta: PlanetaTutorIA =
         body.planeta === 'Letralia' || body.planeta === 'Naturae'
@@ -122,6 +288,8 @@ export async function POST(request: Request) {
       );
       const { totalGuardadas, guardadaEnDisco } =
         await guardarNuevaPreguntaEnJSON(pregunta);
+      const { archivoPlaneta, actualizado } =
+        await sincronizarPreguntaEnArchivoPlaneta(pregunta);
 
       return NextResponse.json({
         ok: true,
@@ -129,6 +297,8 @@ export async function POST(request: Request) {
         proveedor,
         nuevaPregunta: pregunta,
         archivoJson: 'data/preguntas-ia.json',
+        archivoPlanetaActualizado: archivoPlaneta,
+        planetaSincronizado: actualizado,
         totalPreguntasEnJson: totalGuardadas,
         guardadaEnDisco,
       });
@@ -204,7 +374,7 @@ export async function POST(request: Request) {
             } ${
               requiereApoyo && requiereApoyo.id !== destacado?.id
                 ? `Se sugiere acompañar con retos de Nivel 1 y 2 a ${requiereApoyo.nombre} para fortalecer su ritmo en Numérix y Letralia.`
-                : 'Se recomienda habilitar retos de Nivel 2 y 3 para consolidar el razonamiento lógico y la comprensión lectora.'
+                : 'Se recomienda mantener el ritmo progresivo de retos en los tableros de Numérix y Letralia para consolidar el aprendizaje.'
             }`;
 
       const preguntasGuardadas = await leerArchivoPreguntasJSON();
@@ -227,9 +397,9 @@ export async function POST(request: Request) {
             .replace(/```[a-z]*|```/gi, '')
             .trim(),
           recomendacionesClave: [
-            'Alternar sesiones de Numérix (cálculo mental) con Letralia (comprensión y ortografía) cada 20 minutos.',
-            'Utilizar las preguntas adaptativas guardadas en data/preguntas-ia.json para reforzar niveles con menor puntaje.',
-            'Premiar la constancia de intentos sin penalizar errores para sostener la motivación del grupo.',
+            'Alternar sesiones en los tableros de Numérix (cálculo) y Letralia (lenguaje) para mantener la motivación.',
+            'Dejar que el motor adaptativo suba la dificultad de forma gradual solo cuando el estudiante demuestre dominio.',
+            'Acompañar los intentos fallidos manteniendo el mismo nivel de práctica sin castigos ni retrocesos.',
           ],
           resumenesPorEstudiante,
           ultimasPreguntasIA: preguntasGuardadas.slice(0, 6),
@@ -238,7 +408,9 @@ export async function POST(request: Request) {
       });
     }
 
-    // Acción 3 (por defecto): Evaluar respuesta del niño, subir/bajar nivel, responder como tutor, guardar nueva pregunta en .json y devolver resumen PDF
+    // Acción 3 (por defecto, usada en los tableros durante el juego):
+    // Evalúa respuesta, sube nivel suavemente si va muy bien (o mantiene nivel si falla),
+    // actualiza el archivo de preguntas del planeta y devuelve la nueva pregunta lista para el tablero.
     const entrada: EntradaEvaluacionTutorIA = {
       estudianteNombre: body?.estudianteNombre,
       planeta: body?.planeta,
@@ -258,6 +430,10 @@ export async function POST(request: Request) {
     const { totalGuardadas, guardadaEnDisco } = await guardarNuevaPreguntaEnJSON(
       resultado.nuevaPregunta,
     );
+    const { archivoPlaneta, actualizado } = await sincronizarPreguntaEnArchivoPlaneta(
+      resultado.nuevaPregunta,
+      resultado.nuevoRetoLetralia,
+    );
 
     memoriaReportesCache.unshift(resultado.resumenProfesor);
     if (memoriaReportesCache.length > 40) {
@@ -267,6 +443,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ...resultado,
       archivoJson: 'data/preguntas-ia.json',
+      archivoPlanetaActualizado: archivoPlaneta,
+      planetaSincronizado: actualizado,
       totalPreguntasEnJson: totalGuardadas,
       guardadaEnDisco,
     });

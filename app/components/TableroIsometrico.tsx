@@ -196,10 +196,10 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
 
   /* ── Estado del Tutor IA Gemma 4 (nivel adaptativo 1..3 + cola de preguntas JSON) ── */
   const [nivelIA, setNivelIA] = useState<1 | 2 | 3>(1);
-  const [etiquetaNivelIA, setEtiquetaNivelIA] = useState('Nivel 1 · Base Orbital');
+  const [etiquetaNivelIA, setEtiquetaNivelIA] = useState('Nivel 1 · Base (Default)');
   const [rachaIA, setRachaIA] = useState(0);
   const [mensajeTutorIA, setMensajeTutorIA] = useState(
-    'Tutor IA Gemma 4 conectado: adaptaré la dificultad según tus respuestas.',
+    'Tutor IA Gemma 4 conectado: creo preguntas en este tablero y subo el nivel gradualmente si vas muy bien.',
   );
   const colaPreguntasIARef = useRef<PreguntaMatematica[]>([]);
 

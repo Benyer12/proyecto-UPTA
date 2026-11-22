@@ -1,5 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
+import { PREGUNTAS_NUMERIX } from './preguntas-numerix';
+import { RETOS_INTRUSO, type RetoIntruso } from './preguntas-letralia';
 
 export type PlanetaTutorIA = 'Numérix' | 'Letralia' | 'Naturae';
 export type NivelDificultadIA = 1 | 2 | 3;
@@ -87,13 +89,14 @@ export interface RespuestaTutorIA {
   mensajeTutor: string;
   consejoBreve: string;
   nuevaPregunta: PreguntaGeneradaIA;
+  nuevoRetoLetralia?: RetoIntruso;
   resumenProfesor: ResumenReporteProfesor;
 }
 
 export const ETIQUETAS_NIVEL_IA: Record<NivelDificultadIA, string> = {
-  1: 'Nivel 1 · Base Orbital',
-  2: 'Nivel 2 · Propulsión Media',
-  3: 'Nivel 3 · Comandante Cuántico',
+  1: 'Nivel 1 · Base (Default)',
+  2: 'Nivel 2 · Desafío Moderado',
+  3: 'Nivel 3 · Reto Avanzado',
 };
 
 export function obtenerMateriaPorPlaneta(
@@ -105,12 +108,14 @@ export function obtenerMateriaPorPlaneta(
 }
 
 /**
- * Sube o baja el nivel (1 a 3) según las respuestas correctas o incorrectas del estudiante
+ * Sube la dificultad gradualmente (1 -> 2 -> 3) solo cuando el niño responde muy bien
+ * (racha >= 2 aciertos seguidos y buena precisión). Si falla, se mantiene en el mismo nivel.
  */
 export function calcularNuevoNivelAdaptativo(
   nivelActualRaw: number,
   esCorrecta: boolean,
   rachaAciertos = 0,
+  precisionPorcentaje = 100,
 ): {
   nivelAnterior: NivelDificultadIA;
   nuevoNivel: NivelDificultadIA;
@@ -121,22 +126,98 @@ export function calcularNuevoNivelAdaptativo(
 
   let nuevoNivel: NivelDificultadIA = nivelAnterior;
 
-  if (esCorrecta) {
-    if (rachaAciertos >= 1 && nivelAnterior < 3) {
-      nuevoNivel = (nivelAnterior + 1) as NivelDificultadIA;
-    }
-  } else if (nivelAnterior > 1) {
-    nuevoNivel = (nivelAnterior - 1) as NivelDificultadIA;
+  if (esCorrecta && rachaAciertos >= 2 && precisionPorcentaje >= 75 && nivelAnterior < 3) {
+    nuevoNivel = (nivelAnterior + 1) as NivelDificultadIA;
   }
 
-  const cambioNivel =
-    nuevoNivel > nivelAnterior
-      ? 'subio'
-      : nuevoNivel < nivelAnterior
-        ? 'bajo'
-        : 'mantuvo';
+  const cambioNivel = nuevoNivel > nivelAnterior ? 'subio' : 'mantuvo';
 
   return { nivelAnterior, nuevoNivel, cambioNivel };
+}
+
+/**
+ * Genera un RetoIntruso nativo para Letralia guiado por el estilo y dificultad default de RETOS_INTRUSO,
+ * aumentando suavemente la dificultad según el nivel (1, 2 o 3) sin exagerar.
+ */
+export function generarRetoLetraliaAdaptativo(nivel: NivelDificultadIA): RetoIntruso {
+  const id = `int-ia-${Date.now().toString(36)}`;
+  const bancoPorNivel: Record<NivelDificultadIA, Omit<RetoIntruso, 'id'>[]> = {
+    1: [
+      {
+        categoria: 'ortografia',
+        palabras: ['La', 'nave', 'viaja', 'con', 'mucha', 'rapides', 'espacial.'],
+        indiceIntruso: 5,
+        opciones: ['rapidez', 'rapidéz', 'rrapidez'],
+        correcta: 'rapidez',
+        pista: 'Las palabras terminadas en -ez que vienen de adjetivos (rápido) se escriben con z.',
+        explicacion: '«Rapidez» se escribe con z al final, igual que «timidez» o «sencillez».',
+      },
+      {
+        categoria: 'concordancia',
+        palabras: ['Las', 'estrellas', 'brillante', 'iluminan', 'el', 'mapa.'],
+        indiceIntruso: 2,
+        opciones: ['brillantes', 'brillanta', 'brillamos'],
+        correcta: 'brillantes',
+        pista: '«Estrellas» está en plural; el adjetivo debe coincidir en número.',
+        explicacion: 'Como «estrellas» es plural, el adjetivo correcto es «brillantes».',
+      },
+    ],
+    2: [
+      {
+        categoria: 'acentuacion',
+        palabras: ['El', 'astronauta', 'revisó', 'la', 'brujula', 'antes', 'de', 'salir.'],
+        indiceIntruso: 4,
+        opciones: ['brújula', 'brujúla', 'brujulá'],
+        correcta: 'brújula',
+        pista: 'Separa en sílabas: brú-ju-la. La fuerza va en la antepenúltima sílaba.',
+        explicacion: '«Brújula» es esdrújula y todas las palabras esdrújulas siempre llevan tilde.',
+      },
+      {
+        categoria: 'ortografia',
+        palabras: ['Nuestro', 'equipo', 'decidió', 'explorar', 'el', 'bosque', 'cercano', 'ayer', 'por', 'la', 'noche.'].slice(0, 7),
+        indiceIntruso: 2,
+        opciones: ['decidió', 'desidió', 'decidio'],
+        correcta: 'decidió',
+        pista: 'Viene de «decidir» (con c) y lleva tilde en la última sílaba.',
+        explicacion: '«Decidió» se escribe con c y tilde en la o por ser aguda terminada en vocal.',
+      },
+    ],
+    3: [
+      {
+        categoria: 'acentuacion',
+        palabras: ['Solo', 'tu', 'puedes', 'activar', 'el', 'portal', 'estelar.'],
+        indiceIntruso: 1,
+        opciones: ['tú', 'tus', 'tuvo'],
+        correcta: 'tú',
+        pista: 'Cuando reemplaza el nombre de la persona, es pronombre personal y lleva tilde.',
+        explicacion: '«Tú» lleva tilde diacrítica cuando funciona como pronombre personal («tú puedes»).',
+      },
+      {
+        categoria: 'ortografia',
+        palabras: ['El', 'piloto', 'tubo', 'que', 'calibrar', 'los', 'motores.'],
+        indiceIntruso: 2,
+        opciones: ['tuvo', 'túvo', 'tuvoo'],
+        correcta: 'tuvo',
+        pista: 'Piensa si se refiere a un cilindro hueco o al verbo «tener» en pasado.',
+        explicacion: '«Tuvo» con v viene del verbo «tener»; «tubo» con b es un objeto cilíndrico.',
+      },
+    ],
+  };
+
+  // Ajuste seguro para el caso 2 de nivel 2 (poner palabra con error visible)
+  const candidatos = bancoPorNivel[nivel].map((item) =>
+    item.palabras[item.indiceIntruso] === item.correcta
+      ? {
+          ...item,
+          palabras: item.palabras.map((w, i) =>
+            i === item.indiceIntruso ? 'desidió' : w,
+          ),
+        }
+      : item,
+  );
+
+  const elegido = candidatos[Math.floor(Math.random() * candidatos.length)];
+  return { id, ...elegido };
 }
 
 /**
@@ -339,14 +420,14 @@ export function generarPreguntaAdaptativaPorNivel(
       };
     }
 
-    const divisor = Math.floor(Math.random() * 6) + 4;
-    const cociente = Math.floor(Math.random() * 9) + 7;
-    const extra = Math.floor(Math.random() * 12) + 5;
+    const divisor = Math.floor(Math.random() * 4) + 3;
+    const cociente = Math.floor(Math.random() * 6) + 5;
+    const extra = Math.floor(Math.random() * 8) + 4;
     const dividendo = divisor * cociente;
     const correcta = cociente + extra;
     const opciones: [string, string, string, string] = [
-      String(correcta - 3),
-      String(correcta + 4),
+      String(correcta - 2),
+      String(correcta + 3),
       String(correcta),
       String(cociente),
     ];
@@ -357,11 +438,11 @@ export function generarPreguntaAdaptativaPorNivel(
       nivelDificultad: nivel,
       etiquetaNivel,
       operador: '÷',
-      enunciado: `Reto Comandante: Repartes ${dividendo} baterías entre ${divisor} naves por igual y tu nave recibe ${extra} baterías extra. ¿Cuántas tiene tu nave?`,
+      enunciado: `Repartes ${dividendo} baterías entre ${divisor} naves por igual y tu nave recibe ${extra} baterías más. ¿Cuántas tiene tu nave?`,
       opciones,
       indiceRespuestaCorrecta: 2,
       pista: `Primero divide ${dividendo} ÷ ${divisor} y al resultado súmale ${extra}.`,
-      explicacionBreve: `Al dividir ${dividendo} ÷ ${divisor} cada nave recibe ${cociente}. Sumando las ${extra} extra: ${cociente} + ${extra} = ${correcta}.`,
+      explicacionBreve: `Al dividir ${dividendo} ÷ ${divisor} cada nave recibe ${cociente}. Sumando ${extra}: ${cociente} + ${extra} = ${correcta}.`,
       creadaPor: 'gemma-4-31b-it',
       fechaCreacion,
     };
@@ -806,11 +887,36 @@ export async function evaluarRespuestaConTutorIA(
     entrada.nivelActual ?? 1,
     esCorrecta,
     rachaAciertos,
+    precisionPorcentaje,
   );
   const etiquetaNivel = ETIQUETAS_NIVEL_IA[nuevoNivel];
 
+  // Referencia real de las preguntas default escritas en el planeta para calibrar la dificultad sin exagerar
+  const ejemplosDefault =
+    planeta === 'Numérix'
+      ? PREGUNTAS_NUMERIX.slice(0, 3).map((p) => ({
+          enunciado: p.enunciado,
+          operador: p.operador,
+          opciones: p.opciones,
+        }))
+      : planeta === 'Letralia'
+        ? RETOS_INTRUSO.slice(0, 3).map((r) => ({
+            categoria: r.categoria,
+            oracion: r.palabras.join(' '),
+            correcta: r.correcta,
+          }))
+        : [
+            {
+              enunciado: '¿Qué proceso usan las plantas para fabricar su alimento con la luz del Sol?',
+              respuesta: 'Fotosíntesis',
+            },
+          ];
+
   const promptIA = JSON.stringify({
-    tarea: 'Evaluar respuesta de estudiante de primaria (10 a 12 años) y generar nueva pregunta adaptada al nuevoNivel + resumen para reporte PDF del profesor',
+    tarea:
+      'Evaluar respuesta de un niño de primaria (10 a 12 años) DURANTE el tablero de juego. Guíate con ejemplosDefault para conocer la dificultad base (Nivel 1). Si nuevoNivel subió (2 o 3), incrementa la dificultad de forma moderada y gradual, NUNCA exagerada ni de secundaria.',
+    reglaProgresion:
+      'Si el estudiante respondió bien con buena racha, sube un paso suave; si falló, se mantiene en el mismo nivel para reforzar sin castigo.',
     estudianteNombre,
     planeta,
     materia,
@@ -819,22 +925,23 @@ export async function evaluarRespuestaConTutorIA(
     nuevoNivel,
     cambioNivel,
     precisionPorcentaje,
+    ejemplosDefaultDelPlaneta: ejemplosDefault,
     preguntaActual: entrada.preguntaActual || '',
     respuestaEstudiante: entrada.respuestaEstudiante || '',
     respuestaCorrecta: entrada.respuestaCorrecta || '',
-    consultaLibre: entrada.consultaLibre || '',
     formatoSalidaJSON: {
-      mensajeTutor: 'string (mensaje cálido y motivador del tutor IA directo al niño, máx 220 caracteres)',
-      consejoBreve: 'string (pista o tip práctico corto)',
+      mensajeTutor: 'string (mensaje cálido y breve del tutor IA en el tablero, máx 180 caracteres)',
+      consejoBreve: 'string (pista corta)',
       nuevaPregunta: {
         enunciado: 'string',
         opciones: ['op1', 'op2', 'op3', 'op4'],
         indiceRespuestaCorrecta: 0,
         pista: 'string',
         explicacionBreve: 'string',
+        operador: '+ | − | × | ÷ (solo Numérix)',
       },
       resumenProfesor: {
-        fortalezas: ['string', 'string'],
+        fortalezas: ['string'],
         areasDeRefuerzo: ['string'],
         recomendacionPedagogica: 'string',
         resumenEjecutivo: 'string',
@@ -894,10 +1001,11 @@ export async function evaluarRespuestaConTutorIA(
 
   const mensajeCambio =
     cambioNivel === 'subio'
-      ? `¡Subiste a ${etiquetaNivel}!`
-      : cambioNivel === 'bajo'
-        ? `Ajusté los retos a ${etiquetaNivel} para reforzar paso a paso.`
-        : `Te mantienes firme en ${etiquetaNivel}.`;
+      ? `¡Vas excelente! Subimos suavemente a ${etiquetaNivel}.`
+      : `Seguimos en ${etiquetaNivel} para afianzar a tu ritmo.`;
+
+  const nuevoRetoLetralia =
+    planeta === 'Letralia' ? generarRetoLetraliaAdaptativo(nuevoNivel) : undefined;
 
   const mensajeTutorPorDefecto = entrada.consultaLibre
     ? `¡Hola, ${estudianteNombre}! En ${planeta} (${materia}), recuerda leer cada pista con calma y descomponer el reto en pasos pequeños. ${mensajeCambio}`
@@ -971,6 +1079,7 @@ export async function evaluarRespuestaConTutorIA(
     mensajeTutor: parsed?.mensajeTutor || mensajeTutorPorDefecto,
     consejoBreve: parsed?.consejoBreve || consejoPorDefecto,
     nuevaPregunta,
+    nuevoRetoLetralia,
     resumenProfesor,
   };
 }

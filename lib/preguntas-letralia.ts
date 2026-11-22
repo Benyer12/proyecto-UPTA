@@ -259,6 +259,8 @@ export const RETOS_INTRUSO: RetoIntruso[] = [
     explicacion:
       'El adjetivo concuerda en género y número con el sustantivo: «la nave» (femenino, singular) → plateada.',
   },
+  // === IA_RETOS_LETRALIA_START ===
+  // === IA_RETOS_LETRALIA_END ===
 ];
 
 /* ─────────────── Mecánica 2 · Constructor de Puentes Sintácticos ─────────────── */

@@ -10,7 +10,6 @@ import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
 import SoundTogglePill from '../../components/SoundTogglePill';
 import RoleAvatar from '../../components/RoleAvatar';
-import StudentTutorIACard from '../../components/StudentTutorIACard';
 import { useAuthStore } from '../../lib/auth-store';
 import { useThemeStore } from '../../lib/theme-store';
 import { MOCK_PLANETS, MOCK_PROGRESS } from '../../lib/mock-data';
@@ -329,9 +328,6 @@ function StudentDashboardView({
           </div>
         </div>
       </LiquidGlass>
-
-      {/* 1.5. TUTOR IA GEMMA 4 (ADAPTACIÓN DE NIVEL Y RETOS EN VIVO) */}
-      <StudentTutorIACard studentName={user.name || 'Explorador'} />
 
       {/* 2. ENCABEZADO CENTRAL LIMPIO */}
       <div className="text-center space-y-2 pt-1">

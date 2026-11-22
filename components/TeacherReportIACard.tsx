@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { LiquidGlass } from './ui/glasscn/liquid-glass';
+import LiquidGlassSelect, { type LiquidGlassSelectOption } from './LiquidGlassSelect';
 import RoleAvatar from './RoleAvatar';
 import type {
-  PlanetaTutorIA,
   PreguntaGeneradaIA,
   ResumenIndividualEstudianteIA,
   ResumenReporteProfesor,
@@ -47,25 +47,32 @@ export default function TeacherReportIACard({
   totalNiveles: number;
 }) {
   const [loadingIA, setLoadingIA] = useState(false);
-  const [creandoPregunta, setCreandoPregunta] = useState(false);
-  const [planetaNuevaPregunta, setPlanetaNuevaPregunta] =
-    useState<PlanetaTutorIA>('Numérix');
-  const [ultimaPreguntaCreada, setUltimaPreguntaCreada] =
-    useState<PreguntaGeneradaIA | null>(null);
+  const [filtroEstudiante, setFiltroEstudiante] = useState<string>('all');
   const [resumenPDF, setResumenPDF] = useState<ResumenPDFData | null>(null);
-  const [reportesLocales, setReportesLocales] = useState<ResumenReporteProfesor[]>([]);
 
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem('universo-reportes-ia');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          setReportesLocales(parsed);
-        }
-      }
-    } catch {}
-  }, []);
+  const opcionesSelector = useMemo<LiquidGlassSelectOption[]>(() => {
+    const base: LiquidGlassSelectOption[] = [
+      {
+        value: 'all',
+        label: 'Todos los estudiantes',
+        sublabel: `${students.length} ${students.length === 1 ? 'asignado' : 'asignados'}`,
+      },
+    ];
+    students.forEach((s) => {
+      base.push({
+        value: s.id,
+        label: s.nombre,
+        sublabel: `@${s.usuario} · ${s.estrellasTotales} ★`,
+      });
+    });
+    return base;
+  }, [students]);
+
+  const resumenesFiltrados = useMemo(() => {
+    const lista = resumenPDF?.resumenesPorEstudiante || [];
+    if (filtroEstudiante === 'all') return lista;
+    return lista.filter((est) => est.estudianteId === filtroEstudiante);
+  }, [resumenPDF, filtroEstudiante]);
 
   const generarDiagnosticoConIA = async (): Promise<ResumenPDFData | null> => {
     setLoadingIA(true);
@@ -91,38 +98,6 @@ export default function TeacherReportIACard({
       setLoadingIA(false);
     }
     return null;
-  };
-
-  const crearPreguntaParaBancoJSON = async () => {
-    if (creandoPregunta) return;
-    setCreandoPregunta(true);
-    try {
-      const res = await fetch('/api/tutor-ia', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'generar-pregunta',
-          planeta: planetaNuevaPregunta,
-          nivelActual: 2,
-        }),
-      });
-      const data = await res.json();
-      if (data?.ok && data.nuevaPregunta) {
-        setUltimaPreguntaCreada(data.nuevaPregunta);
-        if (resumenPDF && typeof data.totalPreguntasEnJson === 'number') {
-          setResumenPDF({
-            ...resumenPDF,
-            totalPreguntasGeneradasIA: data.totalPreguntasEnJson,
-            ultimasPreguntasIA: [
-              data.nuevaPregunta,
-              ...(resumenPDF.ultimasPreguntasIA || []),
-            ].slice(0, 6),
-          });
-        }
-      }
-    } catch {} finally {
-      setCreandoPregunta(false);
-    }
   };
 
   const descargarReportePDFIndividual = async (
@@ -278,6 +253,16 @@ export default function TeacherReportIACard({
     const datos = resumenPDF || (await generarDiagnosticoConIA());
     if (!datos) return;
 
+    if (filtroEstudiante !== 'all') {
+      const individual = datos.resumenesPorEstudiante.find(
+        (e) => e.estudianteId === filtroEstudiante,
+      );
+      if (individual) {
+        await descargarReportePDFIndividual(individual);
+        return;
+      }
+    }
+
     const fechaLegible = new Date(datos.fechaEmision).toLocaleDateString('es-ES', {
       day: '2-digit',
       month: 'long',
@@ -318,7 +303,7 @@ export default function TeacherReportIACard({
       !datos.ultimasPreguntasIA || datos.ultimasPreguntasIA.length === 0
         ? ''
         : `
-          <h2>Últimas Preguntas Creadas por la IA en data/preguntas-ia.json</h2>
+          <h2>Últimas Preguntas Calibradas por la IA en los Tableros</h2>
           <table>
             <thead>
               <tr>
@@ -469,7 +454,7 @@ export default function TeacherReportIACard({
     <div class="meta">
       <div><strong>Fecha:</strong> ${fechaLegible}</div>
       <div><strong>Motor IA:</strong> Gemma 4 Cloud</div>
-      <div><strong>Banco JSON:</strong> ${datos.totalPreguntasGeneradasIA} preguntas adaptativas</div>
+      <div><strong>Retos adaptativos:</strong> ${datos.totalPreguntasGeneradasIA} en banco</div>
     </div>
   </div>
 
@@ -558,37 +543,24 @@ export default function TeacherReportIACard({
                 id="ai-tutor-report-heading"
                 className="text-lg sm:text-xl font-bold text-white tracking-tight"
               >
-                Resumen por Estudiante, Banco JSON y Reporte PDF
+                Resumen por Estudiante y Reporte PDF
               </h2>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              aria-label="Seleccionar planeta para crear pregunta con IA"
-              value={planetaNuevaPregunta}
-              onChange={(e) => setPlanetaNuevaPregunta(e.target.value as PlanetaTutorIA)}
-              className="min-h-[38px] px-3 py-1.5 rounded-full border border-white/15 bg-[#050a18]/80 text-xs font-semibold text-white"
-            >
-              <option value="Numérix">Numérix (Mate)</option>
-              <option value="Letralia">Letralia (Lengua)</option>
-              <option value="Naturae">Naturae (Ciencias)</option>
-            </select>
-
-            <button
-              type="button"
-              onClick={crearPreguntaParaBancoJSON}
-              disabled={creandoPregunta}
-              className="min-h-[38px] px-4 py-1.5 rounded-full border border-[#6EE7B7]/40 bg-[#041B14]/80 hover:bg-[#041B14] text-xs font-semibold text-[#6EE7B7] transition-colors cursor-pointer disabled:opacity-50"
-            >
-              {creandoPregunta ? 'Creando...' : '+ Crear pregunta IA'}
-            </button>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <LiquidGlassSelect
+              ariaLabel="Filtrar estudiante para resumen y reporte PDF"
+              value={filtroEstudiante}
+              onChange={setFiltroEstudiante}
+              options={opcionesSelector}
+            />
 
             <button
               type="button"
               onClick={generarDiagnosticoConIA}
               disabled={loadingIA}
-              className="min-h-[38px] px-4 py-1.5 rounded-full border border-[#67E8F9]/40 bg-[#041724]/80 hover:bg-[#041724] text-xs font-semibold text-[#67E8F9] transition-colors cursor-pointer disabled:opacity-50"
+              className="min-h-[40px] px-4 py-2 rounded-full border border-[#67E8F9]/40 bg-[#041724]/80 hover:bg-[#041724] text-xs font-semibold text-[#67E8F9] transition-colors cursor-pointer disabled:opacity-50"
             >
               {loadingIA ? 'Analizando...' : 'Resumen de cada estudiante'}
             </button>
@@ -597,97 +569,90 @@ export default function TeacherReportIACard({
               type="button"
               onClick={descargarReportePDF}
               disabled={loadingIA}
-              className="min-h-[38px] px-5 py-1.5 rounded-full bg-white text-black hover:bg-white/90 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+              className="min-h-[40px] px-5 py-2 rounded-full bg-white text-black hover:bg-white/90 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
             >
-              Descargar Reporte PDF
+              {filtroEstudiante === 'all' ? 'Descargar Reporte PDF' : 'Descargar PDF Individual'}
             </button>
           </div>
         </div>
 
-        {ultimaPreguntaCreada && (
-          <div className="rounded-2xl border border-[#6EE7B7]/30 bg-[#041B14]/50 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="text-xs text-white/90">
-              <strong className="text-[#6EE7B7]">
-                Guardada en data/preguntas-ia.json ({ultimaPreguntaCreada.planeta}):
-              </strong>{' '}
-              {ultimaPreguntaCreada.enunciado}
-            </div>
-            <span className="font-mono text-[10px] text-[#6EE7B7] shrink-0">
-              Resp: {ultimaPreguntaCreada.opciones[ultimaPreguntaCreada.indiceRespuestaCorrecta]}
-            </span>
-          </div>
-        )}
-
         {resumenPDF && (
           <div className="space-y-4">
-            <div className="rounded-2xl border border-white/12 bg-white/[0.04] p-4 sm:p-5 space-y-2.5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-[#6EE7B7]">
-                  Diagnóstico Grupal · {resumenPDF.totalPreguntasGeneradasIA} preguntas en JSON
-                </span>
-                <span className="font-mono text-[10px] text-white/50">
-                  Promedio: {resumenPDF.promedioEstrellas} estrellas/estudiante
-                </span>
+            {filtroEstudiante === 'all' && (
+              <div className="rounded-2xl border border-white/12 bg-white/[0.04] p-4 sm:p-5 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-[#6EE7B7]">
+                    Diagnóstico Grupal · {resumenPDF.totalPreguntasGeneradasIA} retos adaptativos en tableros
+                  </span>
+                  <span className="font-mono text-[10px] text-white/50">
+                    Promedio: {resumenPDF.promedioEstrellas} estrellas/estudiante
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-white/85 leading-relaxed">
+                  {resumenPDF.diagnosticoIA}
+                </p>
               </div>
-              <p className="text-xs sm:text-sm text-white/85 leading-relaxed">
-                {resumenPDF.diagnosticoIA}
-              </p>
-            </div>
+            )}
 
-            {resumenPDF.resumenesPorEstudiante &&
-              resumenPDF.resumenesPorEstudiante.length > 0 && (
-                <div className="space-y-2.5">
-                  <div className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-[#67E8F9] px-1">
-                    Resumen IA de cada estudiante ({resumenPDF.resumenesPorEstudiante.length})
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    {resumenPDF.resumenesPorEstudiante.map((est) => (
-                      <div
-                        key={est.estudianteId}
-                        className="rounded-2xl border border-white/12 bg-white/[0.03] p-4 flex flex-col justify-between gap-3"
-                      >
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <RoleAvatar role="student" name={est.nombre} size={36} />
-                              <div className="min-w-0">
-                                <div className="text-sm font-bold text-white truncate">
-                                  {est.nombre}
-                                </div>
-                                <div className="font-mono text-[10px] text-[#67E8F9]">
-                                  {est.etiquetaNivel}
-                                </div>
+            {resumenesFiltrados.length > 0 && (
+              <div className="space-y-2.5">
+                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-[#67E8F9] px-1">
+                  {filtroEstudiante === 'all'
+                    ? `Resumen IA de cada estudiante (${resumenesFiltrados.length})`
+                    : 'Resumen IA del estudiante seleccionado'}
+                </div>
+                <div
+                  className={`grid grid-cols-1 ${
+                    resumenesFiltrados.length > 1 ? 'md:grid-cols-2' : ''
+                  } gap-3.5`}
+                >
+                  {resumenesFiltrados.map((est) => (
+                    <div
+                      key={est.estudianteId}
+                      className="rounded-2xl border border-white/12 bg-white/[0.03] p-4 flex flex-col justify-between gap-3"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <RoleAvatar role="student" name={est.nombre} size={36} />
+                            <div className="min-w-0">
+                              <div className="text-sm font-bold text-white truncate">
+                                {est.nombre}
+                              </div>
+                              <div className="font-mono text-[10px] text-[#67E8F9]">
+                                {est.etiquetaNivel}
                               </div>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => descargarReportePDFIndividual(est)}
-                              className="min-h-[32px] px-3 py-1 rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black text-[11px] font-semibold text-white transition-colors cursor-pointer shrink-0"
-                            >
-                              PDF Individual
-                            </button>
                           </div>
-
-                          <p className="text-xs text-white/80 leading-relaxed">
-                            {est.resumenIA}
-                          </p>
+                          <button
+                            type="button"
+                            onClick={() => descargarReportePDFIndividual(est)}
+                            className="min-h-[32px] px-3 py-1 rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black text-[11px] font-semibold text-white transition-colors cursor-pointer shrink-0"
+                          >
+                            PDF Individual
+                          </button>
                         </div>
 
-                        <div className="pt-2 border-t border-white/10 text-[11px] text-white/65 space-y-0.5">
-                          <div>
-                            <strong className="text-[#6EE7B7]">Fortaleza:</strong>{' '}
-                            {est.fortalezaPrincipal}
-                          </div>
-                          <div>
-                            <strong className="text-[#FDE68A]">Meta:</strong>{' '}
-                            {est.metaRecomendada}
-                          </div>
+                        <p className="text-xs text-white/80 leading-relaxed">
+                          {est.resumenIA}
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-white/10 text-[11px] text-white/65 space-y-0.5">
+                        <div>
+                          <strong className="text-[#6EE7B7]">Fortaleza:</strong>{' '}
+                          {est.fortalezaPrincipal}
+                        </div>
+                        <div>
+                          <strong className="text-[#FDE68A]">Meta:</strong>{' '}
+                          {est.metaRecomendada}
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
           </div>
         )}
       </LiquidGlass>

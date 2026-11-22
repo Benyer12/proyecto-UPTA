@@ -203,6 +203,8 @@ export const PREGUNTAS_NUMERIX: PreguntaMatematica[] = [
     pista: 'Recuerda cuánto es 4 × 8.',
     explicacionBreve: 'Como 4 × 8 = 32, entonces 32 ÷ 4 = 8 meteoritos por grupo.',
   },
+  // === IA_PREGUNTAS_NUMERIX_START ===
+  // === IA_PREGUNTAS_NUMERIX_END ===
 ];
 
 /**

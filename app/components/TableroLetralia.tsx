@@ -42,6 +42,7 @@ import {
   RETOS_PUENTE,
   RETOS_TORMENTA,
   elegirSinRepetir,
+  type RetoIntruso,
 } from '../../lib/preguntas-letralia';
 
 interface TableroLetraliaProps {
@@ -166,11 +167,12 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
 
   /* ── Estado del Tutor IA Gemma 4 en Letralia ── */
   const [nivelIA, setNivelIA] = useState<1 | 2 | 3>(1);
-  const [etiquetaNivelIA, setEtiquetaNivelIA] = useState('Nivel 1 · Base Orbital');
+  const [etiquetaNivelIA, setEtiquetaNivelIA] = useState('Nivel 1 · Base (Default)');
   const [rachaIA, setRachaIA] = useState(0);
   const [mensajeTutorIA, setMensajeTutorIA] = useState(
-    'Tutor IA Gemma 4 activo: acompaño tu lectura y ajusto el nivel.',
+    'Tutor IA Gemma 4 activo: creo retos en este tablero y subo el nivel gradualmente si vas muy bien.',
   );
+  const colaRetosIARef = useRef<RetoIntruso[]>([]);
 
   const [avisoFlotante, setAvisoFlotante] = useState<string | null>(
     '¡Lanza el dado astral para comenzar tu viaje por Letralia!',
@@ -363,7 +365,8 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         return;
       }
 
-      const retoIntruso = elegirSinRepetir(RETOS_INTRUSO, usadosIntruso.current);
+      const retoIA = colaRetosIARef.current.shift();
+      const retoIntruso = retoIA ?? elegirSinRepetir(RETOS_INTRUSO, usadosIntruso.current);
       setModalActivo({
         tipo: 'intruso',
         reto: retoIntruso,
@@ -558,6 +561,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
               setNivelIA(data.nuevoNivel);
               setEtiquetaNivelIA(data.etiquetaNivel);
               setMensajeTutorIA(data.mensajeTutor);
+              if (data.nuevoRetoLetralia?.palabras?.length) {
+                colaRetosIARef.current.push(data.nuevoRetoLetralia as RetoIntruso);
+              }
               try {
                 const prevRaw = window.localStorage.getItem('universo-reportes-ia');
                 const prev = prevRaw ? JSON.parse(prevRaw) : [];
