@@ -1,5 +1,125 @@
 [
   {
+    "id": 1795407267370,
+    "planeta": "Numérix",
+    "materia": "Matemáticas",
+    "nivelDificultad": 1,
+    "etiquetaNivel": "Nivel 1 · Base (Default)",
+    "operador": "+",
+    "enunciado": "Si en la base espacial teníamos 134 cristales y recolectamos 58 más, ¿cuántos cristales tenemos ahora?",
+    "opciones": [
+      "182",
+      "192",
+      "172",
+      "188"
+    ],
+    "indiceRespuestaCorrecta": 0,
+    "pista": "Suma primero las unidades (4 + 8) y lleva una decena.",
+    "explicacionBreve": "134 + 58 = 182. Sumamos unidades, decenas y centenas cuidadosamente.",
+    "creadaPor": "gemini-3.5-flash-lite",
+    "fechaCreacion": "2026-11-23T04:14:26.694Z"
+  },
+  {
+    "id": 1795407258216,
+    "planeta": "Numérix",
+    "materia": "Matemáticas",
+    "nivelDificultad": 1,
+    "etiquetaNivel": "Nivel 1 · Base (Default)",
+    "operador": "+",
+    "enunciado": "¿Cuánto es 56 + 28?",
+    "opciones": [
+      "84",
+      "74",
+      "82",
+      "94"
+    ],
+    "indiceRespuestaCorrecta": 0,
+    "pista": "Suma primero las unidades (6 + 8) y lleva una decena.",
+    "explicacionBreve": "56 + 28 = 84. Sumamos 6 + 8 = 14 (ponemos 4 y llevamos 1) y 5 + 2 + 1 = 8.",
+    "creadaPor": "gemini-3.5-flash-lite",
+    "fechaCreacion": "2026-11-23T04:14:18.169Z"
+  },
+  {
+    "id": 1795407222242,
+    "planeta": "Numérix",
+    "materia": "Matemáticas",
+    "nivelDificultad": 1,
+    "etiquetaNivel": "Nivel 1 · Base (Default)",
+    "operador": "+",
+    "enunciado": "¿Cuánto es 35 + 24?",
+    "opciones": [
+      "59",
+      "69",
+      "58",
+      "49"
+    ],
+    "indiceRespuestaCorrecta": 0,
+    "pista": "Suma primero las unidades (5 + 4) y luego las decenas (3 + 2).",
+    "explicacionBreve": "Al sumar 35 + 24, sumamos 5+4=9 y 30+20=50, lo que nos da 59.",
+    "creadaPor": "gemini-3.5-flash-lite",
+    "fechaCreacion": "2026-11-23T04:13:41.739Z"
+  },
+  {
+    "id": 1795406989628,
+    "planeta": "Numérix",
+    "materia": "Matemáticas",
+    "nivelDificultad": 2,
+    "etiquetaNivel": "Nivel 2 · Desafío Moderado",
+    "operador": "×",
+    "enunciado": "Si tu base espacial recibió 145 cristales de energía y usaste 68 para encender los motores, ¿cuántos cristales te quedan?",
+    "opciones": [
+      "77",
+      "87",
+      "67",
+      "75"
+    ],
+    "indiceRespuestaCorrecta": 0,
+    "pista": "Recuerda prestar una decena si el número de arriba es menor al restar.",
+    "explicacionBreve": "145 menos 68 da como resultado 77 cristales.",
+    "creadaPor": "gemini-3.5-flash-lite",
+    "fechaCreacion": "2026-11-23T04:09:48.955Z"
+  },
+  {
+    "id": 1795406978657,
+    "planeta": "Numérix",
+    "materia": "Matemáticas",
+    "nivelDificultad": 1,
+    "etiquetaNivel": "Nivel 1 · Base (Default)",
+    "operador": "+",
+    "enunciado": "¿Cuánto es 65 + 28?",
+    "opciones": [
+      "83",
+      "93",
+      "92",
+      "85"
+    ],
+    "indiceRespuestaCorrecta": 1,
+    "pista": "Suma primero las unidades (5 + 8) y luego las decenas.",
+    "explicacionBreve": "5 + 8 = 13 (pones 3 y llevas 1). 6 + 2 + 1 = 9. El resultado es 93.",
+    "creadaPor": "gemini-3.5-flash-lite",
+    "fechaCreacion": "2026-11-23T04:09:38.492Z"
+  },
+  {
+    "id": 1795406968115,
+    "planeta": "Numérix",
+    "materia": "Matemáticas",
+    "nivelDificultad": 2,
+    "etiquetaNivel": "Nivel 2 · Desafío Moderado",
+    "operador": "×",
+    "enunciado": "Para recargar los propulsores, Numérix necesita calcular: 74 + 58. ¿Cuál es el resultado?",
+    "opciones": [
+      "132",
+      "122",
+      "142",
+      "128"
+    ],
+    "indiceRespuestaCorrecta": 0,
+    "pista": "Suma primero las unidades (4 + 8) y lleva una decena.",
+    "explicacionBreve": "Al sumar 74 + 58, 4 + 8 = 12 (escribimos 2 y llevamos 1). Luego 7 + 5 + 1 = 13, obteniendo 132.",
+    "creadaPor": "gemini-3.5-flash-lite",
+    "fechaCreacion": "2026-11-23T04:09:27.812Z"
+  },
+  {
     "id": 1795406255895,
     "planeta": "Numérix",
     "materia": "Matemáticas",

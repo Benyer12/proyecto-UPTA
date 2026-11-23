@@ -262,13 +262,13 @@ export const RETOS_INTRUSO: RetoIntruso[] = [
   // === IA_RETOS_LETRALIA_START ===
   {
     id: "ia-int-1",
-    categoria: "ortografia",
-    palabras: ["El","explorador","vio","una","nube","vlanca","en","el","cielo."],
-    indiceIntruso: 5,
-    opciones: ["blanca","blamca","vlanka"],
-    correcta: "blanca",
-    pista: "Antes de la letra L siempre se escribe B, nunca V.",
-    explicacion: "Â«BlancaÂ» se escribe con b porque va seguida de l (bl).",
+    categoria: "concordancia",
+    palabras: ["Unos","planetas","lejana","giran","alrededor","del","Sol."],
+    indiceIntruso: 2,
+    opciones: ["lejanos","lejano","lejanas"],
+    correcta: "lejanos",
+    pista: "«Planetas» es masculino y plural.",
+    explicacion: "El adjetivo debe concordar en género y número: «planetas lejanos».",
   },
   // === IA_RETOS_LETRALIA_END ===
 ];
@@ -364,9 +364,9 @@ export const RETOS_PUENTE: RetoPuenteSintactico[] = [
   {
     id: "ia-pue-1",
     enfoque: "sujeto-predicado",
-    ordenCorrecto: ["La brÃºjula","astral","guÃ­a","a los viajeros","por el cielo"],
-    pista: "Empieza por el sujeto con mayÃºscula: Â¿quÃ© guÃ­a a los viajeros?",
-    explicacion: "Sujeto: Â«La brÃºjula astralÂ». Predicado: Â«guÃ­a a los viajeros por el cieloÂ».",
+    ordenCorrecto: ["La brújula","astral","guía","a los viajeros","por el cielo"],
+    pista: "Empieza por el sujeto con mayúscula: ¿qué guía a los viajeros?",
+    explicacion: "Sujeto: «La brújula astral». Predicado: «guía a los viajeros por el cielo».",
   },
   // === IA_PUENTES_LETRALIA_END ===
 ];
@@ -476,13 +476,13 @@ export const RETOS_TORMENTA: RetoTormenta[] = [
   // === IA_TORMENTA_LETRALIA_START ===
   {
     id: "ia-tor-1",
-    tipo: "agudas",
-    consigna: "Â¡Activa las 3 palabras AGUDAS en el escudo!",
-    palabras: ["mamÃ¡","casa","papel","nube","ratÃ³n","libro"],
-    correctas: ["mamÃ¡","papel","ratÃ³n"],
+    tipo: "esdrujulas",
+    consigna: "¡Atrapa las 3 palabras ESDRÚJULAS antes de que pase la tormenta!",
+    palabras: ["sábado","nube","lámpara","sol","médico","camino"],
+    correctas: ["sábado","lámpara","médico"],
     segundos: 18,
-    pista: "En las agudas la sÃ­laba mÃ¡s fuerte es la Ãºltima.",
-    explicacion: "Ma-MÃ, pa-PEL y ra-TÃ“N llevan la fuerza al final.",
+    pista: "Todas las esdrújulas llevan tilde en la antepenúltima sílaba.",
+    explicacion: "SÁ-ba-do, LÁM-pa-ra y MÉ-di-co son esdrújulas.",
   },
   // === IA_TORMENTA_LETRALIA_END ===
 ];
@@ -601,40 +601,40 @@ export const RETOS_GUARDIAN: RetoGuardianBoss[] = [
   // === IA_BOSS_LETRALIA_START ===
   {
     id: "ia-bos-1",
-    titulo: "La constelaciÃ³n de los cuentos",
-    relato: "El GuardiÃ¡n encendiÃ³ una linterna azul. Â«Cada historia que lees vive dentro de {0}, joven exploradorÂ», susurrÃ³. Â«Muchos pasaron con prisa sin leer los mapas; {1}, no encontraron la puerta secreta. Quien lee con atenciÃ³n abre puertas invisiblesÂ». EnseÃ±anza: {2}.",
+    titulo: "La constelación de los cuentos",
+    relato: "El Guardián encendió una linterna azul. «Cada historia que lees vive dentro de {0}, joven explorador», susurró. «Muchos pasaron con prisa sin leer los mapas; {1}, no encontraron la puerta secreta. Quien lee con atención abre puertas invisibles». Enseñanza: {2}.",
     fases: [
           {
-                "titulo": "Sello 1 Â· Tilde diacrÃ­tica",
+                "titulo": "Sello 1 · Tilde diacrítica",
                 "enunciado": "Elige la palabra correcta para completar el primer espacio.",
                 "opciones": [
                       "ti",
-                      "tÃ­"
+                      "tí"
                 ],
                 "correcta": "ti",
-                "explicacion": "El pronombre Â«tiÂ» nunca lleva tilde porque no existe otra palabra igual con distinto significado."
+                "explicacion": "El pronombre «ti» nunca lleva tilde porque no existe otra palabra igual con distinto significado."
           },
           {
-                "titulo": "Sello 2 Â· Conector lÃ³gico",
-                "enunciado": "Pasar con prisa causÃ³ que no encontraran la puerta. Â¿QuÃ© conector une esa causa con su consecuencia?",
+                "titulo": "Sello 2 · Conector lógico",
+                "enunciado": "Pasar con prisa causó que no encontraran la puerta. ¿Qué conector une esa causa con su consecuencia?",
                 "opciones": [
                       "por eso",
                       "aunque",
-                      "ademÃ¡s"
+                      "además"
                 ],
                 "correcta": "por eso",
-                "explicacion": "Â«Por esoÂ» presenta la consecuencia directa de pasar sin leer los mapas."
+                "explicacion": "«Por eso» presenta la consecuencia directa de pasar sin leer los mapas."
           },
           {
-                "titulo": "Sello 3 Â· ComprensiÃ³n lectora",
-                "enunciado": "Â¿QuÃ© significa que Â«quien lee con atenciÃ³n abre puertas invisiblesÂ»?",
+                "titulo": "Sello 3 · Comprensión lectora",
+                "enunciado": "¿Qué significa que «quien lee con atención abre puertas invisibles»?",
                 "opciones": [
                       "leer con cuidado nos permite descubrir ideas y oportunidades nuevas",
                       "los libros tienen llaves escondidas dentro del papel",
                       "las puertas del santuario no se pueden ver nunca"
                 ],
                 "correcta": "leer con cuidado nos permite descubrir ideas y oportunidades nuevas",
-                "explicacion": "Es una metÃ¡fora: leer atentamente nos abre caminos de aprendizaje."
+                "explicacion": "Es una metáfora: leer atentamente nos abre caminos de aprendizaje."
           }
     ],
   },
@@ -692,4 +692,5 @@ export function validarPuente(reto: RetoPuenteSintactico, orden: string[]): bool
   const intento = unir(orden);
   return [reto.ordenCorrecto, ...(reto.ordenesAlternativas ?? [])].some((o) => unir(o) === intento);
 }
+
 

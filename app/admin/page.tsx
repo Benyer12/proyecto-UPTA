@@ -114,7 +114,7 @@ export default function AdminPage() {
         title: `Rol asignado: ${rolLegible}`,
         message: res.syncedToCloud
           ? `${u.nombre} ahora cuenta con permisos de ${rolLegible} en la plataforma.`
-          : `${u.nombre} cambió a ${rolLegible} localmente y se subirá a Supabase al reconectar.`,
+          : `${u.nombre} cambió a ${rolLegible} localmente y se sincronizará al reconectar.`,
       });
     }
 

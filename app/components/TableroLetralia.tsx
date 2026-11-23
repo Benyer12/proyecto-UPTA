@@ -176,7 +176,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
 
   /* ── Estado del Tutor IA Google Gemini en Letralia ── */
   const [nivelIA, setNivelIA] = useState<1 | 2 | 3>(1);
-  const [etiquetaNivelIA, setEtiquetaNivelIA] = useState('Nivel 1 · Base (Default)');
+  const [etiquetaNivelIA, setEtiquetaNivelIA] = useState('Nivel 1 · Base');
   const [rachaIA, setRachaIA] = useState(0);
   const [mensajeTutorIA, setMensajeTutorIA] = useState(
     'Tutor IA Google Gemini activo: creo retos en este tablero y subo el nivel gradualmente si vas muy bien.',
@@ -658,7 +658,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         } else {
           setMensajeTutorIA(
             res.exito
-              ? '¡Muy bien! Reto completado sin internet (banco JSON local).'
+              ? '¡Muy bien! Reto completado en modo sin conexión.'
               : 'Buen intento. Seguimos practicando lectura sin conexión.',
           );
         }

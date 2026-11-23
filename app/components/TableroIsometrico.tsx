@@ -203,7 +203,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
 
   /* ── Estado del Tutor IA Google Gemini (nivel adaptativo 1..3 + cola de preguntas JSON) ── */
   const [nivelIA, setNivelIA] = useState<1 | 2 | 3>(1);
-  const [etiquetaNivelIA, setEtiquetaNivelIA] = useState('Nivel 1 · Base (Default)');
+  const [etiquetaNivelIA, setEtiquetaNivelIA] = useState('Nivel 1 · Base');
   const [rachaIA, setRachaIA] = useState(0);
   const [mensajeTutorIA, setMensajeTutorIA] = useState(
     'Tutor IA Google Gemini conectado: creo preguntas en este tablero y subo el nivel gradualmente si vas muy bien.',
@@ -369,7 +369,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         setMensajeTutorIA(
           esCorrecta
             ? '¡Excelente! Respuesta registrada en BD local (preguntas desde JSON).'
-            : 'Buen intento. Seguimos practicando con el banco JSON local sin conexión.',
+            : 'Buen intento. Seguimos practicando en modo sin conexión.',
         );
         return;
       }

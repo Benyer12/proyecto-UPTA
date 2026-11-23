@@ -1,7 +1,207 @@
 {
   "planeta": "Numérix",
-  "actualizadoEn": "2026-11-23T03:58:42.577Z",
+  "actualizadoEn": "2026-11-23T04:15:31.156Z",
   "preguntas": [
+    {
+      "id": 1795407267370,
+      "planeta": "Numérix",
+      "materia": "Matemáticas",
+      "nivelDificultad": 1,
+      "etiquetaNivel": "Nivel 1 · Base (Default)",
+      "operador": "+",
+      "enunciado": "Si en la base espacial teníamos 134 cristales y recolectamos 58 más, ¿cuántos cristales tenemos ahora?",
+      "opciones": [
+        "182",
+        "192",
+        "172",
+        "188"
+      ],
+      "indiceRespuestaCorrecta": 0,
+      "pista": "Suma primero las unidades (4 + 8) y lleva una decena.",
+      "explicacionBreve": "134 + 58 = 182. Sumamos unidades, decenas y centenas cuidadosamente.",
+      "creadaPor": "gemini-3.5-flash-lite",
+      "fechaCreacion": "2026-11-23T04:14:26.694Z"
+    },
+    {
+      "id": 1795407258216,
+      "planeta": "Numérix",
+      "materia": "Matemáticas",
+      "nivelDificultad": 1,
+      "etiquetaNivel": "Nivel 1 · Base (Default)",
+      "operador": "+",
+      "enunciado": "¿Cuánto es 56 + 28?",
+      "opciones": [
+        "84",
+        "74",
+        "82",
+        "94"
+      ],
+      "indiceRespuestaCorrecta": 0,
+      "pista": "Suma primero las unidades (6 + 8) y lleva una decena.",
+      "explicacionBreve": "56 + 28 = 84. Sumamos 6 + 8 = 14 (ponemos 4 y llevamos 1) y 5 + 2 + 1 = 8.",
+      "creadaPor": "gemini-3.5-flash-lite",
+      "fechaCreacion": "2026-11-23T04:14:18.169Z"
+    },
+    {
+      "id": 1795407222242,
+      "planeta": "Numérix",
+      "materia": "Matemáticas",
+      "nivelDificultad": 1,
+      "etiquetaNivel": "Nivel 1 · Base (Default)",
+      "operador": "+",
+      "enunciado": "¿Cuánto es 35 + 24?",
+      "opciones": [
+        "59",
+        "69",
+        "58",
+        "49"
+      ],
+      "indiceRespuestaCorrecta": 0,
+      "pista": "Suma primero las unidades (5 + 4) y luego las decenas (3 + 2).",
+      "explicacionBreve": "Al sumar 35 + 24, sumamos 5+4=9 y 30+20=50, lo que nos da 59.",
+      "creadaPor": "gemini-3.5-flash-lite",
+      "fechaCreacion": "2026-11-23T04:13:41.739Z"
+    },
+    {
+      "id": 1795407207036,
+      "planeta": "Numérix",
+      "materia": "Matemáticas",
+      "nivelDificultad": 1,
+      "etiquetaNivel": "Nivel 1 · Base (Default)",
+      "operador": "÷",
+      "enunciado": "En el planeta Numérix, el Profesor Cero organizó una fiesta de cumpleaños y repartió 48 caramelos cuánticos en partes iguales entre sus 6 amigos alienígenas. ¿Cuántos caramelos se comió cada extraterrestre?",
+      "opciones": [
+        "6 caramelos",
+        "7 caramelos",
+        "8 caramelos",
+        "9 caramelos"
+      ],
+      "indiceRespuestaCorrecta": 2,
+      "pista": "Piensa en qué operación reparte una cantidad total en partes iguales. ¡Tienes que dividir 48 entre 6!",
+      "explicacionBreve": "Al dividir 48 caramelos entre los 6 amigos, el resultado es 8 (porque 6 × 8 = 48). ¡A cada uno le tocaron 8 deliciosos caramelos cuánticos!",
+      "creadaPor": "gemini-3.5-flash-lite",
+      "fechaCreacion": "2026-11-23T04:13:26.149Z"
+    },
+    {
+      "id": 1795407207148,
+      "planeta": "Numérix",
+      "materia": "Matemáticas",
+      "nivelDificultad": 1,
+      "etiquetaNivel": "Nivel 1 · Base (Default)",
+      "operador": "+",
+      "enunciado": "En el planeta Numérix, el robot Zubi recolecta 15 cristales de energía azules cada mañana. Si por la tarde encuentra el doble de esa cantidad, ¿cuántos cristales recolecta en total al final del día?",
+      "opciones": [
+        "30 cristales",
+        "45 cristales",
+        "60 cristales",
+        "15 cristales"
+      ],
+      "indiceRespuestaCorrecta": 1,
+      "pista": "Primero calcula cuánto es el doble de 15, y luego súmaselo a los 15 de la mañana (o multiplica 15 por 3).",
+      "explicacionBreve": "Por la mañana recolecta 15 y por la tarde el doble (30). En total: 15 + 30 = 45 cristales.",
+      "creadaPor": "gemini-3.5-flash-lite",
+      "fechaCreacion": "2026-11-23T04:13:26.343Z"
+    },
+    {
+      "id": 1795406989628,
+      "planeta": "Numérix",
+      "materia": "Matemáticas",
+      "nivelDificultad": 2,
+      "etiquetaNivel": "Nivel 2 · Desafío Moderado",
+      "operador": "×",
+      "enunciado": "Si tu base espacial recibió 145 cristales de energía y usaste 68 para encender los motores, ¿cuántos cristales te quedan?",
+      "opciones": [
+        "77",
+        "87",
+        "67",
+        "75"
+      ],
+      "indiceRespuestaCorrecta": 0,
+      "pista": "Recuerda prestar una decena si el número de arriba es menor al restar.",
+      "explicacionBreve": "145 menos 68 da como resultado 77 cristales.",
+      "creadaPor": "gemini-3.5-flash-lite",
+      "fechaCreacion": "2026-11-23T04:09:48.955Z"
+    },
+    {
+      "id": 1795406978657,
+      "planeta": "Numérix",
+      "materia": "Matemáticas",
+      "nivelDificultad": 1,
+      "etiquetaNivel": "Nivel 1 · Base (Default)",
+      "operador": "+",
+      "enunciado": "¿Cuánto es 65 + 28?",
+      "opciones": [
+        "83",
+        "93",
+        "92",
+        "85"
+      ],
+      "indiceRespuestaCorrecta": 1,
+      "pista": "Suma primero las unidades (5 + 8) y luego las decenas.",
+      "explicacionBreve": "5 + 8 = 13 (pones 3 y llevas 1). 6 + 2 + 1 = 9. El resultado es 93.",
+      "creadaPor": "gemini-3.5-flash-lite",
+      "fechaCreacion": "2026-11-23T04:09:38.492Z"
+    },
+    {
+      "id": 1795406969933,
+      "planeta": "Numérix",
+      "materia": "Matemáticas",
+      "nivelDificultad": 1,
+      "etiquetaNivel": "Nivel 1 · Base (Default)",
+      "operador": "+",
+      "enunciado": "En el planeta Numérix, el robot Zubi colecciona cristales cuánticos. Si tenía 15 cristales y en una fiesta espacial le regalaron otros 23, ¿cuántos cristales brillantes tiene ahora para iluminar su nave?",
+      "opciones": [
+        "35 cristales",
+        "38 cristales",
+        "40 cristales",
+        "318 cristales"
+      ],
+      "indiceRespuestaCorrecta": 1,
+      "pista": "Tienes que juntar los cristales que ya tenía con los que le regalaron. ¡Suma las unidades y luego las decenas!",
+      "explicacionBreve": "Sumamos 15 + 23. Primero las unidades (5 + 3 = 8) y luego las decenas (1 + 2 = 3), lo que nos da un total de 38 cristales.",
+      "creadaPor": "gemini-3.5-flash-lite",
+      "fechaCreacion": "2026-11-23T04:09:29.283Z"
+    },
+    {
+      "id": 1795406967057,
+      "planeta": "Numérix",
+      "materia": "Matemáticas",
+      "nivelDificultad": 1,
+      "etiquetaNivel": "Nivel 1 · Base (Default)",
+      "operador": "+",
+      "enunciado": "En el planeta Numérix, el robot Zubi recolectó 45 cristales de energía brillante en la Cueva del Eco y luego encontró otros 37 cristales flotando en el Río Cuántico. ¿Cuántos cristales tiene Zubi en total para encender su nave espacial?",
+      "opciones": [
+        "72 cristales",
+        "82 cristales",
+        "92 cristales",
+        "78 cristales"
+      ],
+      "indiceRespuestaCorrecta": 1,
+      "pista": "Tienes que juntar (sumar) los cristales de la cueva con los del río.",
+      "explicacionBreve": "Sumamos 45 (de la cueva) + 37 (del río), lo que nos da un total de 82 cristales cósmicos.",
+      "creadaPor": "gemini-3.5-flash-lite",
+      "fechaCreacion": "2026-11-23T04:09:26.457Z"
+    },
+    {
+      "id": 1795406968115,
+      "planeta": "Numérix",
+      "materia": "Matemáticas",
+      "nivelDificultad": 2,
+      "etiquetaNivel": "Nivel 2 · Desafío Moderado",
+      "operador": "×",
+      "enunciado": "Para recargar los propulsores, Numérix necesita calcular: 74 + 58. ¿Cuál es el resultado?",
+      "opciones": [
+        "132",
+        "122",
+        "142",
+        "128"
+      ],
+      "indiceRespuestaCorrecta": 0,
+      "pista": "Suma primero las unidades (4 + 8) y lleva una decena.",
+      "explicacionBreve": "Al sumar 74 + 58, 4 + 8 = 12 (escribimos 2 y llevamos 1). Luego 7 + 5 + 1 = 13, obteniendo 132.",
+      "creadaPor": "gemini-3.5-flash-lite",
+      "fechaCreacion": "2026-11-23T04:09:27.812Z"
+    },
     {
       "id": 1795406323289,
       "planeta": "Numérix",
@@ -245,43 +445,19 @@
   ],
   "retosBossNumerix": [
     {
-      "id": "ia-arm-1795406321195-95",
-      "enunciado": "El Núcleo Armilar gira sobre su eje 4 veces por hora. ¿Cuántas vueltas completas da en 6 horas?",
+      "id": "ia-arm-1795407330196-43",
+      "enunciado": "El Núcleo Armilar emite 4 haces de luz al día. ¿Cuántos haces emitirá exactamente en una semana (7 días)?",
       "opciones": [
-        "20",
+        "28",
         "24",
-        "28"
-      ],
-      "indiceCorrecto": 1,
-      "pista": "Multiplica la cantidad de vueltas que da en una hora por el total de horas.",
-      "explicacion": "Si da 4 vueltas en 1 hora, en 6 horas da 4 × 6 = 24 vueltas en total."
-    },
-    {
-      "id": "ia-arm-1795406321182-42",
-      "enunciado": "El Núcleo Armilar emite 15 destellos por minuto. Si brilla durante 4 minutos seguidos, ¿cuántos destellos emite en total?",
-      "opciones": [
-        "60",
-        "45",
-        "50"
+        "32"
       ],
       "indiceCorrecto": 0,
-      "pista": "Multiplica la cantidad de destellos por minuto por el número total de minutos.",
-      "explicacion": "Para hallar el total de destellos, multiplicamos 15 destellos por los 4 minutos, lo que da como resultado 15 x 4 = 60 destellos."
+      "pista": "Multiplica la cantidad de haces diarios por el número de días que tiene una semana.",
+      "explicacion": "Para saber el total en una semana, multiplicamos 4 haces por los 7 días de la semana, lo que nos da 4 x 7 = 28 haces de luz."
     },
     {
-      "id": "ia-arm-1795406310310-84",
-      "enunciado": "El Núcleo Armilar gira sobre su eje 4 veces por minuto. ¿Cuántas vueltas dará exactamente en 15 minutos?",
-      "opciones": [
-        "45",
-        "60",
-        "75"
-      ],
-      "indiceCorrecto": 1,
-      "pista": "Multiplica la cantidad de vueltas que da en un minuto por los 15 minutos totales.",
-      "explicacion": "Si el núcleo da 4 vueltas por minuto, multiplicamos 4 por 15, lo que nos da un total de 60 vueltas."
-    },
-    {
-      "id": "ia-arm-1795406310294-18",
+      "id": "ia-arm-1795407312410-65",
       "enunciado": "El Núcleo Armilar gira 4 veces por minuto. ¿Cuántas vueltas dará exactamente en 6 minutos?",
       "opciones": [
         "20",
@@ -289,68 +465,164 @@
         "28"
       ],
       "indiceCorrecto": 1,
-      "pista": "Multiplica el número de vueltas por minuto por la cantidad de minutos.",
-      "explicacion": "Si da 4 vueltas en un minuto, en 6 minutos da 4 x 6 = 24 vueltas en total."
+      "pista": "Multiplica el número de vueltas por minuto por la cantidad total de minutos.",
+      "explicacion": "Para saber el total de vueltas, multiplicas 4 vueltas por los 6 minutos, lo que da 4 x 6 = 24 vueltas."
     },
     {
-      "id": "ia-arm-1795406255679-28",
-      "enunciado": "El anillo exterior suma 50 impulsos y el interior aporta 35. ¿Cuántos impulsos activan el sello?",
+      "id": "ia-arm-1795407310481-76",
+      "enunciado": "El Núcleo Armilar necesita completar 4 niveles de energía. Si cada nivel requiere 15 esferas de luz, ¿cuántas esferas se necesitan en total?",
       "opciones": [
-        "83",
-        "90",
-        "85"
+        "60",
+        "45",
+        "50"
+      ],
+      "indiceCorrecto": 0,
+      "pista": "Multiplica la cantidad de niveles por las esferas que pide cada uno.",
+      "explicacion": "Para saber el total, multiplicamos 4 niveles por 15 esferas cada uno: 4 x 15 = 60."
+    },
+    {
+      "id": "ia-arm-1795407287310-53",
+      "enunciado": "El Núcleo Armilar gira sobre su eje 4 veces por minuto. ¿Cuántas vueltas dará exactamente en 6 minutos?",
+      "opciones": [
+        "20",
+        "24",
+        "28"
+      ],
+      "indiceCorrecto": 1,
+      "pista": "Multiplica el número de vueltas por minuto por la cantidad total de minutos.",
+      "explicacion": "Para saber el total de vueltas, multiplicamos 4 vueltas por los 6 minutos, lo que nos da 4 x 6 = 24 vueltas."
+    },
+    {
+      "id": "ia-arm-1795407286290-62",
+      "enunciado": "El Núcleo Armilar gira sobre su eje 4 veces por minuto. ¿Cuántas vueltas dará exactamente en 15 minutos?",
+      "opciones": [
+        "50",
+        "60",
+        "45"
+      ],
+      "indiceCorrecto": 1,
+      "pista": "Multiplica la cantidad de vueltas por minuto por el total de minutos.",
+      "explicacion": "Para saber el total de vueltas, multiplicamos 4 vueltas por los 15 minutos, lo que nos da 4 x 15 = 60 vueltas."
+    },
+    {
+      "id": "ia-arm-1795407270919-22",
+      "enunciado": "El Núcleo Armilar gira 4 veces por minuto. ¿Cuántas vueltas dará exactamente en 10 minutos?",
+      "opciones": [
+        "40",
+        "14",
+        "30"
+      ],
+      "indiceCorrecto": 0,
+      "pista": "Multiplica las vueltas de un minuto por el total de minutos.",
+      "explicacion": "Si el núcleo da 4 vueltas en un minuto, en 10 minutos dará 4 x 10 = 40 vueltas en total."
+    },
+    {
+      "id": "ia-arm-1795407266694-55",
+      "enunciado": "El Núcleo Armilar enciende 3 anillos y cada uno lleva 4 gemas de luz. ¿Cuántas gemas brillan en total?",
+      "opciones": [
+        "6",
+        "15",
+        "12"
       ],
       "indiceCorrecto": 2,
-      "pista": "Suma primero las decenas y luego las unidades de 50 + 35.",
-      "explicacion": "50 + 35 = 85 impulsos en total."
+      "pista": "Multiplica 3 × 4.",
+      "explicacion": "3 × 4 = 12 gemas de luz."
     },
     {
-      "id": "ia-arm-1795406249484-52",
-      "enunciado": "Cada uno de los 6 núcleos armilares genera 6 MW de potencia. ¿Cuánta potencia producen juntos?",
+      "id": "ia-arm-1795407258169-21",
+      "enunciado": "El primer anillo gira 25 grados y el segundo gira 22 grados más. ¿Cuántos grados giraron entre los dos?",
       "opciones": [
-        "36 MW",
-        "41 MW",
-        "30 MW"
+        "44°",
+        "52°",
+        "47°"
       ],
-      "indiceCorrecto": 0,
-      "pista": "Calcula 6 × 6.",
-      "explicacion": "6 × 6 = 36 MW en total."
+      "indiceCorrecto": 2,
+      "pista": "Suma 25 + 22.",
+      "explicacion": "25 + 22 = 47 grados en total."
     },
     {
-      "id": "ia-arm-1795406234752-13",
-      "enunciado": "Cada uno de los 9 núcleos armilares genera 6 MW de potencia. ¿Cuánta potencia producen juntos?",
+      "id": "ia-arm-1795407245186-36",
+      "enunciado": "El Guardián reparte 32 rayos de energía en partes iguales entre 4 anillos. ¿Cuántos rayos recibe cada anillo?",
       "opciones": [
-        "54 MW",
-        "56 MW",
-        "49 MW"
-      ],
-      "indiceCorrecto": 0,
-      "pista": "Calcula 9 × 6.",
-      "explicacion": "9 × 6 = 54 MW en total."
-    },
-    {
-      "id": "ia-arm-1795406233899-40",
-      "enunciado": "El Guardián reparte 27 rayos de energía en partes iguales entre 3 anillos. ¿Cuántos rayos recibe cada anillo?",
-      "opciones": [
-        "9",
-        "14",
+        "12",
+        "8",
         "4"
       ],
-      "indiceCorrecto": 0,
-      "pista": "Divide 27 ÷ 3.",
-      "explicacion": "Como 3 × 9 = 27, cada anillo recibe 9 rayos."
+      "indiceCorrecto": 1,
+      "pista": "Divide 32 ÷ 4.",
+      "explicacion": "Como 4 × 8 = 32, cada anillo recibe 8 rayos."
     },
     {
-      "id": "ia-arm-1795406187536-17",
+      "id": "ia-arm-1795407221739-19",
+      "enunciado": "Un sello armilar necesita 62 pulsos y ya acumuló 42. ¿Cuántos pulsos le faltan?",
+      "opciones": [
+        "20",
+        "26",
+        "15"
+      ],
+      "indiceCorrecto": 0,
+      "pista": "Resta 62 − 42.",
+      "explicacion": "62 − 42 = 20 pulsos faltantes."
+    },
+    {
+      "id": "ia-arm-1795407204676-60",
       "enunciado": "El Núcleo Armilar gira sobre su eje 4 veces por hora. ¿Cuántas vueltas completa en 6 horas?",
       "opciones": [
-        "10",
+        "20",
         "24",
         "28"
       ],
       "indiceCorrecto": 1,
       "pista": "Multiplica el número de vueltas por hora por la cantidad total de horas.",
-      "explicacion": "Para saber el total de vueltas, multiplicamos 4 vueltas por cada hora por las 6 horas, lo que nos da 4 x 6 = 24 vueltas."
+      "explicacion": "Para saber el total de vueltas, multiplicamos 4 vueltas por 6 horas, lo que nos da 4 × 6 = 24 vueltas."
+    },
+    {
+      "id": "ia-arm-1795407204658-93",
+      "enunciado": "El Núcleo Armilar gira 4 veces por minuto. ¿Cuántas vueltas dará exactamente en 15 minutos?",
+      "opciones": [
+        "45",
+        "60",
+        "50"
+      ],
+      "indiceCorrecto": 1,
+      "pista": "Multiplica la cantidad de vueltas por minuto por el total de minutos.",
+      "explicacion": "Para saber el total de vueltas, multiplicamos 4 vueltas por 15 minutos, lo que nos da 60 vueltas en total."
+    },
+    {
+      "id": "ia-arm-1795407004639-99",
+      "enunciado": "El Núcleo Armilar gira a razón de 15 grados por minuto. ¿Cuántos grados habrá girado exactamente después de 4 minutos?",
+      "opciones": [
+        "45",
+        "60",
+        "75"
+      ],
+      "indiceCorrecto": 1,
+      "pista": "Multiplica los grados que gira en un minuto por la cantidad total de minutos.",
+      "explicacion": "Para saber el total de grados, multiplicamos 15 por 4. 15 x 4 = 60 grados."
+    },
+    {
+      "id": "ia-arm-1795406996477-20",
+      "enunciado": "El Núcleo Armilar gira sobre su eje completando 12 vueltas cada hora. ¿Cuántas vueltas completará en 4 horas?",
+      "opciones": [
+        "42",
+        "48",
+        "56"
+      ],
+      "indiceCorrecto": 1,
+      "pista": "Multiplica el número de vueltas por hora por la cantidad total de horas.",
+      "explicacion": "Para saber el total de vueltas, multiplicamos 12 vueltas por las 4 horas, lo que nos da 12 x 4 = 48 vueltas."
+    },
+    {
+      "id": "ia-arm-1795406995988-82",
+      "enunciado": "El Núcleo Armilar gira 4 veces por hora y cada giro consume 15 unidades de poder estelar. ¿Cuántas unidades de poder consume en total durante 3 horas?",
+      "opciones": [
+        "120",
+        "180",
+        "60"
+      ],
+      "indiceCorrecto": 1,
+      "pista": "Calcula primero cuánto consume en una sola hora y luego multiplica ese resultado por el total de horas.",
+      "explicacion": "Primero calculamos el consumo en una hora: 4 giros por 15 unidades = 60 unidades. Luego multiplicamos por las 3 horas: 60 x 3 = 180 unidades en total."
     }
   ]
 }

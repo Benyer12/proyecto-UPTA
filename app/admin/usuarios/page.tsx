@@ -453,7 +453,7 @@ export default function AdminUsuariosPage() {
             title: 'Perfil actualizado',
             message: res.syncedToCloud
               ? `La información de ${cleanNombre} se actualizó correctamente en la base de datos.`
-              : `La información de ${cleanNombre} se guardó localmente y se subirá a Supabase al reconectar.`,
+              : `La información de ${cleanNombre} se guardó localmente y se sincronizará al reconectar.`,
           });
         }
         setEditingUser(null);

@@ -109,7 +109,7 @@ export interface RespuestaTutorIA {
 }
 
 export const ETIQUETAS_NIVEL_IA: Record<NivelDificultadIA, string> = {
-  1: 'Nivel 1 · Base (Default)',
+  1: 'Nivel 1 · Base',
   2: 'Nivel 2 · Desafío Moderado',
   3: 'Nivel 3 · Reto Avanzado',
 };

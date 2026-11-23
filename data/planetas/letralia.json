@@ -1,36 +1,34 @@
 {
   "planeta": "Letralia",
-  "actualizadoEn": "2026-11-23T03:54:53.736Z",
+  "actualizadoEn": "2026-11-23T04:15:51.235Z",
   "preguntas": [],
   "retosLetralia": [
     {
-      "id": "int-ia-mwsqfk4l-92",
-      "categoria": "ortografia",
+      "id": "int-ia-mwsr6if4-33",
+      "categoria": "concordancia",
       "palabras": [
-        "El",
-        "explorador",
-        "vio",
-        "una",
-        "nube",
-        "vlanca",
-        "en",
-        "el",
-        "cielo."
+        "Unos",
+        "planetas",
+        "lejana",
+        "giran",
+        "alrededor",
+        "del",
+        "Sol."
       ],
-      "indiceIntruso": 5,
+      "indiceIntruso": 2,
       "opciones": [
-        "blanca",
-        "blamca",
-        "vlanka"
+        "lejanos",
+        "lejano",
+        "lejanas"
       ],
-      "correcta": "blanca",
-      "pista": "Antes de la letra L siempre se escribe B, nunca V.",
-      "explicacion": "«Blanca» se escribe con b porque va seguida de l (bl)."
+      "correcta": "lejanos",
+      "pista": "«Planetas» es masculino y plural.",
+      "explicacion": "El adjetivo debe concordar en género y número: «planetas lejanos»."
     }
   ],
   "retosPuente": [
     {
-      "id": "ia-pue-1795406093734-62",
+      "id": "ia-pue-1795407351233-75",
       "enfoque": "sujeto-predicado",
       "ordenCorrecto": [
         "La brújula",
@@ -45,30 +43,30 @@
   ],
   "retosTormenta": [
     {
-      "id": "ia-tor-1795406093734-19",
-      "tipo": "agudas",
-      "consigna": "¡Activa las 3 palabras AGUDAS en el escudo!",
+      "id": "ia-tor-1795407351233-80",
+      "tipo": "esdrujulas",
+      "consigna": "¡Atrapa las 3 palabras ESDRÚJULAS antes de que pase la tormenta!",
       "palabras": [
-        "mamá",
-        "casa",
-        "papel",
+        "sábado",
         "nube",
-        "ratón",
-        "libro"
+        "lámpara",
+        "sol",
+        "médico",
+        "camino"
       ],
       "correctas": [
-        "mamá",
-        "papel",
-        "ratón"
+        "sábado",
+        "lámpara",
+        "médico"
       ],
       "segundos": 18,
-      "pista": "En las agudas la sílaba más fuerte es la última.",
-      "explicacion": "Ma-MÁ, pa-PEL y ra-TÓN llevan la fuerza al final."
+      "pista": "Todas las esdrújulas llevan tilde en la antepenúltima sílaba.",
+      "explicacion": "SÁ-ba-do, LÁM-pa-ra y MÉ-di-co son esdrújulas."
     }
   ],
   "retosBossLetralia": [
     {
-      "id": "ia-bos-1795406093734-24",
+      "id": "ia-bos-1795407351233-83",
       "titulo": "La constelación de los cuentos",
       "relato": "El Guardián encendió una linterna azul. «Cada historia que lees vive dentro de {0}, joven explorador», susurró. «Muchos pasaron con prisa sin leer los mapas; {1}, no encontraron la puerta secreta. Quien lee con atención abre puertas invisibles». Enseñanza: {2}.",
       "fases": [
@@ -107,8 +105,7 @@
       ]
     }
   ]
-}e caminos de aprendizaje."
-        }
+}
       ]
     }
   ]

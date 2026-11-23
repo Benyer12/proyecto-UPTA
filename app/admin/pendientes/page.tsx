@@ -145,7 +145,7 @@ export default function AdminPendientesPage() {
         title: 'Usuario aprobado correctamente',
         message: res.syncedToCloud
           ? `${u.nombre} ahora está activo como ${rolLegible} y ya puede iniciar sesión en la plataforma.`
-          : `${u.nombre} quedó aprobado localmente como ${rolLegible} y se subirá a Supabase al reconectar.`,
+          : `${u.nombre} quedó aprobado localmente como ${rolLegible} y se sincronizará al reconectar.`,
       });
     }
 
