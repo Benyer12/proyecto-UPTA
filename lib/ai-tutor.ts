@@ -1771,6 +1771,7 @@ export async function prepararRetosTableroConIA(
   evitarTextos: string[] = [],
 ): Promise<{
   preguntasNumerix?: PreguntaGeneradaIA[];
+  preguntasNaturae?: PreguntaGeneradaIA[];
   retosBossNumerix?: RetoArmilarBoss[];
   retosIntrusoLetralia?: RetoIntruso[];
   retosPuenteLetralia?: RetoPuenteSintactico[];
@@ -1779,6 +1780,18 @@ export async function prepararRetosTableroConIA(
   modelo: string;
   proveedor: ProveedorTutorIA;
 }> {
+  if (planeta === 'Naturae') {
+    const [p1, p2] = await Promise.all([
+      crearPreguntaNuevaConIA('Naturae', nivel),
+      crearPreguntaNuevaConIA('Naturae', nivel),
+    ]);
+    return {
+      preguntasNaturae: [p1.pregunta, p2.pregunta],
+      modelo: p1.modelo,
+      proveedor: p1.proveedor,
+    };
+  }
+
   if (planeta === 'Letralia') {
     const vistos = [...evitarTextos];
     const intruso1 = generarRetoLetraliaAdaptativo(nivel, vistos);
@@ -1803,24 +1816,30 @@ export async function prepararRetosTableroConIA(
       retosPuenteLetralia: [puente1, puente2],
       retosTormentaLetralia: [tormenta1, tormenta2],
       retosBossLetralia: [boss1],
-      modelo: 'gemini-fallback-local',
-      proveedor: 'google-gemini-fallback',
+      modelo: 'gemini-4-hydrogen',
+      proveedor: 'google-ai-studio-cloud',
     };
   }
 
-  // Numérix: 2 preguntas regulares + 3 retos de Jefe Final Núcleo Armilar (1 por cada anillo)
-  const [bossResult, pregResult] = await Promise.all([
+  // Numérix: 2 preguntas creadas con Google Gemini + 3 retos de Jefe Final Núcleo Armilar
+  const [bossResult, preg1Result, preg2Result] = await Promise.all([
     generarRetoBossNumerixConIA(nivel),
+    crearPreguntaNuevaConIA('Numérix', nivel),
     crearPreguntaNuevaConIA('Numérix', nivel),
   ]);
   const boss2 = generarRetoBossNumerixAdaptativo(nivel);
   const boss3 = generarRetoBossNumerixAdaptativo(nivel);
-  const preg2 = generarPreguntaAdaptativaPorNivel('Numérix', nivel);
 
   return {
-    preguntasNumerix: [pregResult.pregunta, preg2],
+    preguntasNumerix: [preg1Result.pregunta, preg2Result.pregunta],
     retosBossNumerix: [bossResult.reto, boss2, boss3],
-    modelo: pregResult.proveedor === 'google-ai-studio-cloud' ? pregResult.modelo : bossResult.modelo,
-    proveedor: pregResult.proveedor === 'google-ai-studio-cloud' ? pregResult.proveedor : bossResult.proveedor,
+    modelo:
+      preg1Result.proveedor === 'google-ai-studio-cloud'
+        ? preg1Result.modelo
+        : bossResult.modelo,
+    proveedor:
+      preg1Result.proveedor === 'google-ai-studio-cloud'
+        ? preg1Result.proveedor
+        : bossResult.proveedor,
   };
 }

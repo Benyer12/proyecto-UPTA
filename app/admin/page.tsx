@@ -3,7 +3,10 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../lib/auth-store';
-import { supabase } from '../../lib/supabase';
+import {
+  actualizarUsuarioHibrido,
+  obtenerUsuariosHibrido,
+} from '../../lib/offline-sync';
 import LiquidGlassToast, {
   type LiquidGlassToastData,
 } from '../components/LiquidGlassToast';
@@ -66,17 +69,14 @@ export default function AdminPage() {
 
   const cargarUsuarios = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('usuarios')
-      .select('id, nombre, usuario, correo, role, status')
-      .in('role', ['student', 'tutor'])
-      .or('status.is.null,status.eq.true')
-      .order('nombre', { ascending: true });
-
-    if (error) {
-      console.error('Error al cargar usuarios desde Supabase:', error.message);
-    } else if (data) {
-      setUsuarios(ordenarPorRolYNombre(data));
+    try {
+      const { usuarios: lista } = await obtenerUsuariosHibrido({
+        roles: ['student', 'tutor'],
+        soloActivos: true,
+      });
+      setUsuarios(ordenarPorRolYNombre(lista));
+    } catch (error: any) {
+      console.error('Error al cargar usuarios:', error?.message || error);
     }
     setLoading(false);
   };
@@ -85,14 +85,9 @@ export default function AdminPage() {
     const nuevoRol = u.role === 'student' ? 'tutor' : 'student';
     setUpdatingId(u.id);
 
-    const { error } = await supabase
-      .from('usuarios')
-      .update({ role: nuevoRol })
-      .eq('id', u.id)
-      .in('role', ['student', 'tutor']);
+    const res = await actualizarUsuarioHibrido(u.id, { role: nuevoRol });
 
-    if (error) {
-      console.error('Error al actualizar el rol:', error.message);
+    if (!res.ok) {
       setToast({
         id: Date.now(),
         variant: 'error',
@@ -115,9 +110,11 @@ export default function AdminPage() {
       setToast({
         id: Date.now(),
         variant: 'saved',
-        eyebrow: 'ROL ACTUALIZADO',
+        eyebrow: res.syncedToCloud ? 'ROL ACTUALIZADO' : 'GUARDADO EN BD LOCAL · SIN CONEXIÓN',
         title: `Rol asignado: ${rolLegible}`,
-        message: `${u.nombre} ahora cuenta con permisos de ${rolLegible} en la plataforma.`,
+        message: res.syncedToCloud
+          ? `${u.nombre} ahora cuenta con permisos de ${rolLegible} en la plataforma.`
+          : `${u.nombre} cambió a ${rolLegible} localmente y se subirá a Supabase al reconectar.`,
       });
     }
 

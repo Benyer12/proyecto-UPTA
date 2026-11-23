@@ -1,13 +1,131 @@
-"use client";
+'use client';
 
-import { useEffect } from 'react';
-import { inicializarBaseDatos } from '@/lib/powersync';
+import { useEffect, useState } from 'react';
+import {
+  inicializarBaseDatos,
+  conectarPowerSyncBridge,
+} from '../lib/powersync';
+import {
+  depositarSupabaseEnLocal,
+  obtenerEstadoSyncActual,
+  sincronizarPendientesASupabase,
+  type SyncStatusState,
+} from '../lib/offline-sync';
+import { useAuthStore } from '../lib/auth-store';
 
 export default function PowerSyncInitializer() {
-  useEffect(() => {
-    inicializarBaseDatos();
-  }, []);
-// En tu archivo de conexión o donde sospeches que está el error
-  return null; // Este componente no renderiza nada, solo ejecuta la lógica
-}
+  const user = useAuthStore((s) => s.user);
+  const [syncState, setSyncState] = useState<SyncStatusState>(() =>
+    obtenerEstadoSyncActual(),
+  );
+  const [recentNotice, setRecentNotice] = useState<string | null>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    let noticeTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const iniciar = async () => {
+      await inicializarBaseDatos();
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      }
+
+      if (navigator.onLine) {
+        const res = await sincronizarPendientesASupabase();
+        if (!cancelled && res.syncedCount > 0) {
+          setRecentNotice(
+            `${res.syncedCount} ${res.syncedCount === 1 ? 'cambio local subido' : 'cambios locales subidos'} a Supabase`,
+          );
+          noticeTimer = setTimeout(() => setRecentNotice(null), 4000);
+        }
+        await depositarSupabaseEnLocal({
+          usuarioId:
+            user && user.role === 'student' ? String(user.id) : undefined,
+        });
+      }
+    };
+
+    void iniciar();
+
+    const handleSyncEvent = (e: Event) => {
+      const detail = (e as CustomEvent<SyncStatusState>).detail;
+      if (detail && !cancelled) {
+        setSyncState(detail);
+      }
+    };
+
+    const handleOnline = async () => {
+      setSyncState((prev) => ({ ...prev, online: true }));
+      await conectarPowerSyncBridge();
+      const res = await sincronizarPendientesASupabase();
+      if (!cancelled && res.syncedCount > 0) {
+        setRecentNotice(
+          `${res.syncedCount} ${res.syncedCount === 1 ? 'cambio local subido' : 'cambios locales subidos'} a Supabase`,
+        );
+        if (noticeTimer) clearTimeout(noticeTimer);
+        noticeTimer = setTimeout(() => setRecentNotice(null), 4000);
+      }
+      await depositarSupabaseEnLocal({
+        usuarioId:
+          user && user.role === 'student' ? String(user.id) : undefined,
+        force: true,
+      });
+    };
+
+    const handleOffline = () => {
+      setSyncState((prev) => ({ ...prev, online: false, syncing: false }));
+    };
+
+    window.addEventListener('universo-sync-status', handleSyncEvent);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      cancelled = true;
+      if (noticeTimer) clearTimeout(noticeTimer);
+      window.removeEventListener('universo-sync-status', handleSyncEvent);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [user?.id, user?.role]);
+
+  const showPill =
+    !syncState.online ||
+    syncState.syncing ||
+    syncState.pendingCount > 0 ||
+    Boolean(recentNotice);
+
+  if (!showPill) return null;
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed bottom-4 left-4 z-[90] pointer-events-none select-none"
+    >
+      <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#050a18]/85 backdrop-blur-md px-3.5 py-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.45)]">
+        <span
+          className={`w-2 h-2 rounded-full shrink-0 ${
+            !syncState.online
+              ? 'bg-amber-400'
+              : syncState.syncing
+                ? 'bg-[#67E8F9] animate-pulse'
+                : 'bg-[#6EE7B7]'
+          }`}
+        />
+        <span className="font-mono text-[11px] font-semibold tracking-wide text-white/90">
+          {!syncState.online
+            ? syncState.pendingCount > 0
+              ? `Sin internet · ${syncState.pendingCount} ${syncState.pendingCount === 1 ? 'cambio guardado en BD local' : 'cambios guardados en BD local'}`
+              : 'Sin internet · Modo local PowerSync activo'
+            : syncState.syncing
+              ? `Sincronizando ${syncState.pendingCount} cambios con Supabase...`
+              : syncState.pendingCount > 0
+                ? `${syncState.pendingCount} cambios locales por subir`
+                : recentNotice}
+        </span>
+      </div>
+    </div>
+  );
+}

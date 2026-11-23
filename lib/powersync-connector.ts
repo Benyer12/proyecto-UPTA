@@ -1,73 +1,124 @@
 import { PowerSyncBackendConnector, PowerSyncCredentials } from '@powersync/common';
-import { PowerSyncDatabase } from '@powersync/web';
+import type { PowerSyncDatabase } from '@powersync/web';
 import { createClient } from '@supabase/supabase-js';
 
-// 1. Inicializa Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://lxwbytvbnytmtegdqtxc.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4d2J5dHZibnl0bXRlZ2RxdHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNzc3NTMsImV4cCI6MjA5NzY1Mzc1M30.oJvbAQwPgjZJrVi-YTKR4Ad1dumDnSUZED-kiNPnJqM';
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://lxwbytvbnytmtegdqtxc.supabase.co';
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4d2J5dHZibnl0bXRlZ2RxdHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNzc3NTMsImV4cCI6MjA5NzY1Mzc1M30.oJvbAQwPgjZJrVi-YTKR4Ad1dumDnSUZED-kiNPnJqM';
+
 export const supabase = createClient(supabaseUrl, supabaseKey);
+
+const POWERSYNC_ENDPOINT =
+  process.env.NEXT_PUBLIC_POWERSYNC_URL || 'https://6a4c67b449dca2d8a4177d63.powersync.journeyapps.com';
+
+const ALLOWED_COLUMNS: Record<string, string[]> = {
+  usuarios: ['nombre', 'usuario', 'correo', 'contrasena', 'role', 'status'],
+  planetas: ['nombre', 'descripcion', 'materia', 'color', 'icono', 'orden'],
+  niveles: ['planeta_id', 'curso_nombre', 'nombre', 'descripcion', 'orden', 'es_jefe'],
+  progreso_usuario: ['usuario_id', 'nivel_id', 'completado', 'estrellas', 'ultima_sesion'],
+  tutor_estudiantes: ['tutor_id', 'estudiante_id', 'fecha_asignacion'],
+};
+
+function normalizePayloadForSupabase(table: string, opData: Record<string, any> | undefined) {
+  const result: Record<string, any> = {};
+  if (!opData) return result;
+
+  const allowed = ALLOWED_COLUMNS[table] || Object.keys(opData);
+  for (const key of allowed) {
+    if (opData[key] === undefined) continue;
+    if (table === 'usuarios' && key === 'status') {
+      result.status = Boolean(Number(opData.status ?? 0)) && opData.status !== false && opData.status !== 0;
+    } else if (table === 'progreso_usuario' && key === 'completado') {
+      result.completado = Boolean(Number(opData.completado ?? 0)) && opData.completado !== false && opData.completado !== 0;
+    } else if (table === 'niveles' && key === 'es_jefe') {
+      result.es_jefe = Boolean(Number(opData.es_jefe ?? 0)) && opData.es_jefe !== false && opData.es_jefe !== 0;
+    } else {
+      result[key] = opData[key];
+    }
+  }
+  return result;
+}
 
 export class AppSyncConnector implements PowerSyncBackendConnector {
   constructor(private db: PowerSyncDatabase) {}
 
   async fetchCredentials(): Promise<PowerSyncCredentials | null> {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      return null;
+    }
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
     if (!session) {
-      console.warn("No hay sesión activa en Supabase. El usuario debe iniciar sesión.");
-      return null; 
+      return null;
     }
 
     return {
-      endpoint: 'https://6a4c67b449dca2d8a4177d63.powersync.journeyapps.com', 
-      token: session.access_token
+      endpoint: POWERSYNC_ENDPOINT,
+      token: session.access_token,
     };
   }
 
-  // AQUÍ SE PROCESA LA SUBIDA FILTRADA
   async uploadData(database: any): Promise<void> {
-    const transaction = await database.getNextCrudTransaction();
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      throw new Error('Sin conexión a internet para subir cambios.');
+    }
 
-    if (!transaction) return; 
+    const transaction = await database.getNextCrudTransaction();
+    if (!transaction) return;
 
     try {
-      for (let op of transaction.crud) {
-        const tabla = op.table; // 'usuarios'
+      for (const op of transaction.crud) {
+        const tabla = op.table;
+        if (!ALLOWED_COLUMNS[tabla]) continue;
 
-        // SOLUCIÓN 2: Filtramos op.opData para enviar TODOS los datos que importan
-        const dataToSync: any = {};
-        if (op.opData.nombre !== undefined) dataToSync.nombre = op.opData.nombre;
-        if (op.opData.usuario !== undefined) dataToSync.usuario = op.opData.usuario;
-        if (op.opData.correo !== undefined) dataToSync.correo = op.opData.correo;
-        if (op.opData.contrasena !== undefined) dataToSync.contrasena = op.opData.contrasena;
-        if (op.opData.role !== undefined) dataToSync.role = op.opData.role;
-        if (op.opData.status !== undefined) dataToSync.status = Boolean(op.opData.status);
+        const dataToSync = normalizePayloadForSupabase(tabla, op.opData);
 
         if (op.op === 'PUT') {
-          const { error } = await supabase.from(tabla).insert({
-            id: op.id, 
-            ...dataToSync
-          });
-          if (error) throw error;
+          if (tabla === 'progreso_usuario' && dataToSync.usuario_id && dataToSync.nivel_id !== undefined) {
+            const { data: existente } = await supabase
+              .from('progreso_usuario')
+              .select('id')
+              .eq('usuario_id', dataToSync.usuario_id)
+              .eq('nivel_id', dataToSync.nivel_id)
+              .maybeSingle();
 
+            if (existente?.id) {
+              const { error } = await supabase
+                .from('progreso_usuario')
+                .update(dataToSync)
+                .eq('id', existente.id);
+              if (error) throw error;
+            } else {
+              const { error } = await supabase.from('progreso_usuario').insert(dataToSync);
+              if (error) throw error;
+            }
+          } else {
+            const { error } = await supabase.from(tabla).insert({
+              id: op.id,
+              ...dataToSync,
+            });
+            if (error) throw error;
+          }
         } else if (op.op === 'PATCH') {
-          // CORRECCIÓN CLAVE: Buscar por 'id'
-          const { error } = await supabase.from(tabla).update(dataToSync).eq('id', op.id);
-          if (error) throw error;
-
+          if (Object.keys(dataToSync).length > 0) {
+            const { error } = await supabase.from(tabla).update(dataToSync).eq('id', op.id);
+            if (error) throw error;
+          }
         } else if (op.op === 'DELETE') {
-          // CORRECCIÓN CLAVE: Eliminar buscando por 'id'
           const { error } = await supabase.from(tabla).delete().eq('id', op.id);
           if (error) throw error;
         }
       }
 
-      // Si el lote se procesa de forma exitosa, cerramos la transacción
       await transaction.complete();
-      console.log("✅ Datos sincronizados con Supabase correctamente.");
-
     } catch (error) {
-        console.warn("Sincronización pausada: Error de subida a la base de datos remota.", error);
+      console.warn('Sincronización PowerSync pausada hasta recuperar conexión:', error);
+      throw error;
     }
   }
 }

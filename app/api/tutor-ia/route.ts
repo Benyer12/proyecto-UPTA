@@ -517,7 +517,7 @@ export async function POST(request: Request) {
 
       await sincronizarPreguntaEnArchivoPlaneta(
         planeta,
-        pack.preguntasNumerix?.[0],
+        pack.preguntasNumerix?.[0] || pack.preguntasNaturae?.[0],
         {
           nuevoRetoBossNumerix: pack.retosBossNumerix?.[0],
           nuevoRetoLetralia: pack.retosIntrusoLetralia?.[0],

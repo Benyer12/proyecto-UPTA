@@ -3,8 +3,15 @@
 import { type CSSProperties, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createBrowserClient } from '@supabase/ssr';
 import { useAuthStore } from '../../lib/auth-store';
+import {
+  guardarProgresoHibrido,
+  hayConexionInternet,
+} from '../../lib/offline-sync';
+import {
+  cachearPackIAOffline,
+  obtenerBancoOfflineNumerix,
+} from '../../lib/offline-questions';
 import {
   playCorrect,
   playDiceLand,
@@ -14,7 +21,6 @@ import {
   playStep,
 } from '../../lib/sound-engine';
 import SoundTogglePill from '../../components/SoundTogglePill';
-import { actualizarProgresoUsuario } from '../actions/progress';
 import Dado3D from './Dado3D';
 import MapaMontañaCuantica, {
   ESPECIALES_IDX,
@@ -206,6 +212,24 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
   const colaBossIARef = useRef<RetoArmilarBoss[]>([]);
 
   useEffect(() => {
+    const cargarBancoOffline = async () => {
+      const { regulares, bosses } = await obtenerBancoOfflineNumerix();
+      regulares.forEach((p) => {
+        if (p?.enunciado) colaPreguntasIARef.current.push(p);
+      });
+      bosses.forEach((b) => {
+        if (b?.enunciado) colaBossIARef.current.push(barajarRetoBoss(b));
+      });
+      setMensajeTutorIA(
+        'Modo sin internet activo: usando preguntas guardadas en JSON y en tu BD local.',
+      );
+    };
+
+    if (!hayConexionInternet()) {
+      void cargarBancoOffline();
+      return;
+    }
+
     void fetch('/api/tutor-ia', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -217,7 +241,11 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     })
       .then((r) => r.json())
       .then((data) => {
-        if (!data?.ok) return;
+        if (!data?.ok) {
+          void cargarBancoOffline();
+          return;
+        }
+        void cachearPackIAOffline('Numérix', data);
         if (Array.isArray(data.preguntasNumerix)) {
           data.preguntasNumerix.forEach((p: PreguntaMatematica) => {
             if (p?.enunciado) colaPreguntasIARef.current.push(p);
@@ -229,7 +257,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
           });
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        void cargarBancoOffline();
+      });
   }, []);
 
   /* ── 4 Núcleos Cuánticos (+, −, ×, ÷) ── */
@@ -312,57 +342,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
 
       setGuardandoBD(true);
       try {
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        );
-        const fechaActual = new Date().toISOString();
-
-        // 1. Verificamos si ya existe la fila para este usuario y nivel (ej. id 54)
-        const { data: existente, error: errSelect } = await supabase
-          .from('progreso_usuario')
-          .select('id')
-          .eq('usuario_id', userId)
-          .eq('nivel_id', levelId)
-          .maybeSingle();
-
-        if (errSelect) {
-          console.error('Error consultando progreso_usuario:', errSelect.message);
-        }
-
-        if (existente?.id) {
-          // 2A. Actualizamos la fila existente
-          const { error: errUpdate } = await supabase
-            .from('progreso_usuario')
-            .update({
-              completado: true,
-              estrellas: estrellasTotales,
-              ultima_sesion: fechaActual,
-            })
-            .eq('id', existente.id);
-
-          if (errUpdate) console.error('Error en update cliente:', errUpdate.message);
-        } else {
-          // 2B. Insertamos nuevo registro si no existía
-          const { error: errInsert } = await supabase.from('progreso_usuario').insert({
-            usuario_id: userId,
-            nivel_id: levelId,
-            completado: true,
-            estrellas: estrellasTotales,
-            ultima_sesion: fechaActual,
-          });
-
-          if (errInsert) console.error('Error en insert cliente:', errInsert.message);
-        }
-
-        // 3. Ejecutamos también el Server Action para revalidar caché de Next.js
-        await actualizarProgresoUsuario(userId, levelId, true, estrellasTotales);
-
-        console.log(
-          `✅ Guardado exitoso en Supabase -> Nivel ${levelId}: ${estrellasRegulares} (regulares) + ${BONUS_JEFE_FINAL} (jefe) = ${estrellasTotales} ⭐`,
-        );
+        await guardarProgresoHibrido(userId, levelId, true, estrellasTotales);
       } catch (error) {
-        console.error('❌ Error guardando el progreso en Supabase:', error);
+        console.error('❌ Error guardando el progreso:', error);
       } finally {
         setGuardandoBD(false);
       }
@@ -382,6 +364,15 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
       setTotalPreguntas(nuevoTotal);
       setRachaIA(nuevaRacha);
       setStars(calcularEstrellasPorPorcentaje(nuevosAciertos, nuevoTotal));
+
+      if (!hayConexionInternet()) {
+        setMensajeTutorIA(
+          esCorrecta
+            ? '¡Excelente! Respuesta registrada en BD local (preguntas desde JSON).'
+            : 'Buen intento. Seguimos practicando con el banco JSON local sin conexión.',
+        );
+        return;
+      }
 
       void fetch('/api/tutor-ia', {
         method: 'POST',
@@ -403,6 +394,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         .then((r) => r.json())
         .then((data) => {
           if (data?.ok) {
+            void cachearPackIAOffline('Numérix', data);
             setNivelIA(data.nuevoNivel);
             setEtiquetaNivelIA(data.etiquetaNivel);
             setMensajeTutorIA(data.mensajeTutor);

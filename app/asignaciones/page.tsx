@@ -3,7 +3,10 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../lib/auth-store';
-import { supabase } from '../../lib/supabase';
+import {
+  guardarAsignacionHibrido,
+  obtenerAsignacionesHibrido,
+} from '../../lib/offline-sync';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import RoleAvatar from '../../components/RoleAvatar';
 
@@ -16,7 +19,7 @@ interface Usuario {
 }
 
 interface RelacionTutorEstudiante {
-  id: number;
+  id: string | number;
   tutor_id: string;
   estudiante_id: string;
   fecha_asignacion: string | null;
@@ -67,41 +70,24 @@ export default function AsignacionesPage() {
   const cargarDatos = async () => {
     setLoading(true);
     try {
-      const { data: usuariosData, error: errUsuarios } = await supabase
-        .from('usuarios')
-        .select('id, nombre, usuario, correo, role')
-        .neq('role', 'admin')
-        .order('nombre', { ascending: true });
+      const { usuarios: usuariosData, relaciones: relacionesData } =
+        await obtenerAsignacionesHibrido();
 
-      if (errUsuarios) throw errUsuarios;
+      const listaTutores = usuariosData.filter(
+        (u) => u.role === 'tutor' || u.role === 'docente',
+      );
+      const listaEstudiantes = usuariosData.filter((u) => u.role === 'student');
 
-      const { data: relacionesData, error: errRelaciones } = await supabase
-        .from('tutor_estudiantes')
-        .select('id, tutor_id, estudiante_id, fecha_asignacion');
+      setTutores(listaTutores);
+      setEstudiantes(listaEstudiantes);
 
-      if (errRelaciones) throw errRelaciones;
-
-      if (usuariosData) {
-        const listaTutores = usuariosData.filter(
-          (u) => u.role === 'tutor' || u.role === 'docente'
-        );
-        const listaEstudiantes = usuariosData.filter(
-          (u) => u.role === 'student'
-        );
-
-        setTutores(listaTutores);
-        setEstudiantes(listaEstudiantes);
-
-        if (listaTutores.length > 0 && !tutorSeleccionadoId) {
-          setTutorSeleccionadoId(listaTutores[0].id);
-        }
+      if (listaTutores.length > 0 && !tutorSeleccionadoId) {
+        setTutorSeleccionadoId(listaTutores[0].id);
       }
 
-      if (relacionesData) {
-        setRelaciones(relacionesData);
-      }
+      setRelaciones(relacionesData);
     } catch (error: any) {
-      console.error('Error al cargar asignaciones:', error.message);
+      console.error('Error al cargar asignaciones:', error?.message || error);
     } finally {
       setLoading(false);
     }
@@ -112,63 +98,40 @@ export default function AsignacionesPage() {
     setUpdatingId(estudianteId);
 
     const relacionActual = relaciones.find(
-      (r) => r.estudiante_id === estudianteId
+      (r) => r.estudiante_id === estudianteId,
     );
     const yaEsDeEsteTutor =
       relacionActual && relacionActual.tutor_id === tutorSeleccionadoId;
 
     try {
+      const res = await guardarAsignacionHibrido(
+        tutorSeleccionadoId,
+        estudianteId,
+        yaEsDeEsteTutor ? 'UNASSIGN' : 'ASSIGN',
+      );
+
+      if (!res.ok) {
+        throw new Error('No se pudo actualizar la asignación.');
+      }
+
       if (yaEsDeEsteTutor) {
-        const { error } = await supabase
-          .from('tutor_estudiantes')
-          .delete()
-          .eq('estudiante_id', estudianteId)
-          .eq('tutor_id', tutorSeleccionadoId);
-
-        if (error) throw error;
-
         setRelaciones((prev) =>
           prev.filter(
             (r) =>
               !(
                 r.estudiante_id === estudianteId &&
                 r.tutor_id === tutorSeleccionadoId
-              )
-          )
+              ),
+          ),
         );
-      } else {
-        if (relacionActual) {
-          await supabase
-            .from('tutor_estudiantes')
-            .delete()
-            .eq('estudiante_id', estudianteId);
-        }
-
-        const nuevaFecha = new Date().toISOString();
-
-        const { data: nuevaRelacion, error } = await supabase
-          .from('tutor_estudiantes')
-          .insert([
-            {
-              tutor_id: tutorSeleccionadoId,
-              estudiante_id: estudianteId,
-              fecha_asignacion: nuevaFecha,
-            },
-          ])
-          .select('id, tutor_id, estudiante_id, fecha_asignacion')
-          .single();
-
-        if (error) throw error;
-
-        if (nuevaRelacion) {
-          setRelaciones((prev) => [
-            ...prev.filter((r) => r.estudiante_id !== estudianteId),
-            nuevaRelacion,
-          ]);
-        }
+      } else if (res.nuevaRelacion) {
+        setRelaciones((prev) => [
+          ...prev.filter((r) => r.estudiante_id !== estudianteId),
+          res.nuevaRelacion!,
+        ]);
       }
     } catch (error: any) {
-      console.error('Error al guardar en tutor_estudiantes:', error.message);
+      console.error('Error al guardar en tutor_estudiantes:', error?.message || error);
       alert('No se pudo actualizar la asignación en la base de datos.');
     } finally {
       setUpdatingId(null);

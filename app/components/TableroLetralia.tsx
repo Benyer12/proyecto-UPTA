@@ -3,9 +3,16 @@
 import { type CSSProperties, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createBrowserClient } from '@supabase/ssr';
 import { useAuthStore } from '../../lib/auth-store';
 import { getPlanetById } from '../../lib/mock-data';
+import {
+  guardarProgresoHibrido,
+  hayConexionInternet,
+} from '../../lib/offline-sync';
+import {
+  cachearPackIAOffline,
+  obtenerBancoOfflineLetralia,
+} from '../../lib/offline-questions';
 import {
   playCorrect,
   playDiceLand,
@@ -15,7 +22,6 @@ import {
   playStep,
 } from '../../lib/sound-engine';
 import SoundTogglePill from '../../components/SoundTogglePill';
-import { actualizarProgresoUsuario } from '../actions/progress';
 import Dado3D from './Dado3D';
 import MapaAstral from './letralia/MapaAstral';
 import AltarDecodificacion, {
@@ -208,6 +214,30 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
   );
 
   useEffect(() => {
+    const cargarBancoOffline = async () => {
+      const bank = await obtenerBancoOfflineLetralia();
+      bank.intrusos.forEach((r) =>
+        encolarSinDuplicado(colaRetosIARef.current, r, (x) => x.palabras.join(' ')),
+      );
+      bank.puentes.forEach((r) =>
+        encolarSinDuplicado(colaPuentesIARef.current, r, (x) => x.ordenCorrecto.join(' ')),
+      );
+      bank.tormentas.forEach((r) =>
+        encolarSinDuplicado(colaTormentasIARef.current, r, (x) => x.consigna),
+      );
+      bank.bosses.forEach((r) =>
+        encolarSinDuplicado(colaBossLetraliaIARef.current, r, (x) => x.titulo),
+      );
+      setMensajeTutorIA(
+        'Modo sin internet activo: usando retos de lectura guardados en JSON y tu BD local.',
+      );
+    };
+
+    if (!hayConexionInternet()) {
+      void cargarBancoOffline();
+      return;
+    }
+
     void fetch('/api/tutor-ia', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -220,7 +250,11 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
     })
       .then((r) => r.json())
       .then((data) => {
-        if (!data?.ok) return;
+        if (!data?.ok) {
+          void cargarBancoOffline();
+          return;
+        }
+        void cachearPackIAOffline('Letralia', data);
         if (Array.isArray(data.retosIntrusoLetralia)) {
           data.retosIntrusoLetralia.forEach((r: RetoIntruso) => {
             if (r?.palabras?.length) encolarSinDuplicado(colaRetosIARef.current, r, (x) => x.palabras.join(' '));
@@ -242,7 +276,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
           });
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        void cargarBancoOffline();
+      });
   }, [encolarSinDuplicado]);
 
   const [avisoFlotante, setAvisoFlotante] = useState<string | null>(
@@ -300,53 +336,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
 
       setGuardandoBD(true);
       try {
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        );
-        const fechaActual = new Date().toISOString();
-
-        // 1. Verificamos si ya existe registro para (usuario_id, resolvedLevelId)
-        const { data: existente, error: errSelect } = await supabase
-          .from('progreso_usuario')
-          .select('id')
-          .eq('usuario_id', userId)
-          .eq('nivel_id', resolvedLevelId)
-          .maybeSingle();
-
-        if (errSelect) {
-          console.error('Error consultando progreso de Letralia:', errSelect.message);
-        }
-
-        if (existente?.id) {
-          const { error: errUpdate } = await supabase
-            .from('progreso_usuario')
-            .update({
-              completado: true,
-              estrellas: estrellasTotales,
-              ultima_sesion: fechaActual,
-            })
-            .eq('id', existente.id);
-
-          if (errUpdate) console.error('Error actualizando progreso de Letralia:', errUpdate.message);
-        } else {
-          const { error: errInsert } = await supabase.from('progreso_usuario').insert({
-            usuario_id: userId,
-            nivel_id: resolvedLevelId,
-            completado: true,
-            estrellas: estrellasTotales,
-            ultima_sesion: fechaActual,
-          });
-
-          if (errInsert) console.error('Error insertando progreso de Letralia:', errInsert.message);
-        }
-
-        // 2. Respaldo y revalidación de caché en servidor
-        await actualizarProgresoUsuario(userId, resolvedLevelId, true, estrellasTotales);
-
-        console.log(
-          `✅ ¡Letralia guardado en Supabase! Nivel ID ${resolvedLevelId}: ${estrellasRegulares} (regulares) + ${BONUS_JEFE_FINAL} (jefe) = ${estrellasTotales} ⭐`,
-        );
+        await guardarProgresoHibrido(userId, resolvedLevelId, true, estrellasTotales);
       } catch (error) {
         console.error('❌ Error al guardar progreso en Letralia:', error);
       } finally {
@@ -621,48 +611,57 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         const nuevaRacha = res.exito ? rachaIA + 1 : 0;
         setRachaIA(nuevaRacha);
 
-        void fetch('/api/tutor-ia', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            estudianteNombre: user?.name || 'Explorador',
-            planeta: 'Letralia',
-            nivelActual: nivelIA,
-            esCorrecta: res.exito,
-            rachaAciertos: nuevaRacha,
-            aciertos: nuevosAciertos,
-            totalPreguntas: nuevoTotal,
-            modeloPreferido: 'gemini-4-hydrogen',
-            evitarTextos: Array.from(firmasUsadasIARef.current),
-          }),
-        })
-          .then((r) => r.json())
-          .then((data) => {
-            if (data?.ok) {
-              setNivelIA(data.nuevoNivel);
-              setEtiquetaNivelIA(data.etiquetaNivel);
-              setMensajeTutorIA(data.mensajeTutor);
-              if (data.nuevoRetoLetralia?.palabras?.length) {
-                encolarSinDuplicado(colaRetosIARef.current, data.nuevoRetoLetralia as RetoIntruso, (x) => x.palabras.join(' '));
-              }
-              if (data.nuevoRetoPuenteLetralia?.ordenCorrecto?.length) {
-                encolarSinDuplicado(colaPuentesIARef.current, data.nuevoRetoPuenteLetralia as RetoPuenteSintactico, (x) => x.ordenCorrecto.join(' '));
-              }
-              if (data.nuevoRetoTormentaLetralia?.palabras?.length) {
-                encolarSinDuplicado(colaTormentasIARef.current, data.nuevoRetoTormentaLetralia as RetoTormenta, (x) => x.consigna);
-              }
-              if (data.nuevoRetoBossLetralia?.fases?.length) {
-                encolarSinDuplicado(colaBossLetraliaIARef.current, data.nuevoRetoBossLetralia as RetoGuardianBoss, (x) => x.titulo);
-              }
-              try {
-                const prevRaw = window.localStorage.getItem('universo-reportes-ia');
-                const prev = prevRaw ? JSON.parse(prevRaw) : [];
-                const next = [data.resumenProfesor, ...(Array.isArray(prev) ? prev : [])].slice(0, 20);
-                window.localStorage.setItem('universo-reportes-ia', JSON.stringify(next));
-              } catch {}
-            }
+        if (hayConexionInternet()) {
+          void fetch('/api/tutor-ia', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              estudianteNombre: user?.name || 'Explorador',
+              planeta: 'Letralia',
+              nivelActual: nivelIA,
+              esCorrecta: res.exito,
+              rachaAciertos: nuevaRacha,
+              aciertos: nuevosAciertos,
+              totalPreguntas: nuevoTotal,
+              modeloPreferido: 'gemini-4-hydrogen',
+              evitarTextos: Array.from(firmasUsadasIARef.current),
+            }),
           })
-          .catch(() => {});
+            .then((r) => r.json())
+            .then((data) => {
+              if (data?.ok) {
+                void cachearPackIAOffline('Letralia', data);
+                setNivelIA(data.nuevoNivel);
+                setEtiquetaNivelIA(data.etiquetaNivel);
+                setMensajeTutorIA(data.mensajeTutor);
+                if (data.nuevoRetoLetralia?.palabras?.length) {
+                  encolarSinDuplicado(colaRetosIARef.current, data.nuevoRetoLetralia as RetoIntruso, (x) => x.palabras.join(' '));
+                }
+                if (data.nuevoRetoPuenteLetralia?.ordenCorrecto?.length) {
+                  encolarSinDuplicado(colaPuentesIARef.current, data.nuevoRetoPuenteLetralia as RetoPuenteSintactico, (x) => x.ordenCorrecto.join(' '));
+                }
+                if (data.nuevoRetoTormentaLetralia?.palabras?.length) {
+                  encolarSinDuplicado(colaTormentasIARef.current, data.nuevoRetoTormentaLetralia as RetoTormenta, (x) => x.consigna);
+                }
+                if (data.nuevoRetoBossLetralia?.fases?.length) {
+                  encolarSinDuplicado(colaBossLetraliaIARef.current, data.nuevoRetoBossLetralia as RetoGuardianBoss, (x) => x.titulo);
+                }
+                try {
+                  const prevRaw = window.localStorage.getItem('universo-reportes-ia');
+                  const prev = prevRaw ? JSON.parse(prevRaw) : [];
+                  const next = [data.resumenProfesor, ...(Array.isArray(prev) ? prev : [])].slice(0, 20);
+                  window.localStorage.setItem('universo-reportes-ia', JSON.stringify(next));
+                } catch {}
+              }
+            })
+            .catch(() => {});
+        } else {
+          setMensajeTutorIA(
+            res.exito
+              ? '¡Muy bien! Reto completado sin internet (banco JSON local).'
+              : 'Buen intento. Seguimos practicando lectura sin conexión.',
+          );
+        }
       }
 
       if (res.exito && casillaActual) {

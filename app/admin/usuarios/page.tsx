@@ -4,6 +4,11 @@ import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'r
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useAuthStore } from '../../../lib/auth-store';
+import {
+  actualizarUsuarioHibrido,
+  hayConexionInternet,
+  obtenerUsuariosHibrido,
+} from '../../../lib/offline-sync';
 import { supabase } from '../../../lib/supabase';
 import LiquidGlassToast, {
   type LiquidGlassToastData,
@@ -167,16 +172,10 @@ export default function AdminUsuariosPage() {
     setLoading(true);
     setLoadError(null);
 
-    const { data, error } = await supabase
-      .from('usuarios')
-      .select('id, nombre, usuario, correo, contrasena, role, status')
-      .in('role', ['student', 'tutor'])
-      .order('nombre', { ascending: true });
-
-    if (error) {
-      console.error('Error al cargar usuarios desde Supabase:', error.message);
-      setLoadError('No se pudieron cargar los usuarios desde Supabase. Verifica la conexión e intenta nuevamente.');
-    } else if (data) {
+    try {
+      const { usuarios: data } = await obtenerUsuariosHibrido({
+        roles: ['student', 'tutor'],
+      });
       const lista = ordenarPorRolYNombre(data as UsuarioEditableDB[]);
       setUsuarios(lista);
 
@@ -191,6 +190,9 @@ export default function AdminUsuariosPage() {
           }
         }
       }
+    } catch (err: any) {
+      console.error('Error al cargar usuarios:', err?.message || err);
+      setLoadError('No se pudieron cargar los usuarios.');
     }
 
     setLoading(false);
@@ -269,16 +271,9 @@ export default function AdminUsuariosPage() {
     const nuevoStatus = u.status === false ? true : false;
     setTogglingStatusId(u.id);
 
-    const { data, error } = await supabase
-      .from('usuarios')
-      .update({ status: nuevoStatus })
-      .eq('id', u.id)
-      .in('role', ['student', 'tutor'])
-      .select('id, status')
-      .single();
+    const res = await actualizarUsuarioHibrido(u.id, { status: nuevoStatus });
 
-    if (error || !data) {
-      console.error('Error al actualizar status:', error?.message);
+    if (!res.ok) {
       mostrarToast({
         variant: 'error',
         eyebrow: 'ERROR DE SINCRONIZACIÓN',
@@ -287,7 +282,7 @@ export default function AdminUsuariosPage() {
       });
     } else {
       setUsuarios((prev) =>
-        prev.map((item) => (item.id === u.id ? { ...item, status: data.status } : item)),
+        prev.map((item) => (item.id === u.id ? { ...item, status: nuevoStatus } : item)),
       );
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('admin-pending-updated'));
@@ -295,16 +290,16 @@ export default function AdminUsuariosPage() {
       if (nuevoStatus) {
         mostrarToast({
           variant: 'activated',
-          eyebrow: 'ESTADO ACTUALIZADO · ACTIVO',
+          eyebrow: res.syncedToCloud ? 'ESTADO ACTUALIZADO · ACTIVO' : 'GUARDADO EN BD LOCAL · ACTIVO',
           title: 'Cuenta habilitada',
-          message: `${u.nombre} ahora se encuentra activo y cuenta con acceso habilitado a la plataforma.`,
+          message: `${u.nombre} ahora se encuentra activo${res.syncedToCloud ? '' : ' (pendiente por subir)'}.`,
         });
       } else {
         mostrarToast({
           variant: 'deactivated',
-          eyebrow: 'ESTADO ACTUALIZADO · INACTIVO',
+          eyebrow: res.syncedToCloud ? 'ESTADO ACTUALIZADO · INACTIVO' : 'GUARDADO EN BD LOCAL · INACTIVO',
           title: 'Cuenta suspendida',
-          message: `${u.nombre} ahora está inactivo. Su inicio de sesión ha sido restringido hasta nueva reactivación.`,
+          message: `${u.nombre} ahora está inactivo${res.syncedToCloud ? '' : ' (pendiente por subir)'}.`,
         });
       }
     }
@@ -345,56 +340,84 @@ export default function AdminUsuariosPage() {
     setFormError(null);
 
     try {
-      const { data: dupUsuario, error: errDupUser } = await supabase
-        .from('usuarios')
-        .select('id')
-        .ilike('usuario', cleanUsuario)
-        .neq('id', editingUser.id)
-        .limit(1);
-
-      if (errDupUser) throw errDupUser;
-      if (dupUsuario && dupUsuario.length > 0) {
+      const dupLocalUser = usuarios.some(
+        (item) =>
+          item.id !== editingUser.id &&
+          (item.usuario || '').trim().toLowerCase() === cleanUsuario.toLowerCase(),
+      );
+      if (dupLocalUser) {
         setFormError(`El usuario "@${cleanUsuario}" ya está en uso por otra cuenta.`);
         setSaving(false);
         return;
       }
 
-      const { data: dupCorreo, error: errDupEmail } = await supabase
-        .from('usuarios')
-        .select('id')
-        .ilike('correo', cleanCorreo)
-        .neq('id', editingUser.id)
-        .limit(1);
-
-      if (errDupEmail) throw errDupEmail;
-      if (dupCorreo && dupCorreo.length > 0) {
+      const dupLocalCorreo = usuarios.some(
+        (item) =>
+          item.id !== editingUser.id &&
+          (item.correo || '').trim().toLowerCase() === cleanCorreo.toLowerCase(),
+      );
+      if (dupLocalCorreo) {
         setFormError(`El correo "${cleanCorreo}" ya está registrado en otra cuenta.`);
         setSaving(false);
         return;
       }
 
-      const { data: actualizado, error: errUpdate } = await supabase
-        .from('usuarios')
-        .update({
-          nombre: cleanNombre,
-          usuario: cleanUsuario,
-          correo: cleanCorreo,
-          contrasena: cleanContrasena,
-          role: form.role,
-          status: form.status,
-        })
-        .eq('id', editingUser.id)
-        .in('role', ['student', 'tutor'])
-        .select('id, nombre, usuario, correo, contrasena, role, status')
-        .single();
+      if (hayConexionInternet()) {
+        const { data: dupUsuario, error: errDupUser } = await supabase
+          .from('usuarios')
+          .select('id')
+          .ilike('usuario', cleanUsuario)
+          .neq('id', editingUser.id)
+          .limit(1);
 
-      if (errUpdate) throw errUpdate;
+        if (!errDupUser && dupUsuario && dupUsuario.length > 0) {
+          setFormError(`El usuario "@${cleanUsuario}" ya está en uso por otra cuenta.`);
+          setSaving(false);
+          return;
+        }
+
+        const { data: dupCorreo, error: errDupEmail } = await supabase
+          .from('usuarios')
+          .select('id')
+          .ilike('correo', cleanCorreo)
+          .neq('id', editingUser.id)
+          .limit(1);
+
+        if (!errDupEmail && dupCorreo && dupCorreo.length > 0) {
+          setFormError(`El correo "${cleanCorreo}" ya está registrado en otra cuenta.`);
+          setSaving(false);
+          return;
+        }
+      }
+
+      const res = await actualizarUsuarioHibrido(editingUser.id, {
+        nombre: cleanNombre,
+        usuario: cleanUsuario,
+        correo: cleanCorreo,
+        contrasena: cleanContrasena,
+        role: form.role,
+        status: form.status,
+      });
+
+      if (!res.ok) {
+        throw new Error(res.errorMessage || 'No se pudieron guardar los cambios.');
+      }
+
+      const actualizado: UsuarioEditableDB = {
+        id: editingUser.id,
+        nombre: cleanNombre,
+        usuario: cleanUsuario,
+        correo: cleanCorreo,
+        contrasena: cleanContrasena,
+        role: form.role,
+        status: form.status,
+      };
 
       if (actualizado) {
         setUsuarios((prev) =>
           ordenarPorRolYNombre(
             prev.map((item) =>
-              item.id === editingUser.id ? (actualizado as UsuarioEditableDB) : item,
+              item.id === editingUser.id ? actualizado : item,
             ),
           ),
         );
@@ -411,14 +434,14 @@ export default function AdminUsuariosPage() {
           if (form.status) {
             mostrarToast({
               variant: 'activated',
-              eyebrow: 'PERFIL ACTUALIZADO · ACTIVO',
+              eyebrow: res.syncedToCloud ? 'PERFIL ACTUALIZADO · ACTIVO' : 'GUARDADO LOCAL · ACTIVO',
               title: 'Cambios guardados y cuenta habilitada',
               message: `Los datos de ${cleanNombre} se guardaron y su acceso a la plataforma fue reactivado.`,
             });
           } else {
             mostrarToast({
               variant: 'deactivated',
-              eyebrow: 'PERFIL ACTUALIZADO · INACTIVO',
+              eyebrow: res.syncedToCloud ? 'PERFIL ACTUALIZADO · INACTIVO' : 'GUARDADO LOCAL · INACTIVO',
               title: 'Cambios guardados y cuenta suspendida',
               message: `Los datos de ${cleanNombre} se guardaron y su cuenta quedó inactiva para iniciar sesión.`,
             });
@@ -426,9 +449,11 @@ export default function AdminUsuariosPage() {
         } else {
           mostrarToast({
             variant: 'saved',
-            eyebrow: 'REGISTRO SINCRONIZADO',
+            eyebrow: res.syncedToCloud ? 'REGISTRO SINCRONIZADO' : 'GUARDADO EN BD LOCAL · SIN CONEXIÓN',
             title: 'Perfil actualizado',
-            message: `La información de ${cleanNombre} se actualizó correctamente en la base de datos.`,
+            message: res.syncedToCloud
+              ? `La información de ${cleanNombre} se actualizó correctamente en la base de datos.`
+              : `La información de ${cleanNombre} se guardó localmente y se subirá a Supabase al reconectar.`,
           });
         }
         setEditingUser(null);

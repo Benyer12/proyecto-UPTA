@@ -1,9 +1,13 @@
-// Cliente de Supabase conectado al proyecto
-import { supabase } from './powersync-connector'; 
+import { supabase } from './powersync-connector';
+import {
+  esErrorDeRed,
+  hayConexionInternet,
+  sincronizarAlIniciarSesion,
+  verificarCredencialesLocalOffline,
+} from './offline-sync';
 
-// 1. Definimos los dos caminos posibles para que TypeScript no se confunda
 export type LoginResult =
-  | { success: true; usuario: any }
+  | { success: true; usuario: any; offlineMode?: boolean }
   | {
       success: false;
       code?: 'INACTIVE_ACCOUNT' | 'INVALID_CREDENTIALS' | 'NOT_FOUND' | 'ERROR';
@@ -20,6 +24,14 @@ export const registrarUsuario = async (datos: {
   role: string;
 }) => {
   try {
+    if (!hayConexionInternet()) {
+      return {
+        success: false,
+        message:
+          'Sin conexión a internet. Necesitas internet la primera vez para registrar tu cuenta en Supabase.',
+      };
+    }
+
     const cleanNombre = datos.nombre.trim();
     const cleanCorreo = datos.correo.trim().toLowerCase();
     const cleanUsuario = datos.usuario.trim();
@@ -33,7 +45,6 @@ export const registrarUsuario = async (datos: {
       return { success: false, message: 'El nombre de usuario no puede contener espacios.' };
     }
 
-    // 1. Verificar que el usuario y correo no existan previamente en public.usuarios
     const { data: dupUser } = await supabase
       .from('usuarios')
       .select('id')
@@ -54,7 +65,6 @@ export const registrarUsuario = async (datos: {
       return { success: false, message: 'Ese correo electrónico ya está registrado.' };
     }
 
-    // 2. Registrar al usuario en Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: cleanCorreo,
       password: cleanContrasena,
@@ -71,7 +81,6 @@ export const registrarUsuario = async (datos: {
         ? crypto.randomUUID()
         : undefined);
 
-    // 3. Guardar directamente en public.usuarios con status = false por defecto (Pendiente por aprobar)
     const payload: Record<string, any> = {
       nombre: cleanNombre,
       correo: cleanCorreo,
@@ -94,7 +103,6 @@ export const registrarUsuario = async (datos: {
       };
     }
 
-    // 4. Cerrar cualquier sesión temporal hasta que un administrador apruebe la cuenta
     await supabase.auth.signOut().catch(() => {});
 
     return { success: true };
@@ -103,17 +111,36 @@ export const registrarUsuario = async (datos: {
   }
 };
 
-// 2. Le asignamos el tipo : Promise<LoginResult> a la función de verificación
-export const verificarCredenciales = async (usuario: string, contrasena: string): Promise<LoginResult> => {
-  try {
-    const cleanUser = usuario.trim();
+export const verificarCredenciales = async (
+  usuario: string,
+  contrasena: string,
+): Promise<LoginResult> => {
+  const cleanUser = usuario.trim();
 
-    // 1. Buscamos al usuario directamente en la NUBE (Supabase), NO en PowerSync (db.get)
+  // Si no hay internet, autenticamos contra PowerSync SQLite local (IndexedDB)
+  if (!hayConexionInternet()) {
+    const localRes = await verificarCredencialesLocalOffline(cleanUser, contrasena);
+    if (localRes.success) {
+      return { success: true, usuario: localRes.usuario, offlineMode: true };
+    }
+    return localRes;
+  }
+
+  try {
+    // 1. Supabase siempre es la base principal cuando hay conexión
     const { data: usuarioNube, error: errorBusqueda } = await supabase
       .from('usuarios')
       .select('*')
-      .ilike('usuario', cleanUser) // ilike evita fallos por mayúsculas/minúsculas
+      .ilike('usuario', cleanUser)
       .single();
+
+    if (errorBusqueda && esErrorDeRed(errorBusqueda)) {
+      const localRes = await verificarCredencialesLocalOffline(cleanUser, contrasena);
+      if (localRes.success) {
+        return { success: true, usuario: localRes.usuario, offlineMode: true };
+      }
+      return localRes;
+    }
 
     if (errorBusqueda || !usuarioNube) {
       return {
@@ -123,7 +150,6 @@ export const verificarCredenciales = async (usuario: string, contrasena: string)
       };
     }
 
-    // 2. Bloquear acceso a cuentas inactivas (status === false) para todos los roles excepto admin
     if (usuarioNube.role !== 'admin' && usuarioNube.status === false) {
       await supabase.auth.signOut().catch(() => {});
       const rolLegible =
@@ -139,13 +165,20 @@ export const verificarCredenciales = async (usuario: string, contrasena: string)
       };
     }
 
-    // 3. Autenticamos en Supabase Auth con el correo recuperado de la nube
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    const { error: authError } = await supabase.auth.signInWithPassword({
       email: usuarioNube.correo,
       password: contrasena,
     });
 
     if (authError) {
+      if (esErrorDeRed(authError)) {
+        const localRes = await verificarCredencialesLocalOffline(cleanUser, contrasena);
+        if (localRes.success) {
+          return { success: true, usuario: localRes.usuario, offlineMode: true };
+        }
+        return localRes;
+      }
+
       return {
         success: false,
         code: 'INVALID_CREDENTIALS',
@@ -153,11 +186,23 @@ export const verificarCredenciales = async (usuario: string, contrasena: string)
       };
     }
 
-    // 4. Al autenticar con éxito, Supabase genera el token.
-    // PowerSync lo detectará automáticamente e iniciará la sincronización local.
-    return { success: true, usuario: usuarioNube };
+    const usuarioParaCache = {
+      ...usuarioNube,
+      contrasena: usuarioNube.contrasena || contrasena,
+    };
 
+    // Deposita inmediatamente tablas de Supabase en la BD secundaria local (PowerSync SQLite)
+    void sincronizarAlIniciarSesion(usuarioParaCache);
+
+    return { success: true, usuario: usuarioParaCache, offlineMode: false };
   } catch (error: any) {
+    if (esErrorDeRed(error)) {
+      const localRes = await verificarCredencialesLocalOffline(cleanUser, contrasena);
+      if (localRes.success) {
+        return { success: true, usuario: localRes.usuario, offlineMode: true };
+      }
+      return localRes;
+    }
     return { success: false, code: 'ERROR', message: error.message };
   }
 };

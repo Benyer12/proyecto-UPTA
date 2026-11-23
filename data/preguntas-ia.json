@@ -30,6 +30,21 @@
     "fechaCreacion": "2026-11-21T17:30:05.000Z"
   },
   {
+    "id": 1004,
+    "planeta": "Numérix",
+    "materia": "Matemáticas",
+    "nivelDificultad": 3,
+    "etiquetaNivel": "Nivel 3 · Órbita Avanzada",
+    "operador": "÷",
+    "enunciado": "Repartes 48 baterías cuánticas entre 6 naves por igual y tu nave recibe 5 extra. ¿Cuántas tiene tu nave?",
+    "opciones": ["12", "13", "8", "14"],
+    "indiceRespuestaCorrecta": 1,
+    "pista": "Primero divide 48 ÷ 6 y al resultado súmale 5.",
+    "explicacionBreve": "48 ÷ 6 = 8 baterías por nave; más 5 extra son 8 + 5 = 13 baterías.",
+    "creadaPor": "gemini-4-hydrogen",
+    "fechaCreacion": "2026-11-22T10:15:00.000Z"
+  },
+  {
     "id": 1003,
     "planeta": "Letralia",
     "materia": "Lenguaje",
@@ -42,5 +57,61 @@
     "explicacionBreve": "Sa-té-li-te tiene el acento en la antepenúltima sílaba (té), por eso es esdrújula y siempre lleva tilde.",
     "creadaPor": "gemini-4-hydrogen",
     "fechaCreacion": "2026-11-21T17:30:10.000Z"
+  },
+  {
+    "id": 1005,
+    "planeta": "Letralia",
+    "materia": "Lenguaje",
+    "nivelDificultad": 1,
+    "etiquetaNivel": "Nivel 1 · Base Orbital",
+    "enunciado": "¿Qué sinónimo reemplaza mejor a la palabra «brillante» en: «Una estrella brillante iluminó el cielo»?",
+    "opciones": ["Opaca", "Luminosa", "Silenciosa", "Distante"],
+    "indiceRespuestaCorrecta": 1,
+    "pista": "Elige la palabra que significa que emite mucha luz.",
+    "explicacionBreve": "«Luminosa» expresa el mismo significado que «brillante».",
+    "creadaPor": "gemini-4-hydrogen",
+    "fechaCreacion": "2026-11-22T10:16:00.000Z"
+  },
+  {
+    "id": 1006,
+    "planeta": "Naturae",
+    "materia": "Ciencias",
+    "nivelDificultad": 1,
+    "etiquetaNivel": "Nivel 1 · Base Orbital",
+    "enunciado": "¿Qué pigmento verde permite a las plantas captar la luz solar para hacer la fotosíntesis?",
+    "opciones": ["Melanina", "Clorofila", "Hemoglobina", "Queratina"],
+    "indiceRespuestaCorrecta": 1,
+    "pista": "Se encuentra dentro de los cloroplastos de las hojas.",
+    "explicacionBreve": "La clorofila da el color verde a las hojas y absorbe la energía del Sol.",
+    "creadaPor": "gemini-4-hydrogen",
+    "fechaCreacion": "2026-11-22T10:17:00.000Z"
+  },
+  {
+    "id": 1007,
+    "planeta": "Naturae",
+    "materia": "Ciencias",
+    "nivelDificultad": 2,
+    "etiquetaNivel": "Nivel 2 · Propulsión Media",
+    "enunciado": "¿En qué fase del ciclo del agua el vapor enfriado en lo alto forma las nubes?",
+    "opciones": ["Evaporación", "Condensación", "Filtración", "Erosión"],
+    "indiceRespuestaCorrecta": 1,
+    "pista": "Es el paso de gas (vapor) a gotitas líquidas en el cielo.",
+    "explicacionBreve": "Durante la condensación, el vapor de agua se enfría y forma pequeñas gotas que crean las nubes.",
+    "creadaPor": "gemini-4-hydrogen",
+    "fechaCreacion": "2026-11-22T10:18:00.000Z"
+  },
+  {
+    "id": 1008,
+    "planeta": "Naturae",
+    "materia": "Ciencias",
+    "nivelDificultad": 3,
+    "etiquetaNivel": "Nivel 3 · Órbita Avanzada",
+    "enunciado": "¿Cuál es la estrella situada en el centro de nuestro Sistema Solar alrededor de la cual orbitan los planetas?",
+    "opciones": ["La Luna", "Júpiter", "El Sol", "Sirio"],
+    "indiceRespuestaCorrecta": 2,
+    "pista": "Nos da luz y calor cada día.",
+    "explicacionBreve": "El Sol es nuestra estrella central y su gravedad mantiene en órbita a todos los planetas.",
+    "creadaPor": "gemini-4-hydrogen",
+    "fechaCreacion": "2026-11-22T10:19:00.000Z"
   }
 ]

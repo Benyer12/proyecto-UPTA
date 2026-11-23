@@ -4,7 +4,10 @@ import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'r
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useAuthStore } from '../../../lib/auth-store';
-import { supabase } from '../../../lib/supabase';
+import {
+  actualizarUsuarioHibrido,
+  obtenerUsuariosHibrido,
+} from '../../../lib/offline-sync';
 import LiquidGlassToast, {
   type LiquidGlassToastData,
 } from '../../components/LiquidGlassToast';
@@ -59,17 +62,11 @@ export default function AdminPendientesPage() {
     setLoading(true);
     setLoadError(null);
 
-    const { data, error } = await supabase
-      .from('usuarios')
-      .select('id, nombre, usuario, correo, role, status')
-      .in('role', ['student', 'tutor'])
-      .eq('status', false)
-      .order('nombre', { ascending: true });
-
-    if (error) {
-      console.error('Error al cargar pendientes:', error.message);
-      setLoadError('No se pudieron cargar las solicitudes pendientes desde Supabase.');
-    } else if (data) {
+    try {
+      const { usuarios: data } = await obtenerUsuariosHibrido({
+        roles: ['student', 'tutor'],
+        soloInactivos: true,
+      });
       const lista = ordenarPorRolYNombre(data as UsuarioPendiente[]);
       setPendientes(lista);
       setRolesSeleccionados((prev) => {
@@ -81,6 +78,9 @@ export default function AdminPendientesPage() {
         }
         return next;
       });
+    } catch (err: any) {
+      console.error('Error al cargar pendientes:', err?.message || err);
+      setLoadError('No se pudieron cargar las solicitudes pendientes.');
     }
 
     setLoading(false);
@@ -116,19 +116,12 @@ export default function AdminPendientesPage() {
     const rolFinal: ApprovalRole = rolesSeleccionados[u.id] ?? (u.role === 'tutor' ? 'tutor' : 'student');
     setApprovingId(u.id);
 
-    const { data, error } = await supabase
-      .from('usuarios')
-      .update({
-        status: true,
-        role: rolFinal,
-      })
-      .eq('id', u.id)
-      .in('role', ['student', 'tutor'])
-      .select('id, role, status')
-      .single();
+    const res = await actualizarUsuarioHibrido(u.id, {
+      status: true,
+      role: rolFinal,
+    });
 
-    if (error || !data) {
-      console.error('Error al aprobar usuario:', error?.message);
+    if (!res.ok) {
       setToast({
         id: Date.now(),
         variant: 'error',
@@ -148,9 +141,11 @@ export default function AdminPendientesPage() {
       setToast({
         id: Date.now(),
         variant: 'activated',
-        eyebrow: 'ACCESO APROBADO · ACTIVO',
+        eyebrow: res.syncedToCloud ? 'ACCESO APROBADO · ACTIVO' : 'APROBADO EN BD LOCAL · SIN CONEXIÓN',
         title: 'Usuario aprobado correctamente',
-        message: `${u.nombre} ahora está activo como ${rolLegible} y ya puede iniciar sesión en la plataforma.`,
+        message: res.syncedToCloud
+          ? `${u.nombre} ahora está activo como ${rolLegible} y ya puede iniciar sesión en la plataforma.`
+          : `${u.nombre} quedó aprobado localmente como ${rolLegible} y se subirá a Supabase al reconectar.`,
       });
     }
 

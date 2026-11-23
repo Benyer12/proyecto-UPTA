@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { createBrowserClient } from '@supabase/ssr';
 import PlanetVisual from '../components/PlanetVisual';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
@@ -13,57 +12,14 @@ import RoleAvatar from '../../components/RoleAvatar';
 import { useAuthStore } from '../../lib/auth-store';
 import { useThemeStore } from '../../lib/theme-store';
 import { MOCK_PLANETS, MOCK_PROGRESS } from '../../lib/mock-data';
+import {
+  obtenerPlanetasLocales,
+  obtenerProgresoEstudianteHibrido,
+} from '../../lib/offline-sync';
 import type { Planet, StudentProgress } from '../../shared/types';
 
-interface ProgressFetchResult {
-  progressMap: Record<number, StudentProgress>;
-  totalStars: number;
-  errorMessage: string | null;
-}
-
-async function obtenerProgresoDelEstudiante(userId: string): Promise<ProgressFetchResult> {
-  try {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    );
-
-    const { data, error } = await supabase
-      .from('progreso_usuario')
-      .select('nivel_id, completado, estrellas')
-      .eq('usuario_id', userId);
-
-    if (error) {
-      return {
-        progressMap: { ...MOCK_PROGRESS },
-        totalStars: 0,
-        errorMessage: 'No se pudo sincronizar tu progreso desde la nube.',
-      };
-    }
-
-    const progressMap: Record<number, StudentProgress> = { ...MOCK_PROGRESS };
-    let totalStars = 0;
-
-    (data || []).forEach((row) => {
-      const nivelId = Number(row.nivel_id);
-      const stars = Number(row.estrellas) || 0;
-      progressMap[nivelId] = {
-        levelId: nivelId,
-        status: row.completado ? 'completed' : 'unlocked',
-        score: stars * 100,
-        stars,
-      };
-      totalStars += stars;
-    });
-
-    return { progressMap, totalStars, errorMessage: null };
-  } catch {
-    return {
-      progressMap: { ...MOCK_PROGRESS },
-      totalStars: 0,
-      errorMessage: 'Ocurrió un problema de conexión al consultar tu progreso.',
-    };
-  }
+async function obtenerProgresoDelEstudiante(userId: string) {
+  return obtenerProgresoEstudianteHibrido(userId);
 }
 
 interface PlanetTheme {
@@ -565,6 +521,7 @@ export default function Dashboard() {
   const [progressError, setProgressError] = useState<string | null>(null);
 
   useEffect(() => {
+    void obtenerPlanetasLocales();
     setMounted(true);
   }, []);
 

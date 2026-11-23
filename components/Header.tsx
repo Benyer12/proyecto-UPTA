@@ -7,6 +7,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from '../lib/auth-store';
 import { useThemeStore } from '../lib/theme-store';
 import { supabase } from '../lib/supabase';
+import {
+  hayConexionInternet,
+  obtenerUsuariosHibrido,
+} from '../lib/offline-sync';
 import LiquidGlassToast, {
   type LiquidGlassToastData,
 } from '../app/components/LiquidGlassToast';
@@ -365,20 +369,17 @@ export default function Header() {
   const formRef = useRef<HTMLDivElement | null>(null);
 
   const fetchPendingCount = useCallback(async (): Promise<number> => {
-    const { count, error } = await supabase
-      .from('usuarios')
-      .select('id', { count: 'exact', head: true })
-      .in('role', ['student', 'tutor'])
-      .eq('status', false);
-
-    if (error) {
-      console.error('Error al consultar usuarios pendientes:', error.message);
+    try {
+      const { usuarios } = await obtenerUsuariosHibrido({
+        roles: ['student', 'tutor'],
+        soloInactivos: true,
+      });
+      const total = usuarios.length;
+      setPendingCount(total);
+      return total;
+    } catch {
       return 0;
     }
-
-    const total = count ?? 0;
-    setPendingCount(total);
-    return total;
   }, []);
 
   // Mantener actualizado el contador de pendientes para el menú superior del administrador
@@ -402,9 +403,11 @@ export default function Header() {
   // Verificar que cuentas activas (student/tutor, excepto admin) no hayan sido desactivadas
   useEffect(() => {
     if (!token || !user || user.role === 'admin') return;
+    if (!hayConexionInternet()) return;
     let cancelled = false;
 
     const verificarEstadoCuenta = async () => {
+      if (!hayConexionInternet()) return;
       const { data, error } = await supabase
         .from('usuarios')
         .select('status, role, nombre')

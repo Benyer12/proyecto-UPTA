@@ -4,10 +4,9 @@ import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo, useState, useCallback } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
 import { getPlanetById } from '../../../../lib/mock-data';
 import { useAuthStore } from '../../../../lib/auth-store';
-import { actualizarProgresoUsuario } from '../../../actions/progress';
+import { guardarProgresoHibrido } from '../../../../lib/offline-sync';
 import Dado3D from '../../../components/Dado3D';
 import TableroIsometrico from '../../../components/TableroIsometrico';
 import TableroLetralia from '../../../components/TableroLetralia';
@@ -309,45 +308,12 @@ export default function JuegoPage() {
 
         // --- 3. Sumatoria Total (Regulares + 4 del Jefe) ---
         const estrellasTotalesNivel = estrellasRegulares + bonificacionJefeFinal;
-        const fechaActual = new Date().toISOString();
 
-        // --- 4A. Persistencia directa desde el navegador (con token de sesión para RLS) ---
-        const supabaseBrowser = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-
-        const { data: filaExistente } = await supabaseBrowser
-          .from('progreso_usuario')
-          .select('id')
-          .eq('usuario_id', userId)
-          .eq('nivel_id', levelId)
-          .maybeSingle();
-
-        if (filaExistente?.id) {
-          await supabaseBrowser
-            .from('progreso_usuario')
-            .update({
-              completado: true,
-              estrellas: estrellasTotalesNivel,
-              ultima_sesion: fechaActual,
-            })
-            .eq('id', filaExistente.id);
-        } else {
-          await supabaseBrowser.from('progreso_usuario').insert({
-            usuario_id: userId,
-            nivel_id: levelId,
-            completado: true,
-            estrellas: estrellasTotalesNivel,
-            ultima_sesion: fechaActual,
-          });
-        }
-
-        // --- 4B. Respaldo y revalidación de caché en servidor ---
-        await actualizarProgresoUsuario(userId, levelId, true, estrellasTotalesNivel);
+        // --- 4. Guardado híbrido (BD local PowerSync + Supabase cuando hay conexión) ---
+        await guardarProgresoHibrido(userId, levelId, true, estrellasTotalesNivel);
 
         console.log(
-          `✅ ¡Progreso actualizado en BD! Nivel ${levelId} -> ${estrellasTotalesNivel} estrellas (${estrellasRegulares} regulares + ${bonificacionJefeFinal} jefe)`
+          `✅ ¡Progreso actualizado! Nivel ${levelId} -> ${estrellasTotalesNivel} estrellas (${estrellasRegulares} regulares + ${bonificacionJefeFinal} jefe)`
         );
 
         if (redirigir) {

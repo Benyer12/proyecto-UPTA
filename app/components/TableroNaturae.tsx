@@ -1,11 +1,17 @@
 'use client';
 
-import { type CSSProperties, memo, useCallback, useMemo, useRef, useState } from 'react';
+import { type CSSProperties, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { createBrowserClient } from '@supabase/ssr';
 import { useAuthStore } from '../../lib/auth-store';
-import { actualizarProgresoUsuario } from '../actions/progress';
+import {
+  guardarProgresoHibrido,
+  hayConexionInternet,
+} from '../../lib/offline-sync';
+import {
+  cachearPackIAOffline,
+  obtenerBancoOfflineNaturae,
+} from '../../lib/offline-questions';
 import SoundTogglePill from '../../components/SoundTogglePill';
 import Dado3D from './Dado3D';
 import {
@@ -436,9 +442,68 @@ export default function TableroNaturae({
   const [guardando, setGuardando] = useState(false);
 
   const qIndexRef = useRef(0);
+  const colaNaturaeIARef = useRef<PreguntaCiencias[]>([]);
+  const [nivelIA, setNivelIA] = useState<1 | 2 | 3>(1);
+  const [rachaIA, setRachaIA] = useState(0);
   const bioCoresActivos = bioCores.filter(Boolean).length;
   const progresoPct = Math.round(((pos + 1) / TOTAL_NATURAE) * 100);
   const modalAbierto = Boolean(preguntaActiva) || victoria || mostrarGuia;
+
+  useEffect(() => {
+    const cargarOffline = async () => {
+      const lista = await obtenerBancoOfflineNaturae(bank);
+      lista.forEach((item) => {
+        if (item?.pregunta) {
+          colaNaturaeIARef.current.push({
+            pregunta: item.pregunta,
+            tema: item.tema,
+            opciones: item.opciones,
+            correcta: item.correcta,
+            pista: item.pista,
+          });
+        }
+      });
+    };
+
+    if (!hayConexionInternet()) {
+      void cargarOffline();
+      return;
+    }
+
+    void fetch('/api/tutor-ia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'preparar-tablero',
+        planeta: 'Naturae',
+        nivelActual: 1,
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data?.ok) {
+          void cargarOffline();
+          return;
+        }
+        void cachearPackIAOffline('Naturae', data);
+        if (Array.isArray(data.preguntasNaturae)) {
+          data.preguntasNaturae.forEach((p: any) => {
+            if (p?.enunciado && Array.isArray(p?.opciones)) {
+              colaNaturaeIARef.current.push({
+                pregunta: p.enunciado,
+                tema: p.etiquetaNivel || 'Tutor IA · Ciencias',
+                opciones: p.opciones,
+                correcta: Number(p.indiceRespuestaCorrecta) || 0,
+                pista: p.pista || 'Analiza el fenómeno natural con calma.',
+              });
+            }
+          });
+        }
+      })
+      .catch(() => {
+        void cargarOffline();
+      });
+  }, [bank]);
 
   const guardarProgreso = useCallback(
     async (okCount: number, totalCount: number) => {
@@ -449,33 +514,7 @@ export default function TableroNaturae({
         const pct = totalCount > 0 ? (okCount / totalCount) * 100 : 100;
         const estrellasReg = pct >= 90 ? 3 : pct >= 70 ? 2 : 1;
         const totalEstrellas = estrellasReg + 3;
-        const sb = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        );
-        const { data: existing } = await sb
-          .from('progreso_usuario')
-          .select('id')
-          .eq('usuario_id', userId)
-          .eq('nivel_id', levelId)
-          .maybeSingle();
-
-        const ahora = new Date().toISOString();
-        if (existing?.id) {
-          await sb
-            .from('progreso_usuario')
-            .update({ completado: true, estrellas: totalEstrellas, ultima_sesion: ahora })
-            .eq('id', existing.id);
-        } else {
-          await sb.from('progreso_usuario').insert({
-            usuario_id: userId,
-            nivel_id: levelId,
-            completado: true,
-            estrellas: totalEstrellas,
-            ultima_sesion: ahora,
-          });
-        }
-        await actualizarProgresoUsuario(userId, levelId, true, totalEstrellas);
+        await guardarProgresoHibrido(String(userId), levelId, true, totalEstrellas);
       } catch (err) {
         console.error('Error guardando progreso Naturae:', err);
       } finally {
@@ -487,8 +526,9 @@ export default function TableroNaturae({
 
   const abrirReto = useCallback(
     (boss: boolean) => {
-      const nextQ = bank[qIndexRef.current % bank.length];
-      qIndexRef.current += 1;
+      const pregCola = colaNaturaeIARef.current.shift();
+      const nextQ = pregCola || bank[qIndexRef.current % bank.length];
+      if (!pregCola) qIndexRef.current += 1;
       setEsJefeFinal(boss);
       setOpcionElegida(null);
       setEstadoPregunta('esperando');
@@ -566,6 +606,46 @@ export default function TableroNaturae({
       playIncorrect();
     }
 
+    const nuevaRacha = ok ? rachaIA + 1 : 0;
+    setRachaIA(nuevaRacha);
+
+    if (hayConexionInternet()) {
+      void fetch('/api/tutor-ia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          estudianteNombre: user?.name || 'Explorador',
+          planeta: 'Naturae',
+          nivelActual: nivelIA,
+          esCorrecta: ok,
+          rachaAciertos: nuevaRacha,
+          aciertos: nextAciertos,
+          totalPreguntas: nextTotal,
+          preguntaActual: preguntaActiva.pregunta,
+          respuestaEstudiante: preguntaActiva.opciones[opcionElegida],
+          respuestaCorrecta: preguntaActiva.opciones[preguntaActiva.correcta],
+          modeloPreferido: 'gemini-4-hydrogen',
+        }),
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.ok) {
+            void cachearPackIAOffline('Naturae', data);
+            if (data.nuevoNivel) setNivelIA(data.nuevoNivel);
+            if (data.nuevaPregunta?.enunciado && Array.isArray(data.nuevaPregunta.opciones)) {
+              colaNaturaeIARef.current.unshift({
+                pregunta: data.nuevaPregunta.enunciado,
+                tema: data.etiquetaNivel || 'Tutor IA · Ciencias',
+                opciones: data.nuevaPregunta.opciones,
+                correcta: Number(data.nuevaPregunta.indiceRespuestaCorrecta) || 0,
+                pista: data.nuevaPregunta.pista || 'Analiza las pistas científicas.',
+              });
+            }
+          }
+        })
+        .catch(() => {});
+    }
+
     setTimeout(() => {
       setPreguntaActiva(null);
       if (esJefeFinal && ok) {
@@ -576,7 +656,7 @@ export default function TableroNaturae({
         setAviso('Casi lo logras. Lanza el dado o inténtalo de nuevo en la cúpula.');
       }
     }, 950);
-  }, [preguntaActiva, opcionElegida, estadoPregunta, totalPreguntas, aciertos, esJefeFinal, guardarProgreso]);
+  }, [preguntaActiva, opcionElegida, estadoPregunta, totalPreguntas, aciertos, esJefeFinal, guardarProgreso, rachaIA, user?.name, nivelIA]);
 
   return (
     <div

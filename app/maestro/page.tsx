@@ -3,7 +3,10 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../lib/auth-store';
-import { supabase } from '../../lib/supabase';
+import {
+  obtenerDatosMaestroHibrido,
+  type LocalProgresoRow,
+} from '../../lib/offline-sync';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
 import RoleAvatar from '../../components/RoleAvatar';
@@ -96,24 +99,17 @@ export default function MaestroPage() {
     if (!user) return;
     setLoading(true);
     try {
-      const { data: asignaciones, error: errAsig } = await supabase
-        .from('tutor_estudiantes')
-        .select('estudiante_id')
-        .eq('tutor_id', String(user.id));
+      const {
+        totalNiveles: totalNivelesBd,
+        estudiantes: usuariosData,
+        progreso: registrosProgreso,
+      } = await obtenerDatosMaestroHibrido(String(user.id));
 
-      if (errAsig) throw errAsig;
-
-      const idsAsignados = (asignaciones || []).map((a) => a.estudiante_id);
-
-      const { count: conteoNiveles } = await supabase
-        .from('niveles')
-        .select('*', { count: 'exact', head: true });
-
-      if (conteoNiveles && conteoNiveles > 0) {
-        setTotalNiveles(conteoNiveles);
+      if (totalNivelesBd > 0) {
+        setTotalNiveles(totalNivelesBd);
       }
 
-      if (idsAsignados.length === 0) {
+      if (usuariosData.length === 0) {
         setStudents([]);
         setTotalCompletados(0);
         setTotalEstrellas(0);
@@ -121,36 +117,18 @@ export default function MaestroPage() {
         return;
       }
 
-      const { data: usuariosData, error: errUsuarios } = await supabase
-        .from('usuarios')
-        .select('id, nombre, usuario, correo, role')
-        .eq('role', 'student')
-        .in('id', idsAsignados)
-        .order('nombre', { ascending: true });
-
-      if (errUsuarios) throw errUsuarios;
-
-      const { data: progresoData, error: errProgreso } = await supabase
-        .from('progreso_usuario')
-        .select('id, usuario_id, nivel_id, completado, estrellas, ultima_sesion')
-        .in('usuario_id', idsAsignados);
-
-      if (errProgreso) throw errProgreso;
-
-      const registrosProgreso = (progresoData || []) as ProgresoRegistro[];
-
-      const listaEstudiantes: EstudianteConProgreso[] = (usuariosData || []).map((est) => {
-        const misRegistros = registrosProgreso.filter(
-          (p) => p.usuario_id === est.id
+      const listaEstudiantes: EstudianteConProgreso[] = usuariosData.map((est) => {
+        const misRegistros = (registrosProgreso as LocalProgresoRow[]).filter(
+          (p) => p.usuario_id === est.id,
         );
 
         const nivelesUnicosCompletados = new Set(
-          misRegistros.filter((p) => p.completado === true).map((p) => p.nivel_id)
+          misRegistros.filter((p) => p.completado === true).map((p) => p.nivel_id),
         );
 
         const estrellasTotales = misRegistros.reduce(
           (acc, p) => acc + (Number(p.estrellas) || 0),
-          0
+          0,
         );
 
         const ultimaSesion =
@@ -170,10 +148,10 @@ export default function MaestroPage() {
 
       setStudents(listaEstudiantes);
       setTotalCompletados(
-        listaEstudiantes.reduce((acc, s) => acc + s.nivelesCompletados, 0)
+        listaEstudiantes.reduce((acc, s) => acc + s.nivelesCompletados, 0),
       );
       setTotalEstrellas(
-        listaEstudiantes.reduce((acc, s) => acc + s.estrellasTotales, 0)
+        listaEstudiantes.reduce((acc, s) => acc + s.estrellasTotales, 0),
       );
     } catch (error) {
       console.error('Error al cargar datos del panel de tutor:', error);

@@ -3,9 +3,11 @@
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
-import { useMemo } from 'react';
-import { getPlanetById, getLevelProgress } from '../../../lib/mock-data';
-import type { Course, Level } from '../../../shared/types';
+import { useEffect, useMemo, useState } from 'react';
+import { getPlanetById, getLevelProgress, MOCK_PROGRESS } from '../../../lib/mock-data';
+import { obtenerProgresoEstudianteHibrido } from '../../../lib/offline-sync';
+import { useAuthStore } from '../../../lib/auth-store';
+import type { Course, Level, StudentProgress } from '../../../shared/types';
 import PlanetVisual from '../../components/PlanetVisual';
 import { LiquidGlass } from '../../../components/ui/glasscn/liquid-glass';
 import { useThemeStore } from '../../../lib/theme-store';
@@ -424,10 +426,12 @@ function CoursePortalSection({
   course,
   planetColor,
   planetId,
+  progressMap,
 }: {
   course: Course;
   planetColor: string;
   planetId: number;
+  progressMap: Record<number, StudentProgress>;
 }) {
   const appTheme = useThemeStore((s) => s.theme);
   const isLight = appTheme === 'light';
@@ -501,7 +505,7 @@ function CoursePortalSection({
 
         <div className="space-y-6">
           {course.levels.map((level, i) => {
-            const prog = getLevelProgress(level.id);
+            const prog = progressMap[level.id] || getLevelProgress(level.id);
             const available = prog.status !== 'locked';
             const isLeft = i % 2 === 0;
 
@@ -611,9 +615,24 @@ export default function PlanetaPage() {
   const router = useRouter();
   const prefersReducedMotion = useReducedMotion();
   const appTheme = useThemeStore((s) => s.theme);
+  const user = useAuthStore((s) => s.user);
+  const [progressMap, setProgressMap] = useState<Record<number, StudentProgress>>(MOCK_PROGRESS);
   const isLight = appTheme === 'light';
   const planetId = parseInt(params.id, 10);
   const planet = useMemo(() => getPlanetById(planetId), [planetId]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    void obtenerProgresoEstudianteHibrido(String(user.id)).then((res) => {
+      if (!cancelled) {
+        setProgressMap(res.progressMap);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   if (!planet) {
     return (
@@ -741,6 +760,7 @@ export default function PlanetaPage() {
                 course={course}
                 planetColor={planet.color}
                 planetId={planet.id}
+                progressMap={progressMap}
               />
             </motion.div>
           ))}
