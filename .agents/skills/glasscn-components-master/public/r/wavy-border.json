@@ -1,0 +1,14 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "wavy-border",
+  "title": "Wavy Border",
+  "description": "A global CSS class that applies a small, even wavy border shape.",
+  "css": {
+    ".wavy-border": {
+      "border-width": "medium",
+      "border-color": "var(--color-foreground)",
+      "border-shape": "shape(from 2% 2%, curve to 10% 1.5% with 4% 2% / 6% 1.5%, curve to 20% 1% with 14% 1.5% / 16% 1%, curve to 30% 1.5% with 24% 1% / 26% 1.5%, curve to 40% 1% with 34% 1.5% / 36% 1%, curve to 50% 1.5% with 44% 1% / 46% 1.5%, curve to 60% 1% with 54% 1.5% / 56% 1%, curve to 70% 1.5% with 64% 1% / 66% 1.5%, curve to 80% 1% with 74% 1.5% / 76% 1%, curve to 90% 1.5% with 84% 1% / 86% 1.5%, curve to 98% 2% with 94% 1.5% / 96.5% 2%, line to 98% 7%, curve to 98.5% 15% with 98% 9% / 98.5% 12%, curve to 99% 25% with 98.5% 18% / 99% 22%, curve to 98.5% 35% with 99% 28% / 98.5% 32%, curve to 99% 45% with 98.5% 38% / 99% 42%, curve to 98.5% 55% with 99% 48% / 98.5% 52%, curve to 99% 65% with 98.5% 58% / 99% 62%, curve to 98.5% 75% with 99% 68% / 98.5% 72%, curve to 99% 85% with 98.5% 78% / 99% 82%, curve to 98.5% 94% with 99% 88% / 98.5% 91%, line to 98% 98%, curve to 90% 98.5% with 96% 98% / 94% 98.5%, curve to 80% 99% with 86% 98.5% / 84% 99%, curve to 70% 98.5% with 76% 99% / 74% 98.5%, curve to 60% 99% with 66% 98.5% / 64% 99%, curve to 50% 98.5% with 56% 99% / 54% 98.5%, curve to 40% 99% with 46% 98.5% / 44% 99%, curve to 30% 98.5% with 36% 99% / 34% 98.5%, curve to 20% 99% with 26% 98.5% / 24% 99%, curve to 10% 98.5% with 16% 99% / 14% 98.5%, curve to 2% 98% with 6% 98.5% / 3.5% 98%, curve to 1.5% 90% with 2% 96% / 1.5% 94%, curve to 1% 80% with 1.5% 86% / 1% 84%, curve to 1.5% 70% with 1% 76% / 1.5% 74%, curve to 1% 60% with 1.5% 66% / 1% 64%, curve to 1.5% 50% with 1% 56% / 1.5% 54%, curve to 1% 40% with 1.5% 46% / 1% 44%, curve to 1.5% 30% with 1% 36% / 1.5% 34%, curve to 1% 20% with 1.5% 26% / 1% 24%, curve to 1.5% 10% with 1% 16% / 1.5% 14%, curve to 2% 2% with 1.5% 6% / 2% 3.5%, close)"
+    }
+  },
+  "type": "registry:style"
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "glass-popover",
+  "title": "Glass Popover",
+  "description": "Glass Popover with five variants: clear, frosted, subtle, liquid, and liquid-refract",
+  "dependencies": [
+    "@base-ui/react"
+  ],
+  "registryDependencies": [
+    "@glasscn/utils",
+    "@glasscn/popover",
+    "@glasscn/glass-variants",
+    "@glasscn/liquid-glass"
+  ],
+  "files": [
+    {
+      "path": "components/ui/glasscn/glass-popover.tsx",
+      "content": "\"use client\";\n\nimport { FrostGlassVariantProp, glassVariantStyles } from \"@/lib/glass-variants\";\nimport { cn } from \"@/lib/utils\";\n\nimport { PopoverContent } from \"../popover\";\nimport { LiquidGlass } from \"./liquid-glass\";\n\ntype GlassPopoverContentProps = React.ComponentProps<typeof PopoverContent> & FrostGlassVariantProp;\n\nfunction GlassPopoverContent({ className, glassVariant = \"liquid-refract\", ...props }: GlassPopoverContentProps) {\n  return (\n    <PopoverContent\n      data-slot=\"glass-popover-content\"\n      data-glass-variant={glassVariant}\n      render={glassVariant === \"liquid-refract\" ? <LiquidGlass /> : undefined}\n      className={cn(\n        \"text-foreground\",\n        glassVariant === \"liquid-refract\"\n          ? \"bg-transparent shadow-none ring-0\"\n          : glassVariantStyles[glassVariant],\n        className,\n      )}\n      {...props}\n    />\n  );\n}\n\nexport { GlassPopoverContent };\n",
+      "type": "registry:component"
+    }
+  ],
+  "type": "registry:component"
+}

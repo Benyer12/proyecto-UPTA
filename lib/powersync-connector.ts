@@ -1,6 +1,6 @@
 import { PowerSyncBackendConnector, PowerSyncCredentials } from '@powersync/common';
 import type { PowerSyncDatabase } from '@powersync/web';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 export const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://lxwbytvbnytmtegdqtxc.supabase.co';
@@ -8,7 +8,14 @@ export const supabaseKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4d2J5dHZibnl0bXRlZ2RxdHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNzc3NTMsImV4cCI6MjA5NzY1Mzc1M30.oJvbAQwPgjZJrVi-YTKR4Ad1dumDnSUZED-kiNPnJqM';
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+const globalForSupabase = globalThis as unknown as {
+  __universoSupabaseClient?: SupabaseClient;
+};
+
+export const supabase =
+  globalForSupabase.__universoSupabaseClient ?? createClient(supabaseUrl, supabaseKey);
+
+globalForSupabase.__universoSupabaseClient = supabase;
 
 const POWERSYNC_ENDPOINT =
   process.env.NEXT_PUBLIC_POWERSYNC_URL || 'https://6a4c67b449dca2d8a4177d63.powersync.journeyapps.com';

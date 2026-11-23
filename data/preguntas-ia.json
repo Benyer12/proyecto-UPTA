@@ -1,5 +1,65 @@
 [
   {
+    "id": 1795406255895,
+    "planeta": "Numérix",
+    "materia": "Matemáticas",
+    "nivelDificultad": 2,
+    "etiquetaNivel": "Nivel 2 · Desafío Moderado",
+    "operador": "×",
+    "enunciado": "Tu nave tenía 90 litros de energía y gastó 35 al cruzar una nebulosa. ¿Cuántos litros quedan?",
+    "opciones": [
+      "55",
+      "65",
+      "45",
+      "60"
+    ],
+    "indiceRespuestaCorrecta": 0,
+    "pista": "A 90 quítale 30 y luego resta 5 más.",
+    "explicacionBreve": "Al restar 35 de 90, primero restamos 30 (quedan 60) y luego 5 más, lo que da 55.",
+    "creadaPor": "gemini-3.5-flash-lite",
+    "fechaCreacion": "2026-11-23T03:57:35.679Z"
+  },
+  {
+    "id": 1795406250087,
+    "planeta": "Numérix",
+    "materia": "Matemáticas",
+    "nivelDificultad": 2,
+    "etiquetaNivel": "Nivel 2 · Desafío Moderado",
+    "operador": "×",
+    "enunciado": "Tu nave recolectó 145 cristales y en la base te entregan otros 78. ¿Cuántos cristales tienes en total?",
+    "opciones": [
+      "213",
+      "223",
+      "233",
+      "212"
+    ],
+    "indiceRespuestaCorrecta": 1,
+    "pista": "Suma primero las unidades (5 + 8), luego las decenas y finalmente las centenas.",
+    "explicacionBreve": "145 + 78 = 223. Sumamos unidades llevándonos uno, luego las decenas y centenas.",
+    "creadaPor": "gemini-3.5-flash-lite",
+    "fechaCreacion": "2026-11-23T03:57:29.484Z"
+  },
+  {
+    "id": 1795406234310,
+    "planeta": "Numérix",
+    "materia": "Matemáticas",
+    "nivelDificultad": 1,
+    "etiquetaNivel": "Nivel 1 · Base (Default)",
+    "operador": "+",
+    "enunciado": "¿Cuánto es 63 + 28?",
+    "opciones": [
+      "91",
+      "81",
+      "92",
+      "89"
+    ],
+    "indiceRespuestaCorrecta": 0,
+    "pista": "Suma primero las decenas (60 + 20) y luego las unidades (3 + 8).",
+    "explicacionBreve": "Al sumar 63 + 28, 3+8=11 (ponemos 1 y llevamos 1), y 6+2+1=9. El resultado es 91.",
+    "creadaPor": "gemini-3.5-flash-lite",
+    "fechaCreacion": "2026-11-23T03:57:13.899Z"
+  },
+  {
     "id": 1001,
     "planeta": "Numérix",
     "materia": "Matemáticas",
@@ -7,7 +67,12 @@
     "etiquetaNivel": "Nivel 1 · Base Orbital",
     "operador": "+",
     "enunciado": "Tu cápsula recolectó 24 cristales azules y 18 cristales dorados. ¿Cuántos cristales tienes en total?",
-    "opciones": ["42", "32", "44", "38"],
+    "opciones": [
+      "42",
+      "32",
+      "44",
+      "38"
+    ],
     "indiceRespuestaCorrecta": 0,
     "pista": "Suma primero las decenas (20 + 10) y luego las unidades (4 + 8).",
     "explicacionBreve": "20 + 10 = 30 y 4 + 8 = 12. Al sumar 30 + 12 obtenemos 42 cristales.",
@@ -22,7 +87,12 @@
     "etiquetaNivel": "Nivel 2 · Propulsión Media",
     "operador": "×",
     "enunciado": "Cada módulo solar produce 14 megavatios. Si activas 6 módulos iguales, ¿cuánta energía generas?",
-    "opciones": ["74", "84", "94", "64"],
+    "opciones": [
+      "74",
+      "84",
+      "94",
+      "64"
+    ],
     "indiceRespuestaCorrecta": 1,
     "pista": "Multiplica 10 × 6 y luego súmale 4 × 6.",
     "explicacionBreve": "10 × 6 = 60 y 4 × 6 = 24. Sumando ambos resultados: 60 + 24 = 84 megavatios.",
@@ -37,7 +107,12 @@
     "etiquetaNivel": "Nivel 3 · Órbita Avanzada",
     "operador": "÷",
     "enunciado": "Repartes 48 baterías cuánticas entre 6 naves por igual y tu nave recibe 5 extra. ¿Cuántas tiene tu nave?",
-    "opciones": ["12", "13", "8", "14"],
+    "opciones": [
+      "12",
+      "13",
+      "8",
+      "14"
+    ],
     "indiceRespuestaCorrecta": 1,
     "pista": "Primero divide 48 ÷ 6 y al resultado súmale 5.",
     "explicacionBreve": "48 ÷ 6 = 8 baterías por nave; más 5 extra son 8 + 5 = 13 baterías.",
@@ -51,7 +126,12 @@
     "nivelDificultad": 2,
     "etiquetaNivel": "Nivel 2 · Propulsión Media",
     "enunciado": "¿Cuál de las siguientes palabras es esdrújula y lleva tilde correctamente?",
-    "opciones": ["Satélite", "Planeta", "Estelar", "Cometa"],
+    "opciones": [
+      "Satélite",
+      "Planeta",
+      "Estelar",
+      "Cometa"
+    ],
     "indiceRespuestaCorrecta": 0,
     "pista": "Busca la palabra cuya fuerza de voz recae en la antepenúltima sílaba.",
     "explicacionBreve": "Sa-té-li-te tiene el acento en la antepenúltima sílaba (té), por eso es esdrújula y siempre lleva tilde.",
@@ -65,7 +145,12 @@
     "nivelDificultad": 1,
     "etiquetaNivel": "Nivel 1 · Base Orbital",
     "enunciado": "¿Qué sinónimo reemplaza mejor a la palabra «brillante» en: «Una estrella brillante iluminó el cielo»?",
-    "opciones": ["Opaca", "Luminosa", "Silenciosa", "Distante"],
+    "opciones": [
+      "Opaca",
+      "Luminosa",
+      "Silenciosa",
+      "Distante"
+    ],
     "indiceRespuestaCorrecta": 1,
     "pista": "Elige la palabra que significa que emite mucha luz.",
     "explicacionBreve": "«Luminosa» expresa el mismo significado que «brillante».",
@@ -79,7 +164,12 @@
     "nivelDificultad": 1,
     "etiquetaNivel": "Nivel 1 · Base Orbital",
     "enunciado": "¿Qué pigmento verde permite a las plantas captar la luz solar para hacer la fotosíntesis?",
-    "opciones": ["Melanina", "Clorofila", "Hemoglobina", "Queratina"],
+    "opciones": [
+      "Melanina",
+      "Clorofila",
+      "Hemoglobina",
+      "Queratina"
+    ],
     "indiceRespuestaCorrecta": 1,
     "pista": "Se encuentra dentro de los cloroplastos de las hojas.",
     "explicacionBreve": "La clorofila da el color verde a las hojas y absorbe la energía del Sol.",
@@ -93,7 +183,12 @@
     "nivelDificultad": 2,
     "etiquetaNivel": "Nivel 2 · Propulsión Media",
     "enunciado": "¿En qué fase del ciclo del agua el vapor enfriado en lo alto forma las nubes?",
-    "opciones": ["Evaporación", "Condensación", "Filtración", "Erosión"],
+    "opciones": [
+      "Evaporación",
+      "Condensación",
+      "Filtración",
+      "Erosión"
+    ],
     "indiceRespuestaCorrecta": 1,
     "pista": "Es el paso de gas (vapor) a gotitas líquidas en el cielo.",
     "explicacionBreve": "Durante la condensación, el vapor de agua se enfría y forma pequeñas gotas que crean las nubes.",
@@ -107,7 +202,12 @@
     "nivelDificultad": 3,
     "etiquetaNivel": "Nivel 3 · Órbita Avanzada",
     "enunciado": "¿Cuál es la estrella situada en el centro de nuestro Sistema Solar alrededor de la cual orbitan los planetas?",
-    "opciones": ["La Luna", "Júpiter", "El Sol", "Sirio"],
+    "opciones": [
+      "La Luna",
+      "Júpiter",
+      "El Sol",
+      "Sirio"
+    ],
     "indiceRespuestaCorrecta": 2,
     "pista": "Nos da luz y calor cada día.",
     "explicacionBreve": "El Sol es nuestra estrella central y su gravedad mantiene en órbita a todos los planetas.",

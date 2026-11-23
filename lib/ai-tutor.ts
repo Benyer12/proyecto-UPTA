@@ -333,6 +333,25 @@ export function generarRetoLetraliaAdaptativo(
   return { id, ...elegido };
 }
 
+const globalForGeminiCooldown = globalThis as unknown as {
+  __geminiModelCooldownUntil?: Map<string, number>;
+};
+
+const geminiModelCooldownUntil =
+  globalForGeminiCooldown.__geminiModelCooldownUntil ?? new Map<string, number>();
+globalForGeminiCooldown.__geminiModelCooldownUntil = geminiModelCooldownUntil;
+
+function calcularCooldownMsPorError429(mensaje: string): number {
+  const lower = mensaje.toLowerCase();
+  if (!lower.includes('429') && !lower.includes('rate limit') && !lower.includes('quota')) {
+    return 0;
+  }
+  if (lower.includes('per day') || lower.includes('daily')) {
+    return 30 * 60 * 1000;
+  }
+  return 60 * 1000;
+}
+
 /**
  * Motor en la nube exclusivo con Google Gemini API (@google/genai):
  * 1) Google AI Studio Cloud (gemini-4-hydrogen, gemini-3.5-flash-lite, gemini-3.1-flash-lite)
@@ -373,6 +392,11 @@ export async function consultarGoogleGemini(
       );
 
       for (const model of modelosGoogle) {
+        const blockedUntil = geminiModelCooldownUntil.get(model) ?? 0;
+        if (Date.now() < blockedUntil) {
+          continue;
+        }
+
         try {
           const interaction = await genai.interactions.create({
             model,
@@ -390,6 +414,10 @@ export async function consultarGoogleGemini(
           }
         } catch (err) {
           ultimoError = err instanceof Error ? err.message : String(err);
+          const cooldownMs = calcularCooldownMsPorError429(ultimoError);
+          if (cooldownMs > 0) {
+            geminiModelCooldownUntil.set(model, Date.now() + cooldownMs);
+          }
           console.warn(`[Google Gemini] Falló modelo ${model}:`, ultimoError);
         }
       }

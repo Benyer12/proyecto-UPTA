@@ -330,20 +330,17 @@ export default function JuegoPage() {
     [aciertos, totalPreguntas, user, guardandoProgreso, levelId, router]
   );
 
-  // Al llegar a la casilla 20, guarda automáticamente el progreso en BD en segundo plano
+  // Actualiza la posición del jugador; cada tablero (Numérix, Letralia, Naturae) guarda
+  // su propio progreso únicamente cuando el estudiante derrota al Jefe Final.
   const handlePositionChange = useCallback(
     (pos: number) => {
       setCurrentPos(pos);
 
-      if (pos + 1 >= 20 && !nivelGuardado) {
-        setNivelGuardado(true);
+      if (!isLetralia && !isNumerix && !isNaturae && pos + 1 >= 20 && !nivelGuardado) {
         setMostrarJefeFinal(true);
-        // Guardamos automáticamente en Supabase sin forzar redirección inmediata
-        // para que cuando el modal interno de TableroIsometrico aparezca, la BD ya esté actualizada
-        handleCompletarJefeFinal(aciertos, totalPreguntas, false);
       }
     },
-    [nivelGuardado, handleCompletarJefeFinal, aciertos, totalPreguntas]
+    [isLetralia, isNumerix, isNaturae, nivelGuardado]
   );
 
   const handleRoll = useCallback(() => {

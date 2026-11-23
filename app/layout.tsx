@@ -6,6 +6,7 @@ import FondoWrapper from './FondoWrapper';
 import { Outfit, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import Header from '../components/Header';
+import MotionProvider from './components/MotionProvider';
 
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-sans' });
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono' });
@@ -26,11 +27,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className={outfit.className}>
-        <div className="scroll-progress-bar" aria-hidden="true" />
-        <FondoWrapper />
-        <PowerSyncInitializer />
-        <Header />
-        <main className="pt-20">{children}</main>
+        <MotionProvider>
+          <div className="scroll-progress-bar" aria-hidden="true" />
+          <FondoWrapper />
+          <PowerSyncInitializer />
+          <Header />
+          <main className="pt-20">{children}</main>
+        </MotionProvider>
       </body>
     </html>
   );

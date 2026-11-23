@@ -1,0 +1,115 @@
+{
+  "planeta": "Letralia",
+  "actualizadoEn": "2026-11-23T03:54:53.736Z",
+  "preguntas": [],
+  "retosLetralia": [
+    {
+      "id": "int-ia-mwsqfk4l-92",
+      "categoria": "ortografia",
+      "palabras": [
+        "El",
+        "explorador",
+        "vio",
+        "una",
+        "nube",
+        "vlanca",
+        "en",
+        "el",
+        "cielo."
+      ],
+      "indiceIntruso": 5,
+      "opciones": [
+        "blanca",
+        "blamca",
+        "vlanka"
+      ],
+      "correcta": "blanca",
+      "pista": "Antes de la letra L siempre se escribe B, nunca V.",
+      "explicacion": "«Blanca» se escribe con b porque va seguida de l (bl)."
+    }
+  ],
+  "retosPuente": [
+    {
+      "id": "ia-pue-1795406093734-62",
+      "enfoque": "sujeto-predicado",
+      "ordenCorrecto": [
+        "La brújula",
+        "astral",
+        "guía",
+        "a los viajeros",
+        "por el cielo"
+      ],
+      "pista": "Empieza por el sujeto con mayúscula: ¿qué guía a los viajeros?",
+      "explicacion": "Sujeto: «La brújula astral». Predicado: «guía a los viajeros por el cielo»."
+    }
+  ],
+  "retosTormenta": [
+    {
+      "id": "ia-tor-1795406093734-19",
+      "tipo": "agudas",
+      "consigna": "¡Activa las 3 palabras AGUDAS en el escudo!",
+      "palabras": [
+        "mamá",
+        "casa",
+        "papel",
+        "nube",
+        "ratón",
+        "libro"
+      ],
+      "correctas": [
+        "mamá",
+        "papel",
+        "ratón"
+      ],
+      "segundos": 18,
+      "pista": "En las agudas la sílaba más fuerte es la última.",
+      "explicacion": "Ma-MÁ, pa-PEL y ra-TÓN llevan la fuerza al final."
+    }
+  ],
+  "retosBossLetralia": [
+    {
+      "id": "ia-bos-1795406093734-24",
+      "titulo": "La constelación de los cuentos",
+      "relato": "El Guardián encendió una linterna azul. «Cada historia que lees vive dentro de {0}, joven explorador», susurró. «Muchos pasaron con prisa sin leer los mapas; {1}, no encontraron la puerta secreta. Quien lee con atención abre puertas invisibles». Enseñanza: {2}.",
+      "fases": [
+        {
+          "titulo": "Sello 1 · Tilde diacrítica",
+          "enunciado": "Elige la palabra correcta para completar el primer espacio.",
+          "opciones": [
+            "ti",
+            "tí"
+          ],
+          "correcta": "ti",
+          "explicacion": "El pronombre «ti» nunca lleva tilde porque no existe otra palabra igual con distinto significado."
+        },
+        {
+          "titulo": "Sello 2 · Conector lógico",
+          "enunciado": "Pasar con prisa causó que no encontraran la puerta. ¿Qué conector une esa causa con su consecuencia?",
+          "opciones": [
+            "por eso",
+            "aunque",
+            "además"
+          ],
+          "correcta": "por eso",
+          "explicacion": "«Por eso» presenta la consecuencia directa de pasar sin leer los mapas."
+        },
+        {
+          "titulo": "Sello 3 · Comprensión lectora",
+          "enunciado": "¿Qué significa que «quien lee con atención abre puertas invisibles»?",
+          "opciones": [
+            "leer con cuidado nos permite descubrir ideas y oportunidades nuevas",
+            "los libros tienen llaves escondidas dentro del papel",
+            "las puertas del santuario no se pueden ver nunca"
+          ],
+          "correcta": "leer con cuidado nos permite descubrir ideas y oportunidades nuevas",
+          "explicacion": "Es una metáfora: leer atentamente nos abre caminos de aprendizaje."
+        }
+      ]
+    }
+  ]
+}e caminos de aprendizaje."
+        }
+      ]
+    }
+  ]
+}

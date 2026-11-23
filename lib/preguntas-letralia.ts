@@ -1,32 +1,32 @@
-/**
- * Banco pedagógico de Letralia / Verbum — Nivel 1 (Archivo Astral)
- * Público: niños de 10 a 12 años (5.º y 6.º de primaria).
+﻿/**
+ * Banco pedagÃ³gico de Letralia / Verbum â€” Nivel 1 (Archivo Astral)
+ * PÃºblico: niÃ±os de 10 a 12 aÃ±os (5.Âº y 6.Âº de primaria).
  *
- * Contiene las 4 mecánicas del "Altar de Decodificación":
- *  1. Caza del Intruso            → ortografía, acentuación y concordancia.
- *  2. Constructor de Puentes       → sintaxis, sujeto/predicado y conectores.
- *  3. Tormenta de Meteoritos       → agudas/graves/esdrújulas, sinónimos/antónimos.
- *  4. Guardián del Vórtice (Boss)  → tilde diacrítica, conectores e inferencia.
+ * Contiene las 4 mecÃ¡nicas del "Altar de DecodificaciÃ³n":
+ *  1. Caza del Intruso            â†’ ortografÃ­a, acentuaciÃ³n y concordancia.
+ *  2. Constructor de Puentes       â†’ sintaxis, sujeto/predicado y conectores.
+ *  3. Tormenta de Meteoritos       â†’ agudas/graves/esdrÃºjulas, sinÃ³nimos/antÃ³nimos.
+ *  4. GuardiÃ¡n del VÃ³rtice (Boss)  â†’ tilde diacrÃ­tica, conectores e inferencia.
  */
 
-/* ────────────────────────────── Tipos ────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Tipos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export type CategoriaIntruso = 'ortografia' | 'acentuacion' | 'concordancia';
 
 export interface RetoIntruso {
   id: string;
   categoria: CategoriaIntruso;
-  /** Oración dividida en bloques (tablillas). */
+  /** OraciÃ³n dividida en bloques (tablillas). */
   palabras: string[];
-  /** Posición de la palabra con error dentro de `palabras`. */
+  /** PosiciÃ³n de la palabra con error dentro de `palabras`. */
   indiceIntruso: number;
   /** Tres piezas de reemplazo (se barajan al mostrarse). */
   opciones: [string, string, string];
   /** Pieza correcta (debe estar incluida en `opciones`). */
   correcta: string;
-  /** Pista breve para el botón AYUDA. */
+  /** Pista breve para el botÃ³n AYUDA. */
   pista: string;
-  /** Explicación formativa que aparece al resolver. */
+  /** ExplicaciÃ³n formativa que aparece al resolver. */
   explicacion: string;
 }
 
@@ -37,7 +37,7 @@ export interface RetoPuenteSintactico {
   enfoque: EnfoquePuente;
   /** Tablillas en el orden correcto (4 a 6). */
   ordenCorrecto: string[];
-  /** Otros órdenes también válidos y coherentes. */
+  /** Otros Ã³rdenes tambiÃ©n vÃ¡lidos y coherentes. */
   ordenesAlternativas?: string[][];
   pista: string;
   explicacion: string;
@@ -74,146 +74,146 @@ export interface RetoGuardianBoss {
   titulo: string;
   /**
    * Relato con tres ranuras selladas: {0}, {1} y {2}.
-   * {0} = tilde diacrítica · {1} = conector lógico · {2} = conclusión/moraleja.
+   * {0} = tilde diacrÃ­tica Â· {1} = conector lÃ³gico Â· {2} = conclusiÃ³n/moraleja.
    */
   relato: string;
   fases: [FaseGuardian, FaseGuardian, FaseGuardian];
 }
 
-/* ─────────────────── Mecánica 1 · Caza del Intruso ─────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ MecÃ¡nica 1 Â· Caza del Intruso â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export const RETOS_INTRUSO: RetoIntruso[] = [
   {
     id: 'int-01',
     categoria: 'ortografia',
-    palabras: ['El', 'explorador', 'hayó', 'un', 'antiguo', 'códice.'],
+    palabras: ['El', 'explorador', 'hayÃ³', 'un', 'antiguo', 'cÃ³dice.'],
     indiceIntruso: 2,
-    opciones: ['halló', 'alló', 'hayo'],
-    correcta: 'halló',
-    pista: 'Piensa en el verbo «hallar», que significa encontrar.',
+    opciones: ['hallÃ³', 'allÃ³', 'hayo'],
+    correcta: 'hallÃ³',
+    pista: 'Piensa en el verbo Â«hallarÂ», que significa encontrar.',
     explicacion:
-      '«Halló» viene del verbo hallar (encontrar) y se escribe con h y ll. «Haya», con y, pertenece al verbo haber.',
+      'Â«HallÃ³Â» viene del verbo hallar (encontrar) y se escribe con h y ll. Â«HayaÂ», con y, pertenece al verbo haber.',
   },
   {
     id: 'int-02',
     categoria: 'ortografia',
-    palabras: ['Mañana', 'iremos', 'a', 'la', 'viblioteca', 'estelar.'],
+    palabras: ['MaÃ±ana', 'iremos', 'a', 'la', 'viblioteca', 'estelar.'],
     indiceIntruso: 4,
     opciones: ['biblioteca', 'vivlioteca', 'bibloteca'],
     correcta: 'biblioteca',
-    pista: 'Las palabras que empiezan por «biblio-» tienen que ver con los libros.',
+    pista: 'Las palabras que empiezan por Â«biblio-Â» tienen que ver con los libros.',
     explicacion:
-      'Las palabras que comienzan con «biblio-» (libro) se escriben con b: biblioteca, bibliografía, bibliotecario.',
+      'Las palabras que comienzan con Â«biblio-Â» (libro) se escriben con b: biblioteca, bibliografÃ­a, bibliotecario.',
   },
   {
     id: 'int-03',
     categoria: 'ortografia',
-    palabras: ['La', 'nave', 'aterrizó', 'sobre', 'una', 'superfisie', 'rocosa.'],
+    palabras: ['La', 'nave', 'aterrizÃ³', 'sobre', 'una', 'superfisie', 'rocosa.'],
     indiceIntruso: 5,
     opciones: ['superficie', 'superfizie', 'superfice'],
     correcta: 'superficie',
-    pista: 'Fíjate en cómo termina: «-icie».',
+    pista: 'FÃ­jate en cÃ³mo termina: Â«-icieÂ».',
     explicacion:
-      'Las palabras terminadas en «-icie» se escriben con c: superficie, planicie, calvicie.',
+      'Las palabras terminadas en Â«-icieÂ» se escriben con c: superficie, planicie, calvicie.',
   },
   {
     id: 'int-04',
     categoria: 'acentuacion',
-    palabras: ['Mi', 'hermano', 'y', 'yo', 'jugábamos', 'en', 'el', 'jardin.'],
+    palabras: ['Mi', 'hermano', 'y', 'yo', 'jugÃ¡bamos', 'en', 'el', 'jardin.'],
     indiceIntruso: 7,
-    opciones: ['jardín', 'járdin', 'jardím'],
-    correcta: 'jardín',
-    pista: 'Pronuncia la palabra en voz alta: ¿dónde suena más fuerte?',
+    opciones: ['jardÃ­n', 'jÃ¡rdin', 'jardÃ­m'],
+    correcta: 'jardÃ­n',
+    pista: 'Pronuncia la palabra en voz alta: Â¿dÃ³nde suena mÃ¡s fuerte?',
     explicacion:
-      '«Jardín» es aguda (la fuerza va en la última sílaba) y termina en n. Las agudas terminadas en n, s o vocal llevan tilde.',
+      'Â«JardÃ­nÂ» es aguda (la fuerza va en la Ãºltima sÃ­laba) y termina en n. Las agudas terminadas en n, s o vocal llevan tilde.',
   },
   {
     id: 'int-05',
     categoria: 'concordancia',
-    palabras: ['Las', 'estrellas', 'brillaba', 'sobre', 'el', 'océano.'],
+    palabras: ['Las', 'estrellas', 'brillaba', 'sobre', 'el', 'ocÃ©ano.'],
     indiceIntruso: 2,
     opciones: ['brillaban', 'brillabas', 'brillamos'],
     correcta: 'brillaban',
-    pista: '¿Cuántas estrellas hay? ¿Una o muchas?',
+    pista: 'Â¿CuÃ¡ntas estrellas hay? Â¿Una o muchas?',
     explicacion:
-      'El sujeto «las estrellas» está en plural, así que el verbo también debe ir en plural: brillaban.',
+      'El sujeto Â«las estrellasÂ» estÃ¡ en plural, asÃ­ que el verbo tambiÃ©n debe ir en plural: brillaban.',
   },
   {
     id: 'int-06',
     categoria: 'ortografia',
-    palabras: ['El', 'astronauta', 'recojió', 'muestras', 'de', 'polvo', 'lunar.'],
+    palabras: ['El', 'astronauta', 'recojiÃ³', 'muestras', 'de', 'polvo', 'lunar.'],
     indiceIntruso: 2,
-    opciones: ['recogió', 'recohió', 'recoxió'],
-    correcta: 'recogió',
-    pista: 'El verbo original es «recoger».',
+    opciones: ['recogiÃ³', 'recohiÃ³', 'recoxiÃ³'],
+    correcta: 'recogiÃ³',
+    pista: 'El verbo original es Â«recogerÂ».',
     explicacion:
-      'Los verbos terminados en «-ger» y «-gir» (recoger, elegir) conservan la g delante de e, i: recogió, eligió.',
+      'Los verbos terminados en Â«-gerÂ» y Â«-girÂ» (recoger, elegir) conservan la g delante de e, i: recogiÃ³, eligiÃ³.',
   },
   {
     id: 'int-07',
     categoria: 'acentuacion',
-    palabras: ['¿Donde', 'guardaste', 'el', 'mapa', 'estelar?'],
+    palabras: ['Â¿Donde', 'guardaste', 'el', 'mapa', 'estelar?'],
     indiceIntruso: 0,
-    opciones: ['¿Dónde', '¿Dondé', '¿Dhonde'],
-    correcta: '¿Dónde',
-    pista: 'Es una pregunta. ¿Qué pasa con las palabras que preguntan?',
+    opciones: ['Â¿DÃ³nde', 'Â¿DondÃ©', 'Â¿Dhonde'],
+    correcta: 'Â¿DÃ³nde',
+    pista: 'Es una pregunta. Â¿QuÃ© pasa con las palabras que preguntan?',
     explicacion:
-      'Las palabras interrogativas y exclamativas (qué, cómo, dónde, cuándo, quién) llevan tilde: ¿Dónde?',
+      'Las palabras interrogativas y exclamativas (quÃ©, cÃ³mo, dÃ³nde, cuÃ¡ndo, quiÃ©n) llevan tilde: Â¿DÃ³nde?',
   },
   {
     id: 'int-08',
     categoria: 'ortografia',
-    palabras: ['El', 'cohete', 'despegó', 'a', 'gran', 'belocidad.'],
+    palabras: ['El', 'cohete', 'despegÃ³', 'a', 'gran', 'belocidad.'],
     indiceIntruso: 5,
     opciones: ['velocidad', 'belosidad', 'velozidad'],
     correcta: 'velocidad',
-    pista: 'Busca una palabra de la misma familia: algo que va muy rápido es...',
+    pista: 'Busca una palabra de la misma familia: algo que va muy rÃ¡pido es...',
     explicacion:
-      '«Velocidad» se escribe con v, igual que «veloz», que es de su misma familia de palabras.',
+      'Â«VelocidadÂ» se escribe con v, igual que Â«velozÂ», que es de su misma familia de palabras.',
   },
   {
     id: 'int-09',
     categoria: 'ortografia',
-    palabras: ['Un', 'cometa', 'atravezó', 'el', 'cielo', 'nocturno.'],
+    palabras: ['Un', 'cometa', 'atravezÃ³', 'el', 'cielo', 'nocturno.'],
     indiceIntruso: 2,
-    opciones: ['atravesó', 'atrabesó', 'atravezo'],
-    correcta: 'atravesó',
-    pista: 'Viene de la palabra «través».',
+    opciones: ['atravesÃ³', 'atrabesÃ³', 'atravezo'],
+    correcta: 'atravesÃ³',
+    pista: 'Viene de la palabra Â«travÃ©sÂ».',
     explicacion:
-      '«Atravesar» viene de «través» y se escribe con s. Por eso decimos: atravesó, atravesamos.',
+      'Â«AtravesarÂ» viene de Â«travÃ©sÂ» y se escribe con s. Por eso decimos: atravesÃ³, atravesamos.',
   },
   {
     id: 'int-10',
     categoria: 'ortografia',
-    palabras: ['Los', 'niños', 'estaban', 'muy', 'felises', 'con', 'el', 'viaje.'],
+    palabras: ['Los', 'niÃ±os', 'estaban', 'muy', 'felises', 'con', 'el', 'viaje.'],
     indiceIntruso: 4,
-    opciones: ['felices', 'felizes', 'felíces'],
+    opciones: ['felices', 'felizes', 'felÃ­ces'],
     correcta: 'felices',
-    pista: 'El singular es «feliz». ¿Qué le pasa a la z en el plural?',
+    pista: 'El singular es Â«felizÂ». Â¿QuÃ© le pasa a la z en el plural?',
     explicacion:
-      'Cuando una palabra termina en z, al formar el plural la z cambia a c: feliz → felices, lápiz → lápices.',
+      'Cuando una palabra termina en z, al formar el plural la z cambia a c: feliz â†’ felices, lÃ¡piz â†’ lÃ¡pices.',
   },
   {
     id: 'int-11',
     categoria: 'concordancia',
-    palabras: ['Nosotros', 'llegó', 'temprano', 'al', 'planetario.'],
+    palabras: ['Nosotros', 'llegÃ³', 'temprano', 'al', 'planetario.'],
     indiceIntruso: 1,
     opciones: ['llegamos', 'llegaron', 'llegaste'],
     correcta: 'llegamos',
-    pista: '¿Quiénes llegaron? Mira el sujeto de la oración.',
+    pista: 'Â¿QuiÃ©nes llegaron? Mira el sujeto de la oraciÃ³n.',
     explicacion:
-      'Con el sujeto «nosotros», el verbo debe ir en primera persona del plural: nosotros llegamos.',
+      'Con el sujeto Â«nosotrosÂ», el verbo debe ir en primera persona del plural: nosotros llegamos.',
   },
   {
     id: 'int-12',
     categoria: 'ortografia',
-    palabras: ['El', 'guardián', 'nos', 'saludó', 'con', 'un', 'jesto', 'amable.'],
+    palabras: ['El', 'guardiÃ¡n', 'nos', 'saludÃ³', 'con', 'un', 'jesto', 'amable.'],
     indiceIntruso: 6,
     opciones: ['gesto', 'jestto', 'guesto'],
     correcta: 'gesto',
-    pista: 'Piensa en «gesticular», mover las manos al hablar.',
+    pista: 'Piensa en Â«gesticularÂ», mover las manos al hablar.',
     explicacion:
-      '«Gesto» se escribe con g, como gesticular. Antes de e, la g suena igual que la j.',
+      'Â«GestoÂ» se escribe con g, como gesticular. Antes de e, la g suena igual que la j.',
   },
   {
     id: 'int-13',
@@ -222,272 +222,299 @@ export const RETOS_INTRUSO: RetoIntruso[] = [
     indiceIntruso: 6,
     opciones: ['silencio', 'cilencio', 'silenzio'],
     correcta: 'silencio',
-    pista: 'Fíjate en la terminación «-encio».',
+    pista: 'FÃ­jate en la terminaciÃ³n Â«-encioÂ».',
     explicacion:
-      'Las palabras terminadas en «-encio» y «-encia» se escriben con c: silencio, paciencia, ciencia.',
+      'Las palabras terminadas en Â«-encioÂ» y Â«-enciaÂ» se escriben con c: silencio, paciencia, ciencia.',
   },
   {
     id: 'int-14',
     categoria: 'acentuacion',
-    palabras: ['El', 'arbol', 'más', 'alto', 'tiene', 'mil', 'años.'],
+    palabras: ['El', 'arbol', 'mÃ¡s', 'alto', 'tiene', 'mil', 'aÃ±os.'],
     indiceIntruso: 1,
-    opciones: ['árbol', 'arból', 'árból'],
-    correcta: 'árbol',
-    pista: 'Es una palabra grave (llana). ¿En qué letra termina?',
+    opciones: ['Ã¡rbol', 'arbÃ³l', 'Ã¡rbÃ³l'],
+    correcta: 'Ã¡rbol',
+    pista: 'Es una palabra grave (llana). Â¿En quÃ© letra termina?',
     explicacion:
-      '«Árbol» es grave y termina en l (no en n, s ni vocal); por eso lleva tilde en la sílaba ár-.',
+      'Â«ÃrbolÂ» es grave y termina en l (no en n, s ni vocal); por eso lleva tilde en la sÃ­laba Ã¡r-.',
   },
   {
     id: 'int-15',
     categoria: 'ortografia',
-    palabras: ['Hoy', 'hechamos', 'las', 'cartas', 'al', 'buzón', 'espacial.'],
+    palabras: ['Hoy', 'hechamos', 'las', 'cartas', 'al', 'buzÃ³n', 'espacial.'],
     indiceIntruso: 1,
-    opciones: ['echamos', 'echámos', 'hecamos'],
+    opciones: ['echamos', 'echÃ¡mos', 'hecamos'],
     correcta: 'echamos',
-    pista: '¿Viene del verbo «hacer» o del verbo «echar»?',
+    pista: 'Â¿Viene del verbo Â«hacerÂ» o del verbo Â«echarÂ»?',
     explicacion:
-      '«Echar» (lanzar, meter) se escribe sin h: echamos. «Hecho», con h, viene del verbo hacer.',
+      'Â«EcharÂ» (lanzar, meter) se escribe sin h: echamos. Â«HechoÂ», con h, viene del verbo hacer.',
   },
   {
     id: 'int-16',
     categoria: 'concordancia',
-    palabras: ['La', 'nave', 'plateado', 'llegó', 'a', 'Letralia.'],
+    palabras: ['La', 'nave', 'plateado', 'llegÃ³', 'a', 'Letralia.'],
     indiceIntruso: 2,
     opciones: ['plateada', 'plateados', 'plateadas'],
     correcta: 'plateada',
-    pista: '«Nave» es femenino y singular. El adjetivo debe acompañarla.',
+    pista: 'Â«NaveÂ» es femenino y singular. El adjetivo debe acompaÃ±arla.',
     explicacion:
-      'El adjetivo concuerda en género y número con el sustantivo: «la nave» (femenino, singular) → plateada.',
+      'El adjetivo concuerda en gÃ©nero y nÃºmero con el sustantivo: Â«la naveÂ» (femenino, singular) â†’ plateada.',
   },
   // === IA_RETOS_LETRALIA_START ===
+  {
+    id: "ia-int-1",
+    categoria: "ortografia",
+    palabras: ["El","explorador","vio","una","nube","vlanca","en","el","cielo."],
+    indiceIntruso: 5,
+    opciones: ["blanca","blamca","vlanka"],
+    correcta: "blanca",
+    pista: "Antes de la letra L siempre se escribe B, nunca V.",
+    explicacion: "Â«BlancaÂ» se escribe con b porque va seguida de l (bl).",
+  },
   // === IA_RETOS_LETRALIA_END ===
 ];
 
-/* ─────────────── Mecánica 2 · Constructor de Puentes Sintácticos ─────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ MecÃ¡nica 2 Â· Constructor de Puentes SintÃ¡cticos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export const RETOS_PUENTE: RetoPuenteSintactico[] = [
   {
     id: 'pue-01',
     enfoque: 'sujeto-predicado',
-    ordenCorrecto: ['El', 'archivo', 'mágico', 'de Letralia', 'guarda', 'secretos'],
-    ordenesAlternativas: [['El', 'mágico', 'archivo', 'de Letralia', 'guarda', 'secretos']],
-    pista: 'Empieza por la palabra con mayúscula y piensa: ¿quién guarda secretos?',
+    ordenCorrecto: ['El', 'archivo', 'mÃ¡gico', 'de Letralia', 'guarda', 'secretos'],
+    ordenesAlternativas: [['El', 'mÃ¡gico', 'archivo', 'de Letralia', 'guarda', 'secretos']],
+    pista: 'Empieza por la palabra con mayÃºscula y piensa: Â¿quiÃ©n guarda secretos?',
     explicacion:
-      'Sujeto: «El archivo mágico de Letralia» (de quién se habla). Predicado: «guarda secretos» (lo que hace).',
+      'Sujeto: Â«El archivo mÃ¡gico de LetraliaÂ» (de quiÃ©n se habla). Predicado: Â«guarda secretosÂ» (lo que hace).',
   },
   {
     id: 'pue-02',
     enfoque: 'sujeto-predicado',
-    ordenCorrecto: ['El espacio', 'está', 'lleno', 'de estrellas', 'brillantes'],
-    pista: 'Primero el sujeto (¿qué está lleno?) y después lo que se dice de él.',
+    ordenCorrecto: ['El espacio', 'estÃ¡', 'lleno', 'de estrellas', 'brillantes'],
+    pista: 'Primero el sujeto (Â¿quÃ© estÃ¡ lleno?) y despuÃ©s lo que se dice de Ã©l.',
     explicacion:
-      'El sujeto es «El espacio». El predicado «está lleno de estrellas brillantes» describe cómo es.',
+      'El sujeto es Â«El espacioÂ». El predicado Â«estÃ¡ lleno de estrellas brillantesÂ» describe cÃ³mo es.',
   },
   {
     id: 'pue-03',
     enfoque: 'conectores',
-    ordenCorrecto: ['Estudié', 'mucho;', 'por lo tanto,', 'aprobé', 'el examen'],
-    pista: '«Por lo tanto» anuncia una consecuencia. ¿Qué pasó gracias a estudiar?',
+    ordenCorrecto: ['EstudiÃ©', 'mucho;', 'por lo tanto,', 'aprobÃ©', 'el examen'],
+    pista: 'Â«Por lo tantoÂ» anuncia una consecuencia. Â¿QuÃ© pasÃ³ gracias a estudiar?',
     explicacion:
-      '«Por lo tanto» une una causa (estudié mucho) con su consecuencia (aprobé el examen).',
+      'Â«Por lo tantoÂ» une una causa (estudiÃ© mucho) con su consecuencia (aprobÃ© el examen).',
   },
   {
     id: 'pue-04',
     enfoque: 'conectores',
-    ordenCorrecto: ['Llovía', 'con fuerza;', 'sin embargo,', 'salimos', 'a explorar'],
-    pista: '«Sin embargo» une dos ideas que parecen opuestas.',
+    ordenCorrecto: ['LlovÃ­a', 'con fuerza;', 'sin embargo,', 'salimos', 'a explorar'],
+    pista: 'Â«Sin embargoÂ» une dos ideas que parecen opuestas.',
     explicacion:
-      '«Sin embargo» presenta una idea contraria a lo esperado: llovía, pero aun así salimos a explorar.',
+      'Â«Sin embargoÂ» presenta una idea contraria a lo esperado: llovÃ­a, pero aun asÃ­ salimos a explorar.',
   },
   {
     id: 'pue-05',
     enfoque: 'conectores',
-    ordenCorrecto: ['La viajera', 'lee cuentos', 'y,', 'además,', 'escribe', 'poemas'],
-    ordenesAlternativas: [['La viajera', 'escribe', 'poemas', 'y,', 'además,', 'lee cuentos']],
-    pista: '«Además» suma una idea nueva a otra que ya dijiste.',
+    ordenCorrecto: ['La viajera', 'lee cuentos', 'y,', 'ademÃ¡s,', 'escribe', 'poemas'],
+    ordenesAlternativas: [['La viajera', 'escribe', 'poemas', 'y,', 'ademÃ¡s,', 'lee cuentos']],
+    pista: 'Â«AdemÃ¡sÂ» suma una idea nueva a otra que ya dijiste.',
     explicacion:
-      '«Además» es un conector de adición: agrega una acción más (escribir poemas) a la primera (leer cuentos).',
+      'Â«AdemÃ¡sÂ» es un conector de adiciÃ³n: agrega una acciÃ³n mÃ¡s (escribir poemas) a la primera (leer cuentos).',
   },
   {
     id: 'pue-06',
     enfoque: 'coherencia',
     ordenCorrecto: ['Los planetas', 'giran', 'sin parar', 'alrededor', 'del Sol'],
     ordenesAlternativas: [['Los planetas', 'giran', 'alrededor', 'del Sol', 'sin parar']],
-    pista: '¿Qué hacen los planetas? ¿Alrededor de qué?',
+    pista: 'Â¿QuÃ© hacen los planetas? Â¿Alrededor de quÃ©?',
     explicacion:
-      'Sujeto: «Los planetas». Verbo: «giran». «Alrededor del Sol» y «sin parar» indican dónde y cómo giran.',
+      'Sujeto: Â«Los planetasÂ». Verbo: Â«giranÂ». Â«Alrededor del SolÂ» y Â«sin pararÂ» indican dÃ³nde y cÃ³mo giran.',
   },
   {
     id: 'pue-07',
     enfoque: 'sujeto-predicado',
-    ordenCorrecto: ['Mi abuela', 'me regaló', 'un libro', 'de aventuras', 'espaciales'],
-    pista: '¿Quién hizo el regalo? Empieza por ahí.',
+    ordenCorrecto: ['Mi abuela', 'me regalÃ³', 'un libro', 'de aventuras', 'espaciales'],
+    pista: 'Â¿QuiÃ©n hizo el regalo? Empieza por ahÃ­.',
     explicacion:
-      'El sujeto «Mi abuela» realiza la acción. «Me regaló un libro de aventuras espaciales» es el predicado.',
+      'El sujeto Â«Mi abuelaÂ» realiza la acciÃ³n. Â«Me regalÃ³ un libro de aventuras espacialesÂ» es el predicado.',
   },
   {
     id: 'pue-08',
     enfoque: 'conectores',
-    ordenCorrecto: ['No encontraba', 'la llave;', 'por eso,', 'pedí ayuda', 'al guardián'],
-    pista: '«Por eso» introduce lo que hiciste a causa de un problema.',
+    ordenCorrecto: ['No encontraba', 'la llave;', 'por eso,', 'pedÃ­ ayuda', 'al guardiÃ¡n'],
+    pista: 'Â«Por esoÂ» introduce lo que hiciste a causa de un problema.',
     explicacion:
-      'Primero está el problema (no encontraba la llave) y «por eso» introduce la consecuencia (pedí ayuda).',
+      'Primero estÃ¡ el problema (no encontraba la llave) y Â«por esoÂ» introduce la consecuencia (pedÃ­ ayuda).',
   },
   {
     id: 'pue-09',
     enfoque: 'coherencia',
-    ordenCorrecto: ['Aunque', 'estaba cansado,', 'el explorador', 'siguió', 'caminando'],
-    pista: '«Aunque» va al inicio y presenta una dificultad.',
+    ordenCorrecto: ['Aunque', 'estaba cansado,', 'el explorador', 'siguiÃ³', 'caminando'],
+    pista: 'Â«AunqueÂ» va al inicio y presenta una dificultad.',
     explicacion:
-      '«Aunque» introduce un obstáculo (estaba cansado) que no impide la acción principal (siguió caminando).',
+      'Â«AunqueÂ» introduce un obstÃ¡culo (estaba cansado) que no impide la acciÃ³n principal (siguiÃ³ caminando).',
   },
   {
     id: 'pue-10',
     enfoque: 'coherencia',
     ordenCorrecto: ['Las ballenas', 'cantan', 'bajo el mar', 'para comunicarse'],
     ordenesAlternativas: [['Las ballenas', 'cantan', 'para comunicarse', 'bajo el mar']],
-    pista: '¿Quiénes cantan? ¿Dónde? ¿Para qué?',
+    pista: 'Â¿QuiÃ©nes cantan? Â¿DÃ³nde? Â¿Para quÃ©?',
     explicacion:
-      'La oración responde: ¿quién? (las ballenas), ¿qué hacen? (cantan), ¿dónde? (bajo el mar) y ¿para qué? (para comunicarse).',
+      'La oraciÃ³n responde: Â¿quiÃ©n? (las ballenas), Â¿quÃ© hacen? (cantan), Â¿dÃ³nde? (bajo el mar) y Â¿para quÃ©? (para comunicarse).',
   },
   // === IA_PUENTES_LETRALIA_START ===
+  {
+    id: "ia-pue-1",
+    enfoque: "sujeto-predicado",
+    ordenCorrecto: ["La brÃºjula","astral","guÃ­a","a los viajeros","por el cielo"],
+    pista: "Empieza por el sujeto con mayÃºscula: Â¿quÃ© guÃ­a a los viajeros?",
+    explicacion: "Sujeto: Â«La brÃºjula astralÂ». Predicado: Â«guÃ­a a los viajeros por el cieloÂ».",
+  },
   // === IA_PUENTES_LETRALIA_END ===
 ];
 
-/* ─────────────── Mecánica 3 · Tormenta de Meteoritos Acústicos ─────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ MecÃ¡nica 3 Â· Tormenta de Meteoritos AcÃºsticos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export const RETOS_TORMENTA: RetoTormenta[] = [
   {
     id: 'tor-01',
     tipo: 'esdrujulas',
-    consigna: '¡Activa en el Altar las 3 palabras ESDRÚJULAS antes de que pase la tormenta!',
-    palabras: ['brújula', 'camino', 'cántico', 'reloj', 'pájaro', 'papel'],
-    correctas: ['brújula', 'cántico', 'pájaro'],
+    consigna: 'Â¡Activa en el Altar las 3 palabras ESDRÃšJULAS antes de que pase la tormenta!',
+    palabras: ['brÃºjula', 'camino', 'cÃ¡ntico', 'reloj', 'pÃ¡jaro', 'papel'],
+    correctas: ['brÃºjula', 'cÃ¡ntico', 'pÃ¡jaro'],
     segundos: 18,
-    pista: 'Las esdrújulas suenan fuerte en la antepenúltima sílaba y SIEMPRE llevan tilde.',
+    pista: 'Las esdrÃºjulas suenan fuerte en la antepenÃºltima sÃ­laba y SIEMPRE llevan tilde.',
     explicacion:
-      'Brú-ju-la, cán-ti-co y pá-ja-ro son esdrújulas: la fuerza está en la antepenúltima sílaba y siempre llevan tilde.',
+      'BrÃº-ju-la, cÃ¡n-ti-co y pÃ¡-ja-ro son esdrÃºjulas: la fuerza estÃ¡ en la antepenÃºltima sÃ­laba y siempre llevan tilde.',
   },
   {
     id: 'tor-02',
     tipo: 'agudas',
-    consigna: '¡Atrapa las 3 palabras AGUDAS antes de que pase la tormenta!',
-    palabras: ['canción', 'mesa', 'reloj', 'árbol', 'café', 'libro'],
-    correctas: ['canción', 'reloj', 'café'],
+    consigna: 'Â¡Atrapa las 3 palabras AGUDAS antes de que pase la tormenta!',
+    palabras: ['canciÃ³n', 'mesa', 'reloj', 'Ã¡rbol', 'cafÃ©', 'libro'],
+    correctas: ['canciÃ³n', 'reloj', 'cafÃ©'],
     segundos: 18,
-    pista: 'En las agudas, la fuerza de la voz cae en la ÚLTIMA sílaba.',
+    pista: 'En las agudas, la fuerza de la voz cae en la ÃšLTIMA sÃ­laba.',
     explicacion:
-      'Can-CIÓN, re-LOJ y ca-FÉ son agudas. «Reloj» no lleva tilde porque termina en j (no en n, s o vocal).',
+      'Can-CIÃ“N, re-LOJ y ca-FÃ‰ son agudas. Â«RelojÂ» no lleva tilde porque termina en j (no en n, s o vocal).',
   },
   {
     id: 'tor-03',
     tipo: 'graves',
-    consigna: '¡Encaja las 3 palabras GRAVES (llanas) en el escudo del Altar!',
-    palabras: ['lápiz', 'sofá', 'fácil', 'murciélago', 'cama', 'balón'],
-    correctas: ['lápiz', 'fácil', 'cama'],
+    consigna: 'Â¡Encaja las 3 palabras GRAVES (llanas) en el escudo del Altar!',
+    palabras: ['lÃ¡piz', 'sofÃ¡', 'fÃ¡cil', 'murciÃ©lago', 'cama', 'balÃ³n'],
+    correctas: ['lÃ¡piz', 'fÃ¡cil', 'cama'],
     segundos: 18,
-    pista: 'En las graves, la fuerza cae en la PENÚLTIMA sílaba.',
+    pista: 'En las graves, la fuerza cae en la PENÃšLTIMA sÃ­laba.',
     explicacion:
-      'LÁ-piz, FÁ-cil y CA-ma son graves. «Cama» no lleva tilde porque las graves terminadas en vocal no la llevan.',
+      'LÃ-piz, FÃ-cil y CA-ma son graves. Â«CamaÂ» no lleva tilde porque las graves terminadas en vocal no la llevan.',
   },
   {
     id: 'tor-04',
     tipo: 'sinonimos',
-    consigna: '¡Encuentra 3 SINÓNIMOS de «alegre» antes de que pase la tormenta!',
+    consigna: 'Â¡Encuentra 3 SINÃ“NIMOS de Â«alegreÂ» antes de que pase la tormenta!',
     palabras: ['contento', 'triste', 'feliz', 'enojado', 'dichoso', 'cansado'],
     correctas: ['contento', 'feliz', 'dichoso'],
     segundos: 18,
-    pista: 'Un sinónimo significa lo MISMO o casi lo mismo.',
+    pista: 'Un sinÃ³nimo significa lo MISMO o casi lo mismo.',
     explicacion:
-      'Contento, feliz y dichoso significan casi lo mismo que «alegre»: son sinónimos.',
+      'Contento, feliz y dichoso significan casi lo mismo que Â«alegreÂ»: son sinÃ³nimos.',
   },
   {
     id: 'tor-05',
     tipo: 'antonimos',
-    consigna: '¡Atrapa 3 ANTÓNIMOS de «valiente» antes de que pase la tormenta!',
+    consigna: 'Â¡Atrapa 3 ANTÃ“NIMOS de Â«valienteÂ» antes de que pase la tormenta!',
     palabras: ['miedoso', 'audaz', 'cobarde', 'temeroso', 'heroico', 'osado'],
     correctas: ['miedoso', 'cobarde', 'temeroso'],
     segundos: 18,
-    pista: 'Un antónimo significa lo CONTRARIO.',
+    pista: 'Un antÃ³nimo significa lo CONTRARIO.',
     explicacion:
-      'Miedoso, cobarde y temeroso expresan lo contrario de «valiente». Audaz, heroico y osado son sinónimos.',
+      'Miedoso, cobarde y temeroso expresan lo contrario de Â«valienteÂ». Audaz, heroico y osado son sinÃ³nimos.',
   },
   {
     id: 'tor-06',
     tipo: 'esdrujulas',
-    consigna: '¡Rescata las 3 palabras ESDRÚJULAS de la lluvia de meteoritos!',
-    palabras: ['música', 'planeta', 'cámara', 'número', 'estrella', 'nave'],
-    correctas: ['música', 'cámara', 'número'],
+    consigna: 'Â¡Rescata las 3 palabras ESDRÃšJULAS de la lluvia de meteoritos!',
+    palabras: ['mÃºsica', 'planeta', 'cÃ¡mara', 'nÃºmero', 'estrella', 'nave'],
+    correctas: ['mÃºsica', 'cÃ¡mara', 'nÃºmero'],
     segundos: 18,
-    pista: 'Busca las que tienen tilde en la antepenúltima sílaba.',
+    pista: 'Busca las que tienen tilde en la antepenÃºltima sÃ­laba.',
     explicacion:
-      'MÚ-si-ca, CÁ-ma-ra y NÚ-me-ro son esdrújulas. Planeta, estrella y nave son graves.',
+      'MÃš-si-ca, CÃ-ma-ra y NÃš-me-ro son esdrÃºjulas. Planeta, estrella y nave son graves.',
   },
   {
     id: 'tor-07',
     tipo: 'sinonimos',
-    consigna: '¡Encuentra 3 SINÓNIMOS de «rápido» antes de que pase la tormenta!',
+    consigna: 'Â¡Encuentra 3 SINÃ“NIMOS de Â«rÃ¡pidoÂ» antes de que pase la tormenta!',
     palabras: ['veloz', 'lento', 'ligero', 'pesado', 'raudo', 'tranquilo'],
     correctas: ['veloz', 'ligero', 'raudo'],
     segundos: 18,
-    pista: '¿Qué palabras describen algo que se mueve muy deprisa?',
+    pista: 'Â¿QuÃ© palabras describen algo que se mueve muy deprisa?',
     explicacion:
-      'Veloz, ligero y raudo significan casi lo mismo que «rápido». Lento y pesado son sus contrarios.',
+      'Veloz, ligero y raudo significan casi lo mismo que Â«rÃ¡pidoÂ». Lento y pesado son sus contrarios.',
   },
   {
     id: 'tor-08',
     tipo: 'agudas',
-    consigna: '¡Activa las 3 palabras AGUDAS en el escudo del Altar!',
-    palabras: ['compás', 'lunes', 'jabón', 'cráter', 'sillón', 'Marte'],
-    correctas: ['compás', 'jabón', 'sillón'],
+    consigna: 'Â¡Activa las 3 palabras AGUDAS en el escudo del Altar!',
+    palabras: ['compÃ¡s', 'lunes', 'jabÃ³n', 'crÃ¡ter', 'sillÃ³n', 'Marte'],
+    correctas: ['compÃ¡s', 'jabÃ³n', 'sillÃ³n'],
     segundos: 18,
-    pista: 'Lee cada palabra en voz alta y fíjate si la fuerza cae al final.',
+    pista: 'Lee cada palabra en voz alta y fÃ­jate si la fuerza cae al final.',
     explicacion:
-      'Com-PÁS, ja-BÓN y si-LLÓN son agudas terminadas en s o n, por eso llevan tilde.',
+      'Com-PÃS, ja-BÃ“N y si-LLÃ“N son agudas terminadas en s o n, por eso llevan tilde.',
   },
   {
     id: 'tor-09',
     tipo: 'antonimos',
-    consigna: '¡Atrapa 3 ANTÓNIMOS de «oscuro» antes de que pase la tormenta!',
-    palabras: ['claro', 'sombrío', 'luminoso', 'negro', 'brillante', 'tenebroso'],
+    consigna: 'Â¡Atrapa 3 ANTÃ“NIMOS de Â«oscuroÂ» antes de que pase la tormenta!',
+    palabras: ['claro', 'sombrÃ­o', 'luminoso', 'negro', 'brillante', 'tenebroso'],
     correctas: ['claro', 'luminoso', 'brillante'],
     segundos: 18,
     pista: 'Busca palabras relacionadas con la luz.',
     explicacion:
-      'Claro, luminoso y brillante son lo contrario de «oscuro». Sombrío y tenebroso son sus sinónimos.',
+      'Claro, luminoso y brillante son lo contrario de Â«oscuroÂ». SombrÃ­o y tenebroso son sus sinÃ³nimos.',
   },
   // === IA_TORMENTA_LETRALIA_START ===
+  {
+    id: "ia-tor-1",
+    tipo: "agudas",
+    consigna: "Â¡Activa las 3 palabras AGUDAS en el escudo!",
+    palabras: ["mamÃ¡","casa","papel","nube","ratÃ³n","libro"],
+    correctas: ["mamÃ¡","papel","ratÃ³n"],
+    segundos: 18,
+    pista: "En las agudas la sÃ­laba mÃ¡s fuerte es la Ãºltima.",
+    explicacion: "Ma-MÃ, pa-PEL y ra-TÃ“N llevan la fuerza al final.",
+  },
   // === IA_TORMENTA_LETRALIA_END ===
 ];
 
-/* ─────────────── Mecánica 4 · El Guardián del Vórtice Gramatical ─────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ MecÃ¡nica 4 Â· El GuardiÃ¡n del VÃ³rtice Gramatical â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export const RETOS_GUARDIAN: RetoGuardianBoss[] = [
   {
     id: 'bos-01',
     titulo: 'Las semillas de estrellas',
     relato:
-      '«Viajero, {0} has demostrado valor al llegar hasta aquí», dijo el Guardián con voz de trueno suave. «Hace mucho, los habitantes de Letralia dejaron de leer; {1}, las palabras se apagaron una a una como velas al viento. Pero tú las has despertado. Recuerda siempre: las palabras son semillas de estrellas». Moraleja: {2}.',
+      'Â«Viajero, {0} has demostrado valor al llegar hasta aquÃ­Â», dijo el GuardiÃ¡n con voz de trueno suave. Â«Hace mucho, los habitantes de Letralia dejaron de leer; {1}, las palabras se apagaron una a una como velas al viento. Pero tÃº las has despertado. Recuerda siempre: las palabras son semillas de estrellasÂ». Moraleja: {2}.',
     fases: [
       {
-        titulo: 'Sello 1 · Tilde diacrítica',
-        enunciado: 'Elige la pieza correcta para la primera ranura del códice.',
-        opciones: ['tú', 'tu'],
-        correcta: 'tú',
+        titulo: 'Sello 1 Â· Tilde diacrÃ­tica',
+        enunciado: 'Elige la pieza correcta para la primera ranura del cÃ³dice.',
+        opciones: ['tÃº', 'tu'],
+        correcta: 'tÃº',
         explicacion:
-          '«Tú» con tilde es un pronombre: señala a la persona (tú has demostrado). «Tu» sin tilde indica pertenencia: tu mochila.',
+          'Â«TÃºÂ» con tilde es un pronombre: seÃ±ala a la persona (tÃº has demostrado). Â«TuÂ» sin tilde indica pertenencia: tu mochila.',
       },
       {
-        titulo: 'Sello 2 · Conector lógico',
-        enunciado: 'Dejar de leer provocó que las palabras se apagaran. ¿Qué conector une la causa con su consecuencia?',
+        titulo: 'Sello 2 Â· Conector lÃ³gico',
+        enunciado: 'Dejar de leer provocÃ³ que las palabras se apagaran. Â¿QuÃ© conector une la causa con su consecuencia?',
         opciones: ['por eso', 'sin embargo', 'aunque'],
         correcta: 'por eso',
         explicacion:
-          '«Por eso» introduce una consecuencia: como dejaron de leer, las palabras se apagaron.',
+          'Â«Por esoÂ» introduce una consecuencia: como dejaron de leer, las palabras se apagaron.',
       },
       {
-        titulo: 'Sello 3 · Comprensión e inferencia',
-        enunciado: '¿Qué quiere decir el Guardián con «las palabras son semillas de estrellas»?',
+        titulo: 'Sello 3 Â· ComprensiÃ³n e inferencia',
+        enunciado: 'Â¿QuÃ© quiere decir el GuardiÃ¡n con Â«las palabras son semillas de estrellasÂ»?',
         opciones: [
           'al cuidar las palabras, crecen las ideas y el conocimiento',
           'las estrellas nacen de semillas de plantas',
@@ -495,7 +522,7 @@ export const RETOS_GUARDIAN: RetoGuardianBoss[] = [
         ],
         correcta: 'al cuidar las palabras, crecen las ideas y el conocimiento',
         explicacion:
-          'Es una metáfora: así como una semilla crece, las palabras que leemos y cuidamos hacen crecer nuestras ideas.',
+          'Es una metÃ¡fora: asÃ­ como una semilla crece, las palabras que leemos y cuidamos hacen crecer nuestras ideas.',
       },
     ],
   },
@@ -503,90 +530,129 @@ export const RETOS_GUARDIAN: RetoGuardianBoss[] = [
     id: 'bos-02',
     titulo: 'El faro que nunca duerme',
     relato:
-      'El Guardián cerró el gran libro y sonrió. «Yo no {0} quién escribió este códice, pero estoy seguro de que cada lector le añade un poco de luz. Has resuelto todos los acertijos del camino; {1}, mereces la llave del Archivo. Desde hoy, el Archivo Astral será un faro que nunca dormirá». Conclusión: {2}.',
+      'El GuardiÃ¡n cerrÃ³ el gran libro y sonriÃ³. Â«Yo no {0} quiÃ©n escribiÃ³ este cÃ³dice, pero estoy seguro de que cada lector le aÃ±ade un poco de luz. Has resuelto todos los acertijos del camino; {1}, mereces la llave del Archivo. Desde hoy, el Archivo Astral serÃ¡ un faro que nunca dormirÃ¡Â». ConclusiÃ³n: {2}.',
     fases: [
       {
-        titulo: 'Sello 1 · Tilde diacrítica',
-        enunciado: 'Elige la pieza correcta para la primera ranura del códice.',
-        opciones: ['sé', 'se'],
-        correcta: 'sé',
+        titulo: 'Sello 1 Â· Tilde diacrÃ­tica',
+        enunciado: 'Elige la pieza correcta para la primera ranura del cÃ³dice.',
+        opciones: ['sÃ©', 'se'],
+        correcta: 'sÃ©',
         explicacion:
-          '«Sé» con tilde es del verbo saber (yo no sé). «Se» sin tilde es un pronombre: el libro se cerró.',
+          'Â«SÃ©Â» con tilde es del verbo saber (yo no sÃ©). Â«SeÂ» sin tilde es un pronombre: el libro se cerrÃ³.',
       },
       {
-        titulo: 'Sello 2 · Conector lógico',
-        enunciado: 'Resolver los acertijos tiene como resultado ganar la llave. ¿Qué conector lo expresa?',
+        titulo: 'Sello 2 Â· Conector lÃ³gico',
+        enunciado: 'Resolver los acertijos tiene como resultado ganar la llave. Â¿QuÃ© conector lo expresa?',
         opciones: ['por lo tanto', 'sin embargo', 'aunque'],
         correcta: 'por lo tanto',
         explicacion:
-          '«Por lo tanto» presenta una consecuencia lógica: resolviste los acertijos y, como resultado, mereces la llave.',
+          'Â«Por lo tantoÂ» presenta una consecuencia lÃ³gica: resolviste los acertijos y, como resultado, mereces la llave.',
       },
       {
-        titulo: 'Sello 3 · Comprensión e inferencia',
-        enunciado: '¿Qué significa que «el Archivo Astral será un faro que nunca dormirá»?',
+        titulo: 'Sello 3 Â· ComprensiÃ³n e inferencia',
+        enunciado: 'Â¿QuÃ© significa que Â«el Archivo Astral serÃ¡ un faro que nunca dormirÃ¡Â»?',
         opciones: [
-          'seguirá guiando e iluminando a quienes quieran aprender',
-          'el Archivo se convertirá en una torre junto al mar',
-          'el Guardián ya no podrá dormir nunca',
+          'seguirÃ¡ guiando e iluminando a quienes quieran aprender',
+          'el Archivo se convertirÃ¡ en una torre junto al mar',
+          'el GuardiÃ¡n ya no podrÃ¡ dormir nunca',
         ],
-        correcta: 'seguirá guiando e iluminando a quienes quieran aprender',
+        correcta: 'seguirÃ¡ guiando e iluminando a quienes quieran aprender',
         explicacion:
-          'Un faro guía a los barcos en la oscuridad. El Archivo, como un faro, guiará siempre a los lectores con su conocimiento.',
+          'Un faro guÃ­a a los barcos en la oscuridad. El Archivo, como un faro, guiarÃ¡ siempre a los lectores con su conocimiento.',
       },
     ],
   },
   {
     id: 'bos-03',
-    titulo: 'El río de tinta',
+    titulo: 'El rÃ­o de tinta',
     relato:
-      'Cuando el viajero tocó la puerta de cristal, el Guardián abrió los ojos. «Un sabio antiguo escribió este códice, y {0} lo guardó aquí para ti. Muchos quisieron rendirse en el camino; {1}, tú seguiste adelante. Tus pasos dejaron un río de tinta que otros podrán seguir». Significado: {2}.',
+      'Cuando el viajero tocÃ³ la puerta de cristal, el GuardiÃ¡n abriÃ³ los ojos. Â«Un sabio antiguo escribiÃ³ este cÃ³dice, y {0} lo guardÃ³ aquÃ­ para ti. Muchos quisieron rendirse en el camino; {1}, tÃº seguiste adelante. Tus pasos dejaron un rÃ­o de tinta que otros podrÃ¡n seguirÂ». Significado: {2}.',
     fases: [
       {
-        titulo: 'Sello 1 · Tilde diacrítica',
-        enunciado: 'Elige la pieza correcta para la primera ranura del códice.',
-        opciones: ['él', 'el'],
-        correcta: 'él',
+        titulo: 'Sello 1 Â· Tilde diacrÃ­tica',
+        enunciado: 'Elige la pieza correcta para la primera ranura del cÃ³dice.',
+        opciones: ['Ã©l', 'el'],
+        correcta: 'Ã©l',
         explicacion:
-          '«Él» con tilde es un pronombre que reemplaza a una persona (el sabio). «El» sin tilde es un artículo: el libro.',
+          'Â«Ã‰lÂ» con tilde es un pronombre que reemplaza a una persona (el sabio). Â«ElÂ» sin tilde es un artÃ­culo: el libro.',
       },
       {
-        titulo: 'Sello 2 · Conector lógico',
-        enunciado: 'Otros se rindieron, pero el viajero no. ¿Qué conector muestra esa oposición?',
-        opciones: ['sin embargo', 'por eso', 'además'],
+        titulo: 'Sello 2 Â· Conector lÃ³gico',
+        enunciado: 'Otros se rindieron, pero el viajero no. Â¿QuÃ© conector muestra esa oposiciÃ³n?',
+        opciones: ['sin embargo', 'por eso', 'ademÃ¡s'],
         correcta: 'sin embargo',
         explicacion:
-          '«Sin embargo» une dos ideas opuestas: muchos se rindieron, pero el viajero siguió adelante.',
+          'Â«Sin embargoÂ» une dos ideas opuestas: muchos se rindieron, pero el viajero siguiÃ³ adelante.',
       },
       {
-        titulo: 'Sello 3 · Comprensión e inferencia',
-        enunciado: '¿Qué significa «tus pasos dejaron un río de tinta que otros podrán seguir»?',
+        titulo: 'Sello 3 Â· ComprensiÃ³n e inferencia',
+        enunciado: 'Â¿QuÃ© significa Â«tus pasos dejaron un rÃ­o de tinta que otros podrÃ¡n seguirÂ»?',
         opciones: [
-          'su esfuerzo y lo aprendido servirán de guía a otros',
-          'el viajero derramó tinta por todo el camino',
-          'en Letralia existe un río de color azul',
+          'su esfuerzo y lo aprendido servirÃ¡n de guÃ­a a otros',
+          'el viajero derramÃ³ tinta por todo el camino',
+          'en Letralia existe un rÃ­o de color azul',
         ],
-        correcta: 'su esfuerzo y lo aprendido servirán de guía a otros',
+        correcta: 'su esfuerzo y lo aprendido servirÃ¡n de guÃ­a a otros',
         explicacion:
-          'Es lenguaje figurado: el «río de tinta» representa el camino de aprendizaje que el viajero deja como ejemplo.',
+          'Es lenguaje figurado: el Â«rÃ­o de tintaÂ» representa el camino de aprendizaje que el viajero deja como ejemplo.',
       },
     ],
   },
   // === IA_BOSS_LETRALIA_START ===
+  {
+    id: "ia-bos-1",
+    titulo: "La constelaciÃ³n de los cuentos",
+    relato: "El GuardiÃ¡n encendiÃ³ una linterna azul. Â«Cada historia que lees vive dentro de {0}, joven exploradorÂ», susurrÃ³. Â«Muchos pasaron con prisa sin leer los mapas; {1}, no encontraron la puerta secreta. Quien lee con atenciÃ³n abre puertas invisiblesÂ». EnseÃ±anza: {2}.",
+    fases: [
+          {
+                "titulo": "Sello 1 Â· Tilde diacrÃ­tica",
+                "enunciado": "Elige la palabra correcta para completar el primer espacio.",
+                "opciones": [
+                      "ti",
+                      "tÃ­"
+                ],
+                "correcta": "ti",
+                "explicacion": "El pronombre Â«tiÂ» nunca lleva tilde porque no existe otra palabra igual con distinto significado."
+          },
+          {
+                "titulo": "Sello 2 Â· Conector lÃ³gico",
+                "enunciado": "Pasar con prisa causÃ³ que no encontraran la puerta. Â¿QuÃ© conector une esa causa con su consecuencia?",
+                "opciones": [
+                      "por eso",
+                      "aunque",
+                      "ademÃ¡s"
+                ],
+                "correcta": "por eso",
+                "explicacion": "Â«Por esoÂ» presenta la consecuencia directa de pasar sin leer los mapas."
+          },
+          {
+                "titulo": "Sello 3 Â· ComprensiÃ³n lectora",
+                "enunciado": "Â¿QuÃ© significa que Â«quien lee con atenciÃ³n abre puertas invisiblesÂ»?",
+                "opciones": [
+                      "leer con cuidado nos permite descubrir ideas y oportunidades nuevas",
+                      "los libros tienen llaves escondidas dentro del papel",
+                      "las puertas del santuario no se pueden ver nunca"
+                ],
+                "correcta": "leer con cuidado nos permite descubrir ideas y oportunidades nuevas",
+                "explicacion": "Es una metÃ¡fora: leer atentamente nos abre caminos de aprendizaje."
+          }
+    ],
+  },
   // === IA_BOSS_LETRALIA_END ===
 ];
 
-/* ─────────────── Sílabas Clave ─────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ SÃ­labas Clave â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
-/** Cada partida elige una palabra de 4 sílabas que forma la llave del Guardián. */
+/** Cada partida elige una palabra de 4 sÃ­labas que forma la llave del GuardiÃ¡n. */
 export const PALABRAS_LLAVE: { palabra: string; silabas: [string, string, string, string] }[] = [
-  { palabra: 'ESDRÚJULA', silabas: ['ES', 'DRÚ', 'JU', 'LA'] },
-  { palabra: 'METÁFORA', silabas: ['ME', 'TÁ', 'FO', 'RA'] },
-  { palabra: 'GRAMÁTICA', silabas: ['GRA', 'MÁ', 'TI', 'CA'] },
+  { palabra: 'ESDRÃšJULA', silabas: ['ES', 'DRÃš', 'JU', 'LA'] },
+  { palabra: 'METÃFORA', silabas: ['ME', 'TÃ', 'FO', 'RA'] },
+  { palabra: 'GRAMÃTICA', silabas: ['GRA', 'MÃ', 'TI', 'CA'] },
   { palabra: 'BIBLIOTECA', silabas: ['BI', 'BLIO', 'TE', 'CA'] },
-  { palabra: 'ORTOGRAFÍA', silabas: ['OR', 'TO', 'GRA', 'FÍA'] },
+  { palabra: 'ORTOGRAFÃA', silabas: ['OR', 'TO', 'GRA', 'FÃA'] },
 ];
 
-/* ─────────────── Utilidades ─────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Utilidades â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export function barajar<T>(arr: readonly T[]): T[] {
   const copia = [...arr];
@@ -598,8 +664,8 @@ export function barajar<T>(arr: readonly T[]): T[] {
 }
 
 /**
- * Selector sin repetición: devuelve un elemento al azar que no se haya usado
- * todavía (filtrado opcional). Cuando se agotan, reinicia el ciclo.
+ * Selector sin repeticiÃ³n: devuelve un elemento al azar que no se haya usado
+ * todavÃ­a (filtrado opcional). Cuando se agotan, reinicia el ciclo.
  */
 export function elegirSinRepetir<T extends { id: string }>(
   banco: readonly T[],
@@ -620,7 +686,7 @@ export function elegirSinRepetir<T extends { id: string }>(
   return elegido;
 }
 
-/** Comprueba si un orden de tablillas forma una oración válida. */
+/** Comprueba si un orden de tablillas forma una oraciÃ³n vÃ¡lida. */
 export function validarPuente(reto: RetoPuenteSintactico, orden: string[]): boolean {
   const unir = (a: string[]) => a.join(' ').replace(/\s+/g, ' ').trim();
   const intento = unir(orden);
