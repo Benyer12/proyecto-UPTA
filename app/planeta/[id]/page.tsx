@@ -213,22 +213,22 @@ function RetroGlassLevelCard({
         {/* Esquinas técnicas del visor */}
         <span
           aria-hidden="true"
-          className="absolute top-2.5 left-2.5 w-2 h-2 border-t-2 border-l-2 pointer-events-none"
+          className="absolute top-1.5 left-1.5 w-2.5 h-2.5 rounded-tl-lg border-t-2 border-l-2 pointer-events-none"
           style={{ borderColor: available ? accent.text : 'rgba(255,255,255,0.18)' }}
         />
         <span
           aria-hidden="true"
-          className="absolute top-2.5 right-2.5 w-2 h-2 border-t-2 border-r-2 pointer-events-none"
+          className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-tr-lg border-t-2 border-r-2 pointer-events-none"
           style={{ borderColor: available ? accent.text : 'rgba(255,255,255,0.18)' }}
         />
         <span
           aria-hidden="true"
-          className="absolute bottom-2.5 left-2.5 w-2 h-2 border-b-2 border-l-2 pointer-events-none"
+          className="absolute bottom-1.5 left-1.5 w-2.5 h-2.5 rounded-bl-lg border-b-2 border-l-2 pointer-events-none"
           style={{ borderColor: available ? accent.text : 'rgba(255,255,255,0.18)' }}
         />
         <span
           aria-hidden="true"
-          className="absolute bottom-2.5 right-2.5 w-2 h-2 border-b-2 border-r-2 pointer-events-none"
+          className="absolute bottom-1.5 right-1.5 w-2.5 h-2.5 rounded-br-lg border-b-2 border-r-2 pointer-events-none"
           style={{ borderColor: available ? accent.text : 'rgba(255,255,255,0.18)' }}
         />
 
