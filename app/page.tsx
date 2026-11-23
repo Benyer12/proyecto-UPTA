@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import PlanetVisual from './components/PlanetVisual';
@@ -185,7 +185,12 @@ function StepBadgeIcon({ code, color }: { code: string; color: string }) {
 }
 
 export default function Home() {
-  const prefersReducedMotion = useReducedMotion();
+  const systemReducedMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const prefersReducedMotion = mounted && Boolean(systemReducedMotion);
   const appTheme = useThemeStore((s) => s.theme);
   const isLight = appTheme === 'light';
 
