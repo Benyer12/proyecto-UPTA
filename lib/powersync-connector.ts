@@ -15,8 +15,8 @@ const POWERSYNC_ENDPOINT =
 
 const ALLOWED_COLUMNS: Record<string, string[]> = {
   usuarios: ['nombre', 'usuario', 'correo', 'contrasena', 'role', 'status'],
-  planetas: ['nombre', 'descripcion', 'materia', 'color', 'icono', 'orden'],
-  niveles: ['planeta_id', 'curso_nombre', 'nombre', 'descripcion', 'orden', 'es_jefe'],
+  planetas: ['nombre', 'descripcion', 'total_niveles', 'materia', 'color', 'icono', 'orden'],
+  niveles: ['planeta_id', 'numero_nivel', 'titulo', 'contenido', 'curso_nombre', 'nombre', 'descripcion', 'orden', 'es_jefe'],
   progreso_usuario: ['usuario_id', 'nivel_id', 'completado', 'estrellas', 'ultima_sesion'],
   tutor_estudiantes: ['tutor_id', 'estudiante_id', 'fecha_asignacion'],
 };

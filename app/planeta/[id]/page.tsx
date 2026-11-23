@@ -613,7 +613,12 @@ function CoursePortalSection({
 export default function PlanetaPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const prefersReducedMotion = useReducedMotion();
+  const systemReducedMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const prefersReducedMotion = mounted && Boolean(systemReducedMotion);
   const appTheme = useThemeStore((s) => s.theme);
   const user = useAuthStore((s) => s.user);
   const [progressMap, setProgressMap] = useState<Record<number, StudentProgress>>(MOCK_PROGRESS);

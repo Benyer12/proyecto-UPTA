@@ -14,6 +14,7 @@ const usuarios = new Table({
 const planetas = new Table({
   nombre: column.text,
   descripcion: column.text,
+  total_niveles: column.integer,
   materia: column.text,
   color: column.text,
   icono: column.text,
@@ -22,6 +23,9 @@ const planetas = new Table({
 
 const niveles = new Table({
   planeta_id: column.integer,
+  numero_nivel: column.integer,
+  titulo: column.text,
+  contenido: column.text,
   curso_nombre: column.text,
   nombre: column.text,
   descripcion: column.text,

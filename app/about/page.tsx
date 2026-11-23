@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import PlanetVisual from '../components/PlanetVisual';
@@ -61,7 +62,12 @@ const DETALLES_PROYECTO = [
 ];
 
 function JoyfulUniverseHero() {
-  const prefersReducedMotion = useReducedMotion();
+  const systemReducedMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const prefersReducedMotion = mounted && Boolean(systemReducedMotion);
 
   return (
     <div className="relative flex flex-col items-center justify-center py-2">
@@ -126,7 +132,12 @@ function JoyfulUniverseHero() {
 }
 
 export default function AboutPage() {
-  const prefersReducedMotion = useReducedMotion();
+  const systemReducedMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const prefersReducedMotion = mounted && Boolean(systemReducedMotion);
   const appTheme = useThemeStore((s) => s.theme);
   const isLight = appTheme === 'light';
 
