@@ -6,6 +6,7 @@ import {
   conectarPowerSyncBridge,
 } from '../lib/powersync';
 import {
+  comprobarConexionReal,
   depositarSupabaseEnLocal,
   obtenerEstadoSyncActual,
   sincronizarPendientesASupabase,
@@ -24,6 +25,28 @@ export default function PowerSyncInitializer() {
     let cancelled = false;
     let noticeTimer: ReturnType<typeof setTimeout> | null = null;
 
+    const ejecutarCicloOnline = async (forceDeposit = false) => {
+      const onlineReal = await comprobarConexionReal();
+      if (cancelled) return;
+
+      if (onlineReal) {
+        await conectarPowerSyncBridge();
+        const res = await sincronizarPendientesASupabase();
+        if (!cancelled && res.syncedCount > 0) {
+          setRecentNotice(
+            `${res.syncedCount} ${res.syncedCount === 1 ? 'cambio local subido' : 'cambios locales subidos'} a Supabase`,
+          );
+          if (noticeTimer) clearTimeout(noticeTimer);
+          noticeTimer = setTimeout(() => setRecentNotice(null), 4000);
+        }
+        await depositarSupabaseEnLocal({
+          usuarioId:
+            user && user.role === 'student' ? String(user.id) : undefined,
+          force: forceDeposit,
+        });
+      }
+    };
+
     const iniciar = async () => {
       await inicializarBaseDatos();
 
@@ -31,19 +54,7 @@ export default function PowerSyncInitializer() {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
       }
 
-      if (navigator.onLine) {
-        const res = await sincronizarPendientesASupabase();
-        if (!cancelled && res.syncedCount > 0) {
-          setRecentNotice(
-            `${res.syncedCount} ${res.syncedCount === 1 ? 'cambio local subido' : 'cambios locales subidos'} a Supabase`,
-          );
-          noticeTimer = setTimeout(() => setRecentNotice(null), 4000);
-        }
-        await depositarSupabaseEnLocal({
-          usuarioId:
-            user && user.role === 'student' ? String(user.id) : undefined,
-        });
-      }
+      await ejecutarCicloOnline(false);
     };
 
     void iniciar();
@@ -55,27 +66,22 @@ export default function PowerSyncInitializer() {
       }
     };
 
-    const handleOnline = async () => {
-      setSyncState((prev) => ({ ...prev, online: true }));
-      await conectarPowerSyncBridge();
-      const res = await sincronizarPendientesASupabase();
-      if (!cancelled && res.syncedCount > 0) {
-        setRecentNotice(
-          `${res.syncedCount} ${res.syncedCount === 1 ? 'cambio local subido' : 'cambios locales subidos'} a Supabase`,
-        );
-        if (noticeTimer) clearTimeout(noticeTimer);
-        noticeTimer = setTimeout(() => setRecentNotice(null), 4000);
-      }
-      await depositarSupabaseEnLocal({
-        usuarioId:
-          user && user.role === 'student' ? String(user.id) : undefined,
-        force: true,
-      });
+    const handleOnline = () => {
+      void ejecutarCicloOnline(true);
     };
 
     const handleOffline = () => {
-      setSyncState((prev) => ({ ...prev, online: false, syncing: false }));
+      // Verifica con ping real a Supabase antes de marcar offline (evita falsos positivos en Windows/VPN)
+      void comprobarConexionReal();
     };
+
+    // Reintenta comprobar conexión periódicamente solo si estaba sin internet o con pendientes
+    const interval = setInterval(() => {
+      const est = obtenerEstadoSyncActual();
+      if (!est.online || est.pendingCount > 0) {
+        void ejecutarCicloOnline(false);
+      }
+    }, 12000);
 
     window.addEventListener('universo-sync-status', handleSyncEvent);
     window.addEventListener('online', handleOnline);
@@ -83,6 +89,7 @@ export default function PowerSyncInitializer() {
 
     return () => {
       cancelled = true;
+      clearInterval(interval);
       if (noticeTimer) clearTimeout(noticeTimer);
       window.removeEventListener('universo-sync-status', handleSyncEvent);
       window.removeEventListener('online', handleOnline);

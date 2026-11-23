@@ -196,7 +196,6 @@ export async function asegurarPowerSyncListo(): Promise<PowerSyncDatabase | null
 export async function conectarPowerSyncBridge() {
   const readyDb = await asegurarPowerSyncListo();
   if (!readyDb || isConnectedToPowerSync) return;
-  if (typeof navigator !== 'undefined' && !navigator.onLine) return;
 
   try {
     const {

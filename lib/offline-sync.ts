@@ -4,7 +4,7 @@ import {
   asegurarPowerSyncListo,
   conectarPowerSyncBridge,
 } from './powersync';
-import { supabase } from './powersync-connector';
+import { supabase, supabaseKey, supabaseUrl } from './powersync-connector';
 import { MOCK_PLANETS, MOCK_PROGRESS } from './mock-data';
 import type { Planet, StudentProgress } from '../shared/types';
 import { actualizarProgresoUsuario } from '../app/actions/progress';
@@ -53,13 +53,15 @@ interface OutboxRow {
 }
 
 let currentStatus: SyncStatusState = {
-  online: typeof navigator === 'undefined' ? true : navigator.onLine,
+  online: true,
   pendingCount: 0,
   syncing: false,
   lastSyncedAt: null,
   lastMessage: null,
 };
 
+let realOnlineVerified: boolean = true;
+let probePromise: Promise<boolean> | null = null;
 let syncMutex: Promise<{ syncedCount: number; remainingCount: number }> | null = null;
 let lastDepositTimestamp = 0;
 
@@ -74,20 +76,66 @@ function notifySyncListeners(patch?: Partial<SyncStatusState>) {
   }
 }
 
+export function marcarConexionReal(isOnline: boolean) {
+  realOnlineVerified = isOnline;
+  if (currentStatus.online !== isOnline) {
+    notifySyncListeners({ online: isOnline });
+  }
+}
+
+/**
+ * Verifica conectividad real haciendo ping HTTP a Supabase (sin depender de navigator.onLine,
+ * que en Windows con VPNs o adaptadores virtuales suele reportar false falsamente).
+ */
+export async function comprobarConexionReal(): Promise<boolean> {
+  if (typeof window === 'undefined') return true;
+  if (probePromise) return probePromise;
+
+  probePromise = (async () => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 6000);
+    try {
+      const res = await fetch(
+        `${supabaseUrl}/rest/v1/usuarios?select=id&limit=1`,
+        {
+          method: 'GET',
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+          },
+          cache: 'no-store',
+          signal: controller.signal,
+        },
+      );
+      clearTimeout(timer);
+      const isOnline = res.status > 0;
+      marcarConexionReal(isOnline);
+      return isOnline;
+    } catch {
+      clearTimeout(timer);
+      marcarConexionReal(false);
+      return false;
+    } finally {
+      probePromise = null;
+    }
+  })();
+
+  return probePromise;
+}
+
 export function obtenerEstadoSyncActual(): SyncStatusState {
   return {
     ...currentStatus,
-    online: typeof navigator === 'undefined' ? true : navigator.onLine,
+    online: realOnlineVerified,
   };
 }
 
 export function hayConexionInternet(): boolean {
-  if (typeof navigator === 'undefined') return true;
-  return navigator.onLine;
+  if (typeof window === 'undefined') return true;
+  return realOnlineVerified;
 }
 
 export function esErrorDeRed(error: unknown): boolean {
-  if (!hayConexionInternet()) return true;
   const msg =
     error instanceof Error
       ? `${error.name} ${error.message}`
@@ -95,7 +143,7 @@ export function esErrorDeRed(error: unknown): boolean {
         ? JSON.stringify(error)
         : String(error || '');
   const lower = msg.toLowerCase();
-  return (
+  const esRed =
     lower.includes('failed to fetch') ||
     lower.includes('networkerror') ||
     lower.includes('network request failed') ||
@@ -103,9 +151,12 @@ export function esErrorDeRed(error: unknown): boolean {
     lower.includes('err_internet_disconnected') ||
     lower.includes('fetch failed') ||
     lower.includes('timeout') ||
-    lower.includes('offline') ||
-    lower.includes('aborterror')
-  );
+    lower.includes('aborterror');
+
+  if (esRed) {
+    marcarConexionReal(false);
+  }
+  return esRed;
 }
 
 function makeUuid(): string {

@@ -2,9 +2,9 @@ import { PowerSyncBackendConnector, PowerSyncCredentials } from '@powersync/comm
 import type { PowerSyncDatabase } from '@powersync/web';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl =
+export const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://lxwbytvbnytmtegdqtxc.supabase.co';
-const supabaseKey =
+export const supabaseKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4d2J5dHZibnl0bXRlZ2RxdHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNzc3NTMsImV4cCI6MjA5NzY1Mzc1M30.oJvbAQwPgjZJrVi-YTKR4Ad1dumDnSUZED-kiNPnJqM';
 
@@ -45,10 +45,6 @@ export class AppSyncConnector implements PowerSyncBackendConnector {
   constructor(private db: PowerSyncDatabase) {}
 
   async fetchCredentials(): Promise<PowerSyncCredentials | null> {
-    if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      return null;
-    }
-
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -64,10 +60,6 @@ export class AppSyncConnector implements PowerSyncBackendConnector {
   }
 
   async uploadData(database: any): Promise<void> {
-    if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      throw new Error('Sin conexión a internet para subir cambios.');
-    }
-
     const transaction = await database.getNextCrudTransaction();
     if (!transaction) return;
 
