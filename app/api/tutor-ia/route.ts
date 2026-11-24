@@ -616,8 +616,14 @@ export async function POST(request: Request) {
           ? Number((totalEstrellas / totalEstudiantes).toFixed(1))
           : 0;
 
-      const { resumenes: resumenesPorEstudiante, modelo, proveedor } =
-        await generarResumenPorCadaEstudiante(estudiantes, totalNiveles);
+      const estudianteObjetivoId =
+        typeof body.estudianteObjetivoId === 'string' && body.estudianteObjetivoId !== 'all'
+          ? body.estudianteObjetivoId
+          : null;
+
+      const estudiantesParaIA = estudianteObjetivoId
+        ? estudiantes.filter((e) => String(e.id) === estudianteObjetivoId)
+        : estudiantes;
 
       const promptGrupo = JSON.stringify({
         tarea:
@@ -644,10 +650,25 @@ export async function POST(request: Request) {
         },
       });
 
-      const { texto } = await consultarGoogleGemini(
-        promptGrupo,
-        'Eres Gemini de Google en la nube, asistente psicopedagógico para docentes de primaria (10 a 12 años) en Universo del Conocimiento. Devuelve únicamente un objeto JSON válido con los campos "diagnosticoIA" y "recomendacionesClave" (array de 3 métodos prácticos).',
-      );
+      const [
+        { resumenes: resumenesPorEstudiante, modelo, proveedor },
+        grupoResp,
+        preguntasGuardadas,
+      ] = await Promise.all([
+        generarResumenPorCadaEstudiante(
+          estudiantesParaIA.length > 0 ? estudiantesParaIA : estudiantes,
+          totalNiveles,
+        ),
+        estudianteObjetivoId
+          ? Promise.resolve({ texto: null as string | null })
+          : consultarGoogleGemini(
+              promptGrupo,
+              'Eres Gemini de Google en la nube, asistente psicopedagógico para docentes de primaria (10 a 12 años) en Universo del Conocimiento. Devuelve únicamente un objeto JSON válido con los campos "diagnosticoIA" y "recomendacionesClave" (array de 3 métodos prácticos).',
+            ),
+        leerArchivoPreguntasJSON(),
+      ]);
+
+      const texto = grupoResp.texto;
 
       let diagnosticoGenerado = '';
       let recomendacionesGeneradas: string[] = [];
@@ -710,8 +731,6 @@ export async function POST(request: Request) {
               'Alternar tableros de Numérix, Letralia y Naturae cada sesión para mantener alta la curiosidad.',
               'Proponer metas semanales de estrellas combinadas con ejemplos prácticos de la vida cotidiana.',
             ];
-
-      const preguntasGuardadas = await leerArchivoPreguntasJSON();
 
       return NextResponse.json({
         ok: true,

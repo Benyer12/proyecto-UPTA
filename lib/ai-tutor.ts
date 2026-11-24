@@ -343,26 +343,35 @@ const geminiModelCooldownUntil =
   globalForGeminiCooldown.__geminiModelCooldownUntil ?? new Map<string, number>();
 globalForGeminiCooldown.__geminiModelCooldownUntil = geminiModelCooldownUntil;
 
-function calcularCooldownMsPorError429(mensaje: string): number {
+function calcularCooldownMsPorError(mensaje: string): number {
   const lower = mensaje.toLowerCase();
-  if (!lower.includes('429') && !lower.includes('rate limit') && !lower.includes('quota')) {
-    return 0;
-  }
-  if (lower.includes('per day') || lower.includes('daily')) {
+  if (lower.includes('per day') || lower.includes('daily') || lower.includes('404') || lower.includes('not found')) {
     return 30 * 60 * 1000;
   }
-  return 60 * 1000;
+  if (
+    lower.includes('429') ||
+    lower.includes('rate limit') ||
+    lower.includes('quota') ||
+    lower.includes('timeout_gemini') ||
+    lower.includes('503') ||
+    lower.includes('overloaded')
+  ) {
+    return 60 * 1000;
+  }
+  return 0;
 }
 
 /**
  * Motor en la nube exclusivo con Google Gemini API (@google/genai):
- * 1) Google AI Studio Cloud (gemini-4-hydrogen, gemini-3.5-flash-lite, gemini-3.1-flash-lite)
- * 2) Respaldo adaptativo local si no hay clave configurada o la red falla temporalmente
+ * 1) Google AI Studio Cloud priorizando modelos ultrarrápidos (gemini-3.5-flash-lite, gemini-3.1-flash-lite, gemini-4-hydrogen)
+ * 2) thinking_level: 'minimal' + timeout estricto por modelo para evitar que la interfaz se quede pegada
+ * 3) Respaldo adaptativo local instantáneo si no hay clave configurada o la red falla
  */
 export async function consultarGoogleGemini(
   prompt: string,
   systemPrompt = 'Eres Gemini de Google, el Tutor IA Espacial de Universo del Conocimiento para niños de primaria (10 a 12 años). Responde siempre en español claro, motivador y estructurado en JSON.',
   modeloPreferido?: string,
+  timeoutMs = 8500,
 ): Promise<{
   texto: string | null;
   modeloUsado: string;
@@ -381,9 +390,9 @@ export async function consultarGoogleGemini(
     try {
       const genai = new GoogleGenAI({ apiKey: geminiKey });
       const modelosBase = [
-        'gemini-4-hydrogen',
         'gemini-3.5-flash-lite',
         'gemini-3.1-flash-lite',
+        'gemini-4-hydrogen',
       ];
       const preferidoValido =
         modeloPreferido && modeloPreferido.startsWith('gemini-')
@@ -399,13 +408,25 @@ export async function consultarGoogleGemini(
           continue;
         }
 
+        let timer: ReturnType<typeof setTimeout> | undefined;
         try {
-          const interaction = await genai.interactions.create({
-            model,
-            input: prompt,
-            system_instruction: systemPrompt,
-            store: false,
-          });
+          const interaction = await Promise.race([
+            genai.interactions.create({
+              model,
+              input: prompt,
+              system_instruction: systemPrompt,
+              generation_config: {
+                thinking_level: 'minimal',
+              },
+              store: false,
+            }),
+            new Promise<never>((_, reject) => {
+              timer = setTimeout(
+                () => reject(new Error(`TIMEOUT_GEMINI_${timeoutMs}MS`)),
+                timeoutMs,
+              );
+            }),
+          ]);
           const text = interaction.output_text?.trim();
           if (text) {
             return {
@@ -416,11 +437,13 @@ export async function consultarGoogleGemini(
           }
         } catch (err) {
           ultimoError = err instanceof Error ? err.message : String(err);
-          const cooldownMs = calcularCooldownMsPorError429(ultimoError);
+          const cooldownMs = calcularCooldownMsPorError(ultimoError);
           if (cooldownMs > 0) {
             geminiModelCooldownUntil.set(model, Date.now() + cooldownMs);
           }
           console.warn(`[Google Gemini] Falló modelo ${model}:`, ultimoError);
+        } finally {
+          if (timer) clearTimeout(timer);
         }
       }
     } catch (err) {

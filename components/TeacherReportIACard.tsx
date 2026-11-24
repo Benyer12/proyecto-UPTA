@@ -47,6 +47,7 @@ export default function TeacherReportIACard({
   totalNiveles: number;
 }) {
   const [loadingIA, setLoadingIA] = useState(false);
+  const [errorIA, setErrorIA] = useState<string | null>(null);
   const [filtroEstudiante, setFiltroEstudiante] = useState<string>('all');
   const [resumenPDF, setResumenPDF] = useState<ResumenPDFData | null>(null);
 
@@ -76,14 +77,19 @@ export default function TeacherReportIACard({
 
   const generarDiagnosticoConIA = async (): Promise<ResumenPDFData | null> => {
     setLoadingIA(true);
+    setErrorIA(null);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 14000);
     try {
       const res = await fetch('/api/tutor-ia', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           action: 'reporte-profesor',
           tutorNombre: tutorName,
           totalNiveles,
+          estudianteObjetivoId: filtroEstudiante,
           estudiantes: students,
         }),
       });
@@ -92,9 +98,12 @@ export default function TeacherReportIACard({
         setResumenPDF(data.resumenPDF);
         return data.resumenPDF as ResumenPDFData;
       }
+      setErrorIA('No se pudo obtener el resumen en este momento. Intenta nuevamente.');
     } catch (e) {
       console.error('Error al consultar diagnóstico IA para profesor:', e);
+      setErrorIA('La consulta tardó demasiado o falló la conexión. Vuelve a intentarlo.');
     } finally {
+      clearTimeout(timer);
       setLoadingIA(false);
     }
     return null;
@@ -102,6 +111,7 @@ export default function TeacherReportIACard({
 
   const descargarReportePDFIndividual = async (
     est: ResumenIndividualEstudianteIA,
+    targetWin?: Window | null,
   ) => {
     const fechaLegible = new Date().toLocaleDateString('es-ES', {
       day: '2-digit',
@@ -329,7 +339,7 @@ export default function TeacherReportIACard({
 </body>
 </html>`;
 
-    const win = window.open('', '_blank', 'width=940,height=740');
+    const win = targetWin ?? window.open('', '_blank', 'width=940,height=740');
     if (win) {
       win.document.open();
       win.document.write(htmlIndividual);
@@ -338,15 +348,49 @@ export default function TeacherReportIACard({
   };
 
   const descargarReportePDF = async () => {
-    const datos = await generarDiagnosticoConIA();
-    if (!datos) return;
+    // Si ya tenemos el resumen generado para la selección actual, abrimos el PDF al instante (0 ms)
+    const yaTieneSeleccion =
+      resumenPDF &&
+      (filtroEstudiante === 'all'
+        ? resumenPDF.resumenesPorEstudiante.length >= students.length
+        : resumenPDF.resumenesPorEstudiante.some((e) => e.estudianteId === filtroEstudiante));
+
+    if (yaTieneSeleccion && resumenPDF) {
+      if (filtroEstudiante !== 'all') {
+        const individual = resumenPDF.resumenesPorEstudiante.find(
+          (e) => e.estudianteId === filtroEstudiante,
+        );
+        if (individual) {
+          await descargarReportePDFIndividual(individual);
+          return;
+        }
+      }
+    }
+
+    // Abrimos la ventana de forma síncrona al clic para evitar bloqueadores de popups mientras genera
+    const pendingWin = !yaTieneSeleccion
+      ? window.open('', '_blank', 'width=1020,height=780')
+      : null;
+    if (pendingWin) {
+      pendingWin.document.open();
+      pendingWin.document.write(
+        '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"/><title>Preparando PDF...</title></head><body style="font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:90vh;color:#0369a1;font-weight:600;">Generando reporte pedagógico PDF con IA...</body></html>',
+      );
+      pendingWin.document.close();
+    }
+
+    const datos = yaTieneSeleccion && resumenPDF ? resumenPDF : await generarDiagnosticoConIA();
+    if (!datos) {
+      if (pendingWin) pendingWin.close();
+      return;
+    }
 
     if (filtroEstudiante !== 'all') {
       const individual = datos.resumenesPorEstudiante.find(
         (e) => e.estudianteId === filtroEstudiante,
       );
       if (individual) {
-        await descargarReportePDFIndividual(individual);
+        await descargarReportePDFIndividual(individual, pendingWin);
         return;
       }
     }
@@ -679,7 +723,7 @@ export default function TeacherReportIACard({
 </body>
 </html>`;
 
-    const printWin = window.open('', '_blank', 'width=1020,height=780');
+    const printWin = pendingWin ?? window.open('', '_blank', 'width=1020,height=780');
     if (printWin) {
       printWin.document.open();
       printWin.document.write(htmlReporte);
@@ -748,6 +792,12 @@ export default function TeacherReportIACard({
             </button>
           </div>
         </div>
+
+        {errorIA && (
+          <div className="rounded-xl border border-rose-400/35 bg-rose-500/10 px-4 py-2.5 text-xs text-rose-200">
+            {errorIA}
+          </div>
+        )}
 
         {resumenPDF && (
           <div className="space-y-4">
