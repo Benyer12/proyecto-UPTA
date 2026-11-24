@@ -172,9 +172,10 @@ export default function MaestroPage() {
         >
           <div className="flex items-start gap-4">
             <RoleAvatar role="tutor" name={user.name} size={56} className="mt-1" />
-            <div className="space-y-2">
-              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">
-                Panel docente · Seguimiento
+            <div className="space-y-2.5">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#67E8F9]/35 bg-[#67E8F9]/10 px-3.5 py-1.5 text-xs sm:text-sm font-bold uppercase tracking-[0.16em] text-[#67E8F9] shadow-[0_0_20px_-6px_rgba(103,232,249,0.4)]">
+                <span className="h-2 w-2 rounded-full bg-[#67E8F9]" aria-hidden="true" />
+                Panel Docente · Seguimiento
               </div>
               <h1
                 id="tutor-heading"

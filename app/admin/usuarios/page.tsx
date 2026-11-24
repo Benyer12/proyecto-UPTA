@@ -480,9 +480,10 @@ export default function AdminUsuariosPage() {
           aria-labelledby="manage-users-heading"
           className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-7 border-b border-white/10"
         >
-          <div className="space-y-2">
-            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">
-              Directorio · public.usuarios
+          <div className="space-y-2.5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#D8B4FE]/35 bg-[#D8B4FE]/10 px-3.5 py-1.5 text-xs sm:text-sm font-bold uppercase tracking-[0.16em] text-[#E9D5FF] shadow-[0_0_20px_-6px_rgba(216,180,254,0.4)]">
+              <span className="h-2 w-2 rounded-full bg-[#D8B4FE]" aria-hidden="true" />
+              Directorio · Gestión de Usuarios
             </div>
             <h1
               id="manage-users-heading"
@@ -690,7 +691,7 @@ export default function AdminUsuariosPage() {
                                 : 'border-[#6EE7B7]/35 bg-[#6EE7B7]/[0.08] text-[#A7F3D0]'
                             }`}
                           >
-                            {u.role}
+                            {isTutor ? 'Tutor' : 'Estudiante'}
                           </span>
                           <span
                             className={`inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${

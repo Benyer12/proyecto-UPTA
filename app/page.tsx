@@ -347,18 +347,6 @@ export default function Home() {
                       Aventura espacial
                     </span>
                   </div>
-                  <span
-                    className="rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] border"
-                    style={{
-                      color: activeColor,
-                      borderColor: isLight ? activePlanet.lightBorder : `${activePlanet.accent}66`,
-                      backgroundColor: isLight
-                        ? 'rgba(255, 255, 255, 0.45)'
-                        : `${activePlanet.accent}1A`,
-                    }}
-                  >
-                    3 Mundos 3D
-                  </span>
                 </div>
 
                 {/* Escenario central interactivo: Planeta 3D gigante con anillos neón giratorios */}
@@ -506,10 +494,10 @@ export default function Home() {
                   </div>
                   <div className="rounded-xl border border-[#00FF88]/35 bg-[#031B14]/55 px-2.5 py-2.5 text-center">
                     <div className="text-sm sm:text-base font-black text-[#6EE7B7] leading-tight">
-                      Con pistas
+                      Con Pistas
                     </div>
                     <div className="text-[10px] font-medium text-white/75 mt-0.5">
-                      Sin castigos
+                      A tu ritmo
                     </div>
                   </div>
                 </div>
@@ -525,22 +513,22 @@ export default function Home() {
         className="mwg-defer-section relative z-10 mx-auto max-w-6xl px-5 sm:px-8 lg:px-10 pb-16 sm:pb-20 space-y-8"
       >
         <div className="border-t border-white/10 pt-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#67E8F9]">
+          <div className="space-y-2">
+            <div className="font-mono text-sm sm:text-base font-extrabold uppercase tracking-[0.22em] text-[#67E8F9]">
               Tres mundos
             </div>
             <h2
               id="preview-worlds-heading"
-              className="text-2xl sm:text-3xl font-bold tracking-tight text-white"
+              className="text-3xl sm:text-4xl font-black tracking-tight text-white"
             >
               Elige tu aventura
             </h2>
-            <p className="text-sm text-white/75">
+            <p className="text-sm sm:text-base text-white/80">
               Cada planeta tiene misiones cortas de primaria. Toca uno para empezar.
             </p>
           </div>
-          <span className="self-start sm:self-auto inline-flex items-center gap-2 rounded-full border border-white/12 bg-[#070b18]/75 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-white/70 shrink-0">
-            <span>Panel estudiante</span>
+          <span className="self-start sm:self-auto inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#070b18]/75 px-4 py-1.5 font-mono text-xs uppercase tracking-wider text-white/80 shrink-0">
+            <span>Panel Estudiante</span>
           </span>
         </div>
 
@@ -563,20 +551,24 @@ export default function Home() {
               >
                 <article className="flex flex-col items-center text-center gap-4">
                   <span
-                    className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em]"
-                    style={{ color: isLight ? planeta.lightAccent : planeta.accent }}
+                    className="rounded-full px-3.5 py-1 font-mono text-xs sm:text-[13px] font-extrabold uppercase tracking-[0.16em] border"
+                    style={{
+                      color: isLight ? planeta.lightAccent : planeta.accent,
+                      borderColor: isLight ? planeta.lightBorder : `${planeta.accent}55`,
+                      backgroundColor: isLight ? 'rgba(255,255,255,0.65)' : `${planeta.accent}14`,
+                    }}
                   >
                     {planeta.materia}
                   </span>
 
                   <div className="w-40 h-40 flex items-center justify-center">
-                    <div className="scale-[0.88] transition-transform duration-300 group-hover:scale-[0.94]">
+                    <div className="scale-[0.94] transition-transform duration-300 group-hover:scale-[1.02]">
                       <PlanetVisual name={planeta.nombre} />
                     </div>
                   </div>
 
-                  <h3 className="text-2xl font-black tracking-tight text-white">{planeta.nombre}</h3>
-                  <p className="text-sm text-white/75 leading-relaxed">{planeta.frase}</p>
+                  <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-white">{planeta.nombre}</h3>
+                  <p className="text-[15px] sm:text-base font-medium text-white/85 leading-relaxed">{planeta.frase}</p>
                 </article>
               </LiquidGlass>
             </Link>

@@ -52,7 +52,7 @@ const DETALLES_PROYECTO = [
     texto: 'Combina contenidos de primaria con mecánicas de tablero para aprender jugando.',
   },
   {
-    titulo: 'Inclusivo y sin castigos',
+    titulo: 'Inclusivo y Con Pistas',
     texto: 'Equivocarse entrega pistas y nuevas oportunidades sin borrar el progreso.',
   },
   {
@@ -177,7 +177,7 @@ export default function AboutPage() {
                     Gratis
                   </span>
                   <span className="rounded-full border border-[#D8B4FE]/35 bg-[#160828]/80 px-3.5 py-1.5 text-xs font-semibold text-[#D8B4FE]">
-                    Sin castigos
+                    Con Pistas
                   </span>
                   <span className="rounded-full border border-[#FDE68A]/35 bg-[#1C1405]/80 px-3.5 py-1.5 text-xs font-semibold text-[#FDE68A]">
                     10 a 12 años

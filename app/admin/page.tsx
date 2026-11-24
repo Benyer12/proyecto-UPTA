@@ -138,9 +138,10 @@ export default function AdminPage() {
           aria-labelledby="admin-roles-heading"
           className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-7 border-b border-white/10"
         >
-          <div className="space-y-2">
-            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">
-              Control del sistema · Roles
+          <div className="space-y-2.5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#67E8F9]/35 bg-[#67E8F9]/10 px-3.5 py-1.5 text-xs sm:text-sm font-bold uppercase tracking-[0.16em] text-[#67E8F9] shadow-[0_0_20px_-6px_rgba(103,232,249,0.4)]">
+              <span className="h-2 w-2 rounded-full bg-[#67E8F9]" aria-hidden="true" />
+              Control del sistema · Cambiar Roles
             </div>
             <h1
               id="admin-roles-heading"
@@ -255,7 +256,7 @@ export default function AdminPage() {
                                   : 'border-[#6EE7B7]/35 bg-[#6EE7B7]/[0.08] text-[#6EE7B7]'
                               }`}
                             >
-                              {u.role}
+                              {isTutor ? 'Tutor' : 'Estudiante'}
                             </span>
                           </div>
                           <div className="text-xs text-white/50 mt-0.5 truncate">

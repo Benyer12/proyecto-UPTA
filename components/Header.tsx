@@ -343,6 +343,41 @@ const ADMIN_NAV_ITEMS = [
   { href: '/asignaciones', label: 'Asignaciones' },
 ];
 
+function formatRoleLabel(role?: string | null): string {
+  const normalized = (role || '').trim().toLowerCase();
+  if (normalized === 'admin') return 'Administrador';
+  if (normalized === 'tutor' || normalized === 'docente') return 'Tutor';
+  return 'Estudiante';
+}
+
+function PasswordEyeIcon({ open }: { open: boolean }) {
+  if (open) {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" aria-hidden="true">
+        <path
+          d="M2.5 12C4.6 7.8 8 5.5 12 5.5C16 5.5 19.4 7.8 21.5 12C19.4 16.2 16 18.5 12 18.5C8 18.5 4.6 16.2 2.5 12Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" aria-hidden="true">
+      <path
+        d="M3 3L21 21M10.6 10.7C10.2 11.1 10 11.5 10 12C10 13.1 10.9 14 12 14C12.5 14 12.9 13.8 13.3 13.4M6.7 6.8C4.8 8.1 3.4 9.9 2.5 12C4.6 16.2 8 18.5 12 18.5C13.9 18.5 15.6 17.9 17.1 16.9M14.1 5.8C13.4 5.6 12.7 5.5 12 5.5C11.1 5.5 10.2 5.6 9.4 5.9M19.3 14.8C20.2 13.9 20.9 13 21.5 12C19.4 7.8 16 5.5 12 5.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
@@ -357,12 +392,16 @@ export default function Header() {
 
   const [loginUser, setLoginUser] = useState('');
   const [loginPass, setLoginPass] = useState('');
+  const [showLoginPass, setShowLoginPass] = useState(false);
   const [loginError, setLoginError] = useState('');
 
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regUser, setRegUser] = useState('');
   const [regPass, setRegPass] = useState('');
+  const [regPassConfirm, setRegPassConfirm] = useState('');
+  const [showRegPass, setShowRegPass] = useState(false);
+  const [showRegConfirmPass, setShowRegConfirmPass] = useState(false);
   const [regError, setRegError] = useState('');
   const [regSuccess, setRegSuccess] = useState(false);
 
@@ -453,6 +492,7 @@ export default function Header() {
   const resetLoginForm = () => {
     setLoginUser('');
     setLoginPass('');
+    setShowLoginPass(false);
     setLoginError('');
   };
 
@@ -461,6 +501,9 @@ export default function Header() {
     setRegEmail('');
     setRegUser('');
     setRegPass('');
+    setRegPassConfirm('');
+    setShowRegPass(false);
+    setShowRegConfirmPass(false);
     setRegError('');
     setRegSuccess(false);
   };
@@ -524,8 +567,18 @@ export default function Header() {
 
   const handleRegister = async () => {
     setRegError('');
-    if (!regName || !regEmail || !regUser || !regPass) {
+    if (!regName || !regEmail || !regUser || !regPass || !regPassConfirm) {
       setRegError('Todos los campos son obligatorios.');
+      return;
+    }
+
+    if (regPass.length < 6) {
+      setRegError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    if (regPass !== regPassConfirm) {
+      setRegError('Las contraseñas no coinciden. Verifica ambos campos.');
       return;
     }
 
@@ -676,7 +729,7 @@ export default function Header() {
                         {user.name}
                       </div>
                       <div className="font-mono text-[10px] text-white/55 uppercase tracking-wider">
-                        {user.role}
+                        {formatRoleLabel(user.role)}
                       </div>
                     </div>
                     <button
@@ -946,7 +999,13 @@ export default function Header() {
                     </div>
 
                     {tab === 'login' && (
-                      <div className="space-y-4">
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          void handleLogin();
+                        }}
+                        className="space-y-4"
+                      >
                         <div>
                           <label className="text-xs text-white/75 font-medium" htmlFor="header-user">
                             Usuario
@@ -954,9 +1013,9 @@ export default function Header() {
                           <input
                             id="header-user"
                             type="text"
+                            autoComplete="username"
                             value={loginUser}
                             onChange={(e) => setLoginUser(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                             className="w-full min-h-[44px] mt-1.5 liquid-glass-input rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/35"
                             placeholder="Tu nombre de usuario"
                           />
@@ -965,15 +1024,25 @@ export default function Header() {
                           <label className="text-xs text-white/75 font-medium" htmlFor="header-pass">
                             Contraseña
                           </label>
-                          <input
-                            id="header-pass"
-                            type="password"
-                            value={loginPass}
-                            onChange={(e) => setLoginPass(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                            className="w-full min-h-[44px] mt-1.5 liquid-glass-input rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/35"
-                            placeholder="Tu contraseña"
-                          />
+                          <div className="relative mt-1.5">
+                            <input
+                              id="header-pass"
+                              type={showLoginPass ? 'text' : 'password'}
+                              autoComplete="current-password"
+                              value={loginPass}
+                              onChange={(e) => setLoginPass(e.target.value)}
+                              className="w-full min-h-[44px] liquid-glass-input rounded-xl pl-4 pr-11 py-2.5 text-white text-sm placeholder-white/35"
+                              placeholder="Tu contraseña"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowLoginPass((v) => !v)}
+                              aria-label={showLoginPass ? 'Ocultar contraseña' : 'Ver contraseña'}
+                              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                            >
+                              <PasswordEyeIcon open={showLoginPass} />
+                            </button>
+                          </div>
                         </div>
 
                         {loginError && (
@@ -984,14 +1053,13 @@ export default function Header() {
                         )}
 
                         <button
-                          type="button"
-                          onClick={handleLogin}
+                          type="submit"
                           disabled={loading}
                           className="w-full min-h-[46px] bg-white hover:bg-white/90 text-black font-semibold py-3 rounded-full text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-2"
                         >
                           {loading ? 'Conectando...' : 'Entrar a mi cuenta'}
                         </button>
-                      </div>
+                      </form>
                     )}
 
                     {tab === 'register' && (
@@ -1007,7 +1075,13 @@ export default function Header() {
                             </p>
                           </div>
                         ) : (
-                          <>
+                          <form
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              void handleRegister();
+                            }}
+                            className="space-y-3.5"
+                          >
                             <div className="grid sm:grid-cols-2 gap-3.5">
                               <div>
                                 <label className="text-xs text-white/75 font-medium" htmlFor="reg-name">
@@ -1016,6 +1090,7 @@ export default function Header() {
                                 <input
                                   id="reg-name"
                                   type="text"
+                                  autoComplete="name"
                                   value={regName}
                                   onChange={(e) => setRegName(e.target.value)}
                                   className="w-full min-h-[44px] mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-white/35"
@@ -1029,6 +1104,7 @@ export default function Header() {
                                 <input
                                   id="reg-email"
                                   type="email"
+                                  autoComplete="email"
                                   value={regEmail}
                                   onChange={(e) => setRegEmail(e.target.value)}
                                   className="w-full min-h-[44px] mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-white/35"
@@ -1036,32 +1112,70 @@ export default function Header() {
                                 />
                               </div>
                             </div>
+
+                            <div>
+                              <label className="text-xs text-white/75 font-medium" htmlFor="reg-user">
+                                Usuario
+                              </label>
+                              <input
+                                id="reg-user"
+                                type="text"
+                                autoComplete="username"
+                                value={regUser}
+                                onChange={(e) => setRegUser(e.target.value)}
+                                className="w-full min-h-[44px] mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-white/35"
+                                placeholder="Nombre de usuario"
+                              />
+                            </div>
+
                             <div className="grid sm:grid-cols-2 gap-3.5">
-                              <div>
-                                <label className="text-xs text-white/75 font-medium" htmlFor="reg-user">
-                                  Usuario
-                                </label>
-                                <input
-                                  id="reg-user"
-                                  type="text"
-                                  value={regUser}
-                                  onChange={(e) => setRegUser(e.target.value)}
-                                  className="w-full min-h-[44px] mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-white/35"
-                                  placeholder="Nombre de usuario"
-                                />
-                              </div>
                               <div>
                                 <label className="text-xs text-white/75 font-medium" htmlFor="reg-pass">
                                   Contraseña
                                 </label>
-                                <input
-                                  id="reg-pass"
-                                  type="password"
-                                  value={regPass}
-                                  onChange={(e) => setRegPass(e.target.value)}
-                                  className="w-full min-h-[44px] mt-1 liquid-glass-input rounded-xl px-3.5 py-2.5 text-white text-sm placeholder-white/35"
-                                  placeholder="Mínimo 6 caracteres"
-                                />
+                                <div className="relative mt-1">
+                                  <input
+                                    id="reg-pass"
+                                    type={showRegPass ? 'text' : 'password'}
+                                    autoComplete="new-password"
+                                    value={regPass}
+                                    onChange={(e) => setRegPass(e.target.value)}
+                                    className="w-full min-h-[44px] liquid-glass-input rounded-xl pl-3.5 pr-10 py-2.5 text-white text-sm placeholder-white/35"
+                                    placeholder="Mínimo 6 caracteres"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowRegPass((v) => !v)}
+                                    aria-label={showRegPass ? 'Ocultar contraseña' : 'Ver contraseña'}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                                  >
+                                    <PasswordEyeIcon open={showRegPass} />
+                                  </button>
+                                </div>
+                              </div>
+                              <div>
+                                <label className="text-xs text-white/75 font-medium" htmlFor="reg-pass-confirm">
+                                  Confirmar contraseña
+                                </label>
+                                <div className="relative mt-1">
+                                  <input
+                                    id="reg-pass-confirm"
+                                    type={showRegConfirmPass ? 'text' : 'password'}
+                                    autoComplete="new-password"
+                                    value={regPassConfirm}
+                                    onChange={(e) => setRegPassConfirm(e.target.value)}
+                                    className="w-full min-h-[44px] liquid-glass-input rounded-xl pl-3.5 pr-10 py-2.5 text-white text-sm placeholder-white/35"
+                                    placeholder="Repite tu contraseña"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowRegConfirmPass((v) => !v)}
+                                    aria-label={showRegConfirmPass ? 'Ocultar confirmación' : 'Ver confirmación'}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                                  >
+                                    <PasswordEyeIcon open={showRegConfirmPass} />
+                                  </button>
+                                </div>
                               </div>
                             </div>
 
@@ -1073,8 +1187,7 @@ export default function Header() {
                             )}
 
                             <button
-                              type="button"
-                              onClick={handleRegister}
+                              type="submit"
                               disabled={loading}
                               className="w-full min-h-[46px] bg-white hover:bg-white/90 text-black font-semibold py-3 rounded-full text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
@@ -1084,7 +1197,7 @@ export default function Header() {
                             <p className="text-[11px] text-white/50 text-center">
                               Después de registrarte, un administrador aprobará tu cuenta.
                             </p>
-                          </>
+                          </form>
                         )}
                       </div>
                     )}

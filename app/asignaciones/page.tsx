@@ -171,9 +171,10 @@ export default function AsignacionesPage() {
           aria-labelledby="assignments-heading"
           className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-7 border-b border-white/10"
         >
-          <div className="space-y-2">
-            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">
-              Gestión académica · Vínculos
+          <div className="space-y-2.5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#6EE7B7]/35 bg-[#6EE7B7]/10 px-3.5 py-1.5 text-xs sm:text-sm font-bold uppercase tracking-[0.16em] text-[#6EE7B7] shadow-[0_0_20px_-6px_rgba(110,231,183,0.4)]">
+              <span className="h-2 w-2 rounded-full bg-[#6EE7B7]" aria-hidden="true" />
+              Gestión académica · Asignaciones
             </div>
             <h1
               id="assignments-heading"

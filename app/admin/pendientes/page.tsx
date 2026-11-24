@@ -164,9 +164,10 @@ export default function AdminPendientesPage() {
           aria-labelledby="pending-heading"
           className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-7 border-b border-white/10"
         >
-          <div className="space-y-2">
-            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#FDE68A]/85">
-              Control de ingresos · Cola de aprobación
+          <div className="space-y-2.5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#FDE68A]/40 bg-[#FDE68A]/10 px-3.5 py-1.5 text-xs sm:text-sm font-bold uppercase tracking-[0.16em] text-[#FDE68A] shadow-[0_0_20px_-6px_rgba(253,230,138,0.4)]">
+              <span className="h-2 w-2 rounded-full bg-[#FDE68A]" aria-hidden="true" />
+              Control de ingresos · Cola de Aprobación
             </div>
             <h1
               id="pending-heading"
