@@ -698,16 +698,28 @@ export default function Header() {
                   )}
 
                   {(user.role === 'tutor' || user.role === 'docente') && (
-                    <Link
-                      href="/maestro"
-                      className={`text-xs sm:text-[13px] font-semibold px-3.5 py-1.5 rounded-full transition-colors whitespace-nowrap ${
-                        pathname === '/maestro'
-                          ? 'bg-white text-black'
-                          : 'bg-white/[0.08] text-white hover:bg-white/[0.14]'
-                      }`}
-                    >
-                      Mis Estudiantes
-                    </Link>
+                    <div className="flex items-center gap-1 rounded-full bg-white/[0.05] p-1 border border-white/10">
+                      <Link
+                        href="/maestro"
+                        className={`text-xs sm:text-[13px] font-semibold px-3 py-1.5 rounded-full transition-colors whitespace-nowrap ${
+                          pathname === '/maestro'
+                            ? 'bg-white text-black'
+                            : 'text-white/80 hover:text-white'
+                        }`}
+                      >
+                        Mis Estudiantes
+                      </Link>
+                      <Link
+                        href="/maestro/ia"
+                        className={`text-xs sm:text-[13px] font-semibold px-3 py-1.5 rounded-full transition-colors whitespace-nowrap ${
+                          pathname === '/maestro/ia'
+                            ? 'bg-white text-black'
+                            : 'text-[#67E8F9] hover:text-white'
+                        }`}
+                      >
+                        Copiloto IA
+                      </Link>
+                    </div>
                   )}
 
                   {user.role === 'student' && (

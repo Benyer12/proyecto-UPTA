@@ -621,7 +621,8 @@ export async function POST(request: Request) {
 
       const promptGrupo = JSON.stringify({
         tarea:
-          'Generar diagnóstico pedagógico ejecutivo en español para el Reporte PDF del Profesor',
+          'Generar un diagnóstico pedagógico creativo y 3 recomendaciones/métodos prácticos para el aula en el Reporte PDF del Profesor. Adapta las recomendaciones al rendimiento real del grupo y evita repetir frases genéricas.',
+        marcaTemporal: new Date().toISOString(),
         tutorNombre,
         totalEstudiantes,
         totalEstrellas,
@@ -632,12 +633,48 @@ export async function POST(request: Request) {
           niveles: e.nivelesCompletados,
           estrellas: e.estrellasTotales,
         })),
+        formatoJSON: {
+          diagnosticoIA:
+            'string (2 párrafos cortos, claros y creativos sobre el estado del grupo, logros y áreas de mejora)',
+          recomendacionesClave: [
+            'string (método práctico #1 para mejorar el desempeño del grupo)',
+            'string (método práctico #2 para mejorar el desempeño del grupo)',
+            'string (método práctico #3 para mejorar el desempeño del grupo)',
+          ],
+        },
       });
 
       const { texto } = await consultarGoogleGemini(
         promptGrupo,
-        'Eres Gemini de Google en la nube, asistente pedagógico para docentes de primaria (10 a 12 años) en Universo del Conocimiento. Redacta un diagnóstico ejecutivo claro, positivo y accionable de máximo 2 párrafos breves sin bloques markdown.',
+        'Eres Gemini de Google en la nube, asistente psicopedagógico para docentes de primaria (10 a 12 años) en Universo del Conocimiento. Devuelve únicamente un objeto JSON válido con los campos "diagnosticoIA" y "recomendacionesClave" (array de 3 métodos prácticos).',
       );
+
+      let diagnosticoGenerado = '';
+      let recomendacionesGeneradas: string[] = [];
+      if (texto) {
+        try {
+          const limpio = texto.replace(/```json|```/gi, '').trim();
+          const ini = limpio.indexOf('{');
+          const fin = limpio.lastIndexOf('}');
+          if (ini !== -1 && fin > ini) {
+            const parsedGrupo = JSON.parse(limpio.slice(ini, fin + 1)) as {
+              diagnosticoIA?: string;
+              recomendacionesClave?: string[];
+            };
+            if (typeof parsedGrupo.diagnosticoIA === 'string') {
+              diagnosticoGenerado = parsedGrupo.diagnosticoIA.trim();
+            }
+            if (Array.isArray(parsedGrupo.recomendacionesClave)) {
+              recomendacionesGeneradas = parsedGrupo.recomendacionesClave
+                .map((r) => String(r).trim())
+                .filter(Boolean)
+                .slice(0, 4);
+            }
+          }
+        } catch {
+          diagnosticoGenerado = texto.replace(/```[a-z]*|```/gi, '').trim();
+        }
+      }
 
       const destacado = [...estudiantes].sort(
         (a, b) => b.estrellasTotales - a.estrellasTotales,
@@ -648,7 +685,7 @@ export async function POST(request: Request) {
 
       const diagnosticoPorDefecto =
         totalEstudiantes === 0
-          ? `El grupo del tutor ${tutorNombre} aún no registra estudiantes asignados. Una vez vinculados desde el panel de Asignaciones, el Tutor IA Gemini generará métricas detalladas por planeta y nivel adaptativo.`
+          ? `El grupo del tutor ${tutorNombre} aún no registra estudiantes asignados. Una vez vinculados desde el panel de Asignaciones, el Tutor IA Gemini generará métricas detalladas por planeta y métodos de mejora.`
           : `El grupo a cargo de ${tutorNombre} cuenta con ${totalEstudiantes} ${
               totalEstudiantes === 1 ? 'estudiante activo' : 'estudiantes activos'
             }, acumulando ${totalEstrellas} estrellas y ${totalNivelesCompletados} niveles completados (promedio de ${promedioEstrellas} estrellas por estudiante). ${
@@ -657,9 +694,22 @@ export async function POST(request: Request) {
                 : ''
             } ${
               requiereApoyo && requiereApoyo.id !== destacado?.id
-                ? `Se sugiere acompañar con retos de Nivel 1 y 2 a ${requiereApoyo.nombre} para fortalecer su ritmo en Numérix y Letralia.`
-                : 'Se recomienda mantener el ritmo progresivo de retos en los tableros de Numérix y Letralia para consolidar el aprendizaje.'
+                ? `Se sugiere acompañar con micro-sesiones guiadas y lectura pausada a ${requiereApoyo.nombre} para fortalecer su ritmo en Numérix y Letralia.`
+                : 'Se recomienda alternar misiones en los tres planetas y reforzar la explicación en voz alta para consolidar el aprendizaje.'
             }`;
+
+      const recomendacionesPorDefecto =
+        promedioEstrellas < 6
+          ? [
+              'Aplicar micro-sesiones de 15 minutos con lectura en voz alta del enunciado antes de elegir respuesta.',
+              'Usar el método de pausa y pista: analizar la pista en conjunto cuando surja un error sin presionar al estudiante.',
+              'Repetir un nivel completado con 1 estrella para transformar la práctica en un reto de superación a 3 estrellas.',
+            ]
+          : [
+              'Emplear la técnica Feynman infantil: pedir al estudiante que explique cómo resolvió el Guardián Final.',
+              'Alternar tableros de Numérix, Letralia y Naturae cada sesión para mantener alta la curiosidad.',
+              'Proponer metas semanales de estrellas combinadas con ejemplos prácticos de la vida cotidiana.',
+            ];
 
       const preguntasGuardadas = await leerArchivoPreguntasJSON();
 
@@ -677,14 +727,11 @@ export async function POST(request: Request) {
           totalNivelesCompletados,
           promedioEstrellas,
           totalPreguntasGeneradasIA: preguntasGuardadas.length,
-          diagnosticoIA: (texto || diagnosticoPorDefecto)
-            .replace(/```[a-z]*|```/gi, '')
-            .trim(),
-          recomendacionesClave: [
-            'Alternar sesiones en los tableros de Numérix (cálculo) y Letralia (lenguaje) para mantener la motivación.',
-            'Dejar que el motor adaptativo suba la dificultad de forma gradual solo cuando el estudiante demuestre dominio.',
-            'Acompañar los intentos fallidos manteniendo el mismo nivel de práctica sin castigos ni retrocesos.',
-          ],
+          diagnosticoIA: (diagnosticoGenerado || diagnosticoPorDefecto).trim(),
+          recomendacionesClave:
+            recomendacionesGeneradas.length > 0
+              ? recomendacionesGeneradas
+              : recomendacionesPorDefecto,
           resumenesPorEstudiante,
           ultimasPreguntasIA: preguntasGuardadas.slice(0, 6),
           historialIndividual: memoriaReportesCache.slice(0, 15),

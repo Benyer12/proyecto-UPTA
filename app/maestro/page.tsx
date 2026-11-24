@@ -10,7 +10,6 @@ import {
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
 import RoleAvatar from '../../components/RoleAvatar';
-import TeacherReportIACard from '../../components/TeacherReportIACard';
 
 const PLANET_DATA = [
   {
@@ -232,13 +231,6 @@ export default function MaestroPage() {
             </LiquidGlass>
           </div>
         </section>
-
-        {/* Copiloto Docente Google Gemini y Reporte PDF del Profesor */}
-        <TeacherReportIACard
-          tutorName={user.name || 'Tutor'}
-          students={students}
-          totalNiveles={totalNiveles}
-        />
 
         {/* Hoja cristalina principal: Mis estudiantes (estilo esmerilado suave como tarjetas de currículo) */}
         <section aria-labelledby="students-heading">

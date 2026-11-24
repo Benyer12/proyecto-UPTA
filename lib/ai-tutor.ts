@@ -71,6 +71,8 @@ export interface ResumenIndividualEstudianteIA {
   resumenIA: string;
   fortalezaPrincipal: string;
   metaRecomendada: string;
+  comoMejorar: string;
+  metodosEmplear: string[];
 }
 
 export interface EntradaEvaluacionTutorIA {
@@ -830,34 +832,111 @@ export async function generarResumenPorCadaEstudiante(
   modelo: string;
   proveedor: ProveedorTutorIA;
 }> {
+  const semillaCreativa = Math.floor(Date.now() / 1000);
+  const enfoquesCreativos = [
+    'motivación intrínseca y retos cortos por metas',
+    'aprendizaje visual y ejemplos de la vida cotidiana',
+    'refuerzo positivo paso a paso con lectura guiada',
+    'gamificación por rachas y consolidación de errores',
+  ];
+
   const baseResumenes: ResumenIndividualEstudianteIA[] = estudiantes.map((est, idx) => {
     const completados = Number(est.nivelesCompletados) || 0;
     const estrellas = Number(est.estrellasTotales) || 0;
     const pct =
       totalNiveles > 0 ? Math.min(100, Math.round((completados / totalNiveles) * 100)) : 0;
+    const estrellasPorNivel = completados > 0 ? Number((estrellas / completados).toFixed(1)) : 0;
 
     const nivelIA: NivelDificultadIA =
       estrellas >= 12 || pct >= 65 ? 3 : estrellas >= 4 || pct >= 25 ? 2 : 1;
     const etiquetaNivel = ETIQUETAS_NIVEL_IA[nivelIA];
 
+    const variante = (semillaCreativa + idx) % 3;
+
     const fortalezaPrincipal =
       nivelIA === 3
-        ? 'Dominio sobresaliente en cálculo cuántico (Numérix) y comprensión lectora (Letralia).'
+        ? [
+            `Alto dominio en desafíos avanzados (${estrellasPorNivel} ★ por nivel) y gran autonomía.`,
+            `Excelente consistencia entre Numérix, Letralia y Naturae con ${estrellas} estrellas.`,
+            `Capacidad destacada para resolver retos de Guardián sin perder ritmo.`,
+          ][variante]
         : nivelIA === 2
-          ? 'Constancia en la resolución de misiones orbitales y buen aprovechamiento de pistas.'
-          : 'Inicio activo de exploración espacial con potencial de crecimiento en retos base.';
+          ? [
+              `Buen ritmo de avance (${pct}%) aprovechando las pistas para consolidar conceptos.`,
+              `Progreso constante en misiones intermedias con ${estrellas} estrellas acumuladas.`,
+              `Participación estable que demuestra comprensión creciente de los temas base.`,
+            ][variante]
+          : [
+              `Disposición positiva para explorar los primeros tableros del universo educativo.`,
+              `Buen punto de partida para construir hábitos diarios de práctica gamificada.`,
+              `Potencial de crecimiento rápido al combinar pistas guiadas con retos cortos.`,
+            ][variante];
 
     const metaRecomendada =
       nivelIA === 3
-        ? 'Enfrentar retos de Guardián en Nivel 3 y misiones combinadas de Naturae.'
+        ? [
+            'Alcanzar las 3 estrellas en los niveles restantes de Naturae y liderar retos combinados.',
+            'Completar el 100% del mapa estelar explicando sus estrategias en voz alta.',
+            'Superar duelos de Guardián de Nivel 3 sin usar pistas de respaldo.',
+          ][variante]
         : nivelIA === 2
-          ? 'Completar 2 misiones adicionales en Letralia y Numérix para ascender a Nivel 3.'
-          : 'Practicar retos guiados de Nivel 1 en el Tutor IA antes del duelo de Guardián.';
+          ? [
+              `Subir el promedio actual (${estrellasPorNivel} ★/nivel) repitiendo un nivel con 1 o 2 estrellas.`,
+              'Completar 2 nuevos niveles alternando Numérix y Letralia esta semana.',
+              'Consolidar el paso a Nivel 3 resolviendo primero 5 retos sin prisa.',
+            ][variante]
+          : [
+              'Completar los primeros 2 niveles de Numérix o Letralia en sesiones de 15 minutos.',
+              'Lograr su primera insignia de 3 estrellas usando las pistas como guía de aprendizaje.',
+              'Explorar al menos 1 tablero de cada planeta para descubrir su área favorita.',
+            ][variante];
+
+    const comoMejorar =
+      completados === 0
+        ? `${est.nombre} aún no inicia sus tableros. Puede mejorar comenzando con sesiones breves y acompañadas en el Nivel 1 para ganar confianza desde el primer acierto.`
+        : estrellasPorNivel < 2.2
+          ? `${est.nombre} completa niveles (${completados}/${totalNiveles}), pero promedia ${estrellasPorNivel} ★ por nivel. Puede mejorar leyendo con calma cada enunciado y revisando la pista antes de responder.`
+          : pct < 50
+            ? `${est.nombre} logra buenas calificaciones (${estrellasPorNivel} ★/nivel), pero su avance total es del ${pct}%. Puede mejorar aumentando la frecuencia semanal de juego para abrir más mundos.`
+            : `${est.nombre} lleva un sólido ${pct}% de avance. Puede mejorar perfeccionando precisión en niveles de mayor dificultad y transfiriendo lo aprendido a problemas cotidianos.`;
+
+    const metodosEmplear =
+      completados === 0
+        ? [
+            'Micro-sesiones de 15 minutos (estilo Pomodoro infantil) con un objetivo claro por día.',
+            'Acompañamiento inicial leyendo juntos la primera pregunta en voz alta.',
+            'Celebrar cada estrella obtenida para activar motivación positiva.',
+          ]
+        : estrellasPorNivel < 2.2
+          ? [
+              'Método de pausa y pista: pedirle que explique por qué eligió su respuesta antes de confirmar.',
+              'Práctica espaciada: repetir un nivel ya jugado para subir de 1-2 estrellas a 3 estrellas.',
+              'Uso de material concreto o dibujos rápidos en papel (para fracciones o sumas de Numérix).',
+            ]
+          : pct < 50
+            ? [
+                'Rutina alternada: 1 tablero de Numérix seguido de 1 de Letralia o Naturae cada 2 días.',
+                'Reto de racha semanal: fijar una meta visual de 3 nuevas estrellas por semana.',
+                'Autoexplicación: que el niño enseñe al tutor cómo resolvió el Guardián Final.',
+              ]
+            : [
+                'Aprendizaje basado en retos: resolver problemas reales en casa (compras, recetas, lecturas).',
+                'Técnica Feynman infantil: explicar con sus propias palabras los conceptos de Ciencias y Lenguaje.',
+                'Desafíos de precisión sin pistas para fortalecer seguridad y agilidad mental.',
+              ];
 
     const resumenIA =
       completados === 0 && estrellas === 0
-        ? `${est.nombre} aún se encuentra en fase inicial (0 niveles registrados). Se recomienda iniciar con una sesión guiada de 15 minutos en Numérix (Nivel 1 · Base Orbital) junto al Tutor IA.`
-        : `${est.nombre} registra ${completados} de ${totalNiveles} niveles completados (${pct}% de avance) y ${estrellas} estrellas acumuladas, ubicándose en ${etiquetaNivel}. ${fortalezaPrincipal}`;
+        ? [
+            `${est.nombre} está listo para despegar (0 niveles completados). Con un arranque guiado de 15 minutos en Numérix Nivel 1 tomará ritmo rápidamente.`,
+            `${est.nombre} aún no registra partidas finalizadas. Es el momento ideal para una primera misión acompañada en el planeta que más le llame la atención.`,
+            `${est.nombre} se encuentra en la plataforma de lanzamiento (0% de avance). Un primer reto guiado despertará su curiosidad desde el inicio.`,
+          ][variante]
+        : [
+            `${est.nombre} suma ${completados} de ${totalNiveles} niveles (${pct}%) y ${estrellas} estrellas (${estrellasPorNivel} ★/nivel), ubicándose en ${etiquetaNivel}.`,
+            `Con ${estrellas} estrellas acumuladas en ${completados} niveles (${pct}% del mapa), ${est.nombre} muestra un desempeño acorde a ${etiquetaNivel}.`,
+            `${est.nombre} alcanza ${pct}% de progreso total (${completados}/${totalNiveles} niveles) con un promedio de ${estrellasPorNivel} estrellas por nivel en ${etiquetaNivel}.`,
+          ][variante];
 
     return {
       estudianteId: est.id || `est-${idx}`,
@@ -874,6 +953,8 @@ export async function generarResumenPorCadaEstudiante(
       resumenIA,
       fortalezaPrincipal,
       metaRecomendada,
+      comoMejorar,
+      metodosEmplear,
     };
   });
 
@@ -885,8 +966,13 @@ export async function generarResumenPorCadaEstudiante(
     };
   }
 
+  const enfoqueActual = enfoquesCreativos[semillaCreativa % enfoquesCreativos.length];
+
   const prompt = JSON.stringify({
-    tarea: 'Generar un resumen pedagógico breve, motivador y personalizado por cada estudiante de primaria (10 a 12 años)',
+    tarea:
+      'Generar un análisis pedagógico creativo, único y accionable por cada estudiante de primaria (10 a 12 años). Evita frases repetitivas o genéricas; adapta el tono y los consejos a los números exactos de cada niño.',
+    enfoquePedagogicoDeEstaSesion: enfoqueActual,
+    marcaTemporalVariacion: new Date().toISOString(),
     estudiantes: baseResumenes.map((e) => ({
       estudianteId: e.estudianteId,
       nombre: e.nombre,
@@ -894,15 +980,28 @@ export async function generarResumenPorCadaEstudiante(
       totalNiveles: e.totalNiveles,
       porcentajeAvance: e.porcentajeAvance,
       estrellasTotales: e.estrellasTotales,
+      promedioEstrellasPorNivel:
+        e.nivelesCompletados > 0
+          ? Number((e.estrellasTotales / e.nivelesCompletados).toFixed(1))
+          : 0,
       etiquetaNivel: e.etiquetaNivel,
+      ultimaSesion: e.ultimaSesion,
     })),
     formatoJSON: {
       estudiantes: [
         {
           estudianteId: 'string',
-          resumenIA: 'string (2 oraciones claras sobre el progreso del niño)',
-          fortalezaPrincipal: 'string',
-          metaRecomendada: 'string',
+          resumenIA:
+            'string (2 o 3 oraciones creativas y específicas sobre el progreso real del estudiante)',
+          fortalezaPrincipal: 'string (fortaleza concreta observada en sus métricas)',
+          metaRecomendada: 'string (siguiente paso claro y motivador)',
+          comoMejorar:
+            'string (explicación práctica de en qué y cómo puede mejorar según su avance y estrellas)',
+          metodosEmplear: [
+            'string (método pedagógico concreto #1 para aplicar con el niño)',
+            'string (método pedagógico concreto #2 para aplicar con el niño)',
+            'string (método pedagógico concreto #3 para aplicar con el niño)',
+          ],
         },
       ],
     },
@@ -910,7 +1009,7 @@ export async function generarResumenPorCadaEstudiante(
 
   const { texto, modeloUsado, proveedor } = await consultarGoogleGemini(
     prompt,
-    'Eres Gemini de Google en la nube. Devuelve únicamente un objeto JSON válido con la lista "estudiantes" y sus campos resumenIA, fortalezaPrincipal y metaRecomendada.',
+    'Eres Gemini de Google en la nube, especialista en psicopedagogía infantil (10 a 12 años). Sé creativo, cercano y concreto; nunca repitas exactamente el mismo texto entre estudiantes ni entre sesiones. Devuelve únicamente un objeto JSON válido con la lista "estudiantes" y los campos resumenIA, fortalezaPrincipal, metaRecomendada, comoMejorar y metodosEmplear (array de 3 strings).',
   );
 
   const parsed = extraerJSONDeTexto<{
@@ -919,6 +1018,8 @@ export async function generarResumenPorCadaEstudiante(
       resumenIA?: string;
       fortalezaPrincipal?: string;
       metaRecomendada?: string;
+      comoMejorar?: string;
+      metodosEmplear?: string[];
     }>;
   }>(texto);
 
@@ -932,11 +1033,16 @@ export async function generarResumenPorCadaEstudiante(
       resumenes: baseResumenes.map((item) => {
         const ia = mapa.get(item.estudianteId);
         if (!ia) return item;
+        const metodosValidos = Array.isArray(ia.metodosEmplear)
+          ? ia.metodosEmplear.map((m) => String(m).trim()).filter(Boolean).slice(0, 4)
+          : [];
         return {
           ...item,
           resumenIA: ia.resumenIA || item.resumenIA,
           fortalezaPrincipal: ia.fortalezaPrincipal || item.fortalezaPrincipal,
           metaRecomendada: ia.metaRecomendada || item.metaRecomendada,
+          comoMejorar: ia.comoMejorar || item.comoMejorar,
+          metodosEmplear: metodosValidos.length > 0 ? metodosValidos : item.metodosEmplear,
         };
       }),
       modelo: modeloUsado,
