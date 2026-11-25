@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { LiquidGlass } from '../ui/glasscn/liquid-glass';
 import type { ResultadoPartidaInput } from '../../lib/minijuegos-types';
+import ArcadeScreenFrame from './ArcadeScreenFrame';
 
 const COLS = 10;
 const ROWS = 20;
@@ -345,10 +346,15 @@ export default function TetrisArcadeGame({
         </div>
 
         <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-          <div className="relative w-[220px] h-[440px] rounded-2xl overflow-hidden border-2 border-[#C4B5FD]/35 shadow-[0_0_45px_-14px_rgba(196,181,253,0.45)] bg-[#0D091D]">
+          <ArcadeScreenFrame
+            className="w-[236px] h-[456px]"
+            accentColor="rgba(196, 181, 253, 0.35)"
+            glowColor="rgba(196, 181, 253, 0.42)"
+            bgColor="#0D091D"
+          >
             <canvas ref={canvasRef} className="w-full h-full block" aria-label="Tablero de Bloques Quánticos" />
             {status !== 'playing' && (
-              <div className="absolute inset-0 bg-[#0D091D]/86 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center gap-3">
+              <div className="absolute inset-0 bg-[#0D091D]/88 flex flex-col items-center justify-center p-4 text-center gap-3">
                 <div className="text-xl font-black text-white">
                   {status === 'gameover' ? `Puntos: ${score}` : 'Bloques Quánticos'}
                 </div>
@@ -366,7 +372,7 @@ export default function TetrisArcadeGame({
                 </button>
               </div>
             )}
-          </div>
+          </ArcadeScreenFrame>
 
           <div className="grid grid-cols-3 gap-2 w-[200px]">
             <div />

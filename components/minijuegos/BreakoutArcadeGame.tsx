@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { LiquidGlass } from '../ui/glasscn/liquid-glass';
 import type { ResultadoPartidaInput } from '../../lib/minijuegos-types';
+import ArcadeScreenFrame from './ArcadeScreenFrame';
 
 const W = 440;
 const H = 440;
@@ -372,7 +373,12 @@ export default function BreakoutArcadeGame({
         </div>
 
         <div className="flex flex-col items-center gap-4">
-          <div className="relative w-full max-w-[440px] aspect-square rounded-2xl overflow-hidden border-2 border-[#D8B4FE]/35 shadow-[0_0_45px_-14px_rgba(216,180,254,0.45)] bg-[#090617] touch-none">
+          <ArcadeScreenFrame
+            className="w-full max-w-[440px] aspect-square touch-none"
+            accentColor="rgba(216, 180, 254, 0.35)"
+            glowColor="rgba(216, 180, 254, 0.42)"
+            bgColor="#090617"
+          >
             <canvas
               ref={canvasRef}
               onMouseMove={(e) => handlePointerMove(e.clientX)}
@@ -383,7 +389,7 @@ export default function BreakoutArcadeGame({
               aria-label="Tablero de Ladrillos Cósmicos"
             />
             {status !== 'playing' && (
-              <div className="absolute inset-0 bg-[#090617]/84 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center gap-4">
+              <div className="absolute inset-0 bg-[#090617]/88 flex flex-col items-center justify-center p-6 text-center gap-4">
                 <div className="font-mono text-xs uppercase tracking-[0.2em] text-[#D8B4FE]">
                   {status === 'gameover' ? 'Fin de la partida' : 'Arena lista'}
                 </div>
@@ -404,7 +410,7 @@ export default function BreakoutArcadeGame({
                 </button>
               </div>
             )}
-          </div>
+          </ArcadeScreenFrame>
         </div>
       </div>
     </LiquidGlass>

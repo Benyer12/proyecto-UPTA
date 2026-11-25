@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { LiquidGlass } from './ui/glasscn/liquid-glass';
 import { useThemeStore } from '../lib/theme-store';
+import ArcadeScreenFrame from './minijuegos/ArcadeScreenFrame';
 
 type Point = { x: number; y: number };
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
@@ -467,7 +468,12 @@ export default function SnakeArcadeGame({
         {/* Área central: Tablero Canvas + Panel lateral */}
         <div className="grid lg:grid-cols-12 gap-6 items-center">
           <div className="lg:col-span-7 flex justify-center">
-            <div className="relative w-full max-w-[440px] aspect-square rounded-2xl overflow-hidden border-2 border-[#67E8F9]/35 shadow-[0_0_45px_-14px_rgba(103,232,249,0.45)] bg-[#050B16]">
+            <ArcadeScreenFrame
+              className="w-full max-w-[440px] aspect-square"
+              accentColor="rgba(103, 232, 249, 0.35)"
+              glowColor="rgba(103, 232, 249, 0.42)"
+              bgColor="#050B16"
+            >
               <canvas
                 ref={canvasRef}
                 className="w-full h-full block"
@@ -475,7 +481,7 @@ export default function SnakeArcadeGame({
               />
 
               {status !== 'playing' && (
-                <div className="absolute inset-0 bg-[#050B16]/82 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center gap-4">
+                <div className="absolute inset-0 bg-[#050B16]/88 flex flex-col items-center justify-center p-6 text-center gap-4">
                   <div className="font-mono text-xs uppercase tracking-[0.2em] text-[#67E8F9]">
                     {status === 'idle'
                       ? 'Listo para despegar'
@@ -525,7 +531,7 @@ export default function SnakeArcadeGame({
                   </div>
                 </div>
               )}
-            </div>
+            </ArcadeScreenFrame>
           </div>
 
           {/* Controles, velocidad e instrucciones */}

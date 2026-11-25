@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { LiquidGlass } from '../ui/glasscn/liquid-glass';
 import type { ResultadoPartidaInput } from '../../lib/minijuegos-types';
+import ArcadeScreenFrame from './ArcadeScreenFrame';
 
 const W = 500;
 const H = 340;
@@ -323,7 +324,12 @@ export default function PongArcadeGame({
         </div>
 
         <div className="flex justify-center">
-          <div className="relative w-full max-w-[500px] aspect-[500/340] rounded-2xl overflow-hidden border-2 border-[#93C5FD]/35 shadow-[0_0_45px_-14px_rgba(147,197,253,0.45)] bg-[#060F24] touch-none">
+          <ArcadeScreenFrame
+            className="w-full max-w-[500px] aspect-[500/340] touch-none"
+            accentColor="rgba(147, 197, 253, 0.35)"
+            glowColor="rgba(147, 197, 253, 0.42)"
+            bgColor="#060F24"
+          >
             <canvas
               ref={canvasRef}
               onMouseMove={(e) => handlePointerMove(e.clientY)}
@@ -334,7 +340,7 @@ export default function PongArcadeGame({
               aria-label="Tablero de Pong Nebular"
             />
             {status !== 'playing' && (
-              <div className="absolute inset-0 bg-[#060F24]/84 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center gap-3">
+              <div className="absolute inset-0 bg-[#060F24]/88 flex flex-col items-center justify-center p-6 text-center gap-3">
                 <div className="text-2xl font-black text-white">
                   {status === 'gameover'
                     ? playerGoals >= WIN_GOALS
@@ -356,7 +362,7 @@ export default function PongArcadeGame({
                 </button>
               </div>
             )}
-          </div>
+          </ArcadeScreenFrame>
         </div>
       </div>
     </LiquidGlass>

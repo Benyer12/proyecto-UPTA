@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { LiquidGlass } from '../ui/glasscn/liquid-glass';
 import type { ResultadoPartidaInput } from '../../lib/minijuegos-types';
+import ArcadeScreenFrame from './ArcadeScreenFrame';
 
 const W = 540;
 const H = 260;
@@ -284,13 +285,16 @@ export default function RunnerArcadeGame({
         </div>
 
         <div className="flex flex-col items-center gap-4">
-          <div
+          <ArcadeScreenFrame
             onClick={status === 'playing' ? triggerJump : undefined}
-            className="relative w-full max-w-[540px] aspect-[540/260] rounded-2xl overflow-hidden border-2 border-[#FDA4AF]/35 shadow-[0_0_45px_-14px_rgba(253,164,175,0.45)] bg-[#150711] cursor-pointer"
+            className="w-full max-w-[540px] aspect-[540/260] cursor-pointer"
+            accentColor="rgba(253, 164, 175, 0.35)"
+            glowColor="rgba(253, 164, 175, 0.42)"
+            bgColor="#150711"
           >
             <canvas ref={canvasRef} className="w-full h-full block" aria-label="Tablero de Salto Orbital" />
             {status !== 'playing' && (
-              <div className="absolute inset-0 bg-[#150711]/84 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center gap-3">
+              <div className="absolute inset-0 bg-[#150711]/88 flex flex-col items-center justify-center p-4 text-center gap-3">
                 <div className="text-2xl font-black text-white">
                   {status === 'gameover' ? `Puntuación: ${score}` : 'Salto Orbital'}
                 </div>
@@ -311,7 +315,7 @@ export default function RunnerArcadeGame({
                 </button>
               </div>
             )}
-          </div>
+          </ArcadeScreenFrame>
 
           <button
             type="button"

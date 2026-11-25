@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { LiquidGlass } from '../ui/glasscn/liquid-glass';
 import type { ResultadoPartidaInput } from '../../lib/minijuegos-types';
+import ArcadeScreenFrame from './ArcadeScreenFrame';
 
 const W = 440;
 const H = 440;
@@ -378,10 +379,15 @@ export default function InvadersArcadeGame({
         </div>
 
         <div className="flex flex-col items-center gap-4">
-          <div className="relative w-full max-w-[440px] aspect-square rounded-2xl overflow-hidden border-2 border-[#6EE7B7]/35 shadow-[0_0_45px_-14px_rgba(110,231,183,0.45)] bg-[#04120D]">
+          <ArcadeScreenFrame
+            className="w-full max-w-[440px] aspect-square"
+            accentColor="rgba(110, 231, 183, 0.35)"
+            glowColor="rgba(110, 231, 183, 0.42)"
+            bgColor="#04120D"
+          >
             <canvas ref={canvasRef} className="w-full h-full block" aria-label="Tablero de Invasores Arcade" />
             {status !== 'playing' && (
-              <div className="absolute inset-0 bg-[#04120D]/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center gap-4">
+              <div className="absolute inset-0 bg-[#04120D]/88 flex flex-col items-center justify-center p-6 text-center gap-4">
                 <div className="font-mono text-xs uppercase tracking-[0.2em] text-[#6EE7B7]">
                   {status === 'gameover' ? 'Base comprometida' : 'Escuadrón listo'}
                 </div>
@@ -402,7 +408,7 @@ export default function InvadersArcadeGame({
                 </button>
               </div>
             )}
-          </div>
+          </ArcadeScreenFrame>
 
           <div className="flex items-center gap-3">
             <button
