@@ -1,0 +1,210 @@
+export interface EstadisticasGlobalesMinijuego {
+  totalIntentos: number;
+  recordGlobal: number;
+  poseedorRecord: string | null;
+}
+
+export interface MinijuegoCatalogoItem {
+  id: string;
+  slot: string;
+  titulo: string;
+  genero: string;
+  descripcion: string;
+  requiredStars: number;
+  playable: boolean;
+  dificultadBase: string;
+  unidadRecord: string;
+  etiquetaDetalle: string;
+  accent: string;
+  glow: string;
+  bgTint: string;
+  estadisticasGlobales: EstadisticasGlobalesMinijuego;
+}
+
+export interface ProgresoMinijuegoUsuario {
+  intentos: number;
+  recordPersonal: number;
+  ultimoPuntaje: number;
+  mejorDetalle: number;
+  ultimaModo: string;
+  tiempoTotalSegundos: number;
+  primeraPartida: string;
+  ultimaPartida: string;
+}
+
+export interface RegistroUsuarioMinijuegos {
+  usuarioId: string;
+  usuarioNombre: string;
+  rol: string;
+  juegos: Record<string, ProgresoMinijuegoUsuario>;
+}
+
+export interface MinijuegosDatabase {
+  version: string;
+  ultimaActualizacion: string;
+  minijuegos: MinijuegoCatalogoItem[];
+  progresoUsuarios: Record<string, RegistroUsuarioMinijuegos>;
+}
+
+export const DEFAULT_MINIJUEGOS_CATALOG: MinijuegoCatalogoItem[] = [
+  {
+    id: 'snake',
+    slot: '01',
+    titulo: 'Serpiente Estelar',
+    genero: 'Clásico Arcade',
+    descripcion: 'Come manzanas espaciales y haz crecer tu serpiente.',
+    requiredStars: 17,
+    playable: true,
+    dificultadBase: 'Progresiva',
+    unidadRecord: 'puntos',
+    etiquetaDetalle: 'Manzanas',
+    accent: '#67E8F9',
+    glow: 'rgba(103, 232, 249, 0.36)',
+    bgTint: 'rgba(103, 232, 249, 0.10)',
+    estadisticasGlobales: {
+      totalIntentos: 0,
+      recordGlobal: 0,
+      poseedorRecord: null,
+    },
+  },
+  {
+    id: 'breakout',
+    slot: '02',
+    titulo: 'Ladrillos Cósmicos',
+    genero: 'Destreza',
+    descripcion: 'Rebota la esfera de plasma y rompe muros estelares.',
+    requiredStars: 22,
+    playable: false,
+    dificultadBase: 'Media',
+    unidadRecord: 'puntos',
+    etiquetaDetalle: 'Bloques',
+    accent: '#D8B4FE',
+    glow: 'rgba(216, 180, 254, 0.32)',
+    bgTint: 'rgba(216, 180, 254, 0.10)',
+    estadisticasGlobales: {
+      totalIntentos: 0,
+      recordGlobal: 0,
+      poseedorRecord: null,
+    },
+  },
+  {
+    id: 'invaders',
+    slot: '03',
+    titulo: 'Invasores Arcade',
+    genero: 'Acción Retro',
+    descripcion: 'Defiende la base espacial de oleadas pixeladas.',
+    requiredStars: 26,
+    playable: false,
+    dificultadBase: 'Media',
+    unidadRecord: 'puntos',
+    etiquetaDetalle: 'Oleadas',
+    accent: '#6EE7B7',
+    glow: 'rgba(110, 231, 183, 0.32)',
+    bgTint: 'rgba(110, 231, 183, 0.10)',
+    estadisticasGlobales: {
+      totalIntentos: 0,
+      recordGlobal: 0,
+      poseedorRecord: null,
+    },
+  },
+  {
+    id: 'memory',
+    slot: '04',
+    titulo: 'Memoria Galáctica',
+    genero: 'Memoria',
+    descripcion: 'Encuentra pares de símbolos ocultos en menos turnos.',
+    requiredStars: 30,
+    playable: false,
+    dificultadBase: 'Básica',
+    unidadRecord: 'puntos',
+    etiquetaDetalle: 'Pares',
+    accent: '#FDE68A',
+    glow: 'rgba(253, 230, 138, 0.32)',
+    bgTint: 'rgba(253, 230, 138, 0.10)',
+    estadisticasGlobales: {
+      totalIntentos: 0,
+      recordGlobal: 0,
+      poseedorRecord: null,
+    },
+  },
+  {
+    id: 'runner',
+    slot: '05',
+    titulo: 'Salto Orbital',
+    genero: 'Plataformas',
+    descripcion: 'Corre y salta cráteres lunares sin perder impulso.',
+    requiredStars: 34,
+    playable: false,
+    dificultadBase: 'Rápida',
+    unidadRecord: 'metros',
+    etiquetaDetalle: 'Saltos',
+    accent: '#FDA4AF',
+    glow: 'rgba(253, 164, 175, 0.32)',
+    bgTint: 'rgba(253, 164, 175, 0.10)',
+    estadisticasGlobales: {
+      totalIntentos: 0,
+      recordGlobal: 0,
+      poseedorRecord: null,
+    },
+  },
+  {
+    id: 'pong',
+    slot: '06',
+    titulo: 'Pong Nebular',
+    genero: 'Duelo 1v1',
+    descripcion: 'Duelo clásico de reflejos contra la inteligencia orbital.',
+    requiredStars: 38,
+    playable: false,
+    dificultadBase: 'Competitiva',
+    unidadRecord: 'puntos',
+    etiquetaDetalle: 'Rondas',
+    accent: '#93C5FD',
+    glow: 'rgba(147, 197, 253, 0.32)',
+    bgTint: 'rgba(147, 197, 253, 0.10)',
+    estadisticasGlobales: {
+      totalIntentos: 0,
+      recordGlobal: 0,
+      poseedorRecord: null,
+    },
+  },
+  {
+    id: 'tetris',
+    slot: '07',
+    titulo: 'Bloques Quánticos',
+    genero: 'Puzle Arcade',
+    descripcion: 'Encaja piezas luminosas y completa líneas completas.',
+    requiredStars: 42,
+    playable: false,
+    dificultadBase: 'Progresiva',
+    unidadRecord: 'puntos',
+    etiquetaDetalle: 'Líneas',
+    accent: '#C4B5FD',
+    glow: 'rgba(196, 181, 253, 0.32)',
+    bgTint: 'rgba(196, 181, 253, 0.10)',
+    estadisticasGlobales: {
+      totalIntentos: 0,
+      recordGlobal: 0,
+      poseedorRecord: null,
+    },
+  },
+  {
+    id: 'whack',
+    slot: '08',
+    titulo: 'Caza Cometas',
+    genero: 'Velocidad',
+    descripcion: 'Atrapa destellos estelares antes de que desaparezcan.',
+    requiredStars: 46,
+    playable: false,
+    dificultadBase: 'Rápida',
+    unidadRecord: 'puntos',
+    etiquetaDetalle: 'Aciertos',
+    accent: '#5EEAD4',
+    glow: 'rgba(94, 234, 212, 0.32)',
+    bgTint: 'rgba(94, 234, 212, 0.10)',
+    estadisticasGlobales: {
+      totalIntentos: 0,
+      recordGlobal: 0,
+      poseedorRecord: null,
+    },
+  },
+];

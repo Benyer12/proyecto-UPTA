@@ -1,220 +1,111 @@
 'use client';
 
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import Link from 'next/link';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
-import SnakeArcadeGame from '../../components/SnakeArcadeGame';
+import SnakeArcadeGame, { type SnakeMatchResult } from '../../components/SnakeArcadeGame';
 import { useAuthStore } from '../../lib/auth-store';
 import { obtenerProgresoEstudianteHibrido } from '../../lib/offline-sync';
+import {
+  DEFAULT_MINIJUEGOS_CATALOG,
+  type MinijuegoCatalogoItem,
+  type ProgresoMinijuegoUsuario,
+} from '../../lib/minijuegos-types';
 
-interface MinijuegoDef {
-  id: string;
-  slot: string;
-  titulo: string;
-  genero: string;
-  descripcion: string;
-  requiredStars: number;
-  playable: boolean;
-  accent: string;
-  glow: string;
-  bgTint: string;
-  artwork: ReactNode;
-}
-
-const MINIJUEGOS: MinijuegoDef[] = [
-  {
-    id: 'snake',
-    slot: '01',
-    titulo: 'Serpiente Estelar',
-    genero: 'Clásico Arcade',
-    descripcion: 'Come manzanas espaciales y haz crecer tu serpiente.',
-    requiredStars: 17,
-    playable: true,
-    accent: '#67E8F9',
-    glow: 'rgba(103, 232, 249, 0.36)',
-    bgTint: 'rgba(103, 232, 249, 0.10)',
-    artwork: (
-      <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
-        <rect x="8" y="8" width="104" height="56" rx="10" fill="#050C1B" stroke="#67E8F9" strokeOpacity="0.3" />
-        {/* Snake body */}
-        <rect x="20" y="38" width="12" height="12" rx="3.5" fill="#10B981" />
-        <rect x="33" y="38" width="12" height="12" rx="3.5" fill="#10B981" />
-        <rect x="46" y="38" width="12" height="12" rx="3.5" fill="#22D3EE" />
-        <rect x="46" y="25" width="12" height="12" rx="3.5" fill="#22D3EE" />
-        <rect x="59" y="25" width="13" height="12" rx="4" fill="#67E8F9" />
-        <circle cx="68.5" cy="28.8" r="1.5" fill="#041521" />
-        <circle cx="68.5" cy="33.2" r="1.5" fill="#041521" />
-        {/* Apple */}
-        <circle cx="92" cy="31" r="7" fill="#FB7185" />
-        <ellipse cx="94" cy="22.5" rx="3" ry="1.6" transform="rotate(-25 94 22.5)" fill="#34D399" />
-      </svg>
-    ),
-  },
-  {
-    id: 'breakout',
-    slot: '02',
-    titulo: 'Ladrillos Cósmicos',
-    genero: 'Destreza',
-    descripcion: 'Rebota la esfera de plasma y rompe muros estelares.',
-    requiredStars: 22,
-    playable: false,
-    accent: '#D8B4FE',
-    glow: 'rgba(216, 180, 254, 0.32)',
-    bgTint: 'rgba(216, 180, 254, 0.10)',
-    artwork: (
-      <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
-        <rect x="8" y="8" width="104" height="56" rx="10" fill="#0B071A" stroke="#D8B4FE" strokeOpacity="0.28" />
-        <rect x="18" y="16" width="18" height="6" rx="2" fill="#D8B4FE" />
-        <rect x="40" y="16" width="18" height="6" rx="2" fill="#A855F7" />
-        <rect x="62" y="16" width="18" height="6" rx="2" fill="#D8B4FE" />
-        <rect x="84" y="16" width="18" height="6" rx="2" fill="#F472B6" />
-        <rect x="28" y="25" width="18" height="6" rx="2" fill="#67E8F9" />
-        <rect x="50" y="25" width="18" height="6" rx="2" fill="#D8B4FE" />
-        <rect x="72" y="25" width="18" height="6" rx="2" fill="#67E8F9" />
-        <circle cx="62" cy="42" r="4" fill="#FDE68A" />
-        <rect x="44" y="53" width="32" height="5" rx="2.5" fill="#E9D5FF" />
-      </svg>
-    ),
-  },
-  {
-    id: 'invaders',
-    slot: '03',
-    titulo: 'Invasores Arcade',
-    genero: 'Acción Retro',
-    descripcion: 'Defiende la base espacial de oleadas pixeladas.',
-    requiredStars: 26,
-    playable: false,
-    accent: '#6EE7B7',
-    glow: 'rgba(110, 231, 183, 0.32)',
-    bgTint: 'rgba(110, 231, 183, 0.10)',
-    artwork: (
-      <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
-        <rect x="8" y="8" width="104" height="56" rx="10" fill="#04130E" stroke="#6EE7B7" strokeOpacity="0.28" />
-        {/* Alien icon */}
-        <rect x="48" y="18" width="24" height="12" rx="3" fill="#6EE7B7" />
-        <rect x="43" y="22" width="5" height="6" rx="1" fill="#6EE7B7" />
-        <rect x="72" y="22" width="5" height="6" rx="1" fill="#6EE7B7" />
-        <rect x="53" y="22" width="4" height="4" fill="#04130E" />
-        <rect x="63" y="22" width="4" height="4" fill="#04130E" />
-        <rect x="59" y="35" width="2.5" height="9" rx="1" fill="#FDE68A" />
-        {/* Ship */}
-        <path d="M50 56L60 46L70 56H50Z" fill="#67E8F9" />
-      </svg>
-    ),
-  },
-  {
-    id: 'memory',
-    slot: '04',
-    titulo: 'Memoria Galáctica',
-    genero: 'Memoria',
-    descripcion: 'Encuentra pares de símbolos ocultos en menos turnos.',
-    requiredStars: 30,
-    playable: false,
-    accent: '#FDE68A',
-    glow: 'rgba(253, 230, 138, 0.32)',
-    bgTint: 'rgba(253, 230, 138, 0.10)',
-    artwork: (
-      <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
-        <rect x="8" y="8" width="104" height="56" rx="10" fill="#171204" stroke="#FDE68A" strokeOpacity="0.28" />
-        <rect x="26" y="16" width="20" height="24" rx="4" fill="#FDE68A" fillOpacity="0.2" stroke="#FDE68A" />
-        <rect x="50" y="16" width="20" height="24" rx="4" fill="#67E8F9" fillOpacity="0.22" stroke="#67E8F9" />
-        <rect x="74" y="16" width="20" height="24" rx="4" fill="#FDE68A" fillOpacity="0.2" stroke="#FDE68A" />
-        <text x="36" y="32" textAnchor="middle" fill="#FDE68A" fontSize="12" fontWeight="800">★</text>
-        <text x="60" y="32" textAnchor="middle" fill="#67E8F9" fontSize="12" fontWeight="800">?</text>
-        <text x="84" y="32" textAnchor="middle" fill="#FDE68A" fontSize="12" fontWeight="800">★</text>
-        <rect x="34" y="47" width="52" height="5" rx="2.5" fill="#FDE68A" fillOpacity="0.4" />
-      </svg>
-    ),
-  },
-  {
-    id: 'runner',
-    slot: '05',
-    titulo: 'Salto Orbital',
-    genero: 'Plataformas',
-    descripcion: 'Corre y salta cráteres lunares sin perder impulso.',
-    requiredStars: 34,
-    playable: false,
-    accent: '#FDA4AF',
-    glow: 'rgba(253, 164, 175, 0.32)',
-    bgTint: 'rgba(253, 164, 175, 0.10)',
-    artwork: (
-      <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
-        <rect x="8" y="8" width="104" height="56" rx="10" fill="#180810" stroke="#FDA4AF" strokeOpacity="0.28" />
-        <line x1="18" y1="52" x2="102" y2="52" stroke="#FDA4AF" strokeOpacity="0.5" strokeWidth="2.5" strokeLinecap="round" />
-        <rect x="32" y="24" width="14" height="14" rx="4" fill="#FDA4AF" />
-        <polygon points="74,52 82,38 90,52" fill="#FDE68A" />
-      </svg>
-    ),
-  },
-  {
-    id: 'pong',
-    slot: '06',
-    titulo: 'Pong Nebular',
-    genero: 'Duelo 1v1',
-    descripcion: 'Duelo clásico de reflejos contra la inteligencia orbital.',
-    requiredStars: 38,
-    playable: false,
-    accent: '#93C5FD',
-    glow: 'rgba(147, 197, 253, 0.32)',
-    bgTint: 'rgba(147, 197, 253, 0.10)',
-    artwork: (
-      <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
-        <rect x="8" y="8" width="104" height="56" rx="10" fill="#071024" stroke="#93C5FD" strokeOpacity="0.28" />
-        <line x1="60" y1="14" x2="60" y2="58" stroke="#93C5FD" strokeOpacity="0.3" strokeWidth="2" strokeDasharray="4 4" />
-        <rect x="20" y="24" width="6" height="22" rx="3" fill="#67E8F9" />
-        <rect x="94" y="30" width="6" height="22" rx="3" fill="#93C5FD" />
-        <circle cx="64" cy="34" r="4.5" fill="#FFFFFF" />
-      </svg>
-    ),
-  },
-  {
-    id: 'tetris',
-    slot: '07',
-    titulo: 'Bloques Quánticos',
-    genero: 'Puzle Arcade',
-    descripcion: 'Encaja piezas luminosas y completa líneas completas.',
-    requiredStars: 42,
-    playable: false,
-    accent: '#C4B5FD',
-    glow: 'rgba(196, 181, 253, 0.32)',
-    bgTint: 'rgba(196, 181, 253, 0.10)',
-    artwork: (
-      <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
-        <rect x="8" y="8" width="104" height="56" rx="10" fill="#0F0B22" stroke="#C4B5FD" strokeOpacity="0.28" />
-        <rect x="44" y="18" width="10" height="10" rx="2" fill="#C4B5FD" />
-        <rect x="55" y="18" width="10" height="10" rx="2" fill="#C4B5FD" />
-        <rect x="66" y="18" width="10" height="10" rx="2" fill="#C4B5FD" />
-        <rect x="55" y="29" width="10" height="10" rx="2" fill="#C4B5FD" />
-        <rect x="33" y="46" width="10" height="10" rx="2" fill="#67E8F9" />
-        <rect x="44" y="46" width="10" height="10" rx="2" fill="#67E8F9" />
-        <rect x="55" y="46" width="10" height="10" rx="2" fill="#6EE7B7" />
-        <rect x="66" y="46" width="10" height="10" rx="2" fill="#6EE7B7" />
-        <rect x="77" y="46" width="10" height="10" rx="2" fill="#FDE68A" />
-      </svg>
-    ),
-  },
-  {
-    id: 'whack',
-    slot: '08',
-    titulo: 'Caza Cometas',
-    genero: 'Velocidad',
-    descripcion: 'Atrapa destellos estelares antes de que desaparezcan.',
-    requiredStars: 46,
-    playable: false,
-    accent: '#5EEAD4',
-    glow: 'rgba(94, 234, 212, 0.32)',
-    bgTint: 'rgba(94, 234, 212, 0.10)',
-    artwork: (
-      <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
-        <rect x="8" y="8" width="104" height="56" rx="10" fill="#051717" stroke="#5EEAD4" strokeOpacity="0.28" />
-        <circle cx="36" cy="28" r="8" fill="#5EEAD4" fillOpacity="0.18" stroke="#5EEAD4" strokeOpacity="0.4" />
-        <circle cx="60" cy="42" r="9" fill="#5EEAD4" />
-        <circle cx="84" cy="28" r="8" fill="#5EEAD4" fillOpacity="0.18" stroke="#5EEAD4" strokeOpacity="0.4" />
-        <path d="M60 35L62.2 39.5L67 40.2L63.5 43.6L64.3 48.4L60 46.1L55.7 48.4L56.5 43.6L53 40.2L57.8 39.5L60 35Z" fill="#041515" />
-      </svg>
-    ),
-  },
-];
+const ARTWORKS: Record<string, ReactNode> = {
+  snake: (
+    <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
+      <rect x="8" y="8" width="104" height="56" rx="10" fill="#050C1B" stroke="#67E8F9" strokeOpacity="0.3" />
+      <rect x="20" y="38" width="12" height="12" rx="3.5" fill="#10B981" />
+      <rect x="33" y="38" width="12" height="12" rx="3.5" fill="#10B981" />
+      <rect x="46" y="38" width="12" height="12" rx="3.5" fill="#22D3EE" />
+      <rect x="46" y="25" width="12" height="12" rx="3.5" fill="#22D3EE" />
+      <rect x="59" y="25" width="13" height="12" rx="4" fill="#67E8F9" />
+      <circle cx="68.5" cy="28.8" r="1.5" fill="#041521" />
+      <circle cx="68.5" cy="33.2" r="1.5" fill="#041521" />
+      <circle cx="92" cy="31" r="7" fill="#FB7185" />
+      <ellipse cx="94" cy="22.5" rx="3" ry="1.6" transform="rotate(-25 94 22.5)" fill="#34D399" />
+    </svg>
+  ),
+  breakout: (
+    <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
+      <rect x="8" y="8" width="104" height="56" rx="10" fill="#0B071A" stroke="#D8B4FE" strokeOpacity="0.28" />
+      <rect x="18" y="16" width="18" height="6" rx="2" fill="#D8B4FE" />
+      <rect x="40" y="16" width="18" height="6" rx="2" fill="#A855F7" />
+      <rect x="62" y="16" width="18" height="6" rx="2" fill="#D8B4FE" />
+      <rect x="84" y="16" width="18" height="6" rx="2" fill="#F472B6" />
+      <rect x="28" y="25" width="18" height="6" rx="2" fill="#67E8F9" />
+      <rect x="50" y="25" width="18" height="6" rx="2" fill="#D8B4FE" />
+      <rect x="72" y="25" width="18" height="6" rx="2" fill="#67E8F9" />
+      <circle cx="62" cy="42" r="4" fill="#FDE68A" />
+      <rect x="44" y="53" width="32" height="5" rx="2.5" fill="#E9D5FF" />
+    </svg>
+  ),
+  invaders: (
+    <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
+      <rect x="8" y="8" width="104" height="56" rx="10" fill="#04130E" stroke="#6EE7B7" strokeOpacity="0.28" />
+      <rect x="48" y="18" width="24" height="12" rx="3" fill="#6EE7B7" />
+      <rect x="43" y="22" width="5" height="6" rx="1" fill="#6EE7B7" />
+      <rect x="72" y="22" width="5" height="6" rx="1" fill="#6EE7B7" />
+      <rect x="53" y="22" width="4" height="4" fill="#04130E" />
+      <rect x="63" y="22" width="4" height="4" fill="#04130E" />
+      <rect x="59" y="35" width="2.5" height="9" rx="1" fill="#FDE68A" />
+      <path d="M50 56L60 46L70 56H50Z" fill="#67E8F9" />
+    </svg>
+  ),
+  memory: (
+    <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
+      <rect x="8" y="8" width="104" height="56" rx="10" fill="#171204" stroke="#FDE68A" strokeOpacity="0.28" />
+      <rect x="26" y="16" width="20" height="24" rx="4" fill="#FDE68A" fillOpacity="0.2" stroke="#FDE68A" />
+      <rect x="50" y="16" width="20" height="24" rx="4" fill="#67E8F9" fillOpacity="0.22" stroke="#67E8F9" />
+      <rect x="74" y="16" width="20" height="24" rx="4" fill="#FDE68A" fillOpacity="0.2" stroke="#FDE68A" />
+      <text x="36" y="32" textAnchor="middle" fill="#FDE68A" fontSize="12" fontWeight="800">★</text>
+      <text x="60" y="32" textAnchor="middle" fill="#67E8F9" fontSize="12" fontWeight="800">?</text>
+      <text x="84" y="32" textAnchor="middle" fill="#FDE68A" fontSize="12" fontWeight="800">★</text>
+      <rect x="34" y="47" width="52" height="5" rx="2.5" fill="#FDE68A" fillOpacity="0.4" />
+    </svg>
+  ),
+  runner: (
+    <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
+      <rect x="8" y="8" width="104" height="56" rx="10" fill="#180810" stroke="#FDA4AF" strokeOpacity="0.28" />
+      <line x1="18" y1="52" x2="102" y2="52" stroke="#FDA4AF" strokeOpacity="0.5" strokeWidth="2.5" strokeLinecap="round" />
+      <rect x="32" y="24" width="14" height="14" rx="4" fill="#FDA4AF" />
+      <polygon points="74,52 82,38 90,52" fill="#FDE68A" />
+    </svg>
+  ),
+  pong: (
+    <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
+      <rect x="8" y="8" width="104" height="56" rx="10" fill="#071024" stroke="#93C5FD" strokeOpacity="0.28" />
+      <line x1="60" y1="14" x2="60" y2="58" stroke="#93C5FD" strokeOpacity="0.3" strokeWidth="2" strokeDasharray="4 4" />
+      <rect x="20" y="24" width="6" height="22" rx="3" fill="#67E8F9" />
+      <rect x="94" y="30" width="6" height="22" rx="3" fill="#93C5FD" />
+      <circle cx="64" cy="34" r="4.5" fill="#FFFFFF" />
+    </svg>
+  ),
+  tetris: (
+    <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
+      <rect x="8" y="8" width="104" height="56" rx="10" fill="#0F0B22" stroke="#C4B5FD" strokeOpacity="0.28" />
+      <rect x="44" y="18" width="10" height="10" rx="2" fill="#C4B5FD" />
+      <rect x="55" y="18" width="10" height="10" rx="2" fill="#C4B5FD" />
+      <rect x="66" y="18" width="10" height="10" rx="2" fill="#C4B5FD" />
+      <rect x="55" y="29" width="10" height="10" rx="2" fill="#C4B5FD" />
+      <rect x="33" y="46" width="10" height="10" rx="2" fill="#67E8F9" />
+      <rect x="44" y="46" width="10" height="10" rx="2" fill="#67E8F9" />
+      <rect x="55" y="46" width="10" height="10" rx="2" fill="#6EE7B7" />
+      <rect x="66" y="46" width="10" height="10" rx="2" fill="#6EE7B7" />
+      <rect x="77" y="46" width="10" height="10" rx="2" fill="#FDE68A" />
+    </svg>
+  ),
+  whack: (
+    <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
+      <rect x="8" y="8" width="104" height="56" rx="10" fill="#051717" stroke="#5EEAD4" strokeOpacity="0.28" />
+      <circle cx="36" cy="28" r="8" fill="#5EEAD4" fillOpacity="0.18" stroke="#5EEAD4" strokeOpacity="0.4" />
+      <circle cx="60" cy="42" r="9" fill="#5EEAD4" />
+      <circle cx="84" cy="28" r="8" fill="#5EEAD4" fillOpacity="0.18" stroke="#5EEAD4" strokeOpacity="0.4" />
+      <path d="M60 35L62.2 39.5L67 40.2L63.5 43.6L64.3 48.4L60 46.1L55.7 48.4L56.5 43.6L53 40.2L57.8 39.5L60 35Z" fill="#041515" />
+    </svg>
+  ),
+};
 
 function LockIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
   return (
@@ -230,11 +121,17 @@ function LockIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
   );
 }
 
+function getLocalProgressKey(userId: string) {
+  return `minijuegos_progreso_local_${userId || 'guest'}`;
+}
+
 export default function MinijuegosPage() {
   const user = useAuthStore((s) => s.user);
   const [mounted, setMounted] = useState(false);
   const [totalStars, setTotalStars] = useState(0);
   const [loadingStars, setLoadingStars] = useState(false);
+  const [catalogo, setCatalogo] = useState<MinijuegoCatalogoItem[]>(DEFAULT_MINIJUEGOS_CATALOG);
+  const [progresoUsuario, setProgresoUsuario] = useState<Record<string, ProgresoMinijuegoUsuario>>({});
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -245,6 +142,62 @@ export default function MinijuegosPage() {
   const roleNorm = (user?.role || '').trim().toLowerCase();
   const isStaff = roleNorm === 'admin' || roleNorm === 'tutor' || roleNorm === 'docente';
   const isStudent = roleNorm === 'student';
+
+  const cargarBaseMinijuegos = useCallback(async () => {
+    const uid = user?.id ? String(user.id) : '';
+    let localMap: Record<string, ProgresoMinijuegoUsuario> = {};
+    if (uid) {
+      try {
+        const raw = localStorage.getItem(getLocalProgressKey(uid));
+        if (raw) {
+          localMap = JSON.parse(raw) as Record<string, ProgresoMinijuegoUsuario>;
+          setProgresoUsuario(localMap);
+        }
+      } catch {
+        // Ignore storage error
+      }
+    }
+
+    try {
+      const qs = uid ? `?userId=${encodeURIComponent(uid)}` : '';
+      const res = await fetch(`/api/minijuegos${qs}`);
+      const data = await res.json();
+      if (data?.ok) {
+        if (Array.isArray(data.minijuegos) && data.minijuegos.length > 0) {
+          setCatalogo(data.minijuegos);
+        }
+        if (uid && data.progresoUsuario && typeof data.progresoUsuario === 'object') {
+          const serverMap = data.progresoUsuario as Record<string, ProgresoMinijuegoUsuario>;
+          const merged: Record<string, ProgresoMinijuegoUsuario> = { ...localMap };
+          for (const [jid, srv] of Object.entries(serverMap)) {
+            const loc = merged[jid];
+            if (!loc || srv.intentos >= loc.intentos) {
+              merged[jid] = srv;
+            } else {
+              merged[jid] = {
+                ...loc,
+                recordPersonal: Math.max(loc.recordPersonal, srv.recordPersonal),
+                mejorDetalle: Math.max(loc.mejorDetalle, srv.mejorDetalle),
+              };
+            }
+          }
+          setProgresoUsuario(merged);
+          try {
+            localStorage.setItem(getLocalProgressKey(uid), JSON.stringify(merged));
+          } catch {
+            // Ignore
+          }
+        }
+      }
+    } catch {
+      // Fallback already populated from DEFAULT_MINIJUEGOS_CATALOG + localStorage
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!mounted) return;
+    void cargarBaseMinijuegos();
+  }, [mounted, cargarBaseMinijuegos]);
 
   useEffect(() => {
     if (!mounted || !user || !isStudent) return;
@@ -264,7 +217,90 @@ export default function MinijuegosPage() {
     };
   }, [mounted, user, isStudent]);
 
-  const handleSelectGame = (game: MinijuegoDef) => {
+  const handleSnakeFinished = useCallback(
+    async (result: SnakeMatchResult) => {
+      if (!user) return;
+      const uid = String(user.id);
+      const ahora = new Date().toISOString();
+
+      // 1. Actualización optimista local + localStorage
+      setProgresoUsuario((prevMap) => {
+        const prev = prevMap.snake || {
+          intentos: 0,
+          recordPersonal: 0,
+          ultimoPuntaje: 0,
+          mejorDetalle: 0,
+          ultimaModo: result.modo,
+          tiempoTotalSegundos: 0,
+          primeraPartida: ahora,
+          ultimaPartida: ahora,
+        };
+        const updated: ProgresoMinijuegoUsuario = {
+          intentos: prev.intentos + 1,
+          recordPersonal: Math.max(prev.recordPersonal, result.puntaje),
+          ultimoPuntaje: result.puntaje,
+          mejorDetalle: Math.max(prev.mejorDetalle, result.manzanas),
+          ultimaModo: result.modo,
+          tiempoTotalSegundos: prev.tiempoTotalSegundos + result.duracionSegundos,
+          primeraPartida: prev.primeraPartida || ahora,
+          ultimaPartida: ahora,
+        };
+        const nextMap = { ...prevMap, snake: updated };
+        try {
+          localStorage.setItem(getLocalProgressKey(uid), JSON.stringify(nextMap));
+        } catch {
+          // Ignore
+        }
+        return nextMap;
+      });
+
+      // 2. Persistencia en el archivo JSON central (data/minijuegos-db.json)
+      try {
+        const res = await fetch('/api/minijuegos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: uid,
+            userName: user.name || user.usuario || 'Jugador',
+            role: user.role,
+            minijuegoId: 'snake',
+            puntaje: result.puntaje,
+            detalleExtra: result.manzanas,
+            modo: result.modo,
+            duracionSegundos: result.duracionSegundos,
+          }),
+        });
+        const data = await res.json();
+        if (data?.ok) {
+          if (data.progresoJuego) {
+            setProgresoUsuario((prevMap) => {
+              const nextMap = { ...prevMap, snake: data.progresoJuego as ProgresoMinijuegoUsuario };
+              try {
+                localStorage.setItem(getLocalProgressKey(uid), JSON.stringify(nextMap));
+              } catch {
+                // Ignore
+              }
+              return nextMap;
+            });
+          }
+          if (data.estadisticasGlobales) {
+            setCatalogo((prevCat) =>
+              prevCat.map((item) =>
+                item.id === 'snake'
+                  ? { ...item, estadisticasGlobales: data.estadisticasGlobales }
+                  : item,
+              ),
+            );
+          }
+        }
+      } catch (err) {
+        console.warn('No se pudo sincronizar con data/minijuegos-db.json:', err);
+      }
+    },
+    [user],
+  );
+
+  const handleSelectGame = (game: MinijuegoCatalogoItem) => {
     setNotice(null);
 
     if (!user) {
@@ -284,7 +320,7 @@ export default function MinijuegosPage() {
 
     if (!game.playable) {
       setNotice(
-        `"${game.titulo}" está diseñado y reservado para próximas misiones. Por ahora selecciona "Serpiente Estelar" (#01) para jugar.`,
+        `"${game.titulo}" está reservado en la base de minijuegos para próximas actualizaciones. Por ahora selecciona "Serpiente Estelar" (#01) para jugar.`,
       );
       return;
     }
@@ -300,6 +336,8 @@ export default function MinijuegosPage() {
     );
   }
 
+  const snakeProgress = progresoUsuario.snake;
+
   return (
     <div className="relative min-h-screen px-5 sm:px-8 lg:px-12 py-8 sm:py-12">
       <div className="relative z-10 max-w-6xl mx-auto space-y-8">
@@ -314,8 +352,8 @@ export default function MinijuegosPage() {
               Minijuegos Espaciales
             </h1>
             <p className="text-sm text-white/70 max-w-2xl leading-relaxed">
-              Elige un arcade clásico para descansar entre misiones. Tutores y administradores tienen acceso
-              inmediato; los estudiantes desbloquean cada cuadro al reunir las estrellas necesarias.
+              Elige un arcade clásico para descansar entre misiones. Tus intentos y récords personales se
+              guardan automáticamente en la base local de minijuegos.
             </p>
           </div>
 
@@ -329,7 +367,7 @@ export default function MinijuegosPage() {
           >
             {!user ? (
               <div className="text-xs text-white/75">
-                Inicia sesión para ver tu acceso o tus estrellas ★
+                Inicia sesión para guardar intentos, récords y estrellas ★
               </div>
             ) : isStaff ? (
               <div className="flex items-center gap-3">
@@ -386,20 +424,25 @@ export default function MinijuegosPage() {
         {selectedGameId === 'snake' ? (
           <SnakeArcadeGame
             userKey={String(user?.id || 'guest')}
+            initialBestScore={snakeProgress?.recordPersonal || 0}
+            initialAttempts={snakeProgress?.intentos || 0}
+            onGameFinished={handleSnakeFinished}
             onBack={() => {
               setSelectedGameId(null);
               setNotice(null);
+              void cargarBaseMinijuegos();
             }}
           />
         ) : (
           <section aria-label="Catálogo de 8 minijuegos arcade">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {MINIJUEGOS.map((game) => {
+              {catalogo.map((game) => {
                 const unlockedByStars = isStaff || (isStudent && totalStars >= game.requiredStars);
                 const missingStars = Math.max(0, game.requiredStars - totalStars);
                 const progressPct = isStaff
                   ? 100
                   : Math.min(100, Math.round((totalStars / game.requiredStars) * 100));
+                const miProgreso = progresoUsuario[game.id];
 
                 return (
                   <button
@@ -454,11 +497,11 @@ export default function MinijuegosPage() {
                       {/* Centro: Pantalla arcade minimalista */}
                       <div className="relative my-2 flex-1 flex items-center justify-center">
                         <div
-                          className={`w-full h-full max-h-[115px] transition-transform duration-200 ${
+                          className={`w-full h-full max-h-[108px] transition-transform duration-200 ${
                             unlockedByStars ? 'group-hover:scale-[1.03]' : 'grayscale-[35%] opacity-75'
                           }`}
                         >
-                          {game.artwork}
+                          {ARTWORKS[game.id] || ARTWORKS.snake}
                         </div>
 
                         {!unlockedByStars && (
@@ -471,7 +514,7 @@ export default function MinijuegosPage() {
                         )}
                       </div>
 
-                      {/* Pie del cuadro: título, descripción y barra/estado de desbloqueo */}
+                      {/* Pie del cuadro: título, récord/intentos y estado */}
                       <div className="space-y-2">
                         <div>
                           <h2 className="text-base font-extrabold text-white leading-tight truncate">
@@ -482,7 +525,15 @@ export default function MinijuegosPage() {
                           </p>
                         </div>
 
-                        {!isStaff && (
+                        {/* Mini fila de estadísticas guardadas en minijuegos-db.json */}
+                        <div className="flex items-center justify-between text-[10px] font-mono text-white/60 bg-white/[0.03] border border-white/10 rounded-xl px-2.5 py-1">
+                          <span>Intentos: {miProgreso?.intentos ?? 0}</span>
+                          <span className="text-[#FDE68A] font-bold">
+                            Récord: {miProgreso?.recordPersonal ?? 0}
+                          </span>
+                        </div>
+
+                        {!isStaff ? (
                           <div className="space-y-1">
                             <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
                               <div
@@ -494,7 +545,11 @@ export default function MinijuegosPage() {
                               />
                             </div>
                             <div className="flex items-center justify-between text-[10px] font-mono text-white/55">
-                              <span>{user ? `${totalStars}/${game.requiredStars} ★` : `Requiere ${game.requiredStars} ★`}</span>
+                              <span>
+                                {user
+                                  ? `${totalStars}/${game.requiredStars} ★`
+                                  : `Requiere ${game.requiredStars} ★`}
+                              </span>
                               <span>
                                 {!user
                                   ? 'Inicia sesión'
@@ -506,9 +561,7 @@ export default function MinijuegosPage() {
                               </span>
                             </div>
                           </div>
-                        )}
-
-                        {isStaff && (
+                        ) : (
                           <div className="flex items-center justify-between pt-1 border-t border-white/10 text-[11px] font-semibold">
                             <span className="text-[#6EE7B7]">Desbloqueado</span>
                             <span style={{ color: game.accent }}>

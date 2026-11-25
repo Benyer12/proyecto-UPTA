@@ -44,11 +44,24 @@ function spawnApple(occupied: Point[]): Point {
   return freeCells[Math.floor(Math.random() * freeCells.length)];
 }
 
+export interface SnakeMatchResult {
+  puntaje: number;
+  manzanas: number;
+  modo: SpeedMode;
+  duracionSegundos: number;
+}
+
 export default function SnakeArcadeGame({
   userKey,
+  initialBestScore = 0,
+  initialAttempts = 0,
+  onGameFinished,
   onBack,
 }: {
   userKey: string;
+  initialBestScore?: number;
+  initialAttempts?: number;
+  onGameFinished?: (result: SnakeMatchResult) => void;
   onBack: () => void;
 }) {
   const isLight = useThemeStore((s) => s.theme === 'light');
@@ -58,7 +71,9 @@ export default function SnakeArcadeGame({
   const [speedMode, setSpeedMode] = useState<SpeedMode>('arcade');
   const [score, setScore] = useState(0);
   const [apples, setApples] = useState(0);
-  const [bestScore, setBestScore] = useState(0);
+  const [bestScore, setBestScore] = useState(initialBestScore);
+  const [attempts, setAttempts] = useState(initialAttempts);
+  const [isNewRecord, setIsNewRecord] = useState(false);
 
   const snakeRef = useRef<Point[]>([...INITIAL_SNAKE]);
   const dirRef = useRef<Direction>(INITIAL_DIR);
@@ -67,21 +82,30 @@ export default function SnakeArcadeGame({
   const scoreRef = useRef(0);
   const applesRef = useRef(0);
   const statusRef = useRef<GameStatus>('idle');
-  const bestScoreRef = useRef(0);
+  const bestScoreRef = useRef(initialBestScore);
+  const startBestRef = useRef(initialBestScore);
+  const matchStartRef = useRef<number>(Date.now());
+  const reportedMatchRef = useRef(false);
+  const onGameFinishedRef = useRef(onGameFinished);
+  onGameFinishedRef.current = onGameFinished;
 
   const storageKey = `arcade_snake_best_${userKey || 'guest'}`;
 
   useEffect(() => {
     try {
       const saved = Number(localStorage.getItem(storageKey) || 0);
-      if (Number.isFinite(saved) && saved > 0) {
-        bestScoreRef.current = saved;
-        setBestScore(saved);
-      }
+      const mergedBest = Math.max(initialBestScore, Number.isFinite(saved) ? saved : 0);
+      bestScoreRef.current = mergedBest;
+      setBestScore(mergedBest);
     } catch {
-      // Ignore storage failures
+      bestScoreRef.current = initialBestScore;
+      setBestScore(initialBestScore);
     }
-  }, [storageKey]);
+  }, [storageKey, initialBestScore]);
+
+  useEffect(() => {
+    setAttempts((prev) => Math.max(prev, initialAttempts));
+  }, [initialAttempts]);
 
   const playEatTone = useCallback(() => {
     try {
@@ -228,7 +252,11 @@ export default function SnakeArcadeGame({
     scoreRef.current = 0;
     applesRef.current = 0;
     statusRef.current = 'playing';
+    startBestRef.current = bestScoreRef.current;
+    matchStartRef.current = Date.now();
+    reportedMatchRef.current = false;
 
+    setIsNewRecord(false);
     setScore(0);
     setApples(0);
     setStatus('playing');
@@ -311,6 +339,25 @@ export default function SnakeArcadeGame({
       if (hitWall || hitSelf) {
         statusRef.current = 'gameover';
         setStatus('gameover');
+        if (!reportedMatchRef.current) {
+          reportedMatchRef.current = true;
+          const finalScore = scoreRef.current;
+          const finalApples = applesRef.current;
+          const duracionSegundos = Math.max(
+            1,
+            Math.round((Date.now() - matchStartRef.current) / 1000),
+          );
+          if (finalScore > startBestRef.current && finalScore > 0) {
+            setIsNewRecord(true);
+          }
+          setAttempts((prev) => prev + 1);
+          onGameFinishedRef.current?.({
+            puntaje: finalScore,
+            manzanas: finalApples,
+            modo: speedMode,
+            duracionSegundos,
+          });
+        }
         return;
       }
 
@@ -382,7 +429,7 @@ export default function SnakeArcadeGame({
         </div>
 
         {/* Marcadores + Velocidad */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">
               Puntuación
@@ -403,7 +450,13 @@ export default function SnakeArcadeGame({
               {INITIAL_SNAKE.length + apples}
             </div>
           </div>
-          <div className="rounded-2xl border border-[#FDE68A]/25 bg-[#FDE68A]/[0.06] px-4 py-3">
+          <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">
+              Intentos
+            </div>
+            <div className="text-2xl font-black text-white tabular-nums">{attempts}</div>
+          </div>
+          <div className="col-span-2 sm:col-span-1 rounded-2xl border border-[#FDE68A]/25 bg-[#FDE68A]/[0.06] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-[#FDE68A]">
               Récord personal
             </div>
@@ -438,10 +491,17 @@ export default function SnakeArcadeGame({
                         : 'Serpiente Estelar'}
                   </div>
                   {status === 'gameover' && (
-                    <p className="text-xs sm:text-sm text-white/75">
-                      Comiste <strong>{apples}</strong> {apples === 1 ? 'manzana' : 'manzanas'} y alcanzaste tamaño{' '}
-                      <strong>{INITIAL_SNAKE.length + apples}</strong>.
-                    </p>
+                    <div className="space-y-1.5">
+                      {isNewRecord && (
+                        <div className="inline-block rounded-full border border-[#FDE68A]/45 bg-[#FDE68A]/15 px-3 py-0.5 text-[11px] font-bold text-[#FDE68A]">
+                          ¡Nuevo récord personal!
+                        </div>
+                      )}
+                      <p className="text-xs sm:text-sm text-white/75">
+                        Comiste <strong>{apples}</strong> {apples === 1 ? 'manzana' : 'manzanas'} y alcanzaste tamaño{' '}
+                        <strong>{INITIAL_SNAKE.length + apples}</strong>.
+                      </p>
+                    </div>
                   )}
 
                   <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
