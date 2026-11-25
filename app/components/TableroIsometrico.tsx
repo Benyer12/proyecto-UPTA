@@ -21,6 +21,8 @@ import {
   playStep,
 } from '../../lib/sound-engine';
 import SoundTogglePill from '../../components/SoundTogglePill';
+import EasyReadingTogglePill from '../../components/EasyReadingTogglePill';
+import { useModalEscape } from '../../lib/hooks/useModalEscape';
 import Dado3D from './Dado3D';
 import MapaMontañaCuantica, {
   ESPECIALES_IDX,
@@ -322,6 +324,49 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
     bossBattleActive ||
     showWin;
 
+  const moveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const eventTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (moveIntervalRef.current) clearInterval(moveIntervalRef.current);
+      if (eventTimeoutRef.current) clearTimeout(eventTimeoutRef.current);
+    };
+  }, []);
+
+  const handleSalirModalSeguro = useCallback(() => {
+    if (moveIntervalRef.current) {
+      clearInterval(moveIntervalRef.current);
+      moveIntervalRef.current = null;
+    }
+    if (eventTimeoutRef.current) {
+      clearTimeout(eventTimeoutRef.current);
+      eventTimeoutRef.current = null;
+    }
+    setQuestion(null);
+    setQStatus('idle');
+    setSelectedOpt(null);
+    setSpecialSequence([]);
+    setSpecialSelection([]);
+    setSpecialStatus('idle');
+    setTrapAsteroids([]);
+    setTrapCondition(null);
+    setTrapSelected(null);
+    setTrapStatus('idle');
+    setBossBattleActive(false);
+    setBossSelectedOpt(null);
+    setBossStatus('idle');
+    setRolling(false);
+    setCaminando(false);
+    setAvisoFlotante('Reto cerrado. Lanza el dado cuántico cuando quieras continuar.');
+  }, []);
+
+  useModalEscape({
+    isOpen: mostrarGuia,
+    onEscape: () => setMostrarGuia(false),
+    priority: 'modal',
+  });
+
   /**
    * Función asíncrona que calcula (Estrellas Regulares por %) + (4 Estrellas Jefe Final)
    * y actualiza/inserta el registro en la tabla `progreso_usuario` de Supabase.
@@ -440,6 +485,10 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
   /* ── Caminar paso a paso por los cubos ── */
   const moverPasoAPaso = useCallback(
     (desde: number, hasta: number, alTerminar: (posFinal: number) => void) => {
+      if (moveIntervalRef.current) {
+        clearInterval(moveIntervalRef.current);
+        moveIntervalRef.current = null;
+      }
       if (desde === hasta) {
         alTerminar(hasta);
         return;
@@ -448,12 +497,15 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
       const dir = hasta > desde ? 1 : -1;
       let actual = desde;
 
-      const iv = setInterval(() => {
+      moveIntervalRef.current = setInterval(() => {
         actual += dir;
         setPos(actual);
         playStep();
         if (actual === hasta) {
-          clearInterval(iv);
+          if (moveIntervalRef.current) {
+            clearInterval(moveIntervalRef.current);
+            moveIntervalRef.current = null;
+          }
           setCaminando(false);
           alTerminar(actual);
         }
@@ -523,14 +575,18 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
   /* ── Activar evento de la casilla donde aterriza el astronauta ── */
   const activarEventoCasilla = useCallback(
     (indiceDestino: number) => {
+      if (eventTimeoutRef.current) {
+        clearTimeout(eventTimeoutRef.current);
+        eventTimeoutRef.current = null;
+      }
       if (indiceDestino >= TOTAL - 1) {
-        setTimeout(() => startBossBattle(), 380);
+        eventTimeoutRef.current = setTimeout(() => startBossBattle(), 380);
       } else if (ESPECIALES_IDX.includes(indiceDestino)) {
-        setTimeout(() => startSpecialMinigame(), 380);
+        eventTimeoutRef.current = setTimeout(() => startSpecialMinigame(), 380);
       } else if (TRAMPAS_IDX.includes(indiceDestino)) {
-        setTimeout(() => startTrapMinigame(), 380);
+        eventTimeoutRef.current = setTimeout(() => startTrapMinigame(), 380);
       } else {
-        setTimeout(() => {
+        eventTimeoutRef.current = setTimeout(() => {
           const pregIA = colaPreguntasIARef.current.shift();
           const preg = pregIA ?? getRandomPregunta(usadasRef.current);
           usadasRef.current.add(preg.id);
@@ -913,6 +969,9 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         >
           {/* ── 1. CABECERA: NUMÉRIX — TABLERO CUÁNTICO ── */}
           <div className="relative text-center pt-0.5 pb-3 border-b border-sky-300/15">
+            <div className="absolute left-0 top-0">
+              <EasyReadingTogglePill compact />
+            </div>
             <div className="absolute right-0 top-0">
               <SoundTogglePill />
             </div>
@@ -941,7 +1000,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
 
           {/* ── 2. CAJA DEL DADO 3D CUÁNTICO EN CÁPSULA LIQUID GLASS ── */}
           <div
-            className="relative my-2.5 py-4 rounded-2xl liquid-glass-pill flex flex-col items-center justify-center overflow-hidden"
+            className="relative my-2.5 py-4 rounded-2xl liquid-glass-pill flex flex-col items-center justify-center overflow-hidden shrink-0"
             style={{
               background:
                 'radial-gradient(circle at 50% 45%, rgba(14, 165, 233, 0.24) 0%, rgba(4, 22, 62, 0.56) 68%, rgba(2, 10, 32, 0.76) 100%)',
@@ -1123,6 +1182,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             estadoSecuencia={specialStatus}
             onToggleNumeroSecuencia={handleToggleNumeroSecuencia}
             onConfirmarSecuencia={handleConfirmarSecuencia}
+            onSafeExit={handleSalirModalSeguro}
           />
         )}
       </AnimatePresence>
@@ -1138,6 +1198,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             estadoPregunta={qStatus}
             onSeleccionarOpcion={setSelectedOpt}
             onConfirmarPregunta={handleConfirmarPregunta}
+            onSafeExit={handleSalirModalSeguro}
           />
         )}
       </AnimatePresence>
@@ -1151,6 +1212,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             estado={trapStatus}
             onDisparar={handleDispararAsteroide}
             onCerrar={handleCerrarAlertaImpacto}
+            onSafeExit={handleSalirModalSeguro}
           />
         )}
       </AnimatePresence>
@@ -1166,6 +1228,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
             estado={bossStatus}
             onElegirOpcion={setBossSelectedOpt}
             onAlinearAnillo={handleAlinearAnillo}
+            onSafeExit={handleSalirModalSeguro}
           />
         )}
       </AnimatePresence>

@@ -8,6 +8,7 @@ import PlanetVisual from '../components/PlanetVisual';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
 import SoundTogglePill from '../../components/SoundTogglePill';
+import EasyReadingTogglePill from '../../components/EasyReadingTogglePill';
 import RoleAvatar from '../../components/RoleAvatar';
 import { useAuthStore } from '../../lib/auth-store';
 import { useThemeStore } from '../../lib/theme-store';
@@ -289,6 +290,7 @@ function StudentDashboardView({
           </div>
 
           <div className="flex items-center gap-3 flex-wrap justify-end">
+            <EasyReadingTogglePill showLabels />
             <SoundTogglePill />
             <ThemeTogglePill showLabels />
 
