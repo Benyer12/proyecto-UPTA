@@ -46,6 +46,13 @@ export interface MinijuegosDatabase {
   progresoUsuarios: Record<string, RegistroUsuarioMinijuegos>;
 }
 
+export interface ResultadoPartidaInput {
+  puntaje: number;
+  detalleExtra: number;
+  modo: string;
+  duracionSegundos: number;
+}
+
 export const DEFAULT_MINIJUEGOS_CATALOG: MinijuegoCatalogoItem[] = [
   {
     id: 'snake',
@@ -73,8 +80,8 @@ export const DEFAULT_MINIJUEGOS_CATALOG: MinijuegoCatalogoItem[] = [
     titulo: 'Ladrillos Cósmicos',
     genero: 'Destreza',
     descripcion: 'Rebota la esfera de plasma y rompe muros estelares.',
-    requiredStars: 22,
-    playable: false,
+    requiredStars: 25,
+    playable: true,
     dificultadBase: 'Media',
     unidadRecord: 'puntos',
     etiquetaDetalle: 'Bloques',
@@ -93,11 +100,11 @@ export const DEFAULT_MINIJUEGOS_CATALOG: MinijuegoCatalogoItem[] = [
     titulo: 'Invasores Arcade',
     genero: 'Acción Retro',
     descripcion: 'Defiende la base espacial de oleadas pixeladas.',
-    requiredStars: 26,
-    playable: false,
+    requiredStars: 34,
+    playable: true,
     dificultadBase: 'Media',
     unidadRecord: 'puntos',
-    etiquetaDetalle: 'Oleadas',
+    etiquetaDetalle: 'Naves',
     accent: '#6EE7B7',
     glow: 'rgba(110, 231, 183, 0.32)',
     bgTint: 'rgba(110, 231, 183, 0.10)',
@@ -113,8 +120,8 @@ export const DEFAULT_MINIJUEGOS_CATALOG: MinijuegoCatalogoItem[] = [
     titulo: 'Memoria Galáctica',
     genero: 'Memoria',
     descripcion: 'Encuentra pares de símbolos ocultos en menos turnos.',
-    requiredStars: 30,
-    playable: false,
+    requiredStars: 43,
+    playable: true,
     dificultadBase: 'Básica',
     unidadRecord: 'puntos',
     etiquetaDetalle: 'Pares',
@@ -133,10 +140,10 @@ export const DEFAULT_MINIJUEGOS_CATALOG: MinijuegoCatalogoItem[] = [
     titulo: 'Salto Orbital',
     genero: 'Plataformas',
     descripcion: 'Corre y salta cráteres lunares sin perder impulso.',
-    requiredStars: 34,
-    playable: false,
+    requiredStars: 52,
+    playable: true,
     dificultadBase: 'Rápida',
-    unidadRecord: 'metros',
+    unidadRecord: 'puntos',
     etiquetaDetalle: 'Saltos',
     accent: '#FDA4AF',
     glow: 'rgba(253, 164, 175, 0.32)',
@@ -153,11 +160,11 @@ export const DEFAULT_MINIJUEGOS_CATALOG: MinijuegoCatalogoItem[] = [
     titulo: 'Pong Nebular',
     genero: 'Duelo 1v1',
     descripcion: 'Duelo clásico de reflejos contra la inteligencia orbital.',
-    requiredStars: 38,
-    playable: false,
+    requiredStars: 61,
+    playable: true,
     dificultadBase: 'Competitiva',
     unidadRecord: 'puntos',
-    etiquetaDetalle: 'Rondas',
+    etiquetaDetalle: 'Goles',
     accent: '#93C5FD',
     glow: 'rgba(147, 197, 253, 0.32)',
     bgTint: 'rgba(147, 197, 253, 0.10)',
@@ -173,8 +180,8 @@ export const DEFAULT_MINIJUEGOS_CATALOG: MinijuegoCatalogoItem[] = [
     titulo: 'Bloques Quánticos',
     genero: 'Puzle Arcade',
     descripcion: 'Encaja piezas luminosas y completa líneas completas.',
-    requiredStars: 42,
-    playable: false,
+    requiredStars: 70,
+    playable: true,
     dificultadBase: 'Progresiva',
     unidadRecord: 'puntos',
     etiquetaDetalle: 'Líneas',
@@ -193,8 +200,8 @@ export const DEFAULT_MINIJUEGOS_CATALOG: MinijuegoCatalogoItem[] = [
     titulo: 'Caza Cometas',
     genero: 'Velocidad',
     descripcion: 'Atrapa destellos estelares antes de que desaparezcan.',
-    requiredStars: 46,
-    playable: false,
+    requiredStars: 80,
+    playable: true,
     dificultadBase: 'Rápida',
     unidadRecord: 'puntos',
     etiquetaDetalle: 'Aciertos',

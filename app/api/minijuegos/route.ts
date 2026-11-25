@@ -35,8 +35,8 @@ async function leerBaseDatos(): Promise<MinijuegosDatabase> {
       const guardado = minijuegosExistentes.get(def.id);
       if (!guardado) return def;
       return {
-        ...def,
         ...guardado,
+        ...def,
         estadisticasGlobales: {
           ...def.estadisticasGlobales,
           ...(guardado.estadisticasGlobales || {}),

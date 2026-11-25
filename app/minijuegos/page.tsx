@@ -3,13 +3,21 @@
 import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import Link from 'next/link';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
-import SnakeArcadeGame, { type SnakeMatchResult } from '../../components/SnakeArcadeGame';
+import SnakeArcadeGame from '../../components/SnakeArcadeGame';
+import BreakoutArcadeGame from '../../components/minijuegos/BreakoutArcadeGame';
+import InvadersArcadeGame from '../../components/minijuegos/InvadersArcadeGame';
+import MemoryArcadeGame from '../../components/minijuegos/MemoryArcadeGame';
+import RunnerArcadeGame from '../../components/minijuegos/RunnerArcadeGame';
+import PongArcadeGame from '../../components/minijuegos/PongArcadeGame';
+import TetrisArcadeGame from '../../components/minijuegos/TetrisArcadeGame';
+import WhackArcadeGame from '../../components/minijuegos/WhackArcadeGame';
 import { useAuthStore } from '../../lib/auth-store';
 import { obtenerProgresoEstudianteHibrido } from '../../lib/offline-sync';
 import {
   DEFAULT_MINIJUEGOS_CATALOG,
   type MinijuegoCatalogoItem,
   type ProgresoMinijuegoUsuario,
+  type ResultadoPartidaInput,
 } from '../../lib/minijuegos-types';
 
 const ARTWORKS: Record<string, ReactNode> = {
@@ -154,7 +162,7 @@ export default function MinijuegosPage() {
           setProgresoUsuario(localMap);
         }
       } catch {
-        // Ignore storage error
+        // Ignore
       }
     }
 
@@ -190,7 +198,7 @@ export default function MinijuegosPage() {
         }
       }
     } catch {
-      // Fallback already populated from DEFAULT_MINIJUEGOS_CATALOG + localStorage
+      // Fallback already set
     }
   }, [user]);
 
@@ -217,15 +225,14 @@ export default function MinijuegosPage() {
     };
   }, [mounted, user, isStudent]);
 
-  const handleSnakeFinished = useCallback(
-    async (result: SnakeMatchResult) => {
+  const guardarResultadoJuego = useCallback(
+    async (minijuegoId: string, result: ResultadoPartidaInput) => {
       if (!user) return;
       const uid = String(user.id);
       const ahora = new Date().toISOString();
 
-      // 1. Actualización optimista local + localStorage
       setProgresoUsuario((prevMap) => {
-        const prev = prevMap.snake || {
+        const prev = prevMap[minijuegoId] || {
           intentos: 0,
           recordPersonal: 0,
           ultimoPuntaje: 0,
@@ -239,13 +246,13 @@ export default function MinijuegosPage() {
           intentos: prev.intentos + 1,
           recordPersonal: Math.max(prev.recordPersonal, result.puntaje),
           ultimoPuntaje: result.puntaje,
-          mejorDetalle: Math.max(prev.mejorDetalle, result.manzanas),
+          mejorDetalle: Math.max(prev.mejorDetalle, result.detalleExtra),
           ultimaModo: result.modo,
           tiempoTotalSegundos: prev.tiempoTotalSegundos + result.duracionSegundos,
           primeraPartida: prev.primeraPartida || ahora,
           ultimaPartida: ahora,
         };
-        const nextMap = { ...prevMap, snake: updated };
+        const nextMap = { ...prevMap, [minijuegoId]: updated };
         try {
           localStorage.setItem(getLocalProgressKey(uid), JSON.stringify(nextMap));
         } catch {
@@ -254,7 +261,6 @@ export default function MinijuegosPage() {
         return nextMap;
       });
 
-      // 2. Persistencia en el archivo JSON central (data/minijuegos-db.json)
       try {
         const res = await fetch('/api/minijuegos', {
           method: 'POST',
@@ -263,9 +269,9 @@ export default function MinijuegosPage() {
             userId: uid,
             userName: user.name || user.usuario || 'Jugador',
             role: user.role,
-            minijuegoId: 'snake',
+            minijuegoId,
             puntaje: result.puntaje,
-            detalleExtra: result.manzanas,
+            detalleExtra: result.detalleExtra,
             modo: result.modo,
             duracionSegundos: result.duracionSegundos,
           }),
@@ -274,7 +280,7 @@ export default function MinijuegosPage() {
         if (data?.ok) {
           if (data.progresoJuego) {
             setProgresoUsuario((prevMap) => {
-              const nextMap = { ...prevMap, snake: data.progresoJuego as ProgresoMinijuegoUsuario };
+              const nextMap = { ...prevMap, [minijuegoId]: data.progresoJuego as ProgresoMinijuegoUsuario };
               try {
                 localStorage.setItem(getLocalProgressKey(uid), JSON.stringify(nextMap));
               } catch {
@@ -286,7 +292,7 @@ export default function MinijuegosPage() {
           if (data.estadisticasGlobales) {
             setCatalogo((prevCat) =>
               prevCat.map((item) =>
-                item.id === 'snake'
+                item.id === minijuegoId
                   ? { ...item, estadisticasGlobales: data.estadisticasGlobales }
                   : item,
               ),
@@ -318,15 +324,14 @@ export default function MinijuegosPage() {
       return;
     }
 
-    if (!game.playable) {
-      setNotice(
-        `"${game.titulo}" está reservado en la base de minijuegos para próximas actualizaciones. Por ahora selecciona "Serpiente Estelar" (#01) para jugar.`,
-      );
-      return;
-    }
-
     setSelectedGameId(game.id);
   };
+
+  const handleBackToCatalog = useCallback(() => {
+    setSelectedGameId(null);
+    setNotice(null);
+    void cargarBaseMinijuegos();
+  }, [cargarBaseMinijuegos]);
 
   if (!mounted) {
     return (
@@ -336,7 +341,84 @@ export default function MinijuegosPage() {
     );
   }
 
-  const snakeProgress = progresoUsuario.snake;
+  const renderSelectedGame = () => {
+    if (!selectedGameId) return null;
+    const prog = progresoUsuario[selectedGameId];
+    const commonProps = {
+      initialBestScore: prog?.recordPersonal || 0,
+      initialAttempts: prog?.intentos || 0,
+      onBack: handleBackToCatalog,
+    };
+
+    switch (selectedGameId) {
+      case 'snake':
+        return (
+          <SnakeArcadeGame
+            userKey={String(user?.id || 'guest')}
+            {...commonProps}
+            onGameFinished={(r) =>
+              guardarResultadoJuego('snake', {
+                puntaje: r.puntaje,
+                detalleExtra: r.manzanas,
+                modo: r.modo,
+                duracionSegundos: r.duracionSegundos,
+              })
+            }
+          />
+        );
+      case 'breakout':
+        return (
+          <BreakoutArcadeGame
+            {...commonProps}
+            onGameFinished={(r) => guardarResultadoJuego('breakout', r)}
+          />
+        );
+      case 'invaders':
+        return (
+          <InvadersArcadeGame
+            {...commonProps}
+            onGameFinished={(r) => guardarResultadoJuego('invaders', r)}
+          />
+        );
+      case 'memory':
+        return (
+          <MemoryArcadeGame
+            {...commonProps}
+            onGameFinished={(r) => guardarResultadoJuego('memory', r)}
+          />
+        );
+      case 'runner':
+        return (
+          <RunnerArcadeGame
+            {...commonProps}
+            onGameFinished={(r) => guardarResultadoJuego('runner', r)}
+          />
+        );
+      case 'pong':
+        return (
+          <PongArcadeGame
+            {...commonProps}
+            onGameFinished={(r) => guardarResultadoJuego('pong', r)}
+          />
+        );
+      case 'tetris':
+        return (
+          <TetrisArcadeGame
+            {...commonProps}
+            onGameFinished={(r) => guardarResultadoJuego('tetris', r)}
+          />
+        );
+      case 'whack':
+        return (
+          <WhackArcadeGame
+            {...commonProps}
+            onGameFinished={(r) => guardarResultadoJuego('whack', r)}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="relative min-h-screen px-5 sm:px-8 lg:px-12 py-8 sm:py-12">
@@ -346,18 +428,17 @@ export default function MinijuegosPage() {
           <div className="space-y-2.5">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#67E8F9]/35 bg-[#67E8F9]/10 px-3.5 py-1.5 text-xs sm:text-sm font-bold uppercase tracking-[0.16em] text-[#67E8F9] shadow-[0_0_20px_-6px_rgba(103,232,249,0.4)]">
               <span className="h-2 w-2 rounded-full bg-[#67E8F9]" aria-hidden="true" />
-              Sala Arcade · Entretenimiento
+              Sala Arcade · 8 Juegos Activos
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               Minijuegos Espaciales
             </h1>
             <p className="text-sm text-white/70 max-w-2xl leading-relaxed">
-              Elige un arcade clásico para descansar entre misiones. Tus intentos y récords personales se
-              guardan automáticamente en la base local de minijuegos.
+              Elige cualquiera de los 8 arcades clásicos para divertirte entre misiones. Tus intentos y
+              récords personales se guardan automáticamente en la base local de minijuegos.
             </p>
           </div>
 
-          {/* Indicador de acceso / estrellas */}
           <LiquidGlass
             blur={6}
             refraction={8}
@@ -378,7 +459,7 @@ export default function MinijuegosPage() {
                   <div className="font-mono text-[10px] uppercase tracking-wider text-[#6EE7B7]">
                     {roleNorm === 'admin' ? 'Administrador' : 'Tutor'}
                   </div>
-                  <div className="text-sm font-bold text-white">Acceso libre a los minijuegos</div>
+                  <div className="text-sm font-bold text-white">Acceso libre a los 8 juegos</div>
                 </div>
               </div>
             ) : (
@@ -393,7 +474,7 @@ export default function MinijuegosPage() {
                   <div className="text-base font-extrabold text-white tabular-nums">
                     {loadingStars ? 'Cargando...' : `${totalStars} ★`}
                     <span className="text-xs font-medium text-white/55 ml-2">
-                      (1.º juego: 17 ★)
+                      (Desde 17 ★ hasta 80 ★)
                     </span>
                   </div>
                 </div>
@@ -402,7 +483,6 @@ export default function MinijuegosPage() {
           </LiquidGlass>
         </section>
 
-        {/* Aviso informativo al pulsar cuadro bloqueado / próximo / sin sesión */}
         {notice && (
           <div
             role="status"
@@ -420,19 +500,8 @@ export default function MinijuegosPage() {
           </div>
         )}
 
-        {/* Si seleccionó Serpiente Estelar -> Cabina Arcade; si no -> Grid de 8 cuadros */}
-        {selectedGameId === 'snake' ? (
-          <SnakeArcadeGame
-            userKey={String(user?.id || 'guest')}
-            initialBestScore={snakeProgress?.recordPersonal || 0}
-            initialAttempts={snakeProgress?.intentos || 0}
-            onGameFinished={handleSnakeFinished}
-            onBack={() => {
-              setSelectedGameId(null);
-              setNotice(null);
-              void cargarBaseMinijuegos();
-            }}
-          />
+        {selectedGameId ? (
+          renderSelectedGame()
         ) : (
           <section aria-label="Catálogo de 8 minijuegos arcade">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -469,7 +538,6 @@ export default function MinijuegosPage() {
                         } as CSSProperties
                       }
                     >
-                      {/* Franja superior: slot + requisito de estrellas visible siempre */}
                       <div className="flex items-center justify-between gap-2">
                         <span
                           className="font-mono text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border"
@@ -494,7 +562,6 @@ export default function MinijuegosPage() {
                         </span>
                       </div>
 
-                      {/* Centro: Pantalla arcade minimalista */}
                       <div className="relative my-2 flex-1 flex items-center justify-center">
                         <div
                           className={`w-full h-full max-h-[108px] transition-transform duration-200 ${
@@ -514,7 +581,6 @@ export default function MinijuegosPage() {
                         )}
                       </div>
 
-                      {/* Pie del cuadro: título, récord/intentos y estado */}
                       <div className="space-y-2">
                         <div>
                           <h2 className="text-base font-extrabold text-white leading-tight truncate">
@@ -525,7 +591,6 @@ export default function MinijuegosPage() {
                           </p>
                         </div>
 
-                        {/* Mini fila de estadísticas guardadas en minijuegos-db.json */}
                         <div className="flex items-center justify-between text-[10px] font-mono text-white/60 bg-white/[0.03] border border-white/10 rounded-xl px-2.5 py-1">
                           <span>Intentos: {miProgreso?.intentos ?? 0}</span>
                           <span className="text-[#FDE68A] font-bold">
@@ -554,9 +619,7 @@ export default function MinijuegosPage() {
                                 {!user
                                   ? 'Inicia sesión'
                                   : unlockedByStars
-                                    ? game.playable
-                                      ? 'Listo para jugar'
-                                      : 'Próximamente'
+                                    ? 'Listo para jugar →'
                                     : 'Bloqueado'}
                               </span>
                             </div>
@@ -564,9 +627,7 @@ export default function MinijuegosPage() {
                         ) : (
                           <div className="flex items-center justify-between pt-1 border-t border-white/10 text-[11px] font-semibold">
                             <span className="text-[#6EE7B7]">Desbloqueado</span>
-                            <span style={{ color: game.accent }}>
-                              {game.playable ? 'Seleccionar y jugar →' : 'En diseño'}
-                            </span>
+                            <span style={{ color: game.accent }}>Seleccionar y jugar →</span>
                           </div>
                         )}
                       </div>
