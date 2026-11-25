@@ -5,8 +5,6 @@ import {
   WHITEBOARD_GRID_COLOR,
   WHITEBOARD_GRID_SPACING,
   WHITEBOARD_LABELS,
-  WHITEBOARD_STROKE_LABELS,
-  type WhiteboardStrokeSizeKey,
 } from '../../../lib/config/whiteboard-config';
 import { useWhiteboardCanvas } from '../../../lib/hooks/useWhiteboardCanvas';
 import { useModalEscape } from '../../../lib/hooks/useModalEscape';
@@ -18,8 +16,6 @@ interface PizarraHolograficaProps {
   asModalWindow?: boolean;
   className?: string;
 }
-
-const SIZE_KEYS: WhiteboardStrokeSizeKey[] = ['sm', 'md', 'lg'];
 
 function PenIcon() {
   return (
@@ -103,8 +99,6 @@ export default function PizarraHolografica({
     setTool,
     color,
     setColor,
-    strokeSize,
-    setStrokeSize,
     showGrid,
     setShowGrid,
     canUndo,
@@ -239,32 +233,6 @@ export default function PizarraHolografica({
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
-          <div
-            role="group"
-            aria-label={WHITEBOARD_LABELS.sizePrefix}
-            className="inline-flex items-center rounded-xl border border-white/15 bg-slate-900/70 p-0.5"
-          >
-            {SIZE_KEYS.map((key) => {
-              const active = strokeSize === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setStrokeSize(key)}
-                  aria-label={`${WHITEBOARD_LABELS.sizePrefix} ${WHITEBOARD_STROKE_LABELS[key]}`}
-                  aria-pressed={active}
-                  className={`min-w-[28px] min-h-[28px] px-1.5 rounded-lg text-[11px] font-black cursor-pointer transition-colors ${
-                    active
-                      ? 'bg-cyan-400 text-slate-950'
-                      : 'text-slate-200 hover:bg-white/10'
-                  }`}
-                >
-                  {WHITEBOARD_STROKE_LABELS[key]}
-                </button>
-              );
-            })}
-          </div>
-
           <button
             type="button"
             onClick={() => setShowGrid((prev) => !prev)}

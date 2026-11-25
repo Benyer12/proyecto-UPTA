@@ -863,7 +863,7 @@ export default function TableroNaturae({
           </div>
 
           <div
-            className="relative my-2.5 py-4 rounded-2xl liquid-glass-pill flex flex-col items-center justify-center overflow-hidden"
+            className="relative my-2.5 py-4 rounded-2xl liquid-glass-pill flex flex-col items-center justify-center overflow-hidden shrink-0"
             style={{
               background:
                 'radial-gradient(circle at 50% 45%, rgba(16, 185, 129, 0.24) 0%, rgba(2, 44, 34, 0.58) 70%, rgba(1, 20, 16, 0.78) 100%)',

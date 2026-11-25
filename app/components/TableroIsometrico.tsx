@@ -1000,7 +1000,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
 
           {/* ── 2. CAJA DEL DADO 3D CUÁNTICO EN CÁPSULA LIQUID GLASS ── */}
           <div
-            className="relative my-2.5 py-4 rounded-2xl liquid-glass-pill flex flex-col items-center justify-center overflow-hidden"
+            className="relative my-2.5 py-4 rounded-2xl liquid-glass-pill flex flex-col items-center justify-center overflow-hidden shrink-0"
             style={{
               background:
                 'radial-gradient(circle at 50% 45%, rgba(14, 165, 233, 0.24) 0%, rgba(4, 22, 62, 0.56) 68%, rgba(2, 10, 32, 0.76) 100%)',

@@ -243,7 +243,7 @@ function CuboCuantico3D({
       animate={{ rotate: inclinacion }}
       onClick={onClick}
       disabled={disabled}
-      className={`relative group select-none focus:outline-none transition-transform ${
+      className={`relative group select-none rounded-2xl focus-visible:outline-2 focus-visible:outline-cyan-300 focus-visible:outline-offset-4 transition-transform ${
         disabled ? 'cursor-default' : 'cursor-pointer'
       }`}
       style={{
@@ -1072,7 +1072,7 @@ function AsteroideCristalSVG({
       whileTap={disabled ? undefined : { scale: 0.95 }}
       onClick={onClick}
       disabled={disabled}
-      className={`relative w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center select-none focus:outline-none ${
+      className={`relative w-36 h-36 sm:w-44 sm:h-44 rounded-2xl flex items-center justify-center select-none focus-visible:outline-2 focus-visible:outline-cyan-300 focus-visible:outline-offset-4 ${
         disabled ? 'cursor-default' : 'cursor-crosshair'
       }`}
       style={{

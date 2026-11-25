@@ -1052,7 +1052,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
 
           {/* ── 2. CUENCO DEL DADO 3D ASTRAL ── */}
           <div
-            className="relative my-2 py-3.5 rounded-2xl flex flex-col items-center justify-center overflow-hidden"
+            className="relative my-2 py-3.5 rounded-2xl flex flex-col items-center justify-center overflow-hidden shrink-0"
             style={{
               background:
                 'radial-gradient(circle at 50% 50%, #9EB2E2 0%, #748BC2 58%, #576CA4 100%)',
