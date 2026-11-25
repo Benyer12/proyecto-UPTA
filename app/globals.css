@@ -1092,16 +1092,15 @@ html[data-easy-reading="true"] {
   --easy-reading-max-measure: 65ch;
 }
 
-/* Mejora de espaciado y legibilidad en párrafos, preguntas, opciones y listas */
-html[data-easy-reading="true"] main p,
-html[data-easy-reading="true"] main li,
-html[data-easy-reading="true"] main blockquote,
-html[data-easy-reading="true"] main dd,
-html[data-easy-reading="true"] main label,
-html[data-easy-reading="true"] [data-game-board="true"] p,
-html[data-easy-reading="true"] [data-game-board="true"] h2,
-html[data-easy-reading="true"] [data-game-board="true"] h3,
-html[data-easy-reading="true"] [role="dialog"] p,
+/* Mejora de espaciado y legibilidad en textos de páginas (fuera del tablero) y modales de reto */
+html[data-easy-reading="true"] main p:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main li:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main blockquote:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main dd:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main label:not([data-game-board="true"] *),
+html[data-easy-reading="true"] [role="dialog"] p:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] [role="dialog"] h2:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] [role="dialog"] h3:not([data-keep-compact="true"] *),
 html[data-easy-reading="true"] [role="dialog"] label,
 html[data-easy-reading="true"] [data-easy-reading-text="true"] {
   line-height: var(--easy-reading-line-height);
@@ -1109,55 +1108,55 @@ html[data-easy-reading="true"] [data-easy-reading-text="true"] {
   word-spacing: var(--easy-reading-word-spacing);
 }
 
-/* Escalado más amplio de texto para lectura cómoda sin romper HUDs ni SVGs */
-html[data-easy-reading="true"] main p:not([data-keep-compact="true"] *),
-html[data-easy-reading="true"] main li,
-html[data-easy-reading="true"] main dd,
-html[data-easy-reading="true"] main blockquote,
-html[data-easy-reading="true"] main label,
-html[data-easy-reading="true"] [data-game-board="true"] p:not([data-keep-compact="true"] *),
+/* Escalado más amplio de texto para lectura cómoda sin tocar el HUD del tablero ni el dado */
+html[data-easy-reading="true"] main p:not([data-game-board="true"] *):not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] main li:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main dd:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main blockquote:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main label:not([data-game-board="true"] *),
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] p:not([data-keep-compact="true"] *),
 html[data-easy-reading="true"] [role="dialog"] p:not([data-keep-compact="true"] *),
 html[data-easy-reading="true"] [role="dialog"] label,
 html[data-easy-reading="true"] [data-easy-reading-text="true"] {
   font-size: clamp(1.125rem, 1.08rem + 0.35vw, 1.3125rem);
 }
 
-html[data-easy-reading="true"] main h2,
-html[data-easy-reading="true"] main h3,
-html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] h2,
-html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] h3,
-html[data-easy-reading="true"] [role="dialog"] h3 {
+html[data-easy-reading="true"] main h2:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main h3:not([data-game-board="true"] *),
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] h2:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] h3:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] [role="dialog"] h3:not([data-keep-compact="true"] *) {
   font-size: clamp(1.25rem, 1.18rem + 0.45vw, 1.625rem);
   line-height: 1.5;
 }
 
 html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] button:not([data-keep-compact="true"]),
-html[data-easy-reading="true"] main a:not([data-keep-compact="true"]),
-html[data-easy-reading="true"] main button:not([data-keep-compact="true"]) {
+html[data-easy-reading="true"] main a:not([data-game-board="true"] *):not([data-keep-compact="true"]),
+html[data-easy-reading="true"] main button:not([data-game-board="true"] *):not([data-keep-compact="true"]) {
   font-size: clamp(1.03rem, 1rem + 0.2vw, 1.1875rem);
 }
 
-html[data-easy-reading="true"] main article p,
-html[data-easy-reading="true"] main section > p {
+html[data-easy-reading="true"] main article p:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main section > p:not([data-game-board="true"] *) {
   max-width: var(--easy-reading-max-measure);
 }
 
-/* Refuerzo de contraste para textos secundarios en modo oscuro y dentro de tableros */
-html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/45,
-html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/50,
-html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/55,
-html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/60,
-html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/65,
-html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/70,
-html[data-easy-reading="true"] [data-game-board="true"] .text-white\/65,
-html[data-easy-reading="true"] [data-game-board="true"] .text-white\/70 {
+/* Refuerzo de contraste para textos secundarios en modo oscuro y dentro de modales de reto */
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/45:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/50:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/55:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/60:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/65:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/70:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] .text-white\/65,
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] .text-white\/70 {
   color: rgba(248, 250, 252, 0.94);
 }
 
-html[data-easy-reading="true"]:not([data-theme="light"]) .text-slate-300,
-html[data-easy-reading="true"]:not([data-theme="light"]) .text-slate-400,
-html[data-easy-reading="true"] [data-game-board="true"] .text-slate-200\/90,
-html[data-easy-reading="true"] [data-game-board="true"] .text-emerald-200\/80 {
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-slate-300:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-slate-400:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] .text-slate-200\/90,
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] .text-emerald-200\/80 {
   color: #f1f5f9;
 }
 
@@ -1186,6 +1185,21 @@ html[data-easy-reading="true"] button.liquid-glass-pill::after,
 html[data-easy-reading="true"] a.liquid-glass-pill::after {
   animation: none !important;
   opacity: 0.15;
+}
+
+/* Escalado controlado en el Selector Orbital de Misiones para evitar desbordes de tarjetas */
+html[data-easy-reading="true"] [data-orbital-selector="true"] h3 {
+  font-size: 1.0625rem !important;
+  line-height: 1.35 !important;
+}
+
+html[data-easy-reading="true"] [data-orbital-selector="true"] p {
+  font-size: 0.875rem !important;
+  line-height: 1.45 !important;
+}
+
+html[data-easy-reading="true"] [data-orbital-selector="true"] button {
+  font-size: 0.75rem !important;
 }
 
 html[data-easy-reading="true"] .animate-pulse,
