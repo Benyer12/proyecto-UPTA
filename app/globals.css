@@ -1077,3 +1077,118 @@ li {
   height: 100%;
   background: linear-gradient(180deg, transparent 0%, var(--glint-color, rgba(255, 255, 255, 0.9)) 50%, transparent 100%);
 }
+
+/* ============================================================================
+   MODO LECTURA FÁCIL (EASY READING)
+   Activado mediante html[data-easy-reading="true"].
+   Compatible simultáneamente con data-theme="dark", data-theme="light" y
+   los tableros espaciales oscuros ([data-game-board="true"]).
+   ============================================================================ */
+
+html[data-easy-reading="true"] {
+  --easy-reading-line-height: 1.75;
+  --easy-reading-letter-spacing: 0.03em;
+  --easy-reading-word-spacing: 0.12em;
+  --easy-reading-max-measure: 65ch;
+}
+
+/* Mejora de espaciado y legibilidad en párrafos, preguntas, opciones y listas */
+html[data-easy-reading="true"] main p,
+html[data-easy-reading="true"] main li,
+html[data-easy-reading="true"] main blockquote,
+html[data-easy-reading="true"] main dd,
+html[data-easy-reading="true"] main label,
+html[data-easy-reading="true"] [data-game-board="true"] p,
+html[data-easy-reading="true"] [data-game-board="true"] h2,
+html[data-easy-reading="true"] [data-game-board="true"] h3,
+html[data-easy-reading="true"] [role="dialog"] p,
+html[data-easy-reading="true"] [role="dialog"] label,
+html[data-easy-reading="true"] [data-easy-reading-text="true"] {
+  line-height: var(--easy-reading-line-height);
+  letter-spacing: var(--easy-reading-letter-spacing);
+  word-spacing: var(--easy-reading-word-spacing);
+}
+
+/* Escalado más amplio de texto para lectura cómoda sin romper HUDs ni SVGs */
+html[data-easy-reading="true"] main p:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] main li,
+html[data-easy-reading="true"] main dd,
+html[data-easy-reading="true"] main blockquote,
+html[data-easy-reading="true"] main label,
+html[data-easy-reading="true"] [data-game-board="true"] p:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] [role="dialog"] p:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] [role="dialog"] label,
+html[data-easy-reading="true"] [data-easy-reading-text="true"] {
+  font-size: clamp(1.125rem, 1.08rem + 0.35vw, 1.3125rem);
+}
+
+html[data-easy-reading="true"] main h2,
+html[data-easy-reading="true"] main h3,
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] h2,
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] h3,
+html[data-easy-reading="true"] [role="dialog"] h3 {
+  font-size: clamp(1.25rem, 1.18rem + 0.45vw, 1.625rem);
+  line-height: 1.5;
+}
+
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] button:not([data-keep-compact="true"]),
+html[data-easy-reading="true"] main a:not([data-keep-compact="true"]),
+html[data-easy-reading="true"] main button:not([data-keep-compact="true"]) {
+  font-size: clamp(1.03rem, 1rem + 0.2vw, 1.1875rem);
+}
+
+html[data-easy-reading="true"] main article p,
+html[data-easy-reading="true"] main section > p {
+  max-width: var(--easy-reading-max-measure);
+}
+
+/* Refuerzo de contraste para textos secundarios en modo oscuro y dentro de tableros */
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/45,
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/50,
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/55,
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/60,
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/65,
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/70,
+html[data-easy-reading="true"] [data-game-board="true"] .text-white\/65,
+html[data-easy-reading="true"] [data-game-board="true"] .text-white\/70 {
+  color: rgba(248, 250, 252, 0.94);
+}
+
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-slate-300,
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-slate-400,
+html[data-easy-reading="true"] [data-game-board="true"] .text-slate-200\/90,
+html[data-easy-reading="true"] [data-game-board="true"] .text-emerald-200\/80 {
+  color: #f1f5f9;
+}
+
+/* Refuerzo de contraste para textos secundarios en modo claro (fuera del tablero) */
+html[data-easy-reading="true"][data-theme="light"] .text-white\/45:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="light"] .text-white\/50:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="light"] .text-white\/55:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="light"] .text-white\/60:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="light"] .text-white\/65:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="light"] .text-white\/70:not([data-game-board="true"] *) {
+  color: #0f172a;
+}
+
+/* Anillos de foco más visibles para navegación por teclado */
+html[data-easy-reading="true"] :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* Reducción de animaciones decorativas distractivas manteniendo transiciones funcionales */
+html[data-easy-reading="true"] .tornasol-glint,
+html[data-easy-reading="true"] .scroll-progress-bar,
+html[data-easy-reading="true"] .liquid-glass-btn::after,
+html[data-easy-reading="true"] .liquid-glass-interactive::after,
+html[data-easy-reading="true"] button.liquid-glass-pill::after,
+html[data-easy-reading="true"] a.liquid-glass-pill::after {
+  animation: none !important;
+  opacity: 0.15;
+}
+
+html[data-easy-reading="true"] .animate-pulse,
+html[data-easy-reading="true"] .animate-bounce {
+  animation: none !important;
+}

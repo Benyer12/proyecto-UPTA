@@ -13,6 +13,11 @@ import {
   obtenerBancoOfflineNaturae,
 } from '../../lib/offline-questions';
 import SoundTogglePill from '../../components/SoundTogglePill';
+import EasyReadingTogglePill from '../../components/EasyReadingTogglePill';
+import { useModalEscape } from '../../lib/hooks/useModalEscape';
+import { useHintShortcut } from '../../lib/hooks/useHintShortcut';
+import { HINT_SHORTCUT_LABELS } from '../../lib/config/modal-safety-config';
+import BotonSalidaMinijuego from './shared-game/BotonSalidaMinijuego';
 import Dado3D from './Dado3D';
 import {
   playCorrect,
@@ -440,6 +445,9 @@ export default function TableroNaturae({
   const [victoria, setVictoria] = useState(false);
   const [mostrarGuia, setMostrarGuia] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [pistaKey, setPistaKey] = useState<string | null>(null);
+  const pistaTargetKey = preguntaActiva?.pregunta ?? '';
+  const mostrarPista = Boolean(preguntaActiva) && pistaKey === pistaTargetKey;
 
   const qIndexRef = useRef(0);
   const colaNaturaeIARef = useRef<PreguntaCiencias[]>([]);
@@ -448,6 +456,52 @@ export default function TableroNaturae({
   const bioCoresActivos = bioCores.filter(Boolean).length;
   const progresoPct = Math.round(((pos + 1) / TOTAL_NATURAE) * 100);
   const modalAbierto = Boolean(preguntaActiva) || victoria || mostrarGuia;
+
+  const walkTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const closeQuestionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (walkTimerRef.current) clearInterval(walkTimerRef.current);
+      if (closeQuestionTimeoutRef.current) clearTimeout(closeQuestionTimeoutRef.current);
+    };
+  }, []);
+
+  const handleSalirModalSeguro = useCallback(() => {
+    if (walkTimerRef.current) {
+      clearInterval(walkTimerRef.current);
+      walkTimerRef.current = null;
+    }
+    if (closeQuestionTimeoutRef.current) {
+      clearTimeout(closeQuestionTimeoutRef.current);
+      closeQuestionTimeoutRef.current = null;
+    }
+    setPreguntaActiva(null);
+    setOpcionElegida(null);
+    setEstadoPregunta('esperando');
+    setEsJefeFinal(false);
+    setRolling(false);
+    setCaminando(false);
+    setAviso('Reto cerrado. Lanza el dado cuántico cuando quieras continuar.');
+  }, []);
+
+  useModalEscape({
+    isOpen: Boolean(preguntaActiva),
+    onEscape: handleSalirModalSeguro,
+    priority: 'modal',
+  });
+
+  useHintShortcut({
+    isOpen: Boolean(preguntaActiva),
+    onToggle: () =>
+      setPistaKey((prev) => (prev === pistaTargetKey ? null : pistaTargetKey)),
+  });
+
+  useModalEscape({
+    isOpen: mostrarGuia,
+    onEscape: () => setMostrarGuia(false),
+    priority: 'modal',
+  });
 
   useEffect(() => {
     const cargarOffline = async () => {
@@ -555,16 +609,24 @@ export default function TableroNaturae({
       return;
     }
 
+    if (walkTimerRef.current) {
+      clearInterval(walkTimerRef.current);
+      walkTimerRef.current = null;
+    }
+
     setCaminando(true);
     let step = pos;
-    const timer = setInterval(() => {
+    walkTimerRef.current = setInterval(() => {
       step += 1;
       setPos(step);
       onPositionChange?.(step);
       playStep();
 
       if (step >= destino) {
-        clearInterval(timer);
+        if (walkTimerRef.current) {
+          clearInterval(walkTimerRef.current);
+          walkTimerRef.current = null;
+        }
         setCaminando(false);
         const nodo = NODOS_NATURAE[step];
         if (nodo.tipo === 'biocore') {
@@ -646,7 +708,11 @@ export default function TableroNaturae({
         .catch(() => {});
     }
 
-    setTimeout(() => {
+    if (closeQuestionTimeoutRef.current) {
+      clearTimeout(closeQuestionTimeoutRef.current);
+    }
+    closeQuestionTimeoutRef.current = setTimeout(() => {
+      closeQuestionTimeoutRef.current = null;
       setPreguntaActiva(null);
       if (esJefeFinal && ok) {
         playStarWin();
@@ -771,6 +837,9 @@ export default function TableroNaturae({
           }}
         >
           <div className="relative text-center pt-0.5 pb-3 border-b border-emerald-300/15">
+            <div className="absolute left-0 top-0">
+              <EasyReadingTogglePill compact />
+            </div>
             <div className="absolute right-0 top-0">
               <SoundTogglePill />
             </div>
@@ -914,21 +983,56 @@ export default function TableroNaturae({
       <AnimatePresence>
         {preguntaActiva && (
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Reto de Ciencias Naturae"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[120] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[120] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
           >
-            <div className="w-full max-w-lg rounded-3xl p-6 bg-[#02231B]/95 border border-emerald-400/45 text-white space-y-4 shadow-2xl">
-              <div className="flex items-center justify-between">
+            <div className="w-full max-w-lg rounded-3xl p-6 bg-[#02231B]/95 border border-emerald-400/45 text-white space-y-4 shadow-2xl my-auto">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-xs font-bold text-emerald-200">
                   {esJefeFinal ? 'Reto Final: Árbol de la Vida' : preguntaActiva.tema}
                 </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPistaKey((prev) =>
+                        prev === pistaTargetKey ? null : pistaTargetKey,
+                      )
+                    }
+                    aria-pressed={mostrarPista}
+                    aria-label={HINT_SHORTCUT_LABELS.ariaLabel}
+                    title={HINT_SHORTCUT_LABELS.ariaLabel}
+                    data-keep-compact="true"
+                    className={`min-h-[36px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-extrabold cursor-pointer transition-colors ${
+                      mostrarPista
+                        ? 'bg-emerald-400/25 border-emerald-300 text-emerald-100'
+                        : 'bg-emerald-950/70 border-emerald-400/35 hover:bg-emerald-900/80 text-emerald-100'
+                    }`}
+                  >
+                    <span aria-hidden="true">💡</span>
+                    <span>
+                      {mostrarPista
+                        ? HINT_SHORTCUT_LABELS.hideText
+                        : HINT_SHORTCUT_LABELS.buttonText}
+                    </span>
+                    <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-950/60 border border-emerald-200/35 text-[10px] font-mono font-bold text-emerald-100 leading-none">
+                      {HINT_SHORTCUT_LABELS.shortcutHint}
+                    </kbd>
+                  </button>
+                  <BotonSalidaMinijuego onSafeExit={handleSalirModalSeguro} />
+                </div>
               </div>
               <h3 className="text-lg font-bold leading-snug">{preguntaActiva.pregunta}</h3>
-              <p className="text-xs text-emerald-200/80 bg-emerald-950/60 px-3 py-2 rounded-xl border border-emerald-500/20">
-                Pista: {preguntaActiva.pista}
-              </p>
+              {mostrarPista && (
+                <p className="text-xs sm:text-sm text-emerald-100 bg-emerald-950/75 px-3.5 py-2.5 rounded-xl border border-emerald-400/35">
+                  <strong>Pista:</strong> {preguntaActiva.pista}
+                </p>
+              )}
               <div className="space-y-2">
                 {preguntaActiva.opciones.map((opt, idx) => {
                   const sel = opcionElegida === idx;

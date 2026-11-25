@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useModalEscape } from '../../../lib/hooks/useModalEscape';
+import { useHintShortcut } from '../../../lib/hooks/useHintShortcut';
+import { HINT_SHORTCUT_LABELS } from '../../../lib/config/modal-safety-config';
+import BotonSalidaMinijuego from '../shared-game/BotonSalidaMinijuego';
 import {
   barajar,
   validarPuente,
@@ -30,6 +34,7 @@ interface AltarDecodificacionProps {
   estrellasActuales: number;
   silabasRecolectadas: number;
   onCompletar: (res: ResultadoAltar) => void;
+  onSafeExit: () => void;
 }
 
 const RUNAS_HORIZONTALES = 'R P N Γ R   ⌖   Λ Ψ Ω Δ Σ Φ   ⌖   P M H ⨉ B Δ Σ R N Ω';
@@ -343,7 +348,18 @@ export default function AltarDecodificacion({
   estrellasActuales,
   silabasRecolectadas,
   onCompletar,
+  onSafeExit,
 }: AltarDecodificacionProps) {
+  useModalEscape({
+    isOpen: true,
+    onEscape: onSafeExit,
+    priority: 'modal',
+  });
+
+  useHintShortcut({
+    isOpen: true,
+    onToggle: () => setMostrarPista((v) => !v),
+  });
   const [mostrarPista, setMostrarPista] = useState(false);
   const [explicacionActiva, setExplicacionActiva] = useState<string | null>(null);
   const [mensajeApoyo, setMensajeApoyo] = useState<string | null>(null);
@@ -669,6 +685,9 @@ export default function AltarDecodificacion({
 
   return (
     <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Altar de Decodificación de Letralia"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -893,10 +912,17 @@ export default function AltarDecodificacion({
                 <button
                   type="button"
                   onClick={() => setMostrarPista((v) => !v)}
+                  aria-pressed={mostrarPista}
+                  aria-label={HINT_SHORTCUT_LABELS.ariaLabel}
+                  title={HINT_SHORTCUT_LABELS.ariaLabel}
+                  data-keep-compact="true"
                   className="lg:hidden flex items-center gap-1.5 bg-violet-400/30 hover:bg-violet-400/45 border border-violet-200 rounded-full px-3.5 py-1 text-xs font-extrabold text-white cursor-pointer shadow"
                 >
-                  <span>🪶</span>
+                  <span aria-hidden="true">🪶</span>
                   <span>AYUDA</span>
+                  <kbd className="px-1 py-0.5 rounded bg-slate-950/50 border border-violet-200/40 text-[10px] font-mono leading-none">
+                    {HINT_SHORTCUT_LABELS.shortcutHint}
+                  </kbd>
                 </button>
                 {estrellasActuales > 0 && (
                   <div
@@ -922,6 +948,7 @@ export default function AltarDecodificacion({
                     {silabasRecolectadas}/4
                   </span>
                 </div>
+                <BotonSalidaMinijuego onSafeExit={onSafeExit} />
               </div>
             </div>
 
@@ -1351,6 +1378,9 @@ export default function AltarDecodificacion({
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.94 }}
             onClick={() => setMostrarPista((v) => !v)}
+            aria-pressed={mostrarPista}
+            aria-label={HINT_SHORTCUT_LABELS.ariaLabel}
+            data-keep-compact="true"
             className="w-16 h-16 rounded-full flex items-center justify-center cursor-pointer transition-all"
             style={{
               background:
@@ -1361,7 +1391,7 @@ export default function AltarDecodificacion({
               boxShadow:
                 '0 0 26px rgba(167, 139, 250, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.45)',
             }}
-            title="Mostrar pista pedagógica"
+            title={HINT_SHORTCUT_LABELS.ariaLabel}
           >
             <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
               <path
@@ -1374,8 +1404,11 @@ export default function AltarDecodificacion({
               <path d="M7 29 L24 12" stroke="#FEF08A" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
           </motion.button>
-          <span className="mt-1.5 text-xs font-black tracking-widest text-[#F1F5FF] drop-shadow">
-            AYUDA
+          <span className="mt-1.5 inline-flex items-center gap-1 text-xs font-black tracking-widest text-[#F1F5FF] drop-shadow">
+            <span>AYUDA</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-slate-950/60 border border-violet-200/40 text-[10px] font-mono leading-none">
+              {HINT_SHORTCUT_LABELS.shortcutHint}
+            </kbd>
           </span>
         </div>
       </div>

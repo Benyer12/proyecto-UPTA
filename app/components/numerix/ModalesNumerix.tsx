@@ -3,6 +3,13 @@
 import { useId, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PreguntaMatematica, RetoArmilarBoss } from '../../../lib/preguntas-numerix';
+import { WHITEBOARD_LABELS } from '../../../lib/config/whiteboard-config';
+import { HINT_SHORTCUT_LABELS } from '../../../lib/config/modal-safety-config';
+import { useModalEscape } from '../../../lib/hooks/useModalEscape';
+import { useHintShortcut } from '../../../lib/hooks/useHintShortcut';
+import { playStep } from '../../../lib/sound-engine';
+import PizarraHolografica from '../shared-game/PizarraHolografica';
+import BotonSalidaMinijuego from '../shared-game/BotonSalidaMinijuego';
 
 /* ════════════════════════ COMPONENTES LIQUID GLASS COMPARTIDOS ════════════════════════ */
 
@@ -47,7 +54,10 @@ function BotonPistaCuantica({
     <button
       type="button"
       onClick={onClick}
-      className="liquid-glass-pill inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-extrabold tracking-wider uppercase cursor-pointer transition-all shrink-0"
+      aria-pressed={activa}
+      aria-label={HINT_SHORTCUT_LABELS.ariaLabel}
+      data-keep-compact="true"
+      className="liquid-glass-pill inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-extrabold tracking-wider uppercase cursor-pointer transition-all shrink-0"
       style={{
         background: activa
           ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.7) 0%, rgba(0, 245, 255, 0.55) 100%)'
@@ -58,10 +68,53 @@ function BotonPistaCuantica({
           ? '0 0 18px rgba(0, 245, 255, 0.55), inset 0 1px 1px rgba(255,255,255,0.45)'
           : '0 0 14px rgba(56, 189, 248, 0.25), inset 0 1px 1px rgba(255,255,255,0.3)',
       }}
-      title="Mostrar Pista Cuántica"
+      title={HINT_SHORTCUT_LABELS.ariaLabel}
     >
-      <span>💡</span>
-      <span>{activa ? 'Ocultar pista' : 'Pista'}</span>
+      <span aria-hidden="true">💡</span>
+      <span>{activa ? HINT_SHORTCUT_LABELS.hideText : HINT_SHORTCUT_LABELS.buttonText}</span>
+      <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-950/60 border border-cyan-200/35 text-[10px] font-mono font-bold text-cyan-100 leading-none">
+        {HINT_SHORTCUT_LABELS.shortcutHint}
+      </kbd>
+    </button>
+  );
+}
+
+/** Botón para abrir o cerrar la Pizarra Holográfica de Cálculo en Numérix. */
+function BotonPizarraCalculo({
+  activa,
+  onClick,
+}: {
+  activa: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={activa}
+      aria-label={activa ? WHITEBOARD_LABELS.closeButton : WHITEBOARD_LABELS.openButton}
+      title={WHITEBOARD_LABELS.openButton}
+      className="liquid-glass-pill inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold tracking-wide cursor-pointer transition-all shrink-0"
+      style={{
+        background: activa
+          ? 'linear-gradient(135deg, rgba(6, 182, 212, 0.72) 0%, rgba(16, 185, 129, 0.52) 100%)'
+          : 'linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(12, 74, 110, 0.65) 100%)',
+        borderColor: activa ? 'rgba(34, 211, 238, 0.95)' : 'rgba(103, 232, 249, 0.5)',
+        color: '#FFFFFF',
+        boxShadow: activa
+          ? '0 0 18px rgba(34, 211, 238, 0.5), inset 0 1px 1px rgba(255,255,255,0.4)'
+          : '0 0 12px rgba(34, 211, 238, 0.2), inset 0 1px 1px rgba(255,255,255,0.25)',
+      }}
+    >
+      <svg viewBox="0 0 18 18" fill="none" className="w-3.5 h-3.5 shrink-0" aria-hidden="true">
+        <path
+          d="M12.5 2.8L15.2 5.5L6.5 14.2L3 15L3.8 11.5L12.5 2.8Z"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span>{WHITEBOARD_LABELS.openButton}</span>
     </button>
   );
 }
@@ -531,6 +584,7 @@ interface ModalReactorProps {
   estadoPregunta?: 'idle' | 'correct' | 'incorrect';
   onSeleccionarOpcion?: (idx: number) => void;
   onConfirmarPregunta?: () => void;
+  onSafeExit: () => void;
 }
 
 export function ModalReactorCuantico({
@@ -547,12 +601,41 @@ export function ModalReactorCuantico({
   estadoPregunta = 'idle',
   onSeleccionarOpcion,
   onConfirmarPregunta,
+  onSafeExit,
 }: ModalReactorProps) {
-  const [mostrarPista, setMostrarPista] = useState(false);
-
   const esSecuencia = modo === 'secuencia';
   const estadoActual = esSecuencia ? estadoSecuencia : estadoPregunta;
   const tonosCubos: TonoCubo[] = ['crema', 'amatista', 'esmeralda', 'magenta'];
+  const retoKey = esSecuencia ? `seq-${secuencia.join('-')}` : `preg-${pregunta?.id ?? ''}`;
+
+  const [pistaKey, setPistaKey] = useState<string | null>(null);
+  const [pizarraKey, setPizarraKey] = useState<string | null>(null);
+  const mostrarPista = pistaKey === retoKey;
+  const mostrarPizarra = pizarraKey === retoKey;
+
+  useModalEscape({
+    isOpen: true,
+    onEscape: onSafeExit,
+    priority: 'modal',
+  });
+
+  useHintShortcut({
+    isOpen: true,
+    onToggle: () => setPistaKey((prev) => (prev === retoKey ? null : retoKey)),
+    disabled: mostrarPizarra,
+  });
+
+  const handleTogglePista = () => {
+    setPistaKey((prev) => (prev === retoKey ? null : retoKey));
+  };
+
+  const handleTogglePizarra = () => {
+    setPizarraKey((prev) => {
+      const nextOpen = prev !== retoKey;
+      if (nextOpen) playStep();
+      return nextOpen ? retoKey : null;
+    });
+  };
 
   const textoPista = esSecuencia
     ? 'Compara las decenas de cada cubo y colócalos del número más pequeño al más grande.'
@@ -568,8 +651,16 @@ export function ModalReactorCuantico({
         opcionSeleccionada === i && pregunta ? pregunta.opciones[i] : null,
       );
 
+  const resumenPizarra = esSecuencia
+    ? `Ordena de menor a mayor: ${secuencia.join(', ')}`
+    : pregunta?.enunciado;
+
   return (
+    <>
     <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label={esSecuencia ? 'Reactor de Propulsión Cuántica' : 'Cámara de Cálculo Cuántico'}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -648,11 +739,12 @@ export function ModalReactorCuantico({
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5">
-              <BotonPistaCuantica activa={mostrarPista} onClick={() => setMostrarPista((v) => !v)} />
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <BotonPizarraCalculo activa={mostrarPizarra} onClick={handleTogglePizarra} />
+              <BotonPistaCuantica activa={mostrarPista} onClick={handleTogglePista} />
 
               <div
-                className="liquid-glass-pill inline-flex items-center gap-1.5 whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-black text-white"
+                className="liquid-glass-pill inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-black text-white"
                 style={{
                   background:
                     'linear-gradient(135deg, rgba(16, 185, 129, 0.42) 0%, rgba(30, 58, 138, 0.6) 100%)',
@@ -666,7 +758,7 @@ export function ModalReactorCuantico({
 
               {estrellas > 0 && (
                 <div
-                  className="liquid-glass-pill inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-black text-white"
+                  className="liquid-glass-pill inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-black text-white"
                   style={{
                     background:
                       'linear-gradient(135deg, rgba(168, 85, 247, 0.48) 0%, rgba(16, 185, 129, 0.42) 100%)',
@@ -677,8 +769,12 @@ export function ModalReactorCuantico({
                   <span>{estrellas}</span>
                 </div>
               )}
+
+              <BotonSalidaMinijuego onSafeExit={onSafeExit} />
             </div>
           </div>
+
+          <div className="relative z-20 flex flex-col justify-between gap-4">
 
           {/* ── CONSIGNA / ENUNCIADO LUMINOSO ── */}
           <div className="relative z-20 text-center px-1">
@@ -879,9 +975,21 @@ export function ModalReactorCuantico({
                   : 'COMPROBAR CÁLCULO'}
             </button>
           </div>
+          </div>
         </div>
       </motion.div>
     </motion.div>
+
+    <AnimatePresence>
+      {mostrarPizarra && (
+        <PizarraHolografica
+          key={retoKey}
+          preguntaResumen={resumenPizarra}
+          onClose={() => setPizarraKey(null)}
+        />
+      )}
+    </AnimatePresence>
+    </>
   );
 }
 
@@ -900,6 +1008,7 @@ interface ModalAlertaImpactoProps {
   estado: 'idle' | 'correct' | 'incorrect';
   onDisparar: (idx: number) => void;
   onCerrar: () => void;
+  onSafeExit: () => void;
 }
 
 /** Asteroide Espacial 3D luminoso con cristales en paleta Azul Crema, Morado y Esmeralda + mira [ ]. */
@@ -1077,12 +1186,36 @@ export function ModalAlertaImpacto({
   estado,
   onDisparar,
   onCerrar,
+  onSafeExit,
 }: ModalAlertaImpactoProps) {
   const angulos = [-34, 0, 34];
   const anguloTorreta = seleccionadoIdx !== null ? angulos[seleccionadoIdx] ?? 0 : 0;
+  const alertaKey = `${condicion.etiqueta}-${asteroides.join('-')}`;
+  const [pizarraKey, setPizarraKey] = useState<string | null>(null);
+  const mostrarPizarra = pizarraKey === alertaKey;
+
+  useModalEscape({
+    isOpen: true,
+    onEscape: onSafeExit,
+    priority: 'modal',
+  });
+
+  const handleTogglePizarra = () => {
+    setPizarraKey((prev) => {
+      const nextOpen = prev !== alertaKey;
+      if (nextOpen) playStep();
+      return nextOpen ? alertaKey : null;
+    });
+  };
+
+  const resumenPizarra = `Dispara al asteroide ${condicion.etiqueta}: ${asteroides.join(' · ')}`;
 
   return (
+    <>
     <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Alerta de Impacto Escudo Antimateria"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -1171,17 +1304,23 @@ export function ModalAlertaImpacto({
               </div>
             </div>
 
-            <span
-              className="liquid-glass-pill px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest text-white"
-              style={{
-                background:
-                  'linear-gradient(135deg, rgba(192, 38, 211, 0.55) 0%, rgba(16, 185, 129, 0.45) 100%)',
-                borderColor: 'rgba(245, 208, 254, 0.75)',
-              }}
-            >
-              ● Radar Activo
-            </span>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <BotonPizarraCalculo activa={mostrarPizarra} onClick={handleTogglePizarra} />
+              <span
+                className="liquid-glass-pill px-3.5 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest text-white"
+                style={{
+                  background:
+                    'linear-gradient(135deg, rgba(192, 38, 211, 0.55) 0%, rgba(16, 185, 129, 0.45) 100%)',
+                  borderColor: 'rgba(245, 208, 254, 0.75)',
+                }}
+              >
+                ● Radar Activo
+              </span>
+              <BotonSalidaMinijuego onSafeExit={onSafeExit} />
+            </div>
           </div>
+
+          <div className="relative z-20 flex flex-col justify-between gap-4">
 
           {/* Consigna dinámica */}
           <div className="relative z-20 text-center max-w-xl mx-auto px-2">
@@ -1291,9 +1430,21 @@ export function ModalAlertaImpacto({
               </motion.div>
             )}
           </AnimatePresence>
+          </div>
         </div>
       </motion.div>
     </motion.div>
+
+    <AnimatePresence>
+      {mostrarPizarra && (
+        <PizarraHolografica
+          key={alertaKey}
+          preguntaResumen={resumenPizarra}
+          onClose={() => setPizarraKey(null)}
+        />
+      )}
+    </AnimatePresence>
+    </>
   );
 }
 
@@ -1308,6 +1459,7 @@ interface ModalGuardianArmilarProps {
   estado: 'idle' | 'correct' | 'incorrect';
   onElegirOpcion: (idx: number) => void;
   onAlinearAnillo: () => void;
+  onSafeExit: () => void;
 }
 
 export function ModalGuardianArmilar({
@@ -1319,16 +1471,49 @@ export function ModalGuardianArmilar({
   estado,
   onElegirOpcion,
   onAlinearAnillo,
+  onSafeExit,
 }: ModalGuardianArmilarProps) {
-  const [mostrarPista, setMostrarPista] = useState(false);
   const tonosBoss: TonoCubo[] = ['crema', 'amatista', 'esmeralda'];
+  const bossKey = `${reto.id}-${faseActual}`;
+  const [pistaKey, setPistaKey] = useState<string | null>(null);
+  const [pizarraKey, setPizarraKey] = useState<string | null>(null);
+  const mostrarPista = pistaKey === bossKey;
+  const mostrarPizarra = pizarraKey === bossKey;
+
+  useModalEscape({
+    isOpen: true,
+    onEscape: onSafeExit,
+    priority: 'modal',
+  });
+
+  useHintShortcut({
+    isOpen: true,
+    onToggle: () => setPistaKey((prev) => (prev === bossKey ? null : bossKey)),
+    disabled: mostrarPizarra,
+  });
+
+  const handleTogglePista = () => {
+    setPistaKey((prev) => (prev === bossKey ? null : bossKey));
+  };
+
+  const handleTogglePizarra = () => {
+    setPizarraKey((prev) => {
+      const nextOpen = prev !== bossKey;
+      if (nextOpen) playStep();
+      return nextOpen ? bossKey : null;
+    });
+  };
 
   const ranurasBoss: (string | null)[] = [0, 1, 2].map((i) =>
     opcionElegida === i ? reto.opciones[i] : null,
   );
 
   return (
+    <>
     <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Guardián del Nivel Núcleo Armilar"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -1400,11 +1585,12 @@ export function ModalGuardianArmilar({
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5">
-              <BotonPistaCuantica activa={mostrarPista} onClick={() => setMostrarPista((v) => !v)} />
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <BotonPizarraCalculo activa={mostrarPizarra} onClick={handleTogglePizarra} />
+              <BotonPistaCuantica activa={mostrarPista} onClick={handleTogglePista} />
               {estrellas > 0 && (
                 <div
-                  className="liquid-glass-pill inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-black text-white"
+                  className="liquid-glass-pill inline-flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-black text-white"
                   style={{
                     background:
                       'linear-gradient(135deg, rgba(168, 85, 247, 0.5) 0%, rgba(16, 185, 129, 0.45) 100%)',
@@ -1415,8 +1601,11 @@ export function ModalGuardianArmilar({
                   <span>{estrellas}</span>
                 </div>
               )}
+              <BotonSalidaMinijuego onSafeExit={onSafeExit} />
             </div>
           </div>
+
+          <div className="relative z-20 flex flex-col justify-between gap-4">
 
           {/* Barra de Núcleos y Progreso de Fases */}
           <div className="relative z-20 flex flex-wrap items-center justify-between gap-3">
@@ -1674,8 +1863,20 @@ export function ModalGuardianArmilar({
                   : 'ALINEAR ANILLO ARMILAR'}
             </button>
           </div>
+          </div>
         </div>
       </motion.div>
     </motion.div>
+
+    <AnimatePresence>
+      {mostrarPizarra && (
+        <PizarraHolografica
+          key={bossKey}
+          preguntaResumen={reto.enunciado}
+          onClose={() => setPizarraKey(null)}
+        />
+      )}
+    </AnimatePresence>
+    </>
   );
 }
