@@ -208,6 +208,7 @@ export default function PacmanArcadeGame({
     y: initialSpawns.pac.y,
     dir: 'LEFT' as Dir,
     nextDir: 'LEFT' as Dir,
+    moving: true,
   });
   const ghostsRef = useRef<Ghost[]>(initialSpawns.ghosts);
   const frightUntilRef = useRef(0);
@@ -352,13 +353,13 @@ export default function PacmanArcadeGame({
       ctx.stroke();
     }
 
-    // 4. Pac-Man (smooth mouth animation)
+    // 4. Pac-Man (smooth mouth animation when moving; still pose when stopped at wall)
     const p = pacRef.current;
     const pcx = p.x * CELL + CELL / 2;
     const pcy = p.y * CELL + CELL / 2;
     const baseAng =
       p.dir === 'RIGHT' ? 0 : p.dir === 'DOWN' ? Math.PI / 2 : p.dir === 'LEFT' ? Math.PI : -Math.PI / 2;
-    const chomp = 0.04 + 0.28 * Math.abs(Math.sin(nowMs / 65));
+    const chomp = p.moving ? 0.04 + 0.28 * Math.abs(Math.sin(nowMs / 65)) : 0.22;
 
     ctx.fillStyle = '#FACC15';
     ctx.beginPath();
@@ -439,7 +440,7 @@ export default function PacmanArcadeGame({
   const resetPositions = useCallback(() => {
     const now = Date.now();
     const s = findSpawns(now);
-    pacRef.current = { x: s.pac.x, y: s.pac.y, dir: 'LEFT', nextDir: 'LEFT' };
+    pacRef.current = { x: s.pac.x, y: s.pac.y, dir: 'LEFT', nextDir: 'LEFT', moving: true };
     ghostsRef.current = s.ghosts;
     gateRef.current = s.gate;
     fruitPosRef.current = s.fruit;
@@ -507,55 +508,77 @@ export default function PacmanArcadeGame({
       const grid = gridRef.current;
       const pac = pacRef.current;
 
-      // 1. Move Pac-Man smoothly in continuous coordinates
+      // 1. Move Pac-Man smoothly in continuous coordinates (never enters wall tiles)
+      const wrapCol = (c: number) => (c < 0 ? COLS - 1 : c >= COLS ? 0 : c);
       const pacSpeed = Math.min(7.8, 5.9 + (levelRef.current - 1) * 0.25); // tiles/sec
-      const tileCol = Math.round(pac.x);
-      const tileRow = Math.round(pac.y);
+      const tileCol = Math.max(0, Math.min(COLS - 1, Math.round(pac.x)));
+      const tileRow = Math.max(0, Math.min(ROWS - 1, Math.round(pac.y)));
       const distToCenterX = Math.abs(pac.x - tileCol);
       const distToCenterY = Math.abs(pac.y - tileRow);
 
-      // Instant reversal if opposite direction requested
-      if (pac.nextDir === OPPOSITE[pac.dir]) {
-        pac.dir = pac.nextDir;
-      } else if (pac.nextDir !== pac.dir) {
-        // Generous cornering tolerance near tile center (classic Namco feel!)
-        if (distToCenterX < 0.24 && distToCenterY < 0.24) {
-          const tv = DIR_VEC[pac.nextDir];
-          let nextCol = tileCol + tv.dx;
-          const nextRow = tileRow + tv.dy;
-          if (nextCol < 0) nextCol = COLS - 1;
-          if (nextCol >= COLS) nextCol = 0;
-          if (canEntityEnter(grid, nextCol, nextRow, false)) {
-            pac.x = tileCol;
-            pac.y = tileRow;
-            pac.dir = pac.nextDir;
-          }
+      // Try switching to buffered direction
+      if (pac.nextDir !== pac.dir) {
+        const tv = DIR_VEC[pac.nextDir];
+        const nextTileOpen = canEntityEnter(grid, wrapCol(tileCol + tv.dx), tileRow + tv.dy, false);
+        const isOpposite = pac.nextDir === OPPOSITE[pac.dir];
+        const canReverseWithinTile =
+          isOpposite &&
+          ((tv.dx < 0 && pac.x > tileCol) ||
+            (tv.dx > 0 && pac.x < tileCol) ||
+            (tv.dy < 0 && pac.y > tileRow) ||
+            (tv.dy > 0 && pac.y < tileRow));
+
+        if (isOpposite && (nextTileOpen || canReverseWithinTile)) {
+          pac.dir = pac.nextDir;
+        } else if (distToCenterX < 0.26 && distToCenterY < 0.26 && nextTileOpen) {
+          pac.x = tileCol;
+          pac.y = tileRow;
+          pac.dir = pac.nextDir;
         }
       }
 
-      // Advance along current direction, clamping neatly against walls
+      // Advance along current direction, stopping cleanly at tile center before a wall
       const pv = DIR_VEC[pac.dir];
-      const nextX = pac.x + pv.dx * pacSpeed * dt;
-      const nextY = pac.y + pv.dy * pacSpeed * dt;
-      const aheadCol = pv.dx > 0 ? Math.floor(nextX + 0.49) : pv.dx < 0 ? Math.floor(nextX - 0.49) : tileCol;
-      const aheadRow = pv.dy > 0 ? Math.floor(nextY + 0.49) : pv.dy < 0 ? Math.floor(nextY - 0.49) : tileRow;
+      const curColNow = Math.max(0, Math.min(COLS - 1, Math.round(pac.x)));
+      const curRowNow = Math.max(0, Math.min(ROWS - 1, Math.round(pac.y)));
+      const forwardOpen = canEntityEnter(grid, wrapCol(curColNow + pv.dx), curRowNow + pv.dy, false);
 
-      let wrappedAheadCol = aheadCol;
-      if (wrappedAheadCol < 0) wrappedAheadCol = COLS - 1;
-      if (wrappedAheadCol >= COLS) wrappedAheadCol = 0;
+      let nextX = pac.x + pv.dx * pacSpeed * dt;
+      let nextY = pac.y + pv.dy * pacSpeed * dt;
 
-      if (canEntityEnter(grid, wrappedAheadCol, aheadRow, false)) {
+      if (!forwardOpen) {
+        if (pv.dx > 0 && nextX >= curColNow) {
+          pac.x = curColNow;
+          pac.y = curRowNow;
+          pac.moving = false;
+        } else if (pv.dx < 0 && nextX <= curColNow) {
+          pac.x = curColNow;
+          pac.y = curRowNow;
+          pac.moving = false;
+        } else if (pv.dy > 0 && nextY >= curRowNow) {
+          pac.x = curColNow;
+          pac.y = curRowNow;
+          pac.moving = false;
+        } else if (pv.dy < 0 && nextY <= curRowNow) {
+          pac.x = curColNow;
+          pac.y = curRowNow;
+          pac.moving = false;
+        } else {
+          // Moving within the current valid tile toward its center before stopping
+          pac.x = nextX;
+          pac.y = nextY;
+          pac.moving = true;
+        }
+      } else {
+        pac.moving = true;
+        // Side tunnel wrap
+        if (nextX < -0.5) nextX = COLS - 0.5;
+        if (nextX > COLS - 0.5) nextX = -0.5;
         pac.x = nextX;
         pac.y = nextY;
-        // Side tunnel wrap
-        if (pac.x < -0.5) pac.x = COLS - 0.5;
-        if (pac.x > COLS - 0.5) pac.x = -0.5;
-        // Keep aligned on perpendicular axis
-        if (pv.dx !== 0) pac.y += (tileRow - pac.y) * Math.min(1, dt * 18);
-        if (pv.dy !== 0) pac.x += (tileCol - pac.x) * Math.min(1, dt * 18);
-      } else {
-        pac.x = tileCol;
-        pac.y = tileRow;
+        // Keep neatly centered on the corridor axis
+        if (pv.dx !== 0) pac.y += (curRowNow - pac.y) * Math.min(1, dt * 20);
+        if (pv.dy !== 0) pac.x += (curColNow - pac.x) * Math.min(1, dt * 20);
       }
 
       // Eat pellets / power pellets when centered over a tile
@@ -737,22 +760,31 @@ export default function PacmanArcadeGame({
         }
 
         const gv = DIR_VEC[g.dir];
-        const gNextX = g.x + gv.dx * gSpeed * dt;
-        const gNextY = g.y + gv.dy * gSpeed * dt;
-        let checkCol = gv.dx > 0 ? Math.floor(gNextX + 0.49) : gv.dx < 0 ? Math.floor(gNextX - 0.49) : gc;
-        const checkRow = gv.dy > 0 ? Math.floor(gNextY + 0.49) : gv.dy < 0 ? Math.floor(gNextY - 0.49) : gr;
-        if (checkCol < 0) checkCol = COLS - 1;
-        if (checkCol >= COLS) checkCol = 0;
+        const ghostForwardOpen = canEntityEnter(
+          grid,
+          wrapCol(gc + gv.dx),
+          gr + gv.dy,
+          g.mode === 'eaten',
+        );
+        let gNextX = g.x + gv.dx * gSpeed * dt;
+        let gNextY = g.y + gv.dy * gSpeed * dt;
 
-        if (canEntityEnter(grid, checkCol, checkRow, g.mode === 'eaten')) {
-          g.x = gNextX;
-          g.y = gNextY;
-          if (g.x < -0.5) g.x = COLS - 0.5;
-          if (g.x > COLS - 0.5) g.x = -0.5;
-        } else {
+        const stoppedAtWall =
+          !ghostForwardOpen &&
+          ((gv.dx > 0 && gNextX >= gc) ||
+            (gv.dx < 0 && gNextX <= gc) ||
+            (gv.dy > 0 && gNextY >= gr) ||
+            (gv.dy < 0 && gNextY <= gr));
+
+        if (stoppedAtWall) {
           g.x = gc;
           g.y = gr;
           g.lastDecisionTile = '';
+        } else {
+          if (gNextX < -0.5) gNextX = COLS - 0.5;
+          if (gNextX > COLS - 0.5) gNextX = -0.5;
+          g.x = gNextX;
+          g.y = gNextY;
         }
 
         // Collision check with Pac-Man
