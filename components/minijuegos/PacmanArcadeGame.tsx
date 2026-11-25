@@ -5,8 +5,9 @@ import { LiquidGlass } from '../ui/glasscn/liquid-glass';
 import type { ResultadoPartidaInput } from '../../lib/minijuegos-types';
 import ArcadeScreenFrame from './ArcadeScreenFrame';
 
-// Classic 19-col x 21-row Pac-Man inspired maze:
-// '#' = wall, '.' = pellet, 'o' = power pellet, ' ' = empty/tunnel, 'P' = Pac-Man spawn, 'G' = ghost house
+// Classic symmetric Pac-Man style 19x21 maze:
+// '#' = wall, '.' = pellet, 'o' = power pellet, '-' = ghost house gate,
+// 'G' = inside ghost house, 'F' = fruit/bonus spawn, 'P' = Pac-Man spawn, ' ' = empty/tunnel
 const MAZE_TEMPLATE = [
   '###################',
   '#........#........#',
@@ -16,10 +17,10 @@ const MAZE_TEMPLATE = [
   '#....#...#...#....#',
   '####.### # ###.####',
   '   #.#       #.#   ',
-  '####.# ##G## #.####',
+  '####.# ##-## #.####',
   '    .  #GGG#  .    ',
   '####.# ##### #.####',
-  '   #.#       #.#   ',
+  '   #.#   F   #.#   ',
   '####.# ##### #.####',
   '#........#........#',
   '#.##.###.#.###.##.#',
@@ -53,43 +54,117 @@ const OPPOSITE: Record<Dir, Dir> = {
   RIGHT: 'LEFT',
 };
 
+type GhostMode = 'house' | 'active' | 'frightened' | 'eaten';
+
 interface Ghost {
   id: number;
-  x: number;
+  name: string;
+  x: number; // floating grid coordinate (center of tile = col + 0.5, wait: let's store integer-aligned tile coords as floats 0..COLS-1!)
   y: number;
   dir: Dir;
   color: string;
-  homeX: number;
-  homeY: number;
+  mode: GhostMode;
+  releaseAtMs: number;
+  scatterTarget: { x: number; y: number };
+  lastDecisionTile: string;
+}
+
+interface FloatingPopup {
+  x: number;
+  y: number;
+  text: string;
+  color: string;
+  untilMs: number;
 }
 
 function buildMazeGrid(): string[][] {
   return MAZE_TEMPLATE.map((row) => row.split(''));
 }
 
-function findSpawnPositions() {
+function isWallTile(grid: string[][], col: number, row: number): boolean {
+  if (row < 0 || row >= ROWS) return true;
+  if (col < 0 || col >= COLS) return false; // side tunnel
+  return grid[row][col] === '#';
+}
+
+function canEntityEnter(grid: string[][], col: number, row: number, allowGate: boolean): boolean {
+  if (row < 0 || row >= ROWS) return false;
+  if (col < 0 || col >= COLS) return true; // tunnel wrap
+  const ch = grid[row][col];
+  if (ch === '#') return false;
+  if (ch === '-' && !allowGate) return false;
+  if (ch === 'G' && !allowGate) return false;
+  return true;
+}
+
+function findSpawns(now: number) {
   let pac = { x: 9, y: 15 };
-  const ghostHomes: Array<{ x: number; y: number }> = [];
+  let gate = { x: 9, y: 8 };
+  let fruit = { x: 9, y: 11 };
+  const houseSlots: Array<{ x: number; y: number }> = [];
+
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      if (MAZE_TEMPLATE[r][c] === 'P') pac = { x: c, y: r };
-      if (MAZE_TEMPLATE[r][c] === 'G') ghostHomes.push({ x: c, y: r });
+      const ch = MAZE_TEMPLATE[r][c];
+      if (ch === 'P') pac = { x: c, y: r };
+      else if (ch === '-') gate = { x: c, y: r };
+      else if (ch === 'F') fruit = { x: c, y: r };
+      else if (ch === 'G') houseSlots.push({ x: c, y: r });
     }
   }
-  const ghostColors = ['#EF4444', '#F472B6', '#22D3EE', '#FB923C'];
-  const ghosts: Ghost[] = ghostColors.map((color, idx) => {
-    const home = ghostHomes[idx % ghostHomes.length] || { x: 9, y: 8 };
-    return {
-      id: idx,
-      x: home.x,
-      y: home.y,
-      dir: idx % 2 === 0 ? 'LEFT' : 'RIGHT',
-      color,
-      homeX: home.x,
-      homeY: home.y,
-    };
-  });
-  return { pac, ghosts };
+
+  const ghosts: Ghost[] = [
+    {
+      id: 0,
+      name: 'Blinky',
+      x: gate.x,
+      y: gate.y - 1, // Starts just outside ghost house like original!
+      dir: 'LEFT',
+      color: '#EF4444',
+      mode: 'active',
+      releaseAtMs: now,
+      scatterTarget: { x: COLS - 2, y: 1 },
+      lastDecisionTile: '',
+    },
+    {
+      id: 1,
+      name: 'Pinky',
+      x: houseSlots[1]?.x ?? gate.x,
+      y: houseSlots[1]?.y ?? gate.y + 1,
+      dir: 'UP',
+      color: '#F472B6',
+      mode: 'house',
+      releaseAtMs: now + 1800,
+      scatterTarget: { x: 1, y: 1 },
+      lastDecisionTile: '',
+    },
+    {
+      id: 2,
+      name: 'Inky',
+      x: houseSlots[0]?.x ?? gate.x - 1,
+      y: houseSlots[0]?.y ?? gate.y + 1,
+      dir: 'UP',
+      color: '#22D3EE',
+      mode: 'house',
+      releaseAtMs: now + 4500,
+      scatterTarget: { x: COLS - 2, y: ROWS - 2 },
+      lastDecisionTile: '',
+    },
+    {
+      id: 3,
+      name: 'Clyde',
+      x: houseSlots[2]?.x ?? gate.x + 1,
+      y: houseSlots[2]?.y ?? gate.y + 1,
+      dir: 'UP',
+      color: '#FB923C',
+      mode: 'house',
+      releaseAtMs: now + 7500,
+      scatterTarget: { x: 1, y: ROWS - 2 },
+      lastDecisionTile: '',
+    },
+  ];
+
+  return { pac, gate, fruit, ghosts };
 }
 
 function countRemainingPellets(grid: string[][]): number {
@@ -100,12 +175,6 @@ function countRemainingPellets(grid: string[][]): number {
     }
   }
   return total;
-}
-
-function isWalkable(grid: string[][], x: number, y: number): boolean {
-  if (y < 0 || y >= ROWS) return false;
-  if (x < 0 || x >= COLS) return true; // tunnel wrap
-  return grid[y][x] !== '#';
 }
 
 export default function PacmanArcadeGame({
@@ -130,12 +199,23 @@ export default function PacmanArcadeGame({
   const [attempts, setAttempts] = useState(initialAttempts);
   const [isNewRecord, setIsNewRecord] = useState(false);
 
+  const initialSpawns = findSpawns(Date.now());
   const gridRef = useRef<string[][]>(buildMazeGrid());
-  const spawns = findSpawnPositions();
-  const pacRef = useRef({ x: spawns.pac.x, y: spawns.pac.y, dir: 'LEFT' as Dir, nextDir: 'LEFT' as Dir });
-  const ghostsRef = useRef<Ghost[]>(spawns.ghosts);
+  const gateRef = useRef(initialSpawns.gate);
+  const fruitPosRef = useRef(initialSpawns.fruit);
+  const pacRef = useRef({
+    x: initialSpawns.pac.x,
+    y: initialSpawns.pac.y,
+    dir: 'LEFT' as Dir,
+    nextDir: 'LEFT' as Dir,
+  });
+  const ghostsRef = useRef<Ghost[]>(initialSpawns.ghosts);
   const frightUntilRef = useRef(0);
-  const mouthOpenRef = useRef(true);
+  const eatComboRef = useRef(0);
+  const fruitVisibleUntilRef = useRef(0);
+  const fruitSpawnedThisLevelRef = useRef(false);
+  const pelletsEatenRef = useRef(0);
+  const popupsRef = useRef<FloatingPopup[]>([]);
 
   const scoreRef = useRef(0);
   const livesRef = useRef(3);
@@ -157,7 +237,7 @@ export default function PacmanArcadeGame({
     setAttempts((prev) => Math.max(prev, initialAttempts));
   }, [initialAttempts]);
 
-  const draw = useCallback(() => {
+  const draw = useCallback((nowMs: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -170,95 +250,201 @@ export default function PacmanArcadeGame({
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    ctx.fillStyle = '#030612';
+    // Classic arcade pure black space
+    ctx.fillStyle = '#02040D';
     ctx.fillRect(0, 0, W, H);
 
     const grid = gridRef.current;
+
+    // 1. Classic continuous neon blue maze walls (only draw edges adjacent to non-walls!)
+    ctx.strokeStyle = '#2563EB';
+    ctx.lineWidth = 2.6;
+    ctx.lineCap = 'round';
+    ctx.shadowColor = 'rgba(59, 130, 246, 0.55)';
+    ctx.shadowBlur = 4;
+
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
-        const cell = grid[r][c];
+        const ch = grid[r][c];
         const px = c * CELL;
         const py = r * CELL;
 
-        if (cell === '#') {
-          ctx.fillStyle = '#1D4ED8';
+        if (ch === '#') {
+          const topOpen = !isWallTile(grid, c, r - 1);
+          const bottomOpen = !isWallTile(grid, c, r + 1);
+          const leftOpen = !isWallTile(grid, c - 1, r);
+          const rightOpen = !isWallTile(grid, c + 1, r);
+
+          ctx.fillStyle = 'rgba(29, 78, 216, 0.14)';
+          ctx.fillRect(px + 2, py + 2, CELL - 4, CELL - 4);
+
+          const inset = 3;
           ctx.beginPath();
-          ctx.roundRect(px + 2, py + 2, CELL - 4, CELL - 4, 5);
-          ctx.fill();
-          ctx.strokeStyle = '#60A5FA';
-          ctx.lineWidth = 1;
+          if (topOpen) {
+            ctx.moveTo(px + (leftOpen ? inset : 0), py + inset);
+            ctx.lineTo(px + CELL - (rightOpen ? inset : 0), py + inset);
+          }
+          if (bottomOpen) {
+            ctx.moveTo(px + (leftOpen ? inset : 0), py + CELL - inset);
+            ctx.lineTo(px + CELL - (rightOpen ? inset : 0), py + CELL - inset);
+          }
+          if (leftOpen) {
+            ctx.moveTo(px + inset, py + (topOpen ? inset : 0));
+            ctx.lineTo(px + inset, py + CELL - (bottomOpen ? inset : 0));
+          }
+          if (rightOpen) {
+            ctx.moveTo(px + CELL - inset, py + (topOpen ? inset : 0));
+            ctx.lineTo(px + CELL - inset, py + CELL - (bottomOpen ? inset : 0));
+          }
           ctx.stroke();
-        } else if (cell === '.') {
+        } else if (ch === '-') {
+          // Pink Ghost House Door
+          ctx.save();
+          ctx.strokeStyle = '#F472B6';
+          ctx.lineWidth = 3.5;
+          ctx.shadowColor = '#F472B6';
+          ctx.beginPath();
+          ctx.moveTo(px, py + CELL / 2);
+          ctx.lineTo(px + CELL, py + CELL / 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+    }
+    ctx.shadowBlur = 0;
+
+    // 2. Pellets & pulsing Power Pellets
+    const pulse = 0.78 + 0.22 * Math.sin(nowMs / 140);
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const ch = grid[r][c];
+        const cx = c * CELL + CELL / 2;
+        const cy = r * CELL + CELL / 2;
+        if (ch === '.') {
           ctx.fillStyle = '#FDE68A';
           ctx.beginPath();
-          ctx.arc(px + CELL / 2, py + CELL / 2, 2.6, 0, Math.PI * 2);
+          ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
           ctx.fill();
-        } else if (cell === 'o') {
+        } else if (ch === 'o') {
           ctx.fillStyle = '#FACC15';
           ctx.beginPath();
-          ctx.arc(px + CELL / 2, py + CELL / 2, 6.2, 0, Math.PI * 2);
+          ctx.arc(cx, cy, 6.3 * pulse, 0, Math.PI * 2);
           ctx.fill();
         }
       }
     }
 
-    // Pac-Man
+    // 3. Bonus Cherry / Fruit
+    if (nowMs < fruitVisibleUntilRef.current) {
+      const fx = fruitPosRef.current.x * CELL + CELL / 2;
+      const fy = fruitPosRef.current.y * CELL + CELL / 2;
+      ctx.fillStyle = '#EF4444';
+      ctx.beginPath();
+      ctx.arc(fx - 3.5, fy + 3, 4.5, 0, Math.PI * 2);
+      ctx.arc(fx + 4, fy + 4, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#4ADE80';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(fx - 3, fy - 1);
+      ctx.quadraticCurveTo(fx + 1, fy - 9, fx + 4, fy - 7);
+      ctx.lineTo(fx + 4, fy);
+      ctx.stroke();
+    }
+
+    // 4. Pac-Man (smooth mouth animation)
     const p = pacRef.current;
     const pcx = p.x * CELL + CELL / 2;
     const pcy = p.y * CELL + CELL / 2;
     const baseAng =
       p.dir === 'RIGHT' ? 0 : p.dir === 'DOWN' ? Math.PI / 2 : p.dir === 'LEFT' ? Math.PI : -Math.PI / 2;
-    const mouth = mouthOpenRef.current ? 0.28 * Math.PI : 0.05 * Math.PI;
+    const chomp = 0.04 + 0.28 * Math.abs(Math.sin(nowMs / 65));
 
     ctx.fillStyle = '#FACC15';
     ctx.beginPath();
     ctx.moveTo(pcx, pcy);
-    ctx.arc(pcx, pcy, CELL * 0.42, baseAng + mouth, baseAng + Math.PI * 2 - mouth);
+    ctx.arc(pcx, pcy, CELL * 0.43, baseAng + chomp * Math.PI, baseAng + Math.PI * 2 - chomp * Math.PI);
     ctx.closePath();
     ctx.fill();
 
-    // Ghosts
-    const isFrightened = Date.now() < frightUntilRef.current;
+    // 5. Ghosts (body + animated wave + directional eyes)
+    const frightRemaining = frightUntilRef.current - nowMs;
+    const blinkWhite = frightRemaining > 0 && frightRemaining < 2000 && Math.floor(nowMs / 150) % 2 === 0;
+
     for (const g of ghostsRef.current) {
       const gx = g.x * CELL + CELL / 2;
       const gy = g.y * CELL + CELL / 2;
-      const r = CELL * 0.41;
+      const r = CELL * 0.42;
 
-      ctx.fillStyle = isFrightened ? '#2563EB' : g.color;
-      ctx.beginPath();
-      ctx.arc(gx, gy - 1, r, Math.PI, 0);
-      ctx.lineTo(gx + r, gy + r - 2);
-      ctx.lineTo(gx + r * 0.35, gy + r * 0.55);
-      ctx.lineTo(gx, gy + r - 2);
-      ctx.lineTo(gx - r * 0.35, gy + r * 0.55);
-      ctx.lineTo(gx - r, gy + r - 2);
-      ctx.closePath();
-      ctx.fill();
+      if (g.mode !== 'eaten') {
+        const bodyColor =
+          g.mode === 'frightened' ? (blinkWhite ? '#E2E8F0' : '#1D4ED8') : g.color;
+        ctx.fillStyle = bodyColor;
+        ctx.beginPath();
+        ctx.arc(gx, gy - 1, r, Math.PI, 0);
+        const wave = Math.sin(nowMs / 90 + g.id) > 0 ? 1 : -1;
+        ctx.lineTo(gx + r, gy + r - 2);
+        ctx.lineTo(gx + r * 0.45, gy + r - 4 + wave);
+        ctx.lineTo(gx, gy + r - 1);
+        ctx.lineTo(gx - r * 0.45, gy + r - 4 - wave);
+        ctx.lineTo(gx - r, gy + r - 2);
+        ctx.closePath();
+        ctx.fill();
+      }
 
       // Eyes
-      ctx.fillStyle = '#FFFFFF';
-      ctx.beginPath();
-      ctx.arc(gx - 3.5, gy - 2, 2.6, 0, Math.PI * 2);
-      ctx.arc(gx + 3.5, gy - 2, 2.6, 0, Math.PI * 2);
-      ctx.fill();
+      const look = DIR_VEC[g.dir];
+      if (g.mode === 'frightened') {
+        ctx.fillStyle = blinkWhite ? '#EF4444' : '#FDE68A';
+        ctx.fillRect(gx - 4.5, gy - 3, 2.5, 2.5);
+        ctx.fillRect(gx + 2, gy - 3, 2.5, 2.5);
+        ctx.strokeStyle = blinkWhite ? '#EF4444' : '#FDE68A';
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.moveTo(gx - 5, gy + 3);
+        ctx.lineTo(gx - 2, gy + 1.5);
+        ctx.lineTo(gx, gy + 3);
+        ctx.lineTo(gx + 2, gy + 1.5);
+        ctx.lineTo(gx + 5, gy + 3);
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(gx - 3.6, gy - 2, 2.9, 0, Math.PI * 2);
+        ctx.arc(gx + 3.6, gy - 2, 2.9, 0, Math.PI * 2);
+        ctx.fill();
 
-      ctx.fillStyle = isFrightened ? '#FDE68A' : '#0F172A';
-      ctx.beginPath();
-      ctx.arc(gx - 3.5, gy - 2, 1.3, 0, Math.PI * 2);
-      ctx.arc(gx + 3.5, gy - 2, 1.3, 0, Math.PI * 2);
-      ctx.fill();
+        ctx.fillStyle = '#0F172A';
+        ctx.beginPath();
+        ctx.arc(gx - 3.6 + look.dx * 1.2, gy - 2 + look.dy * 1.2, 1.5, 0, Math.PI * 2);
+        ctx.arc(gx + 3.6 + look.dx * 1.2, gy - 2 + look.dy * 1.2, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // 6. Floating score popups (+200, +100)
+    popupsRef.current = popupsRef.current.filter((pop) => nowMs < pop.untilMs);
+    for (const pop of popupsRef.current) {
+      ctx.fillStyle = pop.color;
+      ctx.font = 'bold 11px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(pop.text, pop.x * CELL + CELL / 2, pop.y * CELL + CELL / 2 - 4);
     }
   }, []);
 
   useEffect(() => {
-    draw();
+    draw(Date.now());
   }, [draw]);
 
   const resetPositions = useCallback(() => {
-    const s = findSpawnPositions();
+    const now = Date.now();
+    const s = findSpawns(now);
     pacRef.current = { x: s.pac.x, y: s.pac.y, dir: 'LEFT', nextDir: 'LEFT' };
     ghostsRef.current = s.ghosts;
+    gateRef.current = s.gate;
+    fruitPosRef.current = s.fruit;
     frightUntilRef.current = 0;
+    eatComboRef.current = 0;
     setFrightTimerUI(0);
   }, []);
 
@@ -269,6 +455,10 @@ export default function PacmanArcadeGame({
     livesRef.current = 3;
     levelRef.current = 1;
     ghostsEatenRef.current = 0;
+    pelletsEatenRef.current = 0;
+    fruitVisibleUntilRef.current = 0;
+    fruitSpawnedThisLevelRef.current = false;
+    popupsRef.current = [];
     startBestRef.current = bestRef.current;
     matchStartRef.current = Date.now();
     reportedRef.current = false;
@@ -279,8 +469,7 @@ export default function PacmanArcadeGame({
     setLevel(1);
     setGhostsEaten(0);
     setStatus('playing');
-    draw();
-  }, [resetPositions, draw]);
+  }, [resetPositions]);
 
   const setDesiredDirection = useCallback(
     (dir: Dir) => {
@@ -305,47 +494,118 @@ export default function PacmanArcadeGame({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [setDesiredDirection]);
 
+  // Smooth 60 FPS continuous arcade game loop
   useEffect(() => {
     if (status !== 'playing') return;
+    let rafId = 0;
+    let lastTime = performance.now();
 
-    const tickMs = Math.max(115, 165 - (level - 1) * 10);
-    let stepCount = 0;
-
-    const timer = setInterval(() => {
-      stepCount += 1;
-      mouthOpenRef.current = !mouthOpenRef.current;
+    const step = (perfNow: number) => {
+      const dt = Math.min(0.04, (perfNow - lastTime) / 1000);
+      lastTime = perfNow;
+      const now = Date.now();
       const grid = gridRef.current;
       const pac = pacRef.current;
 
-      // Try buffered turn first
-      const tryVec = DIR_VEC[pac.nextDir];
-      let tx = pac.x + tryVec.dx;
-      const ty = pac.y + tryVec.dy;
-      if (tx < 0) tx = COLS - 1;
-      if (tx >= COLS) tx = 0;
-      if (isWalkable(grid, tx, ty)) {
+      // 1. Move Pac-Man smoothly in continuous coordinates
+      const pacSpeed = Math.min(7.8, 5.9 + (levelRef.current - 1) * 0.25); // tiles/sec
+      const tileCol = Math.round(pac.x);
+      const tileRow = Math.round(pac.y);
+      const distToCenterX = Math.abs(pac.x - tileCol);
+      const distToCenterY = Math.abs(pac.y - tileRow);
+
+      // Instant reversal if opposite direction requested
+      if (pac.nextDir === OPPOSITE[pac.dir]) {
         pac.dir = pac.nextDir;
-      }
-
-      // Move Pac-Man
-      const moveVec = DIR_VEC[pac.dir];
-      let nx = pac.x + moveVec.dx;
-      const ny = pac.y + moveVec.dy;
-      if (nx < 0) nx = COLS - 1;
-      if (nx >= COLS) nx = 0;
-      if (isWalkable(grid, nx, ny)) {
-        pac.x = nx;
-        pac.y = ny;
-      }
-
-      // Eat pellet or power pellet
-      const cell = grid[pac.y]?.[pac.x];
-      if (cell === '.' || cell === 'o') {
-        grid[pac.y][pac.x] = ' ';
-        scoreRef.current += cell === 'o' ? 50 : 10;
-        if (cell === 'o') {
-          frightUntilRef.current = Date.now() + 7000;
+      } else if (pac.nextDir !== pac.dir) {
+        // Generous cornering tolerance near tile center (classic Namco feel!)
+        if (distToCenterX < 0.24 && distToCenterY < 0.24) {
+          const tv = DIR_VEC[pac.nextDir];
+          let nextCol = tileCol + tv.dx;
+          const nextRow = tileRow + tv.dy;
+          if (nextCol < 0) nextCol = COLS - 1;
+          if (nextCol >= COLS) nextCol = 0;
+          if (canEntityEnter(grid, nextCol, nextRow, false)) {
+            pac.x = tileCol;
+            pac.y = tileRow;
+            pac.dir = pac.nextDir;
+          }
         }
+      }
+
+      // Advance along current direction, clamping neatly against walls
+      const pv = DIR_VEC[pac.dir];
+      const nextX = pac.x + pv.dx * pacSpeed * dt;
+      const nextY = pac.y + pv.dy * pacSpeed * dt;
+      const aheadCol = pv.dx > 0 ? Math.floor(nextX + 0.49) : pv.dx < 0 ? Math.floor(nextX - 0.49) : tileCol;
+      const aheadRow = pv.dy > 0 ? Math.floor(nextY + 0.49) : pv.dy < 0 ? Math.floor(nextY - 0.49) : tileRow;
+
+      let wrappedAheadCol = aheadCol;
+      if (wrappedAheadCol < 0) wrappedAheadCol = COLS - 1;
+      if (wrappedAheadCol >= COLS) wrappedAheadCol = 0;
+
+      if (canEntityEnter(grid, wrappedAheadCol, aheadRow, false)) {
+        pac.x = nextX;
+        pac.y = nextY;
+        // Side tunnel wrap
+        if (pac.x < -0.5) pac.x = COLS - 0.5;
+        if (pac.x > COLS - 0.5) pac.x = -0.5;
+        // Keep aligned on perpendicular axis
+        if (pv.dx !== 0) pac.y += (tileRow - pac.y) * Math.min(1, dt * 18);
+        if (pv.dy !== 0) pac.x += (tileCol - pac.x) * Math.min(1, dt * 18);
+      } else {
+        pac.x = tileCol;
+        pac.y = tileRow;
+      }
+
+      // Eat pellets / power pellets when centered over a tile
+      const curCol = Math.max(0, Math.min(COLS - 1, Math.round(pac.x)));
+      const curRow = Math.max(0, Math.min(ROWS - 1, Math.round(pac.y)));
+      const tileChar = grid[curRow]?.[curCol];
+      if ((tileChar === '.' || tileChar === 'o') && Math.hypot(pac.x - curCol, pac.y - curRow) < 0.36) {
+        grid[curRow][curCol] = ' ';
+        pelletsEatenRef.current += 1;
+        scoreRef.current += tileChar === 'o' ? 50 : 10;
+        if (tileChar === 'o') {
+          const frightMs = Math.max(4500, 7500 - (levelRef.current - 1) * 400);
+          frightUntilRef.current = now + frightMs;
+          eatComboRef.current = 0;
+          for (const g of ghostsRef.current) {
+            if (g.mode === 'active') {
+              g.mode = 'frightened';
+              g.dir = OPPOSITE[g.dir];
+              g.lastDecisionTile = '';
+            }
+          }
+        }
+        setScore(scoreRef.current);
+        if (scoreRef.current > bestRef.current) {
+          bestRef.current = scoreRef.current;
+          setBestScore(scoreRef.current);
+        }
+
+        // Spawn cherry bonus after 35 pellets eaten in the level
+        if (!fruitSpawnedThisLevelRef.current && pelletsEatenRef.current >= 35) {
+          fruitSpawnedThisLevelRef.current = true;
+          fruitVisibleUntilRef.current = now + 9000;
+        }
+      }
+
+      // Eat bonus cherry
+      if (
+        now < fruitVisibleUntilRef.current &&
+        Math.hypot(pac.x - fruitPosRef.current.x, pac.y - fruitPosRef.current.y) < 0.55
+      ) {
+        fruitVisibleUntilRef.current = 0;
+        const fruitPts = 100 + (levelRef.current - 1) * 100;
+        scoreRef.current += fruitPts;
+        popupsRef.current.push({
+          x: fruitPosRef.current.x,
+          y: fruitPosRef.current.y,
+          text: `+${fruitPts}`,
+          color: '#4ADE80',
+          untilMs: now + 950,
+        });
         setScore(scoreRef.current);
         if (scoreRef.current > bestRef.current) {
           bestRef.current = scoreRef.current;
@@ -353,62 +613,163 @@ export default function PacmanArcadeGame({
         }
       }
 
-      const now = Date.now();
-      const isFrightened = now < frightUntilRef.current;
-      setFrightTimerUI(isFrightened ? Math.ceil((frightUntilRef.current - now) / 1000) : 0);
+      // Fright timer expiration
+      const isFrightActive = now < frightUntilRef.current;
+      setFrightTimerUI(isFrightActive ? Math.ceil((frightUntilRef.current - now) / 1000) : 0);
 
-      // Move ghosts (slightly slower when frightened)
-      if (!isFrightened || stepCount % 2 === 0) {
-        const dirs: Dir[] = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
-        for (const g of ghostsRef.current) {
-          const validDirs = dirs.filter((d) => {
+      // Scatter vs Chase alternating timer (7s scatter, 18s chase)
+      const cycleSec = ((now - matchStartRef.current) / 1000) % 25;
+      const isScatterWave = cycleSec < 7;
+
+      // 2. Move Ghosts smoothly in continuous coordinates
+      const gate = gateRef.current;
+      const allDirs: Dir[] = ['UP', 'LEFT', 'DOWN', 'RIGHT'];
+
+      for (const g of ghostsRef.current) {
+        if (g.mode === 'frightened' && !isFrightActive) {
+          g.mode = 'active';
+        }
+
+        if (g.mode === 'house') {
+          if (now < g.releaseAtMs) {
+            // Subtle vertical bobbing inside house
+            g.y = gate.y + 1 + Math.sin(now / 180 + g.id) * 0.14;
+            continue;
+          }
+          // Smoothly guide out through the pink gate!
+          const tx = gate.x;
+          const ty = gate.y - 1;
+          const speed = 3.4;
+          if (Math.abs(g.x - tx) > 0.08) {
+            g.x += Math.sign(tx - g.x) * speed * dt;
+            g.dir = tx > g.x ? 'RIGHT' : 'LEFT';
+          } else {
+            g.x = tx;
+            g.y -= speed * dt;
+            g.dir = 'UP';
+            if (g.y <= ty) {
+              g.y = ty;
+              g.dir = g.id % 2 === 0 ? 'LEFT' : 'RIGHT';
+              g.mode = isFrightActive ? 'frightened' : 'active';
+              g.lastDecisionTile = '';
+            }
+          }
+          continue;
+        }
+
+        const gSpeed =
+          g.mode === 'eaten'
+            ? 8.5
+            : g.mode === 'frightened'
+              ? 3.3
+              : Math.min(6.7, 4.9 + (levelRef.current - 1) * 0.25);
+
+        const gc = Math.round(g.x);
+        const gr = Math.round(g.y);
+        const key = `${gc},${gr}`;
+
+        // Decide direction once when crossing close to tile center
+        if (Math.abs(g.x - gc) < 0.14 && Math.abs(g.y - gr) < 0.14 && g.lastDecisionTile !== key) {
+          g.lastDecisionTile = key;
+          g.x = gc;
+          g.y = gr;
+
+          if (g.mode === 'eaten' && gc === gate.x && gr === gate.y - 1) {
+            // Arrived back at ghost gate! Re-enter briefly and release immediately
+            g.mode = 'house';
+            g.y = gate.y + 1;
+            g.releaseAtMs = now + 900;
+            continue;
+          }
+
+          const allowGate = g.mode === 'eaten';
+          const valid = allDirs.filter((d) => {
             const v = DIR_VEC[d];
-            let gx = g.x + v.dx;
-            const gy = g.y + v.dy;
-            if (gx < 0) gx = COLS - 1;
-            if (gx >= COLS) gx = 0;
-            return isWalkable(grid, gx, gy);
+            let nc = gc + v.dx;
+            const nr = gr + v.dy;
+            if (nc < 0) nc = COLS - 1;
+            if (nc >= COLS) nc = 0;
+            return canEntityEnter(grid, nc, nr, allowGate);
           });
 
-          const nonReverse = validDirs.filter((d) => d !== OPPOSITE[g.dir]);
-          const choices = nonReverse.length > 0 ? nonReverse : validDirs;
+          const choices = valid.filter((d) => d !== OPPOSITE[g.dir]);
+          const pool = choices.length > 0 ? choices : valid;
 
-          if (choices.length > 0) {
-            if (isFrightened || Math.random() < 0.25) {
-              g.dir = choices[Math.floor(Math.random() * choices.length)];
+          if (pool.length > 0) {
+            if (g.mode === 'frightened') {
+              g.dir = pool[Math.floor(Math.random() * pool.length)];
             } else {
-              // Greedy chase toward Pac-Man
-              choices.sort((a, b) => {
+              // Authentic Ghost Target Selection!
+              let target = { x: pac.x, y: pac.y };
+              if (g.mode === 'eaten') {
+                target = { x: gate.x, y: gate.y - 1 };
+              } else if (isScatterWave) {
+                target = g.scatterTarget;
+              } else if (g.id === 1) {
+                // Pinky targets 4 tiles ahead of Pac-Man
+                const pv2 = DIR_VEC[pac.dir];
+                target = { x: pac.x + pv2.dx * 4, y: pac.y + pv2.dy * 4 };
+              } else if (g.id === 2) {
+                // Inky flanks using Blinky's position
+                const blinky = ghostsRef.current[0];
+                const pv2 = DIR_VEC[pac.dir];
+                const ahead = { x: pac.x + pv2.dx * 2, y: pac.y + pv2.dy * 2 };
+                target = {
+                  x: ahead.x + (ahead.x - blinky.x),
+                  y: ahead.y + (ahead.y - blinky.y),
+                };
+              } else if (g.id === 3) {
+                // Clyde retreats to corner if within 6 tiles of Pac-Man
+                const distToPac = Math.hypot(g.x - pac.x, g.y - pac.y);
+                target = distToPac < 6 ? g.scatterTarget : { x: pac.x, y: pac.y };
+              }
+
+              pool.sort((a, b) => {
                 const va = DIR_VEC[a];
                 const vb = DIR_VEC[b];
-                const da = Math.hypot(g.x + va.dx - pac.x, g.y + va.dy - pac.y);
-                const db = Math.hypot(g.x + vb.dx - pac.x, g.y + vb.dy - pac.y);
+                const da = Math.hypot(gc + va.dx - target.x, gr + va.dy - target.y);
+                const db = Math.hypot(gc + vb.dx - target.x, gr + vb.dy - target.y);
                 return da - db;
               });
-              g.dir = choices[0];
-            }
-
-            const gv = DIR_VEC[g.dir];
-            let ngx = g.x + gv.dx;
-            const ngy = g.y + gv.dy;
-            if (ngx < 0) ngx = COLS - 1;
-            if (ngx >= COLS) ngx = 0;
-            if (isWalkable(grid, ngx, ngy)) {
-              g.x = ngx;
-              g.y = ngy;
+              g.dir = pool[0];
             }
           }
         }
-      }
 
-      // Check Pac-Man vs Ghosts
-      for (const g of ghostsRef.current) {
-        if (g.x === pac.x && g.y === pac.y) {
-          if (Date.now() < frightUntilRef.current) {
-            g.x = g.homeX;
-            g.y = g.homeY;
+        const gv = DIR_VEC[g.dir];
+        const gNextX = g.x + gv.dx * gSpeed * dt;
+        const gNextY = g.y + gv.dy * gSpeed * dt;
+        let checkCol = gv.dx > 0 ? Math.floor(gNextX + 0.49) : gv.dx < 0 ? Math.floor(gNextX - 0.49) : gc;
+        const checkRow = gv.dy > 0 ? Math.floor(gNextY + 0.49) : gv.dy < 0 ? Math.floor(gNextY - 0.49) : gr;
+        if (checkCol < 0) checkCol = COLS - 1;
+        if (checkCol >= COLS) checkCol = 0;
+
+        if (canEntityEnter(grid, checkCol, checkRow, g.mode === 'eaten')) {
+          g.x = gNextX;
+          g.y = gNextY;
+          if (g.x < -0.5) g.x = COLS - 0.5;
+          if (g.x > COLS - 0.5) g.x = -0.5;
+        } else {
+          g.x = gc;
+          g.y = gr;
+          g.lastDecisionTile = '';
+        }
+
+        // Collision check with Pac-Man
+        if (g.mode !== 'eaten' && Math.hypot(g.x - pac.x, g.y - pac.y) < 0.62) {
+          if (g.mode === 'frightened') {
+            g.mode = 'eaten';
+            eatComboRef.current += 1;
+            const comboPts = 200 * Math.pow(2, Math.min(3, eatComboRef.current - 1));
             ghostsEatenRef.current += 1;
-            scoreRef.current += 200;
+            scoreRef.current += comboPts;
+            popupsRef.current.push({
+              x: g.x,
+              y: g.y,
+              text: `+${comboPts}`,
+              color: '#67E8F9',
+              untilMs: now + 900,
+            });
             setGhostsEaten(ghostsEatenRef.current);
             setScore(scoreRef.current);
             if (scoreRef.current > bestRef.current) {
@@ -422,7 +783,7 @@ export default function PacmanArcadeGame({
               setStatus('gameover');
               if (!reportedRef.current) {
                 reportedRef.current = true;
-                const dur = Math.max(1, Math.round((Date.now() - matchStartRef.current) / 1000));
+                const dur = Math.max(1, Math.round((now - matchStartRef.current) / 1000));
                 if (scoreRef.current > startBestRef.current && scoreRef.current > 0) {
                   setIsNewRecord(true);
                 }
@@ -434,19 +795,24 @@ export default function PacmanArcadeGame({
                   duracionSegundos: dur,
                 });
               }
-              draw();
+              draw(now);
               return;
             }
             resetPositions();
-            break;
+            draw(now);
+            rafId = requestAnimationFrame(step);
+            return;
           }
         }
       }
 
-      // Level cleared?
+      // 3. Level cleared?
       if (countRemainingPellets(grid) === 0) {
         levelRef.current += 1;
-        scoreRef.current += 250;
+        scoreRef.current += 300;
+        pelletsEatenRef.current = 0;
+        fruitSpawnedThisLevelRef.current = false;
+        fruitVisibleUntilRef.current = 0;
         setLevel(levelRef.current);
         setScore(scoreRef.current);
         if (scoreRef.current > bestRef.current) {
@@ -457,11 +823,13 @@ export default function PacmanArcadeGame({
         resetPositions();
       }
 
-      draw();
-    }, tickMs);
+      draw(now);
+      rafId = requestAnimationFrame(step);
+    };
 
-    return () => clearInterval(timer);
-  }, [status, level, draw, resetPositions]);
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, [status, draw, resetPositions]);
 
   return (
     <LiquidGlass
@@ -477,13 +845,13 @@ export default function PacmanArcadeGame({
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#FACC15]/35 bg-[#FACC15]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#FDE047]">
               <span className="h-2 w-2 rounded-full bg-[#FACC15]" aria-hidden="true" />
-              Arcade #08 · Laberinto Clásico
+              Arcade #08 · Laberinto Clásico 60 FPS
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Pac-Man Estelar
             </h2>
             <p className="text-xs sm:text-sm text-white/65">
-              Recorre el laberinto clásico con túneles laterales, come las esferas de poder doradas para cazar fantasmas y sube de nivel.
+              Movimiento fluido en rieles neón, puerta rosa de fantasmas, 4 personalidades IA y combo por comer fantasmas azules (200 / 400 / 800 / 1600).
             </p>
           </div>
           <button
@@ -529,15 +897,15 @@ export default function PacmanArcadeGame({
           <div className="lg:col-span-8 flex justify-center">
             <ArcadeScreenFrame
               className="w-full max-w-[456px] aspect-[456/504]"
-              accentColor="rgba(250, 204, 21, 0.36)"
+              accentColor="rgba(59, 130, 246, 0.45)"
               glowColor="rgba(59, 130, 246, 0.45)"
-              bgColor="#030612"
+              bgColor="#02040D"
             >
               <canvas ref={canvasRef} className="w-full h-full block" aria-label="Laberinto de Pac-Man Estelar" />
               {status !== 'playing' && (
-                <div className="absolute inset-0 bg-[#030612]/90 flex flex-col items-center justify-center p-6 text-center gap-4">
+                <div className="absolute inset-0 bg-[#02040D]/88 flex flex-col items-center justify-center p-6 text-center gap-4">
                   <div className="font-mono text-xs uppercase tracking-[0.2em] text-[#FACC15]">
-                    {status === 'gameover' ? 'Fin de la partida' : 'Laberinto listo'}
+                    {status === 'gameover' ? 'Fin de la partida' : 'Listo en el laberinto'}
                   </div>
                   <div className="text-2xl sm:text-3xl font-black text-white">
                     {status === 'gameover' ? `Puntuación: ${score}` : 'Pac-Man Estelar'}
@@ -599,11 +967,11 @@ export default function PacmanArcadeGame({
             </div>
 
             <div className="rounded-2xl border border-[#FACC15]/25 bg-[#FACC15]/[0.06] p-4 text-xs text-white/80 leading-relaxed space-y-1.5">
-              <div className="font-bold text-[#FACC15]">Reglas del clásico</div>
+              <div className="font-bold text-[#FACC15]">Mecánica original</div>
               <p>
-                • Puntos pequeños: <strong>10 pts</strong>.<br />
-                • Esferas grandes de poder: <strong>50 pts</strong> y vuelven azules a los fantasmas por 7 segundos para que puedas comerlos (<strong>+200 pts</strong>).<br />
-                • Usa los pasillos laterales abiertos para cruzar de un lado al otro.
+                • Los 4 fantasmas salen gradualmente por la puerta rosa central.<br />
+                • Come una esfera grande para volverlos azules y cazarlos en cadena (<strong>200, 400, 800, 1600</strong>).<br />
+                • Al ser comidos, solo sus ojos regresan rápido a regenerarse al centro.
               </p>
             </div>
           </div>
