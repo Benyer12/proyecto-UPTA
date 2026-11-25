@@ -5,14 +5,27 @@ import { LiquidGlass } from '../ui/glasscn/liquid-glass';
 import type { ResultadoPartidaInput } from '../../lib/minijuegos-types';
 
 const SYMBOLS = [
-  { id: 'star', label: 'Estrella', glyph: '★', color: '#FDE68A' },
-  { id: 'planet', label: 'Planeta', glyph: '🪐', color: '#67E8F9' },
-  { id: 'rocket', label: 'Cohete', glyph: '🚀', color: '#FB7185' },
-  { id: 'moon', label: 'Luna', glyph: '🌙', color: '#E9D5FF' },
-  { id: 'comet', label: 'Cometa', glyph: '☄️', color: '#5EEAD4' },
-  { id: 'bolt', label: 'Energía', glyph: '⚡', color: '#FBBF24' },
-  { id: 'atom', label: 'Átomo', glyph: '⚛️', color: '#93C5FD' },
-  { id: 'gem', label: 'Cristal', glyph: '💎', color: '#6EE7B7' },
+  { id: 'star', label: 'Estrella', glyph: '★' },
+  { id: 'planet', label: 'Planeta', glyph: '🪐' },
+  { id: 'rocket', label: 'Cohete', glyph: '🚀' },
+  { id: 'moon', label: 'Luna', glyph: '🌙' },
+  { id: 'comet', label: 'Cometa', glyph: '☄️' },
+  { id: 'bolt', label: 'Energía', glyph: '⚡' },
+  { id: 'atom', label: 'Átomo', glyph: '⚛️' },
+  { id: 'gem', label: 'Cristal', glyph: '💎' },
+  { id: 'ufo', label: 'Ovni', glyph: '🛸' },
+  { id: 'sun', label: 'Sol', glyph: '☀️' },
+  { id: 'scope', label: 'Órbita', glyph: '🔭' },
+  { id: 'sat', label: 'Satélite', glyph: '🛰️' },
+];
+
+const MEMORY_LEVELS = [
+  { level: 1, pairs: 3, colsClass: 'grid-cols-3' },
+  { level: 2, pairs: 4, colsClass: 'grid-cols-4' },
+  { level: 3, pairs: 6, colsClass: 'grid-cols-4' },
+  { level: 4, pairs: 8, colsClass: 'grid-cols-4' },
+  { level: 5, pairs: 10, colsClass: 'grid-cols-5' },
+  { level: 6, pairs: 12, colsClass: 'grid-cols-6' },
 ];
 
 interface CardItem {
@@ -20,17 +33,16 @@ interface CardItem {
   symbolId: string;
   label: string;
   glyph: string;
-  color: string;
   matched: boolean;
 }
 
-function createShuffledDeck(): CardItem[] {
-  const doubled = [...SYMBOLS, ...SYMBOLS].map((s, idx) => ({
+function createDeckForPairs(pairCount: number): CardItem[] {
+  const chosen = SYMBOLS.slice(0, pairCount);
+  const doubled = [...chosen, ...chosen].map((s, idx) => ({
     uid: idx,
     symbolId: s.id,
     label: s.label,
     glyph: s.glyph,
-    color: s.color,
     matched: false,
   }));
   for (let i = doubled.length - 1; i > 0; i--) {
@@ -51,13 +63,18 @@ export default function MemoryArcadeGame({
   onGameFinished?: (result: ResultadoPartidaInput) => void;
   onBack: () => void;
 }) {
-  const [cards, setCards] = useState<CardItem[]>(() => createShuffledDeck());
+  const [levelIdx, setLevelIdx] = useState(0);
+  const currentCfg = MEMORY_LEVELS[levelIdx];
+
+  const [cards, setCards] = useState<CardItem[]>(() => createDeckForPairs(MEMORY_LEVELS[0].pairs));
   const [flippedIndices, setFlippedIndices] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
-  const [pairsFound, setPairsFound] = useState(0);
+  const [totalPairsCleared, setTotalPairsCleared] = useState(0);
+  const [levelPairsCleared, setLevelPairsCleared] = useState(0);
   const [combo, setCombo] = useState(0);
   const [score, setScore] = useState(0);
-  const [won, setWon] = useState(false);
+  const [levelDone, setLevelDone] = useState(false);
+  const [campaignWon, setCampaignWon] = useState(false);
   const [bestScore, setBestScore] = useState(initialBestScore);
   const [attempts, setAttempts] = useState(initialAttempts);
   const [isNewRecord, setIsNewRecord] = useState(false);
@@ -65,6 +82,7 @@ export default function MemoryArcadeGame({
   const lockRef = useRef(false);
   const matchStartRef = useRef(Date.now());
   const bestRef = useRef(initialBestScore);
+  const startBestRef = useRef(initialBestScore);
   const onFinishRef = useRef(onGameFinished);
   onFinishRef.current = onGameFinished;
 
@@ -77,21 +95,38 @@ export default function MemoryArcadeGame({
     setAttempts((prev) => Math.max(prev, initialAttempts));
   }, [initialAttempts]);
 
-  const startNewGame = useCallback(() => {
+  const startFromLevel1 = useCallback(() => {
     lockRef.current = false;
     matchStartRef.current = Date.now();
-    setCards(createShuffledDeck());
+    startBestRef.current = bestRef.current;
+    setLevelIdx(0);
+    setCards(createDeckForPairs(MEMORY_LEVELS[0].pairs));
     setFlippedIndices([]);
     setMoves(0);
-    setPairsFound(0);
+    setTotalPairsCleared(0);
+    setLevelPairsCleared(0);
     setCombo(0);
     setScore(0);
-    setWon(false);
+    setLevelDone(false);
+    setCampaignWon(false);
     setIsNewRecord(false);
   }, []);
 
+  const advanceNextLevel = () => {
+    const nextIdx = levelIdx + 1;
+    if (nextIdx >= MEMORY_LEVELS.length) return;
+    lockRef.current = false;
+    setLevelIdx(nextIdx);
+    setCards(createDeckForPairs(MEMORY_LEVELS[nextIdx].pairs));
+    setFlippedIndices([]);
+    setMoves(0);
+    setLevelPairsCleared(0);
+    setCombo(0);
+    setLevelDone(false);
+  };
+
   const handleCardClick = (idx: number) => {
-    if (lockRef.current || won) return;
+    if (lockRef.current || levelDone || campaignWon) return;
     if (flippedIndices.includes(idx) || cards[idx].matched) return;
 
     const nextFlipped = [...flippedIndices, idx];
@@ -105,9 +140,10 @@ export default function MemoryArcadeGame({
 
       if (cards[a].symbolId === cards[b].symbolId) {
         const nextCombo = combo + 1;
-        const gained = 45 + nextCombo * 15;
+        const gained = 40 + nextCombo * 15 + currentCfg.level * 10;
         const nextScore = score + gained;
-        const nextPairs = pairsFound + 1;
+        const nextLvlPairs = levelPairsCleared + 1;
+        const nextTotalPairs = totalPairsCleared + 1;
 
         setTimeout(() => {
           setCards((prev) =>
@@ -115,36 +151,44 @@ export default function MemoryArcadeGame({
           );
           setFlippedIndices([]);
           setCombo(nextCombo);
-          setPairsFound(nextPairs);
+          setLevelPairsCleared(nextLvlPairs);
+          setTotalPairsCleared(nextTotalPairs);
           setScore(nextScore);
           lockRef.current = false;
 
-          if (nextPairs === SYMBOLS.length) {
-            const dur = Math.max(1, Math.round((Date.now() - matchStartRef.current) / 1000));
-            const speedBonus = Math.max(0, 180 - nextMoves * 8);
-            const finalScore = nextScore + speedBonus;
-            setScore(finalScore);
-            setWon(true);
-            setAttempts((p) => p + 1);
-            if (finalScore > bestRef.current) {
-              bestRef.current = finalScore;
-              setBestScore(finalScore);
-              setIsNewRecord(true);
+          if (nextLvlPairs === currentCfg.pairs) {
+            const lvlBonus = Math.max(20, 140 - nextMoves * 6);
+            const updatedTotal = nextScore + lvlBonus;
+            setScore(updatedTotal);
+            if (updatedTotal > bestRef.current) {
+              bestRef.current = updatedTotal;
+              setBestScore(updatedTotal);
             }
-            onFinishRef.current?.({
-              puntaje: finalScore,
-              detalleExtra: nextPairs,
-              modo: `${nextMoves}-movs`,
-              duracionSegundos: dur,
-            });
+
+            if (levelIdx === MEMORY_LEVELS.length - 1) {
+              const dur = Math.max(1, Math.round((Date.now() - matchStartRef.current) / 1000));
+              setCampaignWon(true);
+              setAttempts((p) => p + 1);
+              if (updatedTotal > startBestRef.current && updatedTotal > 0) {
+                setIsNewRecord(true);
+              }
+              onFinishRef.current?.({
+                puntaje: updatedTotal,
+                detalleExtra: nextTotalPairs,
+                modo: `nivel-6-completo`,
+                duracionSegundos: dur,
+              });
+            } else {
+              setLevelDone(true);
+            }
           }
-        }, 360);
+        }, 320);
       } else {
         setTimeout(() => {
           setFlippedIndices([]);
           setCombo(0);
           lockRef.current = false;
-        }, 680);
+        }, 620);
       }
     }
   };
@@ -163,13 +207,13 @@ export default function MemoryArcadeGame({
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#FDE68A]/35 bg-[#FDE68A]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#FDE68A]">
               <span className="h-2 w-2 rounded-full bg-[#FDE68A]" aria-hidden="true" />
-              Arcade #04 · Memoria
+              Arcade #04 · Progresión de 6 Niveles
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Memoria Galáctica
             </h2>
             <p className="text-xs sm:text-sm text-white/65">
-              Encuentra las 8 parejas espaciales en la menor cantidad de movimientos para maximizar tu puntuación.
+              Comienza con 3 parejas en el Nivel 1 y sube hasta 12 parejas (24 cartas) en el Nivel 6.
             </p>
           </div>
           <button
@@ -183,16 +227,20 @@ export default function MemoryArcadeGame({
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Nivel</div>
+            <div className="text-2xl font-black text-[#FDE68A] tabular-nums">
+              {currentCfg.level} / {MEMORY_LEVELS.length}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Puntos</div>
-            <div className="text-2xl font-black text-[#FDE68A] tabular-nums">{score}</div>
+            <div className="text-2xl font-black text-[#67E8F9] tabular-nums">{score}</div>
           </div>
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Parejas</div>
-            <div className="text-2xl font-black text-[#6EE7B7] tabular-nums">{pairsFound} / 8</div>
-          </div>
-          <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Movimientos</div>
-            <div className="text-2xl font-black text-[#67E8F9] tabular-nums">{moves}</div>
+            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Parejas (Nivel)</div>
+            <div className="text-2xl font-black text-[#6EE7B7] tabular-nums">
+              {levelPairsCleared} / {currentCfg.pairs}
+            </div>
           </div>
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Intentos</div>
@@ -204,13 +252,13 @@ export default function MemoryArcadeGame({
           </div>
         </div>
 
-        <div className="max-w-md mx-auto space-y-4">
-          <div className="grid grid-cols-4 gap-3">
+        <div className="max-w-xl mx-auto space-y-4">
+          <div className={`grid ${currentCfg.colsClass} gap-2.5 sm:gap-3`}>
             {cards.map((card, idx) => {
               const revealed = card.matched || flippedIndices.includes(idx);
               return (
                 <button
-                  key={card.uid}
+                  key={`${currentCfg.level}-${card.uid}`}
                   type="button"
                   onClick={() => handleCardClick(idx)}
                   aria-label={revealed ? card.label : 'Carta oculta'}
@@ -224,8 +272,10 @@ export default function MemoryArcadeGame({
                 >
                   {revealed ? (
                     <>
-                      <span className="text-3xl leading-none">{card.glyph}</span>
-                      <span className="text-[10px] font-bold text-white/75 mt-1">{card.label}</span>
+                      <span className="text-2xl sm:text-3xl leading-none">{card.glyph}</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold text-white/75 mt-1 truncate max-w-full px-1">
+                        {card.label}
+                      </span>
                     </>
                   ) : (
                     <span className="font-mono text-lg font-black text-white/35">★</span>
@@ -235,32 +285,45 @@ export default function MemoryArcadeGame({
             })}
           </div>
 
-          {won ? (
-            <div className="rounded-2xl border border-[#6EE7B7]/40 bg-[#6EE7B7]/10 p-4 text-center space-y-2.5">
+          {campaignWon ? (
+            <div className="rounded-2xl border border-[#6EE7B7]/40 bg-[#6EE7B7]/10 p-5 text-center space-y-3">
               {isNewRecord && (
                 <div className="inline-block rounded-full border border-[#FDE68A]/45 bg-[#FDE68A]/15 px-3 py-0.5 text-[11px] font-bold text-[#FDE68A]">
                   ¡Nuevo récord personal!
                 </div>
               )}
-              <div className="text-lg font-extrabold text-white">
-                ¡Tablero completado en {moves} movimientos! ({score} pts)
+              <div className="text-xl font-black text-white">
+                ¡Felicidades! Completaste los 6 niveles de Memoria ({score} pts)
               </div>
               <button
                 type="button"
-                onClick={startNewGame}
-                className="min-h-[40px] px-6 rounded-full bg-white text-black text-xs font-bold hover:bg-white/90 cursor-pointer"
+                onClick={startFromLevel1}
+                className="min-h-[42px] px-7 rounded-full bg-white text-black text-xs font-bold hover:bg-white/90 cursor-pointer"
               >
-                Jugar de nuevo
+                Jugar de nuevo desde Nivel 1
+              </button>
+            </div>
+          ) : levelDone ? (
+            <div className="rounded-2xl border border-[#FDE68A]/40 bg-[#FDE68A]/10 p-4 text-center space-y-2.5">
+              <div className="text-base sm:text-lg font-extrabold text-white">
+                ¡Nivel {currentCfg.level} superado en {moves} movimientos!
+              </div>
+              <button
+                type="button"
+                onClick={advanceNextLevel}
+                className="min-h-[42px] px-7 rounded-full bg-white text-black text-xs font-bold hover:bg-white/90 cursor-pointer"
+              >
+                Siguiente Nivel ({MEMORY_LEVELS[levelIdx + 1]?.pairs} parejas) →
               </button>
             </div>
           ) : (
             <div className="text-center">
               <button
                 type="button"
-                onClick={startNewGame}
+                onClick={startFromLevel1}
                 className="min-h-[38px] px-5 rounded-full border border-white/15 bg-white/[0.06] hover:bg-white/[0.14] text-xs font-semibold text-white cursor-pointer"
               >
-                Barajar de nuevo
+                Reiniciar desde Nivel 1
               </button>
             </div>
           )}

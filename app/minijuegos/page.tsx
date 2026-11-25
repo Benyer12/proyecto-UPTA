@@ -10,7 +10,7 @@ import MemoryArcadeGame from '../../components/minijuegos/MemoryArcadeGame';
 import RunnerArcadeGame from '../../components/minijuegos/RunnerArcadeGame';
 import PongArcadeGame from '../../components/minijuegos/PongArcadeGame';
 import TetrisArcadeGame from '../../components/minijuegos/TetrisArcadeGame';
-import WhackArcadeGame from '../../components/minijuegos/WhackArcadeGame';
+import PacmanArcadeGame from '../../components/minijuegos/PacmanArcadeGame';
 import { useAuthStore } from '../../lib/auth-store';
 import { obtenerProgresoEstudianteHibrido } from '../../lib/offline-sync';
 import {
@@ -104,13 +104,19 @@ const ARTWORKS: Record<string, ReactNode> = {
       <rect x="77" y="46" width="10" height="10" rx="2" fill="#FDE68A" />
     </svg>
   ),
-  whack: (
+  pacman: (
     <svg viewBox="0 0 120 72" className="w-full h-full" fill="none" aria-hidden="true">
-      <rect x="8" y="8" width="104" height="56" rx="10" fill="#051717" stroke="#5EEAD4" strokeOpacity="0.28" />
-      <circle cx="36" cy="28" r="8" fill="#5EEAD4" fillOpacity="0.18" stroke="#5EEAD4" strokeOpacity="0.4" />
-      <circle cx="60" cy="42" r="9" fill="#5EEAD4" />
-      <circle cx="84" cy="28" r="8" fill="#5EEAD4" fillOpacity="0.18" stroke="#5EEAD4" strokeOpacity="0.4" />
-      <path d="M60 35L62.2 39.5L67 40.2L63.5 43.6L64.3 48.4L60 46.1L55.7 48.4L56.5 43.6L53 40.2L57.8 39.5L60 35Z" fill="#041515" />
+      <rect x="8" y="8" width="104" height="56" rx="10" fill="#04081A" stroke="#FACC15" strokeOpacity="0.34" />
+      {/* Pac-Man eating dots */}
+      <path d="M40 36 L52 27 A14 14 0 1 0 52 45 Z" fill="#FACC15" />
+      <circle cx="58" cy="36" r="2.6" fill="#FDE68A" />
+      <circle cx="70" cy="36" r="2.6" fill="#FDE68A" />
+      {/* Classic Ghost */}
+      <path d="M81 36 A8 8 0 0 1 97 36 V45 L93 42 L89 45 L85 42 L81 45 Z" fill="#EF4444" />
+      <circle cx="86" cy="34" r="2" fill="#FFFFFF" />
+      <circle cx="92" cy="34" r="2" fill="#FFFFFF" />
+      <circle cx="85.5" cy="34" r="1" fill="#0F172A" />
+      <circle cx="91.5" cy="34" r="1" fill="#0F172A" />
     </svg>
   ),
 };
@@ -408,11 +414,11 @@ export default function MinijuegosPage() {
             onGameFinished={(r) => guardarResultadoJuego('tetris', r)}
           />
         );
-      case 'whack':
+      case 'pacman':
         return (
-          <WhackArcadeGame
+          <PacmanArcadeGame
             {...commonProps}
-            onGameFinished={(r) => guardarResultadoJuego('whack', r)}
+            onGameFinished={(r) => guardarResultadoJuego('pacman', r)}
           />
         );
       default:

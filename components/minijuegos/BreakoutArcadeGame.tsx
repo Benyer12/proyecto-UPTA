@@ -5,16 +5,14 @@ import { LiquidGlass } from '../ui/glasscn/liquid-glass';
 import type { ResultadoPartidaInput } from '../../lib/minijuegos-types';
 import ArcadeScreenFrame from './ArcadeScreenFrame';
 
-const W = 440;
-const H = 440;
-const PADDLE_W = 86;
+const W = 520;
+const H = 560;
+const MAX_LEVEL = 20;
+const PADDLE_W = 94;
 const PADDLE_H = 12;
-const PADDLE_Y = H - 30;
-const BALL_R = 7;
-const ROWS = 4;
-const COLS = 7;
-const BRICK_COLORS = ['#F472B6', '#D8B4FE', '#67E8F9', '#6EE7B7'];
-const ROW_POINTS = [30, 25, 20, 15];
+const PADDLE_Y = H - 36;
+const BALL_R = 7.5;
+const BRICK_COLORS = ['#F472B6', '#D8B4FE', '#67E8F9', '#6EE7B7', '#FDE68A'];
 
 interface Brick {
   x: number;
@@ -26,27 +24,38 @@ interface Brick {
   pts: number;
 }
 
-function buildBricks(): Brick[] {
+function buildBricksForLevel(level: number): Brick[] {
   const bricks: Brick[] = [];
-  const bw = 50;
+  const cols = 8;
+  const rows = level >= 12 ? 6 : level >= 5 ? 5 : 4;
+  const bw = 54;
   const bh = 16;
   const gap = 8;
-  const offsetX = (W - (COLS * bw + (COLS - 1) * gap)) / 2;
-  const offsetY = 48;
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
+  const offsetX = (W - (cols * bw + (cols - 1) * gap)) / 2;
+  const offsetY = 44;
+  const pattern = (level - 1) % 5;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      let include = true;
+      if (pattern === 1) include = (r + c) % 2 === 0 || r === 0;
+      else if (pattern === 2) include = c >= r && c < cols - r;
+      else if (pattern === 3) include = c !== 3 && c !== 4 ? true : r < 2;
+      else if (pattern === 4) include = r % 2 === 0 || c === 0 || c === cols - 1;
+
+      if (!include) continue;
       bricks.push({
         x: offsetX + c * (bw + gap),
         y: offsetY + r * (bh + gap),
         w: bw,
         h: bh,
         alive: true,
-        color: BRICK_COLORS[r % BRICK_COLORS.length],
-        pts: ROW_POINTS[r % ROW_POINTS.length],
+        color: BRICK_COLORS[(r + level - 1) % BRICK_COLORS.length],
+        pts: 15 + (rows - r) * 5 + Math.floor(level / 2) * 5,
       });
     }
   }
-  return bricks;
+  return bricks.length > 0 ? bricks : buildBricksForLevel(1);
 }
 
 export default function BreakoutArcadeGame({
@@ -61,23 +70,24 @@ export default function BreakoutArcadeGame({
   onBack: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [status, setStatus] = useState<'idle' | 'playing' | 'gameover'>('idle');
+  const [status, setStatus] = useState<'idle' | 'playing' | 'gameover' | 'victory'>('idle');
   const [score, setScore] = useState(0);
   const [bricksBroken, setBricksBroken] = useState(0);
   const [lives, setLives] = useState(3);
-  const [wave, setWave] = useState(1);
+  const [level, setLevel] = useState(1);
+  const [levelBanner, setLevelBanner] = useState<string | null>(null);
   const [bestScore, setBestScore] = useState(initialBestScore);
   const [attempts, setAttempts] = useState(initialAttempts);
   const [isNewRecord, setIsNewRecord] = useState(false);
 
   const paddleXRef = useRef((W - PADDLE_W) / 2);
   const keysRef = useRef<{ left: boolean; right: boolean }>({ left: false, right: false });
-  const ballRef = useRef({ x: W / 2, y: PADDLE_Y - 12, vx: 3.3, vy: -3.6 });
-  const bricksRef = useRef<Brick[]>(buildBricks());
+  const ballRef = useRef({ x: W / 2, y: PADDLE_Y - 14, vx: 3.6, vy: -4.1 });
+  const bricksRef = useRef<Brick[]>(buildBricksForLevel(1));
   const scoreRef = useRef(0);
   const brokenRef = useRef(0);
   const livesRef = useRef(3);
-  const waveRef = useRef(1);
+  const levelRef = useRef(1);
   const bestRef = useRef(initialBestScore);
   const startBestRef = useRef(initialBestScore);
   const matchStartRef = useRef(Date.now());
@@ -94,14 +104,14 @@ export default function BreakoutArcadeGame({
     setAttempts((prev) => Math.max(prev, initialAttempts));
   }, [initialAttempts]);
 
-  const resetBall = useCallback((waveNum: number) => {
-    const speedBoost = Math.min(2.2, (waveNum - 1) * 0.35);
+  const resetBall = useCallback((lvl: number) => {
+    const speedBoost = Math.min(2.6, (lvl - 1) * 0.14);
     const dir = Math.random() > 0.5 ? 1 : -1;
     ballRef.current = {
       x: W / 2,
-      y: PADDLE_Y - 12,
-      vx: dir * (3.2 + speedBoost * 0.6),
-      vy: -(3.6 + speedBoost),
+      y: PADDLE_Y - 14,
+      vx: dir * (3.5 + speedBoost * 0.65),
+      vy: -(4.1 + speedBoost),
     };
   }, []);
 
@@ -121,17 +131,15 @@ export default function BreakoutArcadeGame({
     ctx.fillStyle = '#090617';
     ctx.fillRect(0, 0, W, H);
 
-    // Subtle grid
     ctx.strokeStyle = 'rgba(216, 180, 254, 0.06)';
     ctx.lineWidth = 1;
-    for (let x = 22; x < W; x += 22) {
+    for (let x = 26; x < W; x += 26) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, H);
       ctx.stroke();
     }
 
-    // Bricks
     for (const b of bricksRef.current) {
       if (!b.alive) continue;
       ctx.fillStyle = b.color;
@@ -140,13 +148,11 @@ export default function BreakoutArcadeGame({
       ctx.fill();
     }
 
-    // Paddle
     ctx.fillStyle = '#E9D5FF';
     ctx.beginPath();
     ctx.roundRect(paddleXRef.current, PADDLE_Y, PADDLE_W, PADDLE_H, 6);
     ctx.fill();
 
-    // Ball
     const ball = ballRef.current;
     ctx.fillStyle = '#FDE68A';
     ctx.beginPath();
@@ -158,23 +164,43 @@ export default function BreakoutArcadeGame({
     drawScene();
   }, [drawScene]);
 
+  const finishMatch = useCallback((finalState: 'gameover' | 'victory') => {
+    setStatus(finalState);
+    if (!reportedRef.current) {
+      reportedRef.current = true;
+      const dur = Math.max(1, Math.round((Date.now() - matchStartRef.current) / 1000));
+      if (scoreRef.current > startBestRef.current && scoreRef.current > 0) {
+        setIsNewRecord(true);
+      }
+      setAttempts((p) => p + 1);
+      onFinishRef.current?.({
+        puntaje: scoreRef.current,
+        detalleExtra: brokenRef.current,
+        modo: `nivel-${levelRef.current}`,
+        duracionSegundos: dur,
+      });
+    }
+  }, []);
+
   const startNewGame = useCallback(() => {
     paddleXRef.current = (W - PADDLE_W) / 2;
-    bricksRef.current = buildBricks();
+    bricksRef.current = buildBricksForLevel(1);
     scoreRef.current = 0;
     brokenRef.current = 0;
     livesRef.current = 3;
-    waveRef.current = 1;
+    levelRef.current = 1;
     startBestRef.current = bestRef.current;
     matchStartRef.current = Date.now();
     reportedRef.current = false;
     resetBall(1);
 
     setIsNewRecord(false);
+    setLevelBanner(`Nivel 1 / ${MAX_LEVEL}`);
+    setTimeout(() => setLevelBanner(null), 1300);
     setScore(0);
     setBricksBroken(0);
     setLives(3);
-    setWave(1);
+    setLevel(1);
     setStatus('playing');
   }, [resetBall]);
 
@@ -202,8 +228,8 @@ export default function BreakoutArcadeGame({
     let rafId = 0;
 
     const step = () => {
-      if (keysRef.current.left) paddleXRef.current = Math.max(8, paddleXRef.current - 6.2);
-      if (keysRef.current.right) paddleXRef.current = Math.min(W - PADDLE_W - 8, paddleXRef.current + 6.2);
+      if (keysRef.current.left) paddleXRef.current = Math.max(8, paddleXRef.current - 6.8);
+      if (keysRef.current.right) paddleXRef.current = Math.min(W - PADDLE_W - 8, paddleXRef.current + 6.8);
 
       const ball = ballRef.current;
       ball.x += ball.vx;
@@ -221,7 +247,6 @@ export default function BreakoutArcadeGame({
         ball.vy = Math.abs(ball.vy);
       }
 
-      // Paddle bounce
       const px = paddleXRef.current;
       if (
         ball.vy > 0 &&
@@ -238,7 +263,6 @@ export default function BreakoutArcadeGame({
         ball.y = PADDLE_Y - BALL_R;
       }
 
-      // Brick collisions
       for (const b of bricksRef.current) {
         if (!b.alive) continue;
         if (
@@ -261,44 +285,41 @@ export default function BreakoutArcadeGame({
         }
       }
 
-      // Wave cleared?
       if (bricksRef.current.every((b) => !b.alive)) {
-        waveRef.current += 1;
-        scoreRef.current += 50;
-        setWave(waveRef.current);
+        if (levelRef.current >= MAX_LEVEL) {
+          scoreRef.current += 500;
+          setScore(scoreRef.current);
+          if (scoreRef.current > bestRef.current) {
+            bestRef.current = scoreRef.current;
+            setBestScore(scoreRef.current);
+          }
+          finishMatch('victory');
+          drawScene();
+          return;
+        }
+        levelRef.current += 1;
+        scoreRef.current += 60;
+        setLevel(levelRef.current);
         setScore(scoreRef.current);
         if (scoreRef.current > bestRef.current) {
           bestRef.current = scoreRef.current;
           setBestScore(scoreRef.current);
         }
-        bricksRef.current = buildBricks();
-        resetBall(waveRef.current);
+        setLevelBanner(`Nivel ${levelRef.current} / ${MAX_LEVEL}`);
+        setTimeout(() => setLevelBanner(null), 1300);
+        bricksRef.current = buildBricksForLevel(levelRef.current);
+        resetBall(levelRef.current);
       }
 
-      // Bottom out
       if (ball.y - BALL_R > H) {
         livesRef.current -= 1;
         setLives(livesRef.current);
         if (livesRef.current <= 0) {
-          setStatus('gameover');
-          if (!reportedRef.current) {
-            reportedRef.current = true;
-            const dur = Math.max(1, Math.round((Date.now() - matchStartRef.current) / 1000));
-            if (scoreRef.current > startBestRef.current && scoreRef.current > 0) {
-              setIsNewRecord(true);
-            }
-            setAttempts((p) => p + 1);
-            onFinishRef.current?.({
-              puntaje: scoreRef.current,
-              detalleExtra: brokenRef.current,
-              modo: `oleada-${waveRef.current}`,
-              duracionSegundos: dur,
-            });
-          }
+          finishMatch('gameover');
           drawScene();
           return;
         }
-        resetBall(waveRef.current);
+        resetBall(levelRef.current);
       }
 
       drawScene();
@@ -307,7 +328,7 @@ export default function BreakoutArcadeGame({
 
     rafId = requestAnimationFrame(step);
     return () => cancelAnimationFrame(rafId);
-  }, [status, drawScene, resetBall]);
+  }, [status, drawScene, resetBall, finishMatch]);
 
   const handlePointerMove = (clientX: number) => {
     const canvas = canvasRef.current;
@@ -331,13 +352,13 @@ export default function BreakoutArcadeGame({
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#D8B4FE]/35 bg-[#D8B4FE]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#E9D5FF]">
               <span className="h-2 w-2 rounded-full bg-[#D8B4FE]" aria-hidden="true" />
-              Arcade #02 · Destreza
+              Arcade #02 · Campaña de 20 Niveles
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Ladrillos Cósmicos
             </h2>
             <p className="text-xs sm:text-sm text-white/65">
-              Mueve la barra con el ratón, el dedo o las flechas ←/→ para rebotar la esfera y destruir todos los bloques.
+              Siempre comienzas en Nivel 1. Rompe diseños únicos a lo largo de 20 niveles con mayor espacio de reacción.
             </p>
           </div>
           <button
@@ -351,16 +372,16 @@ export default function BreakoutArcadeGame({
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Nivel</div>
+            <div className="text-2xl font-black text-[#E9D5FF] tabular-nums">{level} / {MAX_LEVEL}</div>
+          </div>
+          <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Puntos</div>
-            <div className="text-2xl font-black text-[#E9D5FF] tabular-nums">{score}</div>
+            <div className="text-2xl font-black text-[#67E8F9] tabular-nums">{score}</div>
           </div>
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Bloques</div>
-            <div className="text-2xl font-black text-[#67E8F9] tabular-nums">{bricksBroken}</div>
-          </div>
-          <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Vidas · Oleada</div>
-            <div className="text-xl font-black text-[#FB7185] tabular-nums">{'♥'.repeat(Math.max(0, lives))} · #{wave}</div>
+            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Vidas · Bloques</div>
+            <div className="text-xl font-black text-[#FB7185] tabular-nums">{'♥'.repeat(Math.max(0, lives))} · {bricksBroken}</div>
           </div>
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Intentos</div>
@@ -374,7 +395,7 @@ export default function BreakoutArcadeGame({
 
         <div className="flex flex-col items-center gap-4">
           <ArcadeScreenFrame
-            className="w-full max-w-[440px] aspect-square touch-none"
+            className="w-full max-w-[520px] aspect-[520/560] touch-none"
             accentColor="rgba(216, 180, 254, 0.35)"
             glowColor="rgba(216, 180, 254, 0.42)"
             bgColor="#090617"
@@ -388,15 +409,28 @@ export default function BreakoutArcadeGame({
               className="w-full h-full block"
               aria-label="Tablero de Ladrillos Cósmicos"
             />
+            {status === 'playing' && levelBanner && (
+              <div className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 rounded-full border border-[#D8B4FE]/50 bg-[#090617]/90 px-4 py-1 text-xs font-extrabold uppercase tracking-wider text-[#E9D5FF]">
+                {levelBanner}
+              </div>
+            )}
             {status !== 'playing' && (
-              <div className="absolute inset-0 bg-[#090617]/88 flex flex-col items-center justify-center p-6 text-center gap-4">
+              <div className="absolute inset-0 bg-[#090617]/90 flex flex-col items-center justify-center p-6 text-center gap-4">
                 <div className="font-mono text-xs uppercase tracking-[0.2em] text-[#D8B4FE]">
-                  {status === 'gameover' ? 'Fin de la partida' : 'Arena lista'}
+                  {status === 'victory'
+                    ? '¡Campeón de la arena!'
+                    : status === 'gameover'
+                      ? `Llegaste al Nivel ${level}`
+                      : 'Arena lista'}
                 </div>
                 <div className="text-2xl sm:text-3xl font-black text-white">
-                  {status === 'gameover' ? `Puntuación: ${score}` : 'Ladrillos Cósmicos'}
+                  {status === 'victory'
+                    ? '¡Felicidades! Completaste los 20 niveles'
+                    : status === 'gameover'
+                      ? `Puntuación: ${score}`
+                      : 'Ladrillos Cósmicos'}
                 </div>
-                {status === 'gameover' && isNewRecord && (
+                {(status === 'gameover' || status === 'victory') && isNewRecord && (
                   <span className="rounded-full border border-[#FDE68A]/45 bg-[#FDE68A]/15 px-3 py-0.5 text-[11px] font-bold text-[#FDE68A]">
                     ¡Nuevo récord personal!
                   </span>
@@ -406,7 +440,7 @@ export default function BreakoutArcadeGame({
                   onClick={startNewGame}
                   className="min-h-[42px] px-7 rounded-full bg-white text-black text-xs font-bold hover:bg-white/90 transition-colors cursor-pointer"
                 >
-                  {status === 'gameover' ? 'Jugar de nuevo' : 'Iniciar partida'}
+                  {status === 'idle' ? 'Iniciar desde Nivel 1' : 'Jugar de nuevo desde Nivel 1'}
                 </button>
               </div>
             )}

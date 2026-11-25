@@ -5,8 +5,11 @@ import { LiquidGlass } from '../ui/glasscn/liquid-glass';
 import type { ResultadoPartidaInput } from '../../lib/minijuegos-types';
 import ArcadeScreenFrame from './ArcadeScreenFrame';
 
-const W = 440;
-const H = 440;
+const W = 520;
+const H = 580;
+const MAX_LEVEL = 10;
+const SHIP_Y = H - 36;
+const SHIP_W = 40;
 
 interface Alien {
   x: number;
@@ -24,20 +27,23 @@ interface Bullet {
   vy: number;
 }
 
-function buildWave(wave: number): Alien[] {
+function buildWave(level: number): Alien[] {
   const list: Alien[] = [];
-  const colors = ['#FDE68A', '#6EE7B7', '#67E8F9', '#D8B4FE'];
-  const rows = 4;
-  const cols = 7;
+  const colors = ['#FDE68A', '#6EE7B7', '#67E8F9', '#D8B4FE', '#FDA4AF'];
+  const rows = level >= 6 ? 5 : 4;
+  const cols = level >= 4 ? 8 : 7;
+  const spacingX = Math.floor((W - 88) / cols);
+  const startX = Math.floor((W - (cols - 1) * spacingX - 28) / 2);
+
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       list.push({
-        x: 44 + c * 50,
-        y: 42 + r * 34,
+        x: startX + c * spacingX,
+        y: 36 + r * 34,
         w: 28,
         h: 18,
         alive: true,
-        pts: (rows - r) * 10 + (wave - 1) * 5,
+        pts: (rows - r) * 10 + (level - 1) * 5,
         color: colors[r % colors.length],
       });
     }
@@ -57,16 +63,17 @@ export default function InvadersArcadeGame({
   onBack: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [status, setStatus] = useState<'idle' | 'playing' | 'gameover'>('idle');
+  const [status, setStatus] = useState<'idle' | 'playing' | 'gameover' | 'victory'>('idle');
   const [score, setScore] = useState(0);
   const [kills, setKills] = useState(0);
   const [lives, setLives] = useState(3);
-  const [wave, setWave] = useState(1);
+  const [level, setLevel] = useState(1);
+  const [levelBanner, setLevelBanner] = useState<string | null>(null);
   const [bestScore, setBestScore] = useState(initialBestScore);
   const [attempts, setAttempts] = useState(initialAttempts);
   const [isNewRecord, setIsNewRecord] = useState(false);
 
-  const shipXRef = useRef(W / 2 - 18);
+  const shipXRef = useRef(W / 2 - SHIP_W / 2);
   const keysRef = useRef({ left: false, right: false, fire: false });
   const aliensRef = useRef<Alien[]>(buildWave(1));
   const alienDirRef = useRef(1);
@@ -78,7 +85,7 @@ export default function InvadersArcadeGame({
   const scoreRef = useRef(0);
   const killsRef = useRef(0);
   const livesRef = useRef(3);
-  const waveRef = useRef(1);
+  const levelRef = useRef(1);
   const bestRef = useRef(initialBestScore);
   const startBestRef = useRef(initialBestScore);
   const matchStartRef = useRef(Date.now());
@@ -111,6 +118,14 @@ export default function InvadersArcadeGame({
     ctx.fillStyle = '#04120D';
     ctx.fillRect(0, 0, W, H);
 
+    // Subtle stars
+    ctx.fillStyle = 'rgba(110, 231, 183, 0.14)';
+    for (let i = 0; i < 18; i++) {
+      const sx = ((i * 89 + 23) % (W - 20)) + 10;
+      const sy = ((i * 137 + 41) % (H - 40)) + 15;
+      ctx.fillRect(sx, sy, 2, 2);
+    }
+
     // Aliens
     for (const a of aliensRef.current) {
       if (!a.alive) continue;
@@ -126,22 +141,24 @@ export default function InvadersArcadeGame({
     // Player bullets
     ctx.fillStyle = '#FDE68A';
     for (const b of bulletsRef.current) {
-      ctx.fillRect(b.x - 2, b.y - 8, 4, 10);
+      ctx.fillRect(b.x - 2, b.y - 10, 4, 12);
     }
 
     // Enemy bullets
     ctx.fillStyle = '#FB7185';
     for (const eb of enemyBulletsRef.current) {
-      ctx.fillRect(eb.x - 2, eb.y, 4, 9);
+      ctx.fillRect(eb.x - 2.5, eb.y, 5, 11);
     }
 
-    // Ship
+    // Player Ship (wide spacing from top formation)
     const sx = shipXRef.current;
     ctx.fillStyle = '#67E8F9';
     ctx.beginPath();
-    ctx.moveTo(sx + 18, H - 42);
-    ctx.lineTo(sx + 36, H - 18);
-    ctx.lineTo(sx, H - 18);
+    ctx.moveTo(sx + SHIP_W / 2, SHIP_Y - 22);
+    ctx.lineTo(sx + SHIP_W, SHIP_Y + 8);
+    ctx.lineTo(sx + SHIP_W * 0.72, SHIP_Y + 4);
+    ctx.lineTo(sx + SHIP_W * 0.28, SHIP_Y + 4);
+    ctx.lineTo(sx, SHIP_Y + 8);
     ctx.closePath();
     ctx.fill();
   }, []);
@@ -150,8 +167,8 @@ export default function InvadersArcadeGame({
     draw();
   }, [draw]);
 
-  const finishMatch = useCallback(() => {
-    setStatus('gameover');
+  const finishMatch = useCallback((finalState: 'gameover' | 'victory') => {
+    setStatus(finalState);
     if (!reportedRef.current) {
       reportedRef.current = true;
       const dur = Math.max(1, Math.round((Date.now() - matchStartRef.current) / 1000));
@@ -162,14 +179,15 @@ export default function InvadersArcadeGame({
       onFinishRef.current?.({
         puntaje: scoreRef.current,
         detalleExtra: killsRef.current,
-        modo: `oleada-${waveRef.current}`,
+        modo: `nivel-${levelRef.current}`,
         duracionSegundos: dur,
       });
     }
   }, []);
 
   const startNewGame = useCallback(() => {
-    shipXRef.current = W / 2 - 18;
+    // Always start from level 1
+    shipXRef.current = W / 2 - SHIP_W / 2;
     aliensRef.current = buildWave(1);
     alienDirRef.current = 1;
     bulletsRef.current = [];
@@ -177,24 +195,26 @@ export default function InvadersArcadeGame({
     scoreRef.current = 0;
     killsRef.current = 0;
     livesRef.current = 3;
-    waveRef.current = 1;
+    levelRef.current = 1;
     startBestRef.current = bestRef.current;
     matchStartRef.current = Date.now();
     reportedRef.current = false;
 
     setIsNewRecord(false);
+    setLevelBanner('Nivel 1 / 10');
+    setTimeout(() => setLevelBanner(null), 1300);
     setScore(0);
     setKills(0);
     setLives(3);
-    setWave(1);
+    setLevel(1);
     setStatus('playing');
   }, []);
 
   const fireLaser = useCallback(() => {
     const now = Date.now();
-    if (now - lastShotRef.current < 240) return;
+    if (now - lastShotRef.current < 210) return;
     lastShotRef.current = now;
-    bulletsRef.current.push({ x: shipXRef.current + 18, y: H - 44, vy: -6.5 });
+    bulletsRef.current.push({ x: shipXRef.current + SHIP_W / 2, y: SHIP_Y - 24, vy: -7.2 });
   }, []);
 
   useEffect(() => {
@@ -224,52 +244,53 @@ export default function InvadersArcadeGame({
     let rafId = 0;
 
     const step = () => {
-      if (keysRef.current.left) shipXRef.current = Math.max(8, shipXRef.current - 5);
-      if (keysRef.current.right) shipXRef.current = Math.min(W - 44, shipXRef.current + 5);
+      if (keysRef.current.left) shipXRef.current = Math.max(10, shipXRef.current - 5.4);
+      if (keysRef.current.right) shipXRef.current = Math.min(W - SHIP_W - 10, shipXRef.current + 5.4);
       if (keysRef.current.fire) fireLaser();
 
-      // Move bullets
       bulletsRef.current = bulletsRef.current
         .map((b) => ({ ...b, y: b.y + b.vy }))
-        .filter((b) => b.y > -12);
+        .filter((b) => b.y > -14);
 
       enemyBulletsRef.current = enemyBulletsRef.current
         .map((b) => ({ ...b, y: b.y + b.vy }))
-        .filter((b) => b.y < H + 12);
+        .filter((b) => b.y < H + 14);
 
-      // Move aliens
       const aliveAliens = aliensRef.current.filter((a) => a.alive);
-      const speedX = (1.1 + waveRef.current * 0.25 + (28 - aliveAliens.length) * 0.04) * alienDirRef.current;
+      const totalInWave = aliensRef.current.length;
+      const speedX =
+        (0.95 + levelRef.current * 0.2 + (totalInWave - aliveAliens.length) * 0.035) *
+        alienDirRef.current;
+
       let hitEdge = false;
       for (const a of aliveAliens) {
         a.x += speedX;
-        if (a.x <= 12 || a.x + a.w >= W - 12) hitEdge = true;
+        if (a.x <= 14 || a.x + a.w >= W - 14) hitEdge = true;
       }
       if (hitEdge) {
         alienDirRef.current *= -1;
         for (const a of aliveAliens) {
           a.y += 14;
-          if (a.y + a.h >= H - 46) {
-            finishMatch();
+          if (a.y + a.h >= SHIP_Y - 26) {
+            finishMatch('gameover');
             draw();
             return;
           }
         }
       }
 
-      // Enemy shoots occasionally
       const now = Date.now();
-      if (aliveAliens.length > 0 && now - lastEnemyShotRef.current > Math.max(450, 1150 - waveRef.current * 120)) {
+      const enemyCooldown = Math.max(380, 1180 - levelRef.current * 75);
+      if (aliveAliens.length > 0 && now - lastEnemyShotRef.current > enemyCooldown) {
         lastEnemyShotRef.current = now;
         const shooter = aliveAliens[Math.floor(Math.random() * aliveAliens.length)];
         enemyBulletsRef.current.push({
           x: shooter.x + shooter.w / 2,
           y: shooter.y + shooter.h,
-          vy: 3.6 + waveRef.current * 0.25,
+          vy: 3.4 + levelRef.current * 0.24,
         });
       }
 
-      // Check player bullets vs aliens
       for (const b of bulletsRef.current) {
         for (const a of aliensRef.current) {
           if (!a.alive) continue;
@@ -289,28 +310,43 @@ export default function InvadersArcadeGame({
         }
       }
 
-      // Enemy bullets vs player ship
       const sx = shipXRef.current;
       for (const eb of enemyBulletsRef.current) {
-        if (eb.x >= sx && eb.x <= sx + 36 && eb.y >= H - 40 && eb.y <= H - 16) {
+        if (eb.x >= sx + 2 && eb.x <= sx + SHIP_W - 2 && eb.y >= SHIP_Y - 18 && eb.y <= SHIP_Y + 8) {
           eb.y = H + 50;
           livesRef.current -= 1;
           setLives(livesRef.current);
           if (livesRef.current <= 0) {
-            finishMatch();
+            finishMatch('gameover');
             draw();
             return;
           }
         }
       }
 
-      // Wave cleared
       if (aliensRef.current.every((a) => !a.alive)) {
-        waveRef.current += 1;
-        scoreRef.current += 60;
-        setWave(waveRef.current);
+        if (levelRef.current >= MAX_LEVEL) {
+          scoreRef.current += 300;
+          setScore(scoreRef.current);
+          if (scoreRef.current > bestRef.current) {
+            bestRef.current = scoreRef.current;
+            setBestScore(scoreRef.current);
+          }
+          finishMatch('victory');
+          draw();
+          return;
+        }
+        levelRef.current += 1;
+        scoreRef.current += 75;
+        setLevel(levelRef.current);
         setScore(scoreRef.current);
-        aliensRef.current = buildWave(waveRef.current);
+        if (scoreRef.current > bestRef.current) {
+          bestRef.current = scoreRef.current;
+          setBestScore(scoreRef.current);
+        }
+        setLevelBanner(`Nivel ${levelRef.current} / ${MAX_LEVEL}`);
+        setTimeout(() => setLevelBanner(null), 1300);
+        aliensRef.current = buildWave(levelRef.current);
         bulletsRef.current = [];
         enemyBulletsRef.current = [];
       }
@@ -337,13 +373,13 @@ export default function InvadersArcadeGame({
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#6EE7B7]/35 bg-[#6EE7B7]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#6EE7B7]">
               <span className="h-2 w-2 rounded-full bg-[#6EE7B7]" aria-hidden="true" />
-              Arcade #03 · Acción Retro
+              Arcade #03 · Campaña de 10 Niveles
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Invasores Arcade
             </h2>
             <p className="text-xs sm:text-sm text-white/65">
-              Muévete con ←/→ o A/D y dispara láseres con Espacio o con los controles en pantalla.
+              Siempre inicias en el Nivel 1 y avanzas oleada tras oleada. ¡Supera los 10 niveles para completar la misión!
             </p>
           </div>
           <button
@@ -357,16 +393,16 @@ export default function InvadersArcadeGame({
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Nivel</div>
+            <div className="text-2xl font-black text-[#6EE7B7] tabular-nums">{level} / {MAX_LEVEL}</div>
+          </div>
+          <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Puntos</div>
-            <div className="text-2xl font-black text-[#6EE7B7] tabular-nums">{score}</div>
+            <div className="text-2xl font-black text-[#67E8F9] tabular-nums">{score}</div>
           </div>
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Naves</div>
-            <div className="text-2xl font-black text-[#67E8F9] tabular-nums">{kills}</div>
-          </div>
-          <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Vidas · Oleada</div>
-            <div className="text-xl font-black text-[#FB7185] tabular-nums">{'♥'.repeat(Math.max(0, lives))} · #{wave}</div>
+            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Vidas · Naves</div>
+            <div className="text-xl font-black text-[#FB7185] tabular-nums">{'♥'.repeat(Math.max(0, lives))} · {kills}</div>
           </div>
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Intentos</div>
@@ -380,21 +416,41 @@ export default function InvadersArcadeGame({
 
         <div className="flex flex-col items-center gap-4">
           <ArcadeScreenFrame
-            className="w-full max-w-[440px] aspect-square"
+            className="w-full max-w-[520px] aspect-[520/580]"
             accentColor="rgba(110, 231, 183, 0.35)"
             glowColor="rgba(110, 231, 183, 0.42)"
             bgColor="#04120D"
           >
             <canvas ref={canvasRef} className="w-full h-full block" aria-label="Tablero de Invasores Arcade" />
+
+            {status === 'playing' && levelBanner && (
+              <div className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 rounded-full border border-[#6EE7B7]/50 bg-[#04120D]/90 px-4 py-1 text-xs font-extrabold uppercase tracking-wider text-[#6EE7B7]">
+                {levelBanner}
+              </div>
+            )}
+
             {status !== 'playing' && (
-              <div className="absolute inset-0 bg-[#04120D]/88 flex flex-col items-center justify-center p-6 text-center gap-4">
+              <div className="absolute inset-0 bg-[#04120D]/90 flex flex-col items-center justify-center p-6 text-center gap-4">
                 <div className="font-mono text-xs uppercase tracking-[0.2em] text-[#6EE7B7]">
-                  {status === 'gameover' ? 'Base comprometida' : 'Escuadrón listo'}
+                  {status === 'victory'
+                    ? '¡Misión completada!'
+                    : status === 'gameover'
+                      ? `Llegaste al Nivel ${level}`
+                      : 'Escuadrón listo'}
                 </div>
                 <div className="text-2xl sm:text-3xl font-black text-white">
-                  {status === 'gameover' ? `Puntuación: ${score}` : 'Invasores Arcade'}
+                  {status === 'victory'
+                    ? '¡Felicidades! Superaste los 10 niveles'
+                    : status === 'gameover'
+                      ? `Puntuación: ${score}`
+                      : 'Invasores Arcade'}
                 </div>
-                {status === 'gameover' && isNewRecord && (
+                {status === 'victory' && (
+                  <p className="text-xs sm:text-sm text-[#A7F3D0] max-w-sm">
+                    Defendiste la galaxia desde el Nivel 1 hasta el Nivel 10 con {score} puntos y {kills} naves destruidas.
+                  </p>
+                )}
+                {(status === 'gameover' || status === 'victory') && isNewRecord && (
                   <span className="rounded-full border border-[#FDE68A]/45 bg-[#FDE68A]/15 px-3 py-0.5 text-[11px] font-bold text-[#FDE68A]">
                     ¡Nuevo récord personal!
                   </span>
@@ -404,7 +460,7 @@ export default function InvadersArcadeGame({
                   onClick={startNewGame}
                   className="min-h-[42px] px-7 rounded-full bg-white text-black text-xs font-bold hover:bg-white/90 transition-colors cursor-pointer"
                 >
-                  {status === 'gameover' ? 'Jugar de nuevo' : 'Iniciar partida'}
+                  {status === 'idle' ? 'Iniciar desde Nivel 1' : 'Jugar de nuevo desde Nivel 1'}
                 </button>
               </div>
             )}
