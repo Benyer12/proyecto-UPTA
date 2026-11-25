@@ -341,6 +341,7 @@ const ADMIN_NAV_ITEMS = [
   { href: '/admin/pendientes', label: 'Pendientes', isPending: true },
   { href: '/admin/usuarios', label: 'Usuarios' },
   { href: '/asignaciones', label: 'Asignaciones' },
+  { href: '/minijuegos', label: 'Minijuegos' },
 ];
 
 function formatRoleLabel(role?: string | null): string {
@@ -656,6 +657,16 @@ export default function Header() {
                   >
                     Cómo jugar
                   </Link>
+                  <Link
+                    href="/minijuegos"
+                    className={`text-xs sm:text-[13px] font-semibold px-3 py-1.5 rounded-full transition-colors ${
+                      pathname === '/minijuegos'
+                        ? 'bg-[#67E8F9]/20 text-[#67E8F9] border border-[#67E8F9]/35'
+                        : 'text-[#67E8F9]/90 hover:text-[#67E8F9] hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    Minijuegos
+                  </Link>
                 </nav>
               )}
 
@@ -849,6 +860,24 @@ export default function Header() {
                   <Link href="/how-to-play" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-white/80 hover:text-white px-3.5 py-2 rounded-xl hover:bg-white/[0.07]">
                     Cómo jugar
                   </Link>
+                  <Link href="/minijuegos" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-semibold text-[#67E8F9] hover:text-white px-3.5 py-2 rounded-xl hover:bg-white/[0.07]">
+                    Minijuegos
+                  </Link>
+                  {(user?.role === 'tutor' || user?.role === 'docente') && (
+                    <>
+                      <Link href="/maestro" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-white/80 hover:text-white px-3.5 py-2 rounded-xl hover:bg-white/[0.07]">
+                        Mis Estudiantes
+                      </Link>
+                      <Link href="/maestro/ia" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-semibold text-[#67E8F9] hover:text-white px-3.5 py-2 rounded-xl hover:bg-white/[0.07]">
+                        Copiloto IA
+                      </Link>
+                    </>
+                  )}
+                  {user?.role === 'student' && (
+                    <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-white/80 hover:text-white px-3.5 py-2 rounded-xl hover:bg-white/[0.07]">
+                      Mi Universo
+                    </Link>
+                  )}
                 </>
               )}
               <div className="pt-2 mt-1 border-t border-white/10 flex flex-wrap items-center justify-between gap-2.5 px-2">
