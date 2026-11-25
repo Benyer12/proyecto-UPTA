@@ -485,7 +485,7 @@ export default function MinijuegosPage() {
                   <div className="text-base font-extrabold text-white tabular-nums">
                     {loadingStars ? 'Cargando...' : `${totalStars} ★`}
                     <span className="text-xs font-medium text-white/55 ml-2">
-                      (Desde 17 ★ hasta 180 ★)
+                      (Desde 17 ★ hasta 80 ★)
                     </span>
                   </div>
                 </div>
@@ -500,7 +500,7 @@ export default function MinijuegosPage() {
             className="rounded-2xl border border-[#FDE68A]/35 bg-[#FDE68A]/[0.08] px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm text-[#FEF3C7]"
           >
             <span>{notice}</span>
-            {isStudent && totalStars < 180 && (
+            {isStudent && totalStars < 80 && (
               <Link
                 href="/dashboard"
                 className="inline-flex items-center justify-center rounded-full bg-white text-black px-4 py-1.5 text-xs font-bold hover:bg-white/90 transition-colors shrink-0 self-start sm:self-auto"
