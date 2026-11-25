@@ -187,7 +187,8 @@ export default function PongArcadeGame({
       ) {
         const hit = (b.y - (playerYRef.current + PADDLE_H / 2)) / (PADDLE_H / 2);
         b.vx = Math.min(8.2, Math.abs(b.vx) * 1.06);
-        b.vy = hit * 4.5;
+        const rawVy = hit * 4.5;
+        b.vy = Math.abs(rawVy) < 0.7 ? (rawVy >= 0 ? 0.85 : -0.85) : rawVy;
         b.x = 38;
         scoreRef.current += 10;
         setScore(scoreRef.current);

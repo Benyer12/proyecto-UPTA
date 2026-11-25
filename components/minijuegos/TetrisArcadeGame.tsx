@@ -238,9 +238,13 @@ export default function TetrisArcadeGame({
     if (status !== 'playing') return;
     const p = pieceRef.current;
     const rot = rotateMatrix(p.matrix);
-    if (!collides(boardRef.current, rot, p.x, p.y)) {
-      p.matrix = rot;
-      draw();
+    for (const kick of [0, -1, 1, -2, 2]) {
+      if (!collides(boardRef.current, rot, p.x + kick, p.y)) {
+        p.x += kick;
+        p.matrix = rot;
+        draw();
+        return;
+      }
     }
   }, [status, collides, draw]);
 

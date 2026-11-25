@@ -925,7 +925,10 @@ export async function guardarProgresoHibrido(
           [userId, nivelId],
         );
 
-        estrellasGuardadas = Math.max(Number(existing?.estrellas) || 0, estrellas);
+        const prevEstrellas = Number(existing?.estrellas) || 0;
+        estrellasGuardadas = completado
+          ? prevEstrellas + Math.max(0, Number(estrellas) || 0)
+          : Math.max(prevEstrellas, Number(estrellas) || 0);
 
         if (existing?.id) {
           await tx.execute(
@@ -955,7 +958,19 @@ export async function guardarProgresoHibrido(
 
       if (errSelect) throw errSelect;
 
-      const estrellasFinales = Math.max(Number(existente?.estrellas) || 0, estrellasGuardadas);
+      const prevRemotas = Number(existente?.estrellas) || 0;
+      const estrellasFinales = completado
+        ? Math.max(estrellasGuardadas, prevRemotas + Math.max(0, Number(estrellas) || 0))
+        : Math.max(prevRemotas, estrellasGuardadas);
+
+      if (db && estrellasFinales !== estrellasGuardadas) {
+        try {
+          await db.execute(
+            'UPDATE local_progreso_usuario SET estrellas = ? WHERE usuario_id = ? AND nivel_id = ?',
+            [estrellasFinales, userId, nivelId],
+          );
+        } catch {}
+      }
 
       if (existente?.id) {
         const { error: errUpd } = await supabase

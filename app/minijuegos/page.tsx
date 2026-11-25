@@ -320,6 +320,11 @@ export default function MinijuegosPage() {
       return;
     }
 
+    if (isStudent && loadingStars) {
+      setNotice('Verificando tus estrellas sincronizadas, intenta en un segundo...');
+      return;
+    }
+
     const isUnlocked = isStaff || (isStudent && totalStars >= game.requiredStars);
 
     if (!isUnlocked) {
@@ -495,7 +500,7 @@ export default function MinijuegosPage() {
             className="rounded-2xl border border-[#FDE68A]/35 bg-[#FDE68A]/[0.08] px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm text-[#FEF3C7]"
           >
             <span>{notice}</span>
-            {isStudent && totalStars < 17 && (
+            {isStudent && totalStars < 180 && (
               <Link
                 href="/dashboard"
                 className="inline-flex items-center justify-center rounded-full bg-white text-black px-4 py-1.5 text-xs font-bold hover:bg-white/90 transition-colors shrink-0 self-start sm:self-auto"

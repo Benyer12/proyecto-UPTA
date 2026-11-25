@@ -636,7 +636,7 @@ export default function Header() {
 
             <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
               {!(token && user?.role === 'admin') && (
-                <nav className="hidden sm:flex items-center gap-1">
+                <nav className={`${token ? 'hidden lg:flex' : 'hidden sm:flex'} items-center gap-1`}>
                   <Link
                     href="/about"
                     className={`text-xs sm:text-[13px] font-medium px-3 py-1.5 rounded-full transition-colors ${
@@ -788,7 +788,7 @@ export default function Header() {
                 type="button"
                 aria-expanded={mobileMenuOpen}
                 className={`${
-                  token && user?.role === 'admin' ? 'lg:hidden' : 'sm:hidden'
+                  token ? 'lg:hidden' : 'sm:hidden'
                 } min-h-[40px] inline-flex items-center gap-1.5 text-xs font-semibold text-white px-3.5 py-1.5 rounded-full bg-white/[0.07] hover:bg-white/[0.14] border border-white/12 cursor-pointer`}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label={mobileMenuOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'}
@@ -816,7 +816,7 @@ export default function Header() {
             exit={{ height: 0, opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
             className={`${
-              token && user?.role === 'admin' ? 'lg:hidden' : 'sm:hidden'
+              token ? 'lg:hidden' : 'sm:hidden'
             } pointer-events-auto mx-auto max-w-5xl mt-2.5 rounded-2xl liquid-glass-dropdown overflow-hidden`}
           >
             <div className="flex flex-col p-3 gap-1.5">

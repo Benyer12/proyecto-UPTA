@@ -83,8 +83,23 @@ export default function MemoryArcadeGame({
   const matchStartRef = useRef(Date.now());
   const bestRef = useRef(initialBestScore);
   const startBestRef = useRef(initialBestScore);
+  const savedCurrentRunRef = useRef(false);
   const onFinishRef = useRef(onGameFinished);
   onFinishRef.current = onGameFinished;
+
+  const flushPartialRunIfAny = useCallback(() => {
+    if (!savedCurrentRunRef.current && score > 0) {
+      savedCurrentRunRef.current = true;
+      const dur = Math.max(1, Math.round((Date.now() - matchStartRef.current) / 1000));
+      setAttempts((p) => p + 1);
+      onFinishRef.current?.({
+        puntaje: score,
+        detalleExtra: totalPairsCleared,
+        modo: `nivel-${currentCfg.level}`,
+        duracionSegundos: dur,
+      });
+    }
+  }, [score, totalPairsCleared, currentCfg.level]);
 
   useEffect(() => {
     setBestScore((prev) => Math.max(prev, initialBestScore));
@@ -96,7 +111,9 @@ export default function MemoryArcadeGame({
   }, [initialAttempts]);
 
   const startFromLevel1 = useCallback(() => {
+    flushPartialRunIfAny();
     lockRef.current = false;
+    savedCurrentRunRef.current = false;
     matchStartRef.current = Date.now();
     startBestRef.current = bestRef.current;
     setLevelIdx(0);
@@ -166,6 +183,7 @@ export default function MemoryArcadeGame({
             }
 
             if (levelIdx === MEMORY_LEVELS.length - 1) {
+              savedCurrentRunRef.current = true;
               const dur = Math.max(1, Math.round((Date.now() - matchStartRef.current) / 1000));
               setCampaignWon(true);
               setAttempts((p) => p + 1);
@@ -218,7 +236,10 @@ export default function MemoryArcadeGame({
           </div>
           <button
             type="button"
-            onClick={onBack}
+            onClick={() => {
+              flushPartialRunIfAny();
+              onBack();
+            }}
             className="min-h-[40px] inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black text-white text-xs font-semibold px-5 transition-colors cursor-pointer self-start sm:self-auto shrink-0"
           >
             ← Volver a Minijuegos
