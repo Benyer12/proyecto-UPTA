@@ -8,18 +8,25 @@ import ArcadeScreenFrame from './ArcadeScreenFrame';
 const W = 520;
 const H = 560;
 const MAX_LEVEL = 20;
-const PADDLE_W = 94;
-const PADDLE_H = 12;
+const PADDLE_W = 96;
+const PADDLE_H = 13;
 const PADDLE_Y = H - 36;
 const BALL_R = 7.5;
-const BRICK_COLORS = ['#F472B6', '#D8B4FE', '#67E8F9', '#6EE7B7', '#FDE68A'];
+const BRICK_COLORS = ['#F472B6', '#D8B4FE', '#67E8F9', '#6EE7B7'];
+
+type BrickKind = 'normal' | 'reinforced' | 'crystal' | 'speed' | 'nova';
 
 interface Brick {
+  row: number;
+  col: number;
   x: number;
   y: number;
   w: number;
   h: number;
   alive: boolean;
+  kind: BrickKind;
+  hp: number;
+  maxHp: number;
   color: string;
   pts: number;
 }
@@ -29,7 +36,7 @@ function buildBricksForLevel(level: number): Brick[] {
   const cols = 8;
   const rows = level >= 12 ? 6 : level >= 5 ? 5 : 4;
   const bw = 54;
-  const bh = 16;
+  const bh = 18;
   const gap = 8;
   const offsetX = (W - (cols * bw + (cols - 1) * gap)) / 2;
   const offsetY = 44;
@@ -44,14 +51,48 @@ function buildBricksForLevel(level: number): Brick[] {
       else if (pattern === 4) include = r % 2 === 0 || c === 0 || c === cols - 1;
 
       if (!include) continue;
+
+      let kind: BrickKind = 'normal';
+      let hp = 1;
+      let color = BRICK_COLORS[(r + level - 1) % BRICK_COLORS.length];
+      let pts = 15 + (rows - r) * 5;
+
+      // Determine brick type and strength according to level progression
+      if (level >= 7 && r === 0 && (c === 1 || c === cols - 2)) {
+        kind = 'crystal';
+        hp = 3;
+        color = '#FBBF24';
+        pts = 60;
+      } else if ((level >= 2 && r === 0) || (level >= 10 && r === 1 && c % 2 === 0)) {
+        kind = 'reinforced';
+        hp = 2;
+        color = '#94A3B8';
+        pts = 35;
+      } else if (level >= 3 && (r + c + level) % 9 === 0) {
+        kind = 'speed';
+        hp = 1;
+        color = '#EC4899';
+        pts = 40;
+      } else if (level >= 4 && (r * 7 + c + level) % 13 === 0) {
+        kind = 'nova';
+        hp = 1;
+        color = '#FB7185';
+        pts = 45;
+      }
+
       bricks.push({
+        row: r,
+        col: c,
         x: offsetX + c * (bw + gap),
         y: offsetY + r * (bh + gap),
         w: bw,
         h: bh,
         alive: true,
-        color: BRICK_COLORS[(r + level - 1) % BRICK_COLORS.length],
-        pts: 15 + (rows - r) * 5 + Math.floor(level / 2) * 5,
+        kind,
+        hp,
+        maxHp: hp,
+        color,
+        pts,
       });
     }
   }
@@ -75,6 +116,7 @@ export default function BreakoutArcadeGame({
   const [bricksBroken, setBricksBroken] = useState(0);
   const [lives, setLives] = useState(3);
   const [level, setLevel] = useState(1);
+  const [ballSpeedLabel, setBallSpeedLabel] = useState('1.0x');
   const [levelBanner, setLevelBanner] = useState<string | null>(null);
   const [bestScore, setBestScore] = useState(initialBestScore);
   const [attempts, setAttempts] = useState(initialAttempts);
@@ -82,7 +124,8 @@ export default function BreakoutArcadeGame({
 
   const paddleXRef = useRef((W - PADDLE_W) / 2);
   const keysRef = useRef<{ left: boolean; right: boolean }>({ left: false, right: false });
-  const ballRef = useRef({ x: W / 2, y: PADDLE_Y - 14, vx: 3.6, vy: -4.1 });
+  const ballRef = useRef({ x: W / 2, y: PADDLE_Y - 14, vx: 3.5, vy: -4.0 });
+  const turboBoostRef = useRef(0);
   const bricksRef = useRef<Brick[]>(buildBricksForLevel(1));
   const scoreRef = useRef(0);
   const brokenRef = useRef(0);
@@ -104,16 +147,26 @@ export default function BreakoutArcadeGame({
     setAttempts((prev) => Math.max(prev, initialAttempts));
   }, [initialAttempts]);
 
-  const resetBall = useCallback((lvl: number) => {
-    const speedBoost = Math.min(2.6, (lvl - 1) * 0.14);
-    const dir = Math.random() > 0.5 ? 1 : -1;
-    ballRef.current = {
-      x: W / 2,
-      y: PADDLE_Y - 14,
-      vx: dir * (3.5 + speedBoost * 0.65),
-      vy: -(4.1 + speedBoost),
-    };
+  const computeTargetSpeed = useCallback((lvl: number, extraTurbo: number) => {
+    const base = 5.2 + (lvl - 1) * 0.16 + extraTurbo;
+    return Math.min(9.6, base);
   }, []);
+
+  const resetBall = useCallback(
+    (lvl: number) => {
+      turboBoostRef.current = 0;
+      const spd = computeTargetSpeed(lvl, 0);
+      setBallSpeedLabel(`${(spd / 5.2).toFixed(1)}x`);
+      const angle = (Math.random() > 0.5 ? 1 : -1) * (0.42 + Math.random() * 0.2);
+      ballRef.current = {
+        x: W / 2,
+        y: PADDLE_Y - 14,
+        vx: Math.sin(angle) * spd,
+        vy: -Math.cos(angle) * spd,
+      };
+    },
+    [computeTargetSpeed],
+  );
 
   const drawScene = useCallback(() => {
     const canvas = canvasRef.current;
@@ -140,21 +193,78 @@ export default function BreakoutArcadeGame({
       ctx.stroke();
     }
 
+    // Draw varied beveled retro bricks with HP indicators & cracks
     for (const b of bricksRef.current) {
       if (!b.alive) continue;
+
       ctx.fillStyle = b.color;
       ctx.beginPath();
       ctx.roundRect(b.x, b.y, b.w, b.h, 4);
       ctx.fill();
+
+      // Retro top bevel highlight
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+      ctx.fillRect(b.x + 2, b.y + 2, b.w - 4, 3);
+
+      // Kind-specific retro details
+      if (b.kind === 'reinforced') {
+        ctx.strokeStyle = '#E2E8F0';
+        ctx.lineWidth = 1.6;
+        ctx.strokeRect(b.x + 1, b.y + 1, b.w - 2, b.h - 2);
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(b.x + 4, b.y + 6, 3, 5);
+        ctx.fillRect(b.x + b.w - 7, b.y + 6, 3, 5);
+      } else if (b.kind === 'crystal') {
+        ctx.strokeStyle = '#FEF08A';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(b.x + 10, b.y + 2);
+        ctx.lineTo(b.x + 4, b.y + b.h - 2);
+        ctx.moveTo(b.x + b.w - 10, b.y + 2);
+        ctx.lineTo(b.x + b.w - 4, b.y + b.h - 2);
+        ctx.stroke();
+      } else if (b.kind === 'speed') {
+        ctx.fillStyle = '#FEF08A';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('⚡', b.x + b.w / 2, b.y + 13);
+      } else if (b.kind === 'nova') {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(b.x + b.w / 2, b.y + b.h / 2, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Visible crack overlay when damaged (hp < maxHp)
+      if (b.hp < b.maxHp) {
+        ctx.strokeStyle = '#0F172A';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(b.x + b.w * 0.35, b.y + 2);
+        ctx.lineTo(b.x + b.w * 0.48, b.y + b.h * 0.55);
+        ctx.lineTo(b.x + b.w * 0.4, b.y + b.h - 2);
+        if (b.maxHp - b.hp >= 2) {
+          ctx.moveTo(b.x + b.w * 0.68, b.y + 2);
+          ctx.lineTo(b.x + b.w * 0.6, b.y + b.h * 0.6);
+          ctx.lineTo(b.x + b.w * 0.72, b.y + b.h - 2);
+        }
+        ctx.stroke();
+      }
     }
 
+    // Sleek metallic arcade paddle
+    const px = paddleXRef.current;
     ctx.fillStyle = '#E9D5FF';
     ctx.beginPath();
-    ctx.roundRect(paddleXRef.current, PADDLE_Y, PADDLE_W, PADDLE_H, 6);
+    ctx.roundRect(px, PADDLE_Y, PADDLE_W, PADDLE_H, 6);
     ctx.fill();
+    ctx.fillStyle = '#A855F7';
+    ctx.fillRect(px + 2, PADDLE_Y + 2, 12, PADDLE_H - 4);
+    ctx.fillRect(px + PADDLE_W - 14, PADDLE_Y + 2, 12, PADDLE_H - 4);
 
+    // Ball with speed glow
     const ball = ballRef.current;
-    ctx.fillStyle = '#FDE68A';
+    ctx.fillStyle = turboBoostRef.current > 0 ? '#F472B6' : '#FDE68A';
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI * 2);
     ctx.fill();
@@ -227,9 +337,55 @@ export default function BreakoutArcadeGame({
     if (status !== 'playing') return;
     let rafId = 0;
 
+    const damageBrick = (brick: Brick) => {
+      if (!brick.alive) return;
+      brick.hp -= 1;
+      if (brick.hp <= 0) {
+        brick.alive = false;
+        scoreRef.current += brick.pts;
+        brokenRef.current += 1;
+
+        if (brick.kind === 'speed') {
+          turboBoostRef.current = Math.min(2.2, turboBoostRef.current + 0.55);
+          const ball = ballRef.current;
+          const nextSpd = computeTargetSpeed(levelRef.current, turboBoostRef.current);
+          const curSpd = Math.hypot(ball.vx, ball.vy) || 1;
+          ball.vx = (ball.vx / curSpd) * nextSpd;
+          ball.vy = (ball.vy / curSpd) * nextSpd;
+          setBallSpeedLabel(`${(nextSpd / 5.2).toFixed(1)}x`);
+        } else if (brick.kind === 'nova') {
+          // Nova explosion damages neighboring bricks
+          for (const other of bricksRef.current) {
+            if (
+              other.alive &&
+              Math.abs(other.row - brick.row) <= 1 &&
+              Math.abs(other.col - brick.col) <= 1
+            ) {
+              other.hp -= 1;
+              if (other.hp <= 0) {
+                other.alive = false;
+                scoreRef.current += other.pts;
+                brokenRef.current += 1;
+              }
+            }
+          }
+        }
+
+        setScore(scoreRef.current);
+        setBricksBroken(brokenRef.current);
+        if (scoreRef.current > bestRef.current) {
+          bestRef.current = scoreRef.current;
+          setBestScore(scoreRef.current);
+        }
+      } else {
+        scoreRef.current += 10;
+        setScore(scoreRef.current);
+      }
+    };
+
     const step = () => {
-      if (keysRef.current.left) paddleXRef.current = Math.max(8, paddleXRef.current - 6.8);
-      if (keysRef.current.right) paddleXRef.current = Math.min(W - PADDLE_W - 8, paddleXRef.current + 6.8);
+      if (keysRef.current.left) paddleXRef.current = Math.max(8, paddleXRef.current - 7.0);
+      if (keysRef.current.right) paddleXRef.current = Math.min(W - PADDLE_W - 8, paddleXRef.current + 7.0);
 
       const ball = ballRef.current;
       ball.x += ball.vx;
@@ -271,16 +427,8 @@ export default function BreakoutArcadeGame({
           ball.y + BALL_R >= b.y &&
           ball.y - BALL_R <= b.y + b.h
         ) {
-          b.alive = false;
           ball.vy = -ball.vy;
-          scoreRef.current += b.pts;
-          brokenRef.current += 1;
-          setScore(scoreRef.current);
-          setBricksBroken(brokenRef.current);
-          if (scoreRef.current > bestRef.current) {
-            bestRef.current = scoreRef.current;
-            setBestScore(scoreRef.current);
-          }
+          damageBrick(b);
           break;
         }
       }
@@ -328,7 +476,7 @@ export default function BreakoutArcadeGame({
 
     rafId = requestAnimationFrame(step);
     return () => cancelAnimationFrame(rafId);
-  }, [status, drawScene, resetBall, finishMatch]);
+  }, [status, drawScene, resetBall, finishMatch, computeTargetSpeed]);
 
   const handlePointerMove = (clientX: number) => {
     const canvas = canvasRef.current;
@@ -358,7 +506,7 @@ export default function BreakoutArcadeGame({
               Ladrillos Cósmicos
             </h2>
             <p className="text-xs sm:text-sm text-white/65">
-              Siempre comienzas en Nivel 1. Rompe diseños únicos a lo largo de 20 niveles con mayor espacio de reacción.
+              Ladrillos de acero (2 golpes), cristal (3 golpes), turbo ⚡ (acelera la pelota) y bomba Nova ✦ que explota en área.
             </p>
           </div>
           <button
@@ -370,26 +518,30 @@ export default function BreakoutArcadeGame({
           </button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Nivel</div>
-            <div className="text-2xl font-black text-[#E9D5FF] tabular-nums">{level} / {MAX_LEVEL}</div>
+            <div className="text-xl font-black text-[#E9D5FF] tabular-nums">{level} / {MAX_LEVEL}</div>
           </div>
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Puntos</div>
-            <div className="text-2xl font-black text-[#67E8F9] tabular-nums">{score}</div>
+            <div className="text-xl font-black text-[#67E8F9] tabular-nums">{score}</div>
+          </div>
+          <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Velocidad</div>
+            <div className="text-xl font-black text-[#F472B6] tabular-nums">{ballSpeedLabel}</div>
           </div>
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Vidas · Bloques</div>
-            <div className="text-xl font-black text-[#FB7185] tabular-nums">{'♥'.repeat(Math.max(0, lives))} · {bricksBroken}</div>
+            <div className="text-lg font-black text-[#FB7185] tabular-nums">{'♥'.repeat(Math.max(0, lives))} · {bricksBroken}</div>
           </div>
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Intentos</div>
-            <div className="text-2xl font-black text-white tabular-nums">{attempts}</div>
+            <div className="text-xl font-black text-white tabular-nums">{attempts}</div>
           </div>
-          <div className="col-span-2 sm:col-span-1 rounded-2xl border border-[#FDE68A]/25 bg-[#FDE68A]/[0.06] px-4 py-3">
+          <div className="rounded-2xl border border-[#FDE68A]/25 bg-[#FDE68A]/[0.06] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-[#FDE68A]">Récord</div>
-            <div className="text-2xl font-black text-[#FDE68A] tabular-nums">{bestScore}</div>
+            <div className="text-xl font-black text-[#FDE68A] tabular-nums">{bestScore}</div>
           </div>
         </div>
 

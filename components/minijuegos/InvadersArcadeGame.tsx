@@ -9,7 +9,9 @@ const W = 520;
 const H = 580;
 const MAX_LEVEL = 10;
 const SHIP_Y = H - 36;
-const SHIP_W = 40;
+const SHIP_W = 44;
+
+type AlienKind = 'commander' | 'crab' | 'saucer' | 'bomber' | 'armored';
 
 interface Alien {
   x: number;
@@ -17,8 +19,11 @@ interface Alien {
   w: number;
   h: number;
   alive: boolean;
+  hp: number;
+  maxHp: number;
   pts: number;
   color: string;
+  kind: AlienKind;
 }
 
 interface Bullet {
@@ -27,24 +32,178 @@ interface Bullet {
   vy: number;
 }
 
+interface MysteryUfo {
+  active: boolean;
+  x: number;
+  vx: number;
+}
+
+// Crisp 11x8 / 8x8 retro pixel art bitmaps (2 animation frames per alien ship!)
+const SPRITES: Record<AlienKind, [string[], string[]]> = {
+  commander: [
+    [
+      '00011000',
+      '00111100',
+      '01111110',
+      '11011011',
+      '11111111',
+      '00100100',
+      '01011010',
+      '10100101',
+    ],
+    [
+      '00011000',
+      '00111100',
+      '01111110',
+      '11011011',
+      '11111111',
+      '01011010',
+      '10000001',
+      '01000010',
+    ],
+  ],
+  crab: [
+    [
+      '00100000100',
+      '00010001000',
+      '00111111100',
+      '01101110110',
+      '11111111111',
+      '10111111101',
+      '10100000101',
+      '00011011000',
+    ],
+    [
+      '00100000100',
+      '10010001001',
+      '10111111101',
+      '11101110111',
+      '11111111111',
+      '01111111110',
+      '00100000100',
+      '01000000010',
+    ],
+  ],
+  saucer: [
+    [
+      '00001110000',
+      '00111111100',
+      '01111111110',
+      '11011011011',
+      '11111111111',
+      '00111011100',
+      '01000000010',
+      '00000000000',
+    ],
+    [
+      '00001110000',
+      '00111111100',
+      '01111111110',
+      '11101110111',
+      '11111111111',
+      '01011011010',
+      '00100000100',
+      '00000000000',
+    ],
+  ],
+  bomber: [
+    [
+      '00011111000',
+      '01111111110',
+      '11111111111',
+      '11100100111',
+      '11111111111',
+      '00110001100',
+      '01100100110',
+      '11000000011',
+    ],
+    [
+      '00011111000',
+      '01111111110',
+      '11111111111',
+      '11100100111',
+      '11111111111',
+      '00111011100',
+      '01101110110',
+      '00110001100',
+    ],
+  ],
+  armored: [
+    [
+      '01111111110',
+      '11111111111',
+      '11011111011',
+      '11110101111',
+      '11111111111',
+      '01101110110',
+      '00110001100',
+      '01100000110',
+    ],
+    [
+      '01111111110',
+      '11111111111',
+      '11011111011',
+      '11110101111',
+      '11111111111',
+      '10110101101',
+      '01010001010',
+      '00100000100',
+    ],
+  ],
+};
+
+function drawPixelSprite(
+  ctx: CanvasRenderingContext2D,
+  bitmap: string[],
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  color: string,
+) {
+  const rows = bitmap.length;
+  const cols = bitmap[0].length;
+  const pw = w / cols;
+  const ph = h / rows;
+  ctx.fillStyle = color;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (bitmap[r][c] === '1') {
+        ctx.fillRect(x + c * pw, y + r * ph, Math.ceil(pw), Math.ceil(ph));
+      }
+    }
+  }
+}
+
 function buildWave(level: number): Alien[] {
   const list: Alien[] = [];
-  const colors = ['#FDE68A', '#6EE7B7', '#67E8F9', '#D8B4FE', '#FDA4AF'];
+  const rowConfigs: Array<{ kind: AlienKind; color: string; hp: number }> = [
+    { kind: 'commander', color: '#FDE68A', hp: level >= 8 ? 2 : 1 },
+    { kind: 'crab', color: '#6EE7B7', hp: 1 },
+    { kind: 'saucer', color: '#67E8F9', hp: 1 },
+    { kind: 'bomber', color: '#D8B4FE', hp: 1 },
+    { kind: 'armored', color: '#FDA4AF', hp: level >= 6 ? 2 : 1 },
+  ];
+
   const rows = level >= 6 ? 5 : 4;
   const cols = level >= 4 ? 8 : 7;
-  const spacingX = Math.floor((W - 88) / cols);
-  const startX = Math.floor((W - (cols - 1) * spacingX - 28) / 2);
+  const spacingX = Math.floor((W - 84) / cols);
+  const startX = Math.floor((W - (cols - 1) * spacingX - 32) / 2);
 
   for (let r = 0; r < rows; r++) {
+    const cfg = rowConfigs[(r + Math.floor((level - 1) / 3)) % rowConfigs.length];
     for (let c = 0; c < cols; c++) {
       list.push({
         x: startX + c * spacingX,
-        y: 36 + r * 34,
-        w: 28,
-        h: 18,
+        y: 44 + r * 36,
+        w: 32,
+        h: 22,
         alive: true,
-        pts: (rows - r) * 10 + (level - 1) * 5,
-        color: colors[r % colors.length],
+        hp: cfg.hp,
+        maxHp: cfg.hp,
+        pts: (rows - r) * 15 + (level - 1) * 5 + (cfg.hp > 1 ? 15 : 0),
+        color: cfg.color,
+        kind: cfg.kind,
       });
     }
   }
@@ -79,8 +238,10 @@ export default function InvadersArcadeGame({
   const alienDirRef = useRef(1);
   const bulletsRef = useRef<Bullet[]>([]);
   const enemyBulletsRef = useRef<Bullet[]>([]);
+  const ufoRef = useRef<MysteryUfo>({ active: false, x: -50, vx: 2.2 });
   const lastShotRef = useRef(0);
   const lastEnemyShotRef = useRef(0);
+  const lastUfoCheckRef = useRef(Date.now());
 
   const scoreRef = useRef(0);
   const killsRef = useRef(0);
@@ -102,7 +263,7 @@ export default function InvadersArcadeGame({
     setAttempts((prev) => Math.max(prev, initialAttempts));
   }, [initialAttempts]);
 
-  const draw = useCallback(() => {
+  const draw = useCallback((nowMs: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -115,56 +276,111 @@ export default function InvadersArcadeGame({
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    ctx.fillStyle = '#04120D';
+    ctx.fillStyle = '#030F0B';
     ctx.fillRect(0, 0, W, H);
 
-    // Subtle stars
-    ctx.fillStyle = 'rgba(110, 231, 183, 0.14)';
-    for (let i = 0; i < 18; i++) {
+    // Subtle animated starfield
+    for (let i = 0; i < 24; i++) {
       const sx = ((i * 89 + 23) % (W - 20)) + 10;
-      const sy = ((i * 137 + 41) % (H - 40)) + 15;
+      const sy = ((i * 137 + 41 + Math.floor(nowMs / 80)) % (H - 40)) + 15;
+      ctx.fillStyle = i % 3 === 0 ? 'rgba(103, 232, 249, 0.25)' : 'rgba(110, 231, 183, 0.16)';
       ctx.fillRect(sx, sy, 2, 2);
     }
 
-    // Aliens
+    // Mystery Red UFO at the top
+    const ufo = ufoRef.current;
+    if (ufo.active) {
+      ctx.fillStyle = '#FB7185';
+      ctx.beginPath();
+      ctx.ellipse(ufo.x + 20, 20, 18, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#FDE68A';
+      ctx.beginPath();
+      ctx.arc(ufo.x + 20, 16, 7, Math.PI, 0);
+      ctx.fill();
+    }
+
+    // 2-frame retro pixel-art alien ships
+    const animFrame = Math.floor(nowMs / 360) % 2;
     for (const a of aliensRef.current) {
       if (!a.alive) continue;
-      ctx.fillStyle = a.color;
-      ctx.beginPath();
-      ctx.roundRect(a.x, a.y, a.w, a.h, 4);
-      ctx.fill();
-      ctx.fillStyle = '#04120D';
-      ctx.fillRect(a.x + 6, a.y + 5, 4, 4);
-      ctx.fillRect(a.x + a.w - 10, a.y + 5, 4, 4);
+      const sprite = SPRITES[a.kind][animFrame];
+      const renderColor = a.maxHp > 1 && a.hp === 1 ? '#FDE047' : a.color;
+      drawPixelSprite(ctx, sprite, a.x, a.y, a.w, a.h, renderColor);
+
+      // Tiny shield indicator on armored 2-HP invaders
+      if (a.hp > 1) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+        ctx.lineWidth = 1.4;
+        ctx.strokeRect(a.x - 2, a.y - 2, a.w + 4, a.h + 4);
+      }
     }
 
-    // Player bullets
-    ctx.fillStyle = '#FDE68A';
+    // Player laser bolts
+    ctx.fillStyle = '#67E8F9';
     for (const b of bulletsRef.current) {
-      ctx.fillRect(b.x - 2, b.y - 10, 4, 12);
+      ctx.fillRect(b.x - 1.8, b.y - 12, 3.6, 13);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(b.x - 0.8, b.y - 10, 1.6, 9);
+      ctx.fillStyle = '#67E8F9';
     }
 
-    // Enemy bullets
+    // Enemy plasma bolts
     ctx.fillStyle = '#FB7185';
     for (const eb of enemyBulletsRef.current) {
-      ctx.fillRect(eb.x - 2.5, eb.y, 5, 11);
+      ctx.fillRect(eb.x - 2.2, eb.y, 4.4, 11);
     }
 
-    // Player Ship (wide spacing from top formation)
+    // Detailed Retro Player Starfighter (evolves subtly at level 5+)
     const sx = shipXRef.current;
+    const cx = sx + SHIP_W / 2;
+    const upgraded = levelRef.current >= 5;
+
+    // Thruster flame
+    const flameH = 7 + Math.sin(nowMs / 45) * 3;
+    ctx.fillStyle = '#F97316';
+    ctx.beginPath();
+    ctx.moveTo(cx - 5, SHIP_Y + 8);
+    ctx.lineTo(cx, SHIP_Y + 8 + flameH);
+    ctx.lineTo(cx + 5, SHIP_Y + 8);
+    ctx.closePath();
+    ctx.fill();
+
+    // Outer wings
+    ctx.fillStyle = upgraded ? '#38BDF8' : '#0EA5E9';
+    ctx.beginPath();
+    ctx.moveTo(cx, SHIP_Y - 14);
+    ctx.lineTo(sx + SHIP_W, SHIP_Y + 9);
+    ctx.lineTo(sx + SHIP_W - 6, SHIP_Y + 11);
+    ctx.lineTo(cx + 8, SHIP_Y + 4);
+    ctx.lineTo(cx - 8, SHIP_Y + 4);
+    ctx.lineTo(sx + 6, SHIP_Y + 11);
+    ctx.lineTo(sx, SHIP_Y + 9);
+    ctx.closePath();
+    ctx.fill();
+
+    // Wing-tip retro cannons
+    ctx.fillStyle = '#FDE68A';
+    ctx.fillRect(sx + 4, SHIP_Y - 3, 3, 9);
+    ctx.fillRect(sx + SHIP_W - 7, SHIP_Y - 3, 3, 9);
+
+    // Center fuselage & glowing cockpit
     ctx.fillStyle = '#67E8F9';
     ctx.beginPath();
-    ctx.moveTo(sx + SHIP_W / 2, SHIP_Y - 22);
-    ctx.lineTo(sx + SHIP_W, SHIP_Y + 8);
-    ctx.lineTo(sx + SHIP_W * 0.72, SHIP_Y + 4);
-    ctx.lineTo(sx + SHIP_W * 0.28, SHIP_Y + 4);
-    ctx.lineTo(sx, SHIP_Y + 8);
+    ctx.moveTo(cx, SHIP_Y - 24);
+    ctx.lineTo(cx + 7, SHIP_Y + 6);
+    ctx.lineTo(cx - 7, SHIP_Y + 6);
     ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#F8FAFC';
+    ctx.beginPath();
+    ctx.ellipse(cx, SHIP_Y - 8, 2.8, 5.5, 0, 0, Math.PI * 2);
     ctx.fill();
   }, []);
 
   useEffect(() => {
-    draw();
+    draw(Date.now());
   }, [draw]);
 
   const finishMatch = useCallback((finalState: 'gameover' | 'victory') => {
@@ -186,12 +402,13 @@ export default function InvadersArcadeGame({
   }, []);
 
   const startNewGame = useCallback(() => {
-    // Always start from level 1
     shipXRef.current = W / 2 - SHIP_W / 2;
     aliensRef.current = buildWave(1);
     alienDirRef.current = 1;
     bulletsRef.current = [];
     enemyBulletsRef.current = [];
+    ufoRef.current = { active: false, x: -50, vx: 2.3 };
+    lastUfoCheckRef.current = Date.now();
     scoreRef.current = 0;
     killsRef.current = 0;
     livesRef.current = 3;
@@ -214,7 +431,16 @@ export default function InvadersArcadeGame({
     const now = Date.now();
     if (now - lastShotRef.current < 210) return;
     lastShotRef.current = now;
-    bulletsRef.current.push({ x: shipXRef.current + SHIP_W / 2, y: SHIP_Y - 24, vy: -7.2 });
+    const cx = shipXRef.current + SHIP_W / 2;
+    if (levelRef.current >= 5) {
+      // Twin laser upgrade from Level 5!
+      bulletsRef.current.push(
+        { x: cx - 10, y: SHIP_Y - 16, vy: -7.5 },
+        { x: cx + 10, y: SHIP_Y - 16, vy: -7.5 },
+      );
+    } else {
+      bulletsRef.current.push({ x: cx, y: SHIP_Y - 24, vy: -7.4 });
+    }
   }, []);
 
   useEffect(() => {
@@ -244,9 +470,26 @@ export default function InvadersArcadeGame({
     let rafId = 0;
 
     const step = () => {
-      if (keysRef.current.left) shipXRef.current = Math.max(10, shipXRef.current - 5.4);
-      if (keysRef.current.right) shipXRef.current = Math.min(W - SHIP_W - 10, shipXRef.current + 5.4);
+      const now = Date.now();
+
+      if (keysRef.current.left) shipXRef.current = Math.max(10, shipXRef.current - 5.6);
+      if (keysRef.current.right) shipXRef.current = Math.min(W - SHIP_W - 10, shipXRef.current + 5.6);
       if (keysRef.current.fire) fireLaser();
+
+      // Mystery UFO spawn/move
+      const ufo = ufoRef.current;
+      if (!ufo.active && now - lastUfoCheckRef.current > 11000) {
+        lastUfoCheckRef.current = now;
+        const fromLeft = Math.random() > 0.5;
+        ufo.active = true;
+        ufo.x = fromLeft ? -44 : W + 4;
+        ufo.vx = fromLeft ? 2.4 : -2.4;
+      } else if (ufo.active) {
+        ufo.x += ufo.vx;
+        if (ufo.x < -55 || ufo.x > W + 55) {
+          ufo.active = false;
+        }
+      }
 
       bulletsRef.current = bulletsRef.current
         .map((b) => ({ ...b, y: b.y + b.vy }))
@@ -259,7 +502,7 @@ export default function InvadersArcadeGame({
       const aliveAliens = aliensRef.current.filter((a) => a.alive);
       const totalInWave = aliensRef.current.length;
       const speedX =
-        (0.95 + levelRef.current * 0.2 + (totalInWave - aliveAliens.length) * 0.035) *
+        (0.95 + levelRef.current * 0.2 + (totalInWave - aliveAliens.length) * 0.038) *
         alienDirRef.current;
 
       let hitEdge = false;
@@ -273,13 +516,12 @@ export default function InvadersArcadeGame({
           a.y += 14;
           if (a.y + a.h >= SHIP_Y - 26) {
             finishMatch('gameover');
-            draw();
+            draw(now);
             return;
           }
         }
       }
 
-      const now = Date.now();
       const enemyCooldown = Math.max(380, 1180 - levelRef.current * 75);
       if (aliveAliens.length > 0 && now - lastEnemyShotRef.current > enemyCooldown) {
         lastEnemyShotRef.current = now;
@@ -292,18 +534,36 @@ export default function InvadersArcadeGame({
       }
 
       for (const b of bulletsRef.current) {
+        // Mystery UFO hit
+        if (ufo.active && b.x >= ufo.x && b.x <= ufo.x + 40 && b.y >= 10 && b.y <= 28) {
+          ufo.active = false;
+          b.y = -100;
+          scoreRef.current += 100;
+          killsRef.current += 1;
+          setScore(scoreRef.current);
+          setKills(killsRef.current);
+          if (scoreRef.current > bestRef.current) {
+            bestRef.current = scoreRef.current;
+            setBestScore(scoreRef.current);
+          }
+          continue;
+        }
+
         for (const a of aliensRef.current) {
           if (!a.alive) continue;
           if (b.x >= a.x && b.x <= a.x + a.w && b.y >= a.y && b.y <= a.y + a.h) {
-            a.alive = false;
             b.y = -100;
-            scoreRef.current += a.pts;
-            killsRef.current += 1;
-            setScore(scoreRef.current);
-            setKills(killsRef.current);
-            if (scoreRef.current > bestRef.current) {
-              bestRef.current = scoreRef.current;
-              setBestScore(scoreRef.current);
+            a.hp -= 1;
+            if (a.hp <= 0) {
+              a.alive = false;
+              scoreRef.current += a.pts;
+              killsRef.current += 1;
+              setScore(scoreRef.current);
+              setKills(killsRef.current);
+              if (scoreRef.current > bestRef.current) {
+                bestRef.current = scoreRef.current;
+                setBestScore(scoreRef.current);
+              }
             }
             break;
           }
@@ -312,13 +572,13 @@ export default function InvadersArcadeGame({
 
       const sx = shipXRef.current;
       for (const eb of enemyBulletsRef.current) {
-        if (eb.x >= sx + 2 && eb.x <= sx + SHIP_W - 2 && eb.y >= SHIP_Y - 18 && eb.y <= SHIP_Y + 8) {
+        if (eb.x >= sx + 3 && eb.x <= sx + SHIP_W - 3 && eb.y >= SHIP_Y - 18 && eb.y <= SHIP_Y + 9) {
           eb.y = H + 50;
           livesRef.current -= 1;
           setLives(livesRef.current);
           if (livesRef.current <= 0) {
             finishMatch('gameover');
-            draw();
+            draw(now);
             return;
           }
         }
@@ -333,7 +593,7 @@ export default function InvadersArcadeGame({
             setBestScore(scoreRef.current);
           }
           finishMatch('victory');
-          draw();
+          draw(now);
           return;
         }
         levelRef.current += 1;
@@ -344,14 +604,14 @@ export default function InvadersArcadeGame({
           bestRef.current = scoreRef.current;
           setBestScore(scoreRef.current);
         }
-        setLevelBanner(`Nivel ${levelRef.current} / ${MAX_LEVEL}`);
-        setTimeout(() => setLevelBanner(null), 1300);
+        setLevelBanner(`Nivel ${levelRef.current} / ${MAX_LEVEL}${levelRef.current === 5 ? ' · ¡Doble Láser!' : ''}`);
+        setTimeout(() => setLevelBanner(null), 1600);
         aliensRef.current = buildWave(levelRef.current);
         bulletsRef.current = [];
         enemyBulletsRef.current = [];
       }
 
-      draw();
+      draw(now);
       rafId = requestAnimationFrame(step);
     };
 
@@ -373,13 +633,13 @@ export default function InvadersArcadeGame({
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#6EE7B7]/35 bg-[#6EE7B7]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#6EE7B7]">
               <span className="h-2 w-2 rounded-full bg-[#6EE7B7]" aria-hidden="true" />
-              Arcade #03 · Campaña de 10 Niveles
+              Arcade #03 · Campaña Retro de 10 Niveles
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Invasores Arcade
             </h2>
             <p className="text-xs sm:text-sm text-white/65">
-              Siempre inicias en el Nivel 1 y avanzas oleada tras oleada. ¡Supera los 10 niveles para completar la misión!
+              5 clases de naves alienígenas animadas, ovni rojo sorpresa (+100 pts) y mejora de doble láser desde el Nivel 5.
             </p>
           </div>
           <button
@@ -419,18 +679,18 @@ export default function InvadersArcadeGame({
             className="w-full max-w-[520px] aspect-[520/580]"
             accentColor="rgba(110, 231, 183, 0.35)"
             glowColor="rgba(110, 231, 183, 0.42)"
-            bgColor="#04120D"
+            bgColor="#030F0B"
           >
             <canvas ref={canvasRef} className="w-full h-full block" aria-label="Tablero de Invasores Arcade" />
 
             {status === 'playing' && levelBanner && (
-              <div className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 rounded-full border border-[#6EE7B7]/50 bg-[#04120D]/90 px-4 py-1 text-xs font-extrabold uppercase tracking-wider text-[#6EE7B7]">
+              <div className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 rounded-full border border-[#6EE7B7]/50 bg-[#030F0B]/92 px-4 py-1 text-xs font-extrabold uppercase tracking-wider text-[#6EE7B7] whitespace-nowrap">
                 {levelBanner}
               </div>
             )}
 
             {status !== 'playing' && (
-              <div className="absolute inset-0 bg-[#04120D]/90 flex flex-col items-center justify-center p-6 text-center gap-4">
+              <div className="absolute inset-0 bg-[#030F0B]/90 flex flex-col items-center justify-center p-6 text-center gap-4">
                 <div className="font-mono text-xs uppercase tracking-[0.2em] text-[#6EE7B7]">
                   {status === 'victory'
                     ? '¡Misión completada!'
