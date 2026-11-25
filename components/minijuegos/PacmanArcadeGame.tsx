@@ -5,35 +5,113 @@ import { LiquidGlass } from '../ui/glasscn/liquid-glass';
 import type { ResultadoPartidaInput } from '../../lib/minijuegos-types';
 import ArcadeScreenFrame from './ArcadeScreenFrame';
 
-// Classic symmetric Pac-Man style 19x21 maze:
+// 3 progressive symmetric 19x21 Pac-Man mazes:
 // '#' = wall, '.' = pellet, 'o' = power pellet, '-' = ghost house gate,
 // 'G' = inside ghost house, 'F' = fruit/bonus spawn, 'P' = Pac-Man spawn, ' ' = empty/tunnel
-const MAZE_TEMPLATE = [
-  '###################',
-  '#........#........#',
-  '#o##.###.#.###.##o#',
-  '#.................#',
-  '#.##.#.#####.#.##.#',
-  '#....#...#...#....#',
-  '####.### # ###.####',
-  '   #.#       #.#   ',
-  '####.# ##-## #.####',
-  '    .  #GGG#  .    ',
-  '####.# ##### #.####',
-  '   #.#   F   #.#   ',
-  '####.# ##### #.####',
-  '#........#........#',
-  '#.##.###.#.###.##.#',
-  '#o.#.....P.....#.o#',
-  '##.#.#.#####.#.#.##',
-  '#....#...#...#....#',
-  '#.######.#.######.#',
-  '#.................#',
-  '###################',
+const MAX_LEVEL = 3;
+
+const MAZE_LEVELS: Array<{
+  level: number;
+  nombre: string;
+  wallStroke: string;
+  wallFill: string;
+  wallGlow: string;
+  grid: string[];
+}> = [
+  {
+    level: 1,
+    nombre: 'Laberinto Clásico',
+    wallStroke: '#2563EB',
+    wallFill: 'rgba(29, 78, 216, 0.14)',
+    wallGlow: 'rgba(59, 130, 246, 0.55)',
+    grid: [
+      '###################',
+      '#........#........#',
+      '#o##.###.#.###.##o#',
+      '#.................#',
+      '#.##.#.#####.#.##.#',
+      '#....#...#...#....#',
+      '####.### # ###.####',
+      '   #.#       #.#   ',
+      '####.# ##-## #.####',
+      '    .  #GGG#  .    ',
+      '####.# ##### #.####',
+      '   #.#   F   #.#   ',
+      '####.# ##### #.####',
+      '#........#........#',
+      '#.##.###.#.###.##.#',
+      '#o.#.....P.....#.o#',
+      '##.#.#.#####.#.#.##',
+      '#....#...#...#....#',
+      '#.######.#.######.#',
+      '#.................#',
+      '###################',
+    ],
+  },
+  {
+    level: 2,
+    nombre: 'Laberinto Galáctico',
+    wallStroke: '#8B5CF6',
+    wallFill: 'rgba(139, 92, 246, 0.15)',
+    wallGlow: 'rgba(167, 139, 250, 0.55)',
+    grid: [
+      '###################',
+      '#o....#.....#....o#',
+      '#.###.#.###.#.###.#',
+      '#.................#',
+      '###.#.#######.#.###',
+      '#...#....#....#...#',
+      '#.#.#### # ####.#.#',
+      '#.#.#         #.#.#',
+      '#...#  ##-##  #...#',
+      '   .   #GGG#   .   ',
+      '#...#  #####  #...#',
+      '#.#.#    F    #.#.#',
+      '#.#.### ### ###.#.#',
+      '#.................#',
+      '#.###.#.###.#.###.#',
+      '#o..#....P....#..o#',
+      '###.#.#######.#.###',
+      '#.................#',
+      '#.##.###.#.###.##.#',
+      '#.................#',
+      '###################',
+    ],
+  },
+  {
+    level: 3,
+    nombre: 'Laberinto Maestro',
+    wallStroke: '#10B981',
+    wallFill: 'rgba(16, 185, 129, 0.14)',
+    wallGlow: 'rgba(52, 211, 153, 0.55)',
+    grid: [
+      '###################',
+      '#o.......#.......o#',
+      '#.##.###.#.###.##.#',
+      '#.#..#.......#..#.#',
+      '#.##.#.#####.#.##.#',
+      '#........#........#',
+      '####.### # ###.####',
+      '   #.#       #.#   ',
+      '####.# ##-## #.####',
+      '   .   #GGG#   .   ',
+      '####.# ##### #.####',
+      '   #.#   F   #.#   ',
+      '####.# ##### #.####',
+      '#.................#',
+      '#.##.#.#####.#.##.#',
+      '#o...#...P...#...o#',
+      '####.###.#.###.####',
+      '#....#.......#....#',
+      '#.##.#.#####.#.##.#',
+      '#.................#',
+      '###################',
+    ],
+  },
 ];
 
-const ROWS = MAZE_TEMPLATE.length;
-const COLS = MAZE_TEMPLATE[0].length;
+const ROWS = MAZE_LEVELS[0].grid.length;
+const COLS = MAZE_LEVELS[0].grid[0].length;
 const CELL = 24;
 const W = COLS * CELL; // 456
 const H = ROWS * CELL; // 504
@@ -77,8 +155,12 @@ interface FloatingPopup {
   untilMs: number;
 }
 
-function buildMazeGrid(): string[][] {
-  return MAZE_TEMPLATE.map((row) => row.split(''));
+function getMazeConfig(level: number) {
+  return MAZE_LEVELS[Math.max(0, Math.min(MAZE_LEVELS.length - 1, level - 1))];
+}
+
+function buildMazeGrid(level = 1): string[][] {
+  return getMazeConfig(level).grid.map((row) => row.split(''));
 }
 
 function isWallTile(grid: string[][], col: number, row: number): boolean {
@@ -97,7 +179,8 @@ function canEntityEnter(grid: string[][], col: number, row: number, allowGate: b
   return true;
 }
 
-function findSpawns(now: number) {
+function findSpawns(now: number, level = 1) {
+  const tpl = getMazeConfig(level).grid;
   let pac = { x: 9, y: 15 };
   let gate = { x: 9, y: 8 };
   let fruit = { x: 9, y: 11 };
@@ -105,7 +188,7 @@ function findSpawns(now: number) {
 
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      const ch = MAZE_TEMPLATE[r][c];
+      const ch = tpl[r][c];
       if (ch === 'P') pac = { x: c, y: r };
       else if (ch === '-') gate = { x: c, y: r };
       else if (ch === 'F') fruit = { x: c, y: r };
@@ -189,18 +272,19 @@ export default function PacmanArcadeGame({
   onBack: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [status, setStatus] = useState<'idle' | 'playing' | 'gameover'>('idle');
+  const [status, setStatus] = useState<'idle' | 'playing' | 'gameover' | 'victory'>('idle');
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [level, setLevel] = useState(1);
+  const [levelBanner, setLevelBanner] = useState<string | null>(null);
   const [ghostsEaten, setGhostsEaten] = useState(0);
   const [frightTimerUI, setFrightTimerUI] = useState(0);
   const [bestScore, setBestScore] = useState(initialBestScore);
   const [attempts, setAttempts] = useState(initialAttempts);
   const [isNewRecord, setIsNewRecord] = useState(false);
 
-  const initialSpawns = findSpawns(Date.now());
-  const gridRef = useRef<string[][]>(buildMazeGrid());
+  const initialSpawns = findSpawns(Date.now(), 1);
+  const gridRef = useRef<string[][]>(buildMazeGrid(1));
   const gateRef = useRef(initialSpawns.gate);
   const fruitPosRef = useRef(initialSpawns.fruit);
   const pacRef = useRef({
@@ -256,12 +340,13 @@ export default function PacmanArcadeGame({
     ctx.fillRect(0, 0, W, H);
 
     const grid = gridRef.current;
+    const mazeTheme = getMazeConfig(levelRef.current);
 
-    // 1. Classic continuous neon blue maze walls (only draw edges adjacent to non-walls!)
-    ctx.strokeStyle = '#2563EB';
+    // 1. Classic continuous neon maze walls (color changes per level!)
+    ctx.strokeStyle = mazeTheme.wallStroke;
     ctx.lineWidth = 2.6;
     ctx.lineCap = 'round';
-    ctx.shadowColor = 'rgba(59, 130, 246, 0.55)';
+    ctx.shadowColor = mazeTheme.wallGlow;
     ctx.shadowBlur = 4;
 
     for (let r = 0; r < ROWS; r++) {
@@ -276,7 +361,7 @@ export default function PacmanArcadeGame({
           const leftOpen = !isWallTile(grid, c - 1, r);
           const rightOpen = !isWallTile(grid, c + 1, r);
 
-          ctx.fillStyle = 'rgba(29, 78, 216, 0.14)';
+          ctx.fillStyle = mazeTheme.wallFill;
           ctx.fillRect(px + 2, py + 2, CELL - 4, CELL - 4);
 
           const inset = 3;
@@ -439,7 +524,7 @@ export default function PacmanArcadeGame({
 
   const resetPositions = useCallback(() => {
     const now = Date.now();
-    const s = findSpawns(now);
+    const s = findSpawns(now, levelRef.current);
     pacRef.current = { x: s.pac.x, y: s.pac.y, dir: 'LEFT', nextDir: 'LEFT', moving: true };
     ghostsRef.current = s.ghosts;
     gateRef.current = s.gate;
@@ -450,11 +535,11 @@ export default function PacmanArcadeGame({
   }, []);
 
   const startNewGame = useCallback(() => {
-    gridRef.current = buildMazeGrid();
+    levelRef.current = 1;
+    gridRef.current = buildMazeGrid(1);
     resetPositions();
     scoreRef.current = 0;
     livesRef.current = 3;
-    levelRef.current = 1;
     ghostsEatenRef.current = 0;
     pelletsEatenRef.current = 0;
     fruitVisibleUntilRef.current = 0;
@@ -465,6 +550,8 @@ export default function PacmanArcadeGame({
     reportedRef.current = false;
 
     setIsNewRecord(false);
+    setLevelBanner(`Nivel 1 / ${MAX_LEVEL} · ${MAZE_LEVELS[0].nombre}`);
+    setTimeout(() => setLevelBanner(null), 1500);
     setScore(0);
     setLives(3);
     setLevel(1);
@@ -840,6 +927,32 @@ export default function PacmanArcadeGame({
 
       // 3. Level cleared?
       if (countRemainingPellets(grid) === 0) {
+        if (levelRef.current >= MAX_LEVEL) {
+          scoreRef.current += 500;
+          setScore(scoreRef.current);
+          if (scoreRef.current > bestRef.current) {
+            bestRef.current = scoreRef.current;
+            setBestScore(scoreRef.current);
+          }
+          setStatus('victory');
+          if (!reportedRef.current) {
+            reportedRef.current = true;
+            const dur = Math.max(1, Math.round((now - matchStartRef.current) / 1000));
+            if (scoreRef.current > startBestRef.current && scoreRef.current > 0) {
+              setIsNewRecord(true);
+            }
+            setAttempts((prev) => prev + 1);
+            onFinishRef.current?.({
+              puntaje: scoreRef.current,
+              detalleExtra: ghostsEatenRef.current,
+              modo: `nivel-3-completo`,
+              duracionSegundos: dur,
+            });
+          }
+          draw(now);
+          return;
+        }
+
         levelRef.current += 1;
         scoreRef.current += 300;
         pelletsEatenRef.current = 0;
@@ -851,7 +964,10 @@ export default function PacmanArcadeGame({
           bestRef.current = scoreRef.current;
           setBestScore(scoreRef.current);
         }
-        gridRef.current = buildMazeGrid();
+        const nextCfg = getMazeConfig(levelRef.current);
+        setLevelBanner(`Nivel ${levelRef.current} / ${MAX_LEVEL} · ${nextCfg.nombre}`);
+        setTimeout(() => setLevelBanner(null), 1600);
+        gridRef.current = buildMazeGrid(levelRef.current);
         resetPositions();
       }
 
@@ -877,7 +993,7 @@ export default function PacmanArcadeGame({
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#FACC15]/35 bg-[#FACC15]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[#FDE047]">
               <span className="h-2 w-2 rounded-full bg-[#FACC15]" aria-hidden="true" />
-              Arcade #08 · Laberinto Clásico 60 FPS
+              Arcade #08 · 3 Laberintos Clásicos 60 FPS
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Pac-Man Estelar
@@ -903,7 +1019,7 @@ export default function PacmanArcadeGame({
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
             <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">Nivel · Vidas</div>
             <div className="text-xl font-black text-[#67E8F9] tabular-nums">
-              #{level} · <span className="text-[#FB7185]">{'♥'.repeat(Math.max(0, lives))}</span>
+              {level}/{MAX_LEVEL} · <span className="text-[#FB7185]">{'♥'.repeat(Math.max(0, lives))}</span>
             </div>
           </div>
           <div className="rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3">
@@ -934,15 +1050,28 @@ export default function PacmanArcadeGame({
               bgColor="#02040D"
             >
               <canvas ref={canvasRef} className="w-full h-full block" aria-label="Laberinto de Pac-Man Estelar" />
+              {status === 'playing' && levelBanner && (
+                <div className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 rounded-full border border-[#FACC15]/50 bg-[#02040D]/92 px-4 py-1 text-xs font-extrabold uppercase tracking-wider text-[#FACC15] whitespace-nowrap">
+                  {levelBanner}
+                </div>
+              )}
               {status !== 'playing' && (
                 <div className="absolute inset-0 bg-[#02040D]/88 flex flex-col items-center justify-center p-6 text-center gap-4">
                   <div className="font-mono text-xs uppercase tracking-[0.2em] text-[#FACC15]">
-                    {status === 'gameover' ? 'Fin de la partida' : 'Listo en el laberinto'}
+                    {status === 'victory'
+                      ? '¡Maestro del Laberinto!'
+                      : status === 'gameover'
+                        ? `Llegaste al Nivel ${level}`
+                        : 'Listo en el laberinto'}
                   </div>
                   <div className="text-2xl sm:text-3xl font-black text-white">
-                    {status === 'gameover' ? `Puntuación: ${score}` : 'Pac-Man Estelar'}
+                    {status === 'victory'
+                      ? '¡Felicidades! Completaste los 3 niveles'
+                      : status === 'gameover'
+                        ? `Puntuación: ${score}`
+                        : 'Pac-Man Estelar'}
                   </div>
-                  {status === 'gameover' && isNewRecord && (
+                  {(status === 'gameover' || status === 'victory') && isNewRecord && (
                     <span className="rounded-full border border-[#FDE68A]/45 bg-[#FDE68A]/15 px-3 py-0.5 text-[11px] font-bold text-[#FDE68A]">
                       ¡Nuevo récord personal!
                     </span>
@@ -952,7 +1081,7 @@ export default function PacmanArcadeGame({
                     onClick={startNewGame}
                     className="min-h-[42px] px-7 rounded-full bg-[#FACC15] text-black text-xs font-bold hover:bg-[#FDE047] transition-colors cursor-pointer"
                   >
-                    {status === 'gameover' ? 'Jugar de nuevo' : 'Iniciar partida'}
+                    {status === 'idle' ? 'Iniciar Nivel 1' : 'Jugar de nuevo desde Nivel 1'}
                   </button>
                 </div>
               )}
