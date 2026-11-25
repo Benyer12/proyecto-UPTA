@@ -480,7 +480,7 @@ export default function MinijuegosPage() {
                   <div className="text-base font-extrabold text-white tabular-nums">
                     {loadingStars ? 'Cargando...' : `${totalStars} ★`}
                     <span className="text-xs font-medium text-white/55 ml-2">
-                      (Desde 17 ★ hasta 80 ★)
+                      (Desde 17 ★ hasta 180 ★)
                     </span>
                   </div>
                 </div>
