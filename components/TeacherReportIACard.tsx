@@ -1,14 +1,22 @@
 'use client';
 
-import { useMemo, useState, type CSSProperties } from 'react';
+import dynamic from 'next/dynamic';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { LiquidGlass } from './ui/glasscn/liquid-glass';
 import LiquidGlassSelect, { type LiquidGlassSelectOption } from './LiquidGlassSelect';
 import RoleAvatar from './RoleAvatar';
-import type {
-  PreguntaGeneradaIA,
-  ResumenIndividualEstudianteIA,
-  ResumenReporteProfesor,
-} from '../lib/ai-tutor';
+import {
+  buildGroupReportPdf,
+  buildIndividualReportPdf,
+  type GeneratedPdfDocument,
+  type ResumenPDFData,
+} from '../lib/pdf-report-generator';
+import { runViewTransition } from '../lib/view-transitions';
+import type { ResumenIndividualEstudianteIA } from '../lib/ai-tutor';
+
+const PdfSlickReportModal = dynamic(() => import('./PdfSlickReportModal'), {
+  ssr: false,
+});
 
 export interface EstudianteParaReporte {
   id: string;
@@ -19,22 +27,6 @@ export interface EstudianteParaReporte {
   nivelesCompletados: number;
   estrellasTotales: number;
   ultimaSesion: string | null;
-}
-
-interface ResumenPDFData {
-  tituloReporte: string;
-  tutorNombre: string;
-  fechaEmision: string;
-  totalEstudiantes: number;
-  totalEstrellas: number;
-  totalNivelesCompletados: number;
-  promedioEstrellas: number;
-  totalPreguntasGeneradasIA: number;
-  diagnosticoIA: string;
-  recomendacionesClave: string[];
-  resumenesPorEstudiante: ResumenIndividualEstudianteIA[];
-  ultimasPreguntasIA: PreguntaGeneradaIA[];
-  historialIndividual: ResumenReporteProfesor[];
 }
 
 export default function TeacherReportIACard({
@@ -50,6 +42,27 @@ export default function TeacherReportIACard({
   const [errorIA, setErrorIA] = useState<string | null>(null);
   const [filtroEstudiante, setFiltroEstudiante] = useState<string>('all');
   const [resumenPDF, setResumenPDF] = useState<ResumenPDFData | null>(null);
+  const [activePdfDoc, setActivePdfDoc] = useState<GeneratedPdfDocument | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (activePdfDoc?.blobUrl) {
+        URL.revokeObjectURL(activePdfDoc.blobUrl);
+      }
+    };
+  }, [activePdfDoc]);
+
+  const abrirEnPdfSlick = (doc: GeneratedPdfDocument) => {
+    runViewTransition(() => {
+      setActivePdfDoc(doc);
+    }, 'edit');
+  };
+
+  const cerrarPdfSlick = () => {
+    runViewTransition(() => {
+      setActivePdfDoc(null);
+    }, 'edit');
+  };
 
   const opcionesSelector = useMemo<LiquidGlassSelectOption[]>(() => {
     const base: LiquidGlassSelectOption[] = [
@@ -111,626 +124,34 @@ export default function TeacherReportIACard({
 
   const descargarReportePDFIndividual = async (
     est: ResumenIndividualEstudianteIA,
-    targetWin?: Window | null,
   ) => {
-    const fechaLegible = new Date().toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    const promedioEstrellasNivel =
-      est.nivelesCompletados > 0
-        ? (est.estrellasTotales / est.nivelesCompletados).toFixed(1)
-        : '0.0';
-    const metodosHtml = (est.metodosEmplear || [])
-      .map((m, idx) => `<li><strong>Método ${idx + 1}:</strong> ${m}</li>`)
-      .join('');
-
-    const htmlIndividual = `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <title>Reporte Individual · ${est.nombre}</title>
-  <style>
-    @page { size: A4; margin: 14mm; }
-    * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      color: #0f172a;
-      background: #ffffff;
-      margin: 0;
-      padding: 20px 28px;
-      line-height: 1.55;
-    }
-    .hero {
-      background: linear-gradient(135deg, #0b1221 0%, #0369a1 100%);
-      color: #ffffff;
-      border-radius: 16px;
-      padding: 22px 26px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-    .brand {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: #67e8f9;
-      font-weight: 800;
-    }
-    h1 { font-size: 22px; margin: 4px 0 6px; color: #ffffff; }
-    .meta-line { font-size: 12.5px; color: #cbd5e1; }
-    .kpis {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .kpi {
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      padding: 12px 14px;
-      background: #f8fafc;
-    }
-    .kpi-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: #64748b;
-      font-weight: 700;
-    }
-    .kpi-val {
-      font-size: 19px;
-      font-weight: 800;
-      color: #0f172a;
-      margin-top: 4px;
-    }
-    .progress-track {
-      height: 8px;
-      background: #e2e8f0;
-      border-radius: 999px;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #0284c7, #10b981);
-      border-radius: 999px;
-    }
-    h2 {
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #0369a1;
-      margin: 18px 0 10px;
-      border-left: 4px solid #0284c7;
-      padding-left: 10px;
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-    .card {
-      border-radius: 14px;
-      padding: 16px 18px;
-      font-size: 13px;
-      break-inside: avoid;
-    }
-    .card-blue {
-      border: 1px solid #bae6fd;
-      background: #f0f9ff;
-      margin-bottom: 14px;
-    }
-    .card-emerald {
-      border: 1px solid #a7f3d0;
-      background: #ecfdf5;
-    }
-    .card-amber {
-      border: 1px solid #fde68a;
-      background: #fffbeb;
-    }
-    .card-violet {
-      border: 1px solid #ddd6fe;
-      background: #f5f3ff;
-      margin-bottom: 14px;
-    }
-    .card-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.09em;
-      font-weight: 800;
-      margin: 0 0 6px;
-    }
-    ul.methods {
-      margin: 8px 0 0;
-      padding-left: 18px;
-    }
-    ul.methods li {
-      margin-bottom: 6px;
-    }
-    .footer {
-      margin-top: 24px;
-      padding-top: 12px;
-      border-top: 1px solid #e2e8f0;
-      font-size: 10.5px;
-      color: #64748b;
-      display: flex;
-      justify-content: space-between;
-    }
-  </style>
-</head>
-<body>
-  <div class="hero">
-    <div>
-      <div class="brand">Universo del Conocimiento · Ficha Pedagógica IA</div>
-      <h1>${est.nombre}</h1>
-      <div class="meta-line">Usuario: <strong>@${est.usuario}</strong> · Docente: <strong>${tutorName}</strong></div>
-    </div>
-    <div style="font-size:11.5px;color:#e2e8f0;text-align:right;">
-      <div><strong>Emitido:</strong> ${fechaLegible}</div>
-      <div><strong>Motor IA:</strong> Google Gemini Cloud</div>
-    </div>
-  </div>
-
-  <div class="kpis">
-    <div class="kpi">
-      <div class="kpi-label">Avance en el Mapa</div>
-      <div class="kpi-val">${est.nivelesCompletados} / ${est.totalNiveles} (${est.porcentajeAvance}%)</div>
-      <div class="progress-track"><div class="progress-fill" style="width:${est.porcentajeAvance}%;"></div></div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Estrellas Totales</div>
-      <div class="kpi-val" style="color:#b45309;">${est.estrellasTotales} ★</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Promedio / Nivel</div>
-      <div class="kpi-val">${promedioEstrellasNivel} ★</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Nivel Adaptativo IA</div>
-      <div class="kpi-val" style="font-size:14px;color:#0369a1;">${est.etiquetaNivel}</div>
-    </div>
-  </div>
-
-  <h2>Diagnóstico Pedagógico Personalizado</h2>
-  <div class="card card-blue">
-    <p style="margin:0;">${est.resumenIA}</p>
-  </div>
-
-  <div class="grid-2">
-    <div class="card card-emerald">
-      <div class="card-title" style="color:#047857;">Fortaleza Principal</div>
-      <p style="margin:0;">${est.fortalezaPrincipal}</p>
-    </div>
-    <div class="card card-amber">
-      <div class="card-title" style="color:#b45309;">Próxima Meta Recomendada</div>
-      <p style="margin:0;">${est.metaRecomendada}</p>
-    </div>
-  </div>
-
-  <h2>Plan de Mejora y Métodos de Enseñanza</h2>
-  <div class="card card-amber" style="margin-bottom:14px;">
-    <div class="card-title" style="color:#92400e;">¿Cómo puede mejorar el alumno?</div>
-    <p style="margin:0;">${est.comoMejorar}</p>
-  </div>
-
-  <div class="card card-violet">
-    <div class="card-title" style="color:#5b21b6;">Métodos prácticos para aplicar con el niño</div>
-    <ul class="methods">
-      ${metodosHtml}
-    </ul>
-  </div>
-
-  <div class="footer">
-    <span>Universo del Conocimiento · Plataforma Educativa Gamificada (10 a 12 años)</span>
-    <span>Generado por Tutor IA Google Gemini (/api/tutor-ia)</span>
-  </div>
-  <script>
-    window.addEventListener('load', function() {
-      setTimeout(function() { window.print(); }, 250);
-    });
-  </script>
-</body>
-</html>`;
-
-    const win = targetWin ?? window.open('', '_blank', 'width=940,height=740');
-    if (win) {
-      win.document.open();
-      win.document.write(htmlIndividual);
-      win.document.close();
-    }
+    const pdfDoc = buildIndividualReportPdf(est, tutorName);
+    abrirEnPdfSlick(pdfDoc);
   };
 
   const descargarReportePDF = async () => {
-    // Si ya tenemos el resumen generado para la selección actual, abrimos el PDF al instante (0 ms)
     const yaTieneSeleccion =
       resumenPDF &&
       (filtroEstudiante === 'all'
         ? resumenPDF.resumenesPorEstudiante.length >= students.length
         : resumenPDF.resumenesPorEstudiante.some((e) => e.estudianteId === filtroEstudiante));
 
-    if (yaTieneSeleccion && resumenPDF) {
-      if (filtroEstudiante !== 'all') {
-        const individual = resumenPDF.resumenesPorEstudiante.find(
-          (e) => e.estudianteId === filtroEstudiante,
-        );
-        if (individual) {
-          await descargarReportePDFIndividual(individual);
-          return;
-        }
-      }
-    }
-
-    // Abrimos la ventana de forma síncrona al clic para evitar bloqueadores de popups mientras genera
-    const pendingWin = !yaTieneSeleccion
-      ? window.open('', '_blank', 'width=1020,height=780')
-      : null;
-    if (pendingWin) {
-      pendingWin.document.open();
-      pendingWin.document.write(
-        '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"/><title>Preparando PDF...</title></head><body style="font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:90vh;color:#0369a1;font-weight:600;">Generando reporte pedagógico PDF con IA...</body></html>',
-      );
-      pendingWin.document.close();
-    }
-
     const datos = yaTieneSeleccion && resumenPDF ? resumenPDF : await generarDiagnosticoConIA();
-    if (!datos) {
-      if (pendingWin) pendingWin.close();
-      return;
-    }
+    if (!datos) return;
 
     if (filtroEstudiante !== 'all') {
       const individual = datos.resumenesPorEstudiante.find(
         (e) => e.estudianteId === filtroEstudiante,
       );
       if (individual) {
-        await descargarReportePDFIndividual(individual, pendingWin);
+        await descargarReportePDFIndividual(individual);
         return;
       }
     }
 
-    const fechaLegible = new Date(datos.fechaEmision).toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-
-    const resumenesEstudiantes = datos.resumenesPorEstudiante || [];
-
-    const tarjetasEstudiantes =
-      resumenesEstudiantes.length === 0
-        ? `<div class="empty-box">No hay estudiantes asignados actualmente.</div>`
-        : resumenesEstudiantes
-            .map((s) => {
-              const metodosList = (s.metodosEmplear || [])
-                .map((m) => `<li>${m}</li>`)
-                .join('');
-              return `
-                <div class="student-card">
-                  <div class="student-top">
-                    <div>
-                      <div class="student-name">${s.nombre} <span class="student-user">@${s.usuario}</span></div>
-                      <span class="badge">${s.etiquetaNivel}</span>
-                    </div>
-                    <div class="student-metrics">
-                      <div><strong>${s.nivelesCompletados}/${s.totalNiveles}</strong> niveles (${s.porcentajeAvance}%)</div>
-                      <div style="color:#b45309;font-weight:800;">${s.estrellasTotales} ★</div>
-                    </div>
-                  </div>
-                  <div class="progress-track">
-                    <div class="progress-fill" style="width:${s.porcentajeAvance}%;"></div>
-                  </div>
-                  <p class="student-summary">${s.resumenIA}</p>
-                  <div class="student-details">
-                    <div class="detail-box detail-improve">
-                      <div class="detail-title">¿Cómo puede mejorar?</div>
-                      <p>${s.comoMejorar}</p>
-                    </div>
-                    <div class="detail-box detail-methods">
-                      <div class="detail-title">Métodos a emplear</div>
-                      <ul>${metodosList}</ul>
-                    </div>
-                  </div>
-                  <div class="student-foot">
-                    <span><strong>Fortaleza:</strong> ${s.fortalezaPrincipal}</span>
-                    <span><strong>Meta:</strong> ${s.metaRecomendada}</span>
-                  </div>
-                </div>`;
-            })
-            .join('');
-
-    const filasPreguntasJSON =
-      !datos.ultimasPreguntasIA || datos.ultimasPreguntasIA.length === 0
-        ? ''
-        : `
-          <h2>Últimas Preguntas Calibradas por la IA en los Tableros</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Planeta</th>
-                <th>Nivel</th>
-                <th>Enunciado de la Pregunta</th>
-                <th>Respuesta Correcta</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${datos.ultimasPreguntasIA
-                .map(
-                  (q) => `
-                <tr>
-                  <td><strong>${q.planeta}</strong> (${q.materia})</td>
-                  <td>${q.etiquetaNivel}</td>
-                  <td>${q.enunciado}</td>
-                  <td><strong>${q.opciones[q.indiceRespuestaCorrecta]}</strong></td>
-                </tr>`,
-                )
-                .join('')}
-            </tbody>
-          </table>`;
-
-    const htmlReporte = `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <title>${datos.tituloReporte}</title>
-  <style>
-    @page { size: A4; margin: 14mm; }
-    * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      color: #0f172a;
-      background: #ffffff;
-      margin: 0;
-      padding: 20px 28px;
-      line-height: 1.5;
-    }
-    .hero {
-      background: linear-gradient(135deg, #0b1221 0%, #0369a1 100%);
-      color: #ffffff;
-      border-radius: 16px;
-      padding: 20px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-      margin-bottom: 18px;
-    }
-    .brand {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: #67e8f9;
-      font-weight: 800;
-    }
-    h1 { font-size: 20px; margin: 4px 0 6px; color: #ffffff; }
-    .meta { font-size: 12px; color: #cbd5e1; text-align: right; }
-    .kpis {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-    .kpi {
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      padding: 12px 14px;
-      background: #f8fafc;
-    }
-    .kpi-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: #64748b;
-      font-weight: 700;
-    }
-    .kpi-val {
-      font-size: 20px;
-      font-weight: 800;
-      color: #0f172a;
-      margin-top: 2px;
-    }
-    h2 {
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #0369a1;
-      margin: 20px 0 10px;
-      border-left: 4px solid #0284c7;
-      padding-left: 10px;
-    }
-    .diagnosis-box {
-      border: 1px solid #bae6fd;
-      background: #f0f9ff;
-      border-radius: 12px;
-      padding: 16px 18px;
-      font-size: 12.5px;
-      break-inside: avoid;
-    }
-    .diagnosis-box ul { margin: 8px 0 0; padding-left: 18px; }
-    .diagnosis-box li { margin-bottom: 4px; }
-    .student-card {
-      border: 1px solid #cbd5e1;
-      border-radius: 14px;
-      padding: 16px 18px;
-      margin-bottom: 14px;
-      background: #ffffff;
-      break-inside: avoid;
-    }
-    .student-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-    }
-    .student-name { font-size: 15px; font-weight: 800; color: #0f172a; }
-    .student-user { font-size: 11.5px; font-weight: 500; color: #64748b; }
-    .student-metrics { text-align: right; font-size: 12px; }
-    .badge {
-      display: inline-block;
-      margin-top: 4px;
-      padding: 2px 9px;
-      border-radius: 999px;
-      font-size: 10.5px;
-      font-weight: 700;
-      background: #e0f2fe;
-      color: #0369a1;
-    }
-    .progress-track {
-      height: 7px;
-      background: #e2e8f0;
-      border-radius: 999px;
-      overflow: hidden;
-      margin: 10px 0;
-    }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #0284c7, #10b981);
-    }
-    .student-summary { font-size: 12.5px; margin: 0 0 10px; color: #1e293b; }
-    .student-details {
-      display: grid;
-      grid-template-columns: 1fr 1.2fr;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .detail-box {
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 11.5px;
-    }
-    .detail-improve { background: #fffbeb; border: 1px solid #fde68a; }
-    .detail-methods { background: #f5f3ff; border: 1px solid #ddd6fe; }
-    .detail-title {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 800;
-      margin-bottom: 4px;
-      color: #334155;
-    }
-    .detail-box p { margin: 0; }
-    .detail-box ul { margin: 0; padding-left: 16px; }
-    .detail-box li { margin-bottom: 3px; }
-    .student-foot {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding-top: 8px;
-      border-top: 1px dashed #cbd5e1;
-      font-size: 11px;
-      color: #475569;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11.5px;
-      margin-top: 8px;
-    }
-    th, td {
-      border: 1px solid #cbd5e1;
-      padding: 8px 10px;
-      text-align: left;
-      vertical-align: top;
-    }
-    th {
-      background: #f1f5f9;
-      font-weight: 700;
-      color: #334155;
-      font-size: 10.5px;
-      text-transform: uppercase;
-    }
-    .empty-box {
-      border: 1px dashed #cbd5e1;
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      color: #64748b;
-    }
-    .footer {
-      margin-top: 24px;
-      padding-top: 10px;
-      border-top: 1px solid #e2e8f0;
-      font-size: 10.5px;
-      color: #64748b;
-      display: flex;
-      justify-content: space-between;
-    }
-  </style>
-</head>
-<body>
-  <div class="hero">
-    <div>
-      <div class="brand">Universo del Conocimiento · Reporte Ejecutivo IA</div>
-      <h1>${datos.tituloReporte}</h1>
-      <div style="font-size:12.5px;color:#cbd5e1;">Docente responsable: <strong style="color:#fff;">${datos.tutorNombre}</strong></div>
-    </div>
-    <div class="meta">
-      <div><strong>Fecha de emisión:</strong> ${fechaLegible}</div>
-      <div><strong>Motor IA:</strong> Google Gemini Cloud</div>
-    </div>
-  </div>
-
-  <div class="kpis">
-    <div class="kpi">
-      <div class="kpi-label">Estudiantes</div>
-      <div class="kpi-val">${datos.totalEstudiantes}</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Niveles Completados</div>
-      <div class="kpi-val">${datos.totalNivelesCompletados}</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Estrellas Totales</div>
-      <div class="kpi-val" style="color:#b45309;">${datos.totalEstrellas} ★</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Promedio / Alumno</div>
-      <div class="kpi-val">${datos.promedioEstrellas} ★</div>
-    </div>
-  </div>
-
-  <h2>Diagnóstico Grupal y Métodos de Mejora (Google Gemini)</h2>
-  <div class="diagnosis-box">
-    <p style="margin:0 0 8px;">${datos.diagnosticoIA}</p>
-    <strong>Métodos y recomendaciones clave para el grupo:</strong>
-    <ul>
-      ${datos.recomendacionesClave.map((r) => `<li>${r}</li>`).join('')}
-    </ul>
-  </div>
-
-  <h2>Plan Pedagógico Individual por Estudiante</h2>
-  ${tarjetasEstudiantes}
-
-  ${filasPreguntasJSON}
-
-  <div class="footer">
-    <span>Universo del Conocimiento · Plataforma Educativa Gamificada (10 a 12 años)</span>
-    <span>Generado con Tutor IA Google Gemini (/api/tutor-ia)</span>
-  </div>
-  <script>
-    window.addEventListener('load', function() {
-      setTimeout(function() { window.print(); }, 250);
-    });
-  </script>
-</body>
-</html>`;
-
-    const printWin = pendingWin ?? window.open('', '_blank', 'width=1020,height=780');
-    if (printWin) {
-      printWin.document.open();
-      printWin.document.write(htmlReporte);
-      printWin.document.close();
-    }
+    const pdfDoc = buildGroupReportPdf(datos);
+    abrirEnPdfSlick(pdfDoc);
   };
-
   return (
     <section aria-labelledby="ai-tutor-report-heading">
       <LiquidGlass
@@ -788,7 +209,7 @@ export default function TeacherReportIACard({
               disabled={loadingIA}
               className="min-h-[40px] px-5 py-2 rounded-full bg-white text-black hover:bg-white/90 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
             >
-              {filtroEstudiante === 'all' ? 'Descargar Reporte PDF' : 'Descargar PDF Individual'}
+              {filtroEstudiante === 'all' ? 'Ver / Descargar PDF' : 'Ver PDF Individual'}
             </button>
           </div>
         </div>
@@ -911,6 +332,15 @@ export default function TeacherReportIACard({
           </div>
         )}
       </LiquidGlass>
+
+      {activePdfDoc && (
+        <PdfSlickReportModal
+          blobUrl={activePdfDoc.blobUrl}
+          filename={activePdfDoc.filename}
+          title={activePdfDoc.title}
+          onClose={cerrarPdfSlick}
+        />
+      )}
     </section>
   );
 }
