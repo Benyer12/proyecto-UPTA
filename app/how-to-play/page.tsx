@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { LiquidGlass } from '@/components/ui/glasscn/liquid-glass';
+import { KEYBOARD_SHORTCUTS_GUIDE } from '@/lib/config/navigation-config';
 
 const STEPS = [
   {
@@ -581,7 +582,59 @@ export default function HowToPlayPage() {
           </LiquidGlass>
         </section>
 
-        {/* 5. Temario completo por planeta */}
+        {/* 5. Guía de atajos de teclado (exclusiva de Cómo jugar) */}
+        <section className="space-y-5" aria-labelledby="keyboard-shortcuts-heading">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 id="keyboard-shortcuts-heading" className="text-xl sm:text-2xl font-bold text-white">
+                Atajos de teclado
+              </h2>
+              <p className="text-sm text-white/65 mt-1">
+                Puedes recorrer toda la plataforma y jugar usando solo el teclado.
+              </p>
+            </div>
+            <span className="font-mono text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-[#67E8F9]/35 bg-[#67E8F9]/10 text-[#67E8F9]">
+              Control por teclado
+            </span>
+          </div>
+
+          <LiquidGlass
+            blur={7}
+            refraction={10}
+            bezel={0.22}
+            className="rounded-3xl border border-white/15 bg-white/[0.04] p-5 sm:p-7"
+          >
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {KEYBOARD_SHORTCUTS_GUIDE.map((item) => (
+                <div
+                  key={item.title}
+                  className="rounded-2xl border p-4 flex flex-col justify-between gap-3"
+                  style={{ backgroundColor: item.bg, borderColor: item.border }}
+                >
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {item.keys.map((keyLabel) => (
+                      <kbd
+                        key={keyLabel}
+                        className="inline-flex items-center justify-center min-w-[34px] h-8 px-2.5 rounded-lg border bg-slate-950/70 font-mono text-xs font-black text-white shadow-sm"
+                        style={{ borderColor: item.border, color: item.accentColor }}
+                      >
+                        {keyLabel}
+                      </kbd>
+                    ))}
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-sm sm:text-base font-bold text-white">{item.title}</h3>
+                    <p className="text-xs sm:text-sm text-white/80 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </LiquidGlass>
+        </section>
+
+        {/* 6. Temario completo por planeta */}
         <section className="space-y-3">
           <h2 className="text-xl font-bold text-white">Temario por planeta</h2>
           <div className="space-y-3">

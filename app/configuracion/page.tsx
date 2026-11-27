@@ -6,10 +6,12 @@ import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import DesignModeTogglePill, { BoltIcon, LeafIcon } from '../../components/DesignModeTogglePill';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
 import SoundTogglePill from '../../components/SoundTogglePill';
+import EasyReadingTogglePill from '../../components/EasyReadingTogglePill';
 import { useAuthStore } from '../../lib/auth-store';
 import { useThemeStore } from '../../lib/theme-store';
 import { useSoundStore } from '../../lib/sound-store';
 import { useSettingsStore } from '../../lib/settings-store';
+import { useAccessibilityStore } from '../../lib/accessibility-store';
 import { playSoundEnabledChime } from '../../lib/sound-engine';
 import {
   comprobarConexionReal,
@@ -40,12 +42,15 @@ export default function ConfiguracionPage() {
 
   const designMode = useSettingsStore((s) => s.designMode);
   const setDesignMode = useSettingsStore((s) => s.setDesignMode);
-  const easyReading = useSettingsStore((s) => s.easyReading);
-  const setEasyReading = useSettingsStore((s) => s.setEasyReading);
   const localDbEnabled = useSettingsStore((s) => s.localDbEnabled);
   const setLocalDbEnabledAdmin = useSettingsStore((s) => s.setLocalDbEnabledAdmin);
   const initSettings = useSettingsStore((s) => s.initSettings);
   const settingsInitialized = useSettingsStore((s) => s.initialized);
+
+  const easyReading = useAccessibilityStore((s) => s.easyReading);
+  const setEasyReading = useAccessibilityStore((s) => s.setEasyReading);
+  const initAccessibility = useAccessibilityStore((s) => s.initAccessibility);
+  const a11yInitialized = useAccessibilityStore((s) => s.initialized);
 
   const [syncState, setSyncState] = useState<SyncStatusState>(() => obtenerEstadoSyncActual());
   const [switchingStorage, setSwitchingStorage] = useState(false);
@@ -63,7 +68,17 @@ export default function ConfiguracionPage() {
     if (!themeInitialized) initTheme();
     if (!soundInitialized) initSound();
     if (!settingsInitialized) initSettings();
-  }, [themeInitialized, initTheme, soundInitialized, initSound, settingsInitialized, initSettings]);
+    if (!a11yInitialized) initAccessibility();
+  }, [
+    themeInitialized,
+    initTheme,
+    soundInitialized,
+    initSound,
+    settingsInitialized,
+    initSettings,
+    a11yInitialized,
+    initAccessibility,
+  ]);
 
   useEffect(() => {
     try {
@@ -359,7 +374,7 @@ export default function ConfiguracionPage() {
             className="rounded-3xl p-5 sm:p-6 flex flex-col justify-between gap-4"
           >
             <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div>
                   <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#D8B4FE] font-semibold">
                     Accesibilidad
@@ -368,28 +383,33 @@ export default function ConfiguracionPage() {
                     Modo Lectura Fácil
                   </h3>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setEasyReading(!easyReading)}
-                  aria-pressed={easyReading}
-                  data-keep-light-text={easyReading ? 'true' : undefined}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                    easyReading
-                      ? 'bg-[#A855F7] text-white border-[#C084FC]'
-                      : 'bg-white/[0.06] text-white/80 border-white/20 hover:bg-white/[0.12]'
-                  }`}
-                >
-                  {easyReading ? 'Activado' : 'Desactivado'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <EasyReadingTogglePill showLabels />
+                </div>
               </div>
 
               <p className="text-xs sm:text-sm text-white/75 leading-relaxed">
-                <strong>¿Para qué sirve?</strong> Agranda ligeramente el tamaño de la tipografía, amplía la separación entre líneas y sube el contraste de los textos y tarjetas para leer preguntas, explicaciones e informes con mayor comodidad y menos cansancio visual.
+                <strong>¿Para qué sirve?</strong> Agranda la tipografía, amplía el espaciado entre líneas y palabras, y refuerza el contraste de los textos y tarjetas para leer preguntas, explicaciones e informes sin cansancio visual. También puedes activarlo o desactivarlo rápido presionando la tecla <strong>L</strong>.
               </p>
             </div>
 
-            <div className="rounded-xl border border-white/12 bg-white/[0.04] px-3.5 py-2.5 text-xs text-white/80">
-              Estado actual: <strong>{easyReading ? 'Lectura ampliada y alto contraste activos' : 'Tamaño de lectura estándar'}</strong>.
+            <div className="flex items-center justify-between gap-2 rounded-xl border border-white/12 bg-white/[0.04] px-3.5 py-2.5 text-xs text-white/80">
+              <span>
+                Estado actual: <strong>{easyReading ? 'Lectura ampliada y alto contraste activos' : 'Tamaño de lectura estándar'}</strong>.
+              </span>
+              <button
+                type="button"
+                onClick={() => setEasyReading(!easyReading)}
+                aria-pressed={easyReading}
+                data-keep-light-text={easyReading ? 'true' : undefined}
+                className={`px-3 py-1 rounded-full text-[11px] font-bold border transition-all cursor-pointer shrink-0 ${
+                  easyReading
+                    ? 'bg-[#A855F7] text-white border-[#C084FC]'
+                    : 'bg-white/[0.06] text-white/80 border-white/20 hover:bg-white/[0.12]'
+                }`}
+              >
+                {easyReading ? 'Desactivar' : 'Activar'}
+              </button>
             </div>
           </LiquidGlass>
 

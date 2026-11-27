@@ -23,6 +23,8 @@ import {
   playStep,
 } from '../../lib/sound-engine';
 import SoundTogglePill from '../../components/SoundTogglePill';
+import EasyReadingTogglePill from '../../components/EasyReadingTogglePill';
+import { useModalEscape } from '../../lib/hooks/useModalEscape';
 import Dado3D from './Dado3D';
 import MapaAstral from './letralia/MapaAstral';
 import AltarDecodificacion, {
@@ -290,6 +292,33 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
   const [modalActivo, setModalActivo] = useState<ModalRetoActivo | null>(null);
   const [mostrarCodice, setMostrarCodice] = useState(false);
   const [victoriaFinal, setVictoriaFinal] = useState(false);
+  const walkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const walkCancelledRef = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      walkCancelledRef.current = true;
+      if (walkTimeoutRef.current) clearTimeout(walkTimeoutRef.current);
+    };
+  }, []);
+
+  const handleSalirModalSeguro = useCallback(() => {
+    walkCancelledRef.current = true;
+    if (walkTimeoutRef.current) {
+      clearTimeout(walkTimeoutRef.current);
+      walkTimeoutRef.current = null;
+    }
+    setModalActivo(null);
+    setRodandoDado(false);
+    setCaminando(false);
+    setAvisoFlotante('Reto cerrado. Lanza el dado astral para continuar tu viaje.');
+  }, []);
+
+  useModalEscape({
+    isOpen: mostrarCodice,
+    onEscape: () => setMostrarCodice(false),
+    priority: 'modal',
+  });
 
   /* ── Bancos de preguntas usados para no repetir ── */
   const usadosIntruso = useRef<Set<string>>(new Set());
@@ -451,10 +480,16 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
   const caminarSecuencia = useCallback(
     (secuencia: Casilla[], alFinalizar: (ultima: Casilla) => void) => {
       if (secuencia.length === 0) return;
+      walkCancelledRef.current = false;
+      if (walkTimeoutRef.current) {
+        clearTimeout(walkTimeoutRef.current);
+        walkTimeoutRef.current = null;
+      }
       setCaminando(true);
       let idx = 0;
 
       const darPaso = () => {
+        if (walkCancelledRef.current) return;
         const destino = secuencia[idx];
         setPosPantalla((prev) => {
           const dx = destino.s.x - prev.x;
@@ -479,9 +514,10 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
 
         idx++;
         if (idx < secuencia.length) {
-          setTimeout(darPaso, 350);
+          walkTimeoutRef.current = setTimeout(darPaso, 350);
         } else {
-          setTimeout(() => {
+          walkTimeoutRef.current = setTimeout(() => {
+            if (walkCancelledRef.current) return;
             setCaminando(false);
             alFinalizar(destino);
           }, 360);
@@ -986,6 +1022,9 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
 
           {/* ── 1. CABECERA: LETRALIA — ARCHIVO ASTRAL ── */}
           <div className="relative text-center pt-0.5 pb-2.5 border-b-2 border-[#C4B5FD]/80">
+            <div className="absolute left-0 top-0">
+              <EasyReadingTogglePill compact />
+            </div>
             <div className="absolute right-0 top-0">
               <SoundTogglePill />
             </div>
@@ -1024,7 +1063,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
 
           {/* ── 2. CUENCO DEL DADO 3D ASTRAL ── */}
           <div
-            className="relative my-2 py-3.5 rounded-2xl flex flex-col items-center justify-center overflow-hidden"
+            className="relative my-2 py-3.5 rounded-2xl flex flex-col items-center justify-center overflow-hidden shrink-0"
             style={{
               background:
                 'radial-gradient(circle at 50% 50%, #9EB2E2 0%, #748BC2 58%, #576CA4 100%)',
@@ -1264,6 +1303,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
             estrellasActuales={estrellasVistaPrevia}
             silabasRecolectadas={cantidadSilabas}
             onCompletar={handleCompletarReto}
+            onSafeExit={handleSalirModalSeguro}
           />
         )}
       </AnimatePresence>

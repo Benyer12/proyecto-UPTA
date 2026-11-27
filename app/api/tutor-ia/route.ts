@@ -252,7 +252,21 @@ interface ExtrasPlanetaSync {
   nuevoRetoBossLetralia?: RetoGuardianBoss;
 }
 
+let colaEscrituraPlaneta: Promise<unknown> = Promise.resolve();
+
 async function sincronizarPreguntaEnArchivoPlaneta(
+  planeta: PlanetaTutorIA,
+  nuevaPregunta?: PreguntaGeneradaIA,
+  extras: ExtrasPlanetaSync = {},
+): Promise<{ archivoPlaneta: string; actualizado: boolean }> {
+  const tarea = colaEscrituraPlaneta.then(() =>
+    sincronizarPreguntaEnArchivoPlanetaSerial(planeta, nuevaPregunta, extras),
+  );
+  colaEscrituraPlaneta = tarea.catch(() => {});
+  return tarea;
+}
+
+async function sincronizarPreguntaEnArchivoPlanetaSerial(
   planeta: PlanetaTutorIA,
   nuevaPregunta?: PreguntaGeneradaIA,
   extras: ExtrasPlanetaSync = {},

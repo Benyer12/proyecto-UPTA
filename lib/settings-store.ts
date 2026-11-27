@@ -6,20 +6,16 @@ export type DesignMode = 'original' | 'eco';
 export type StorageArchMode = 'plus' | 'cloud';
 
 const DESIGN_MODE_KEY = 'universo-design-mode';
-const EASY_READING_KEY = 'universo-easy-reading';
 const LOCAL_DB_ENABLED_KEY = 'universo-local-db-enabled';
 const LOCAL_DB_UPDATED_AT_KEY = 'universo-local-db-updated-at';
 
 interface SettingsState {
   designMode: DesignMode;
-  easyReading: boolean;
   localDbEnabled: boolean;
   localDbUpdatedAt: string | null;
   initialized: boolean;
   setDesignMode: (mode: DesignMode) => void;
   toggleDesignMode: () => void;
-  setEasyReading: (enabled: boolean) => void;
-  toggleEasyReading: () => void;
   setLocalDbEnabledAdmin: (
     enabled: boolean,
     actor?: { role?: string; name?: string },
@@ -33,11 +29,6 @@ let serverSyncedOnce = false;
 export function applyDesignModeToDOM(mode: DesignMode) {
   if (typeof document === 'undefined') return;
   document.documentElement.dataset.designMode = mode;
-}
-
-export function applyEasyReadingToDOM(enabled: boolean) {
-  if (typeof document === 'undefined') return;
-  document.documentElement.dataset.easyReading = enabled ? 'true' : 'false';
 }
 
 /**
@@ -62,7 +53,6 @@ export function getStorageModeLabel(enabled: boolean): StorageArchMode {
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   designMode: 'original',
-  easyReading: false,
   localDbEnabled: true,
   localDbUpdatedAt: null,
   initialized: false,
@@ -78,18 +68,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   toggleDesignMode: () => {
     const next: DesignMode = get().designMode === 'original' ? 'eco' : 'original';
     get().setDesignMode(next);
-  },
-
-  setEasyReading: (enabled) => {
-    applyEasyReadingToDOM(enabled);
-    try {
-      window.localStorage.setItem(EASY_READING_KEY, enabled ? 'true' : 'false');
-    } catch {}
-    set({ easyReading: enabled, initialized: true });
-  },
-
-  toggleEasyReading: () => {
-    get().setEasyReading(!get().easyReading);
   },
 
   setLocalDbEnabledAdmin: async (enabled, actor) => {
@@ -148,7 +126,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     if (typeof window === 'undefined') return;
 
     let resolvedDesign: DesignMode = 'original';
-    let resolvedReading = false;
     let resolvedLocalDb = true;
     let resolvedUpdatedAt: string | null = null;
     let hasLocalDbPref = false;
@@ -159,9 +136,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         resolvedDesign = savedDesign;
       }
 
-      const savedReading = window.localStorage.getItem(EASY_READING_KEY);
-      resolvedReading = savedReading === 'true';
-
       const savedDb = window.localStorage.getItem(LOCAL_DB_ENABLED_KEY);
       if (savedDb === 'true' || savedDb === 'false') {
         resolvedLocalDb = savedDb === 'true';
@@ -171,11 +145,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     } catch {}
 
     applyDesignModeToDOM(resolvedDesign);
-    applyEasyReadingToDOM(resolvedReading);
 
     set({
       designMode: resolvedDesign,
-      easyReading: resolvedReading,
       localDbEnabled: resolvedLocalDb,
       localDbUpdatedAt: resolvedUpdatedAt,
       initialized: true,
@@ -188,10 +160,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
           const next: DesignMode = event.newValue === 'eco' ? 'eco' : 'original';
           applyDesignModeToDOM(next);
           set({ designMode: next, initialized: true });
-        } else if (event.key === EASY_READING_KEY) {
-          const next = event.newValue === 'true';
-          applyEasyReadingToDOM(next);
-          set({ easyReading: next, initialized: true });
         } else if (event.key === LOCAL_DB_ENABLED_KEY) {
           const next = event.newValue !== 'false';
           set({ localDbEnabled: next, initialized: true });

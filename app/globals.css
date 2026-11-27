@@ -1079,6 +1079,135 @@ li {
 }
 
 /* ============================================================================
+   MODO LECTURA FÁCIL (EASY READING)
+   Activado mediante html[data-easy-reading="true"].
+   Compatible simultáneamente con data-theme="dark", data-theme="light" y
+   los tableros espaciales oscuros ([data-game-board="true"]).
+   ============================================================================ */
+
+html[data-easy-reading="true"] {
+  --easy-reading-line-height: 1.75;
+  --easy-reading-letter-spacing: 0.03em;
+  --easy-reading-word-spacing: 0.12em;
+  --easy-reading-max-measure: 65ch;
+}
+
+/* Mejora de espaciado y legibilidad en textos de páginas (fuera del tablero) y modales de reto */
+html[data-easy-reading="true"] main p:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main li:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main blockquote:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main dd:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main label:not([data-game-board="true"] *),
+html[data-easy-reading="true"] [role="dialog"] p:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] [role="dialog"] h2:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] [role="dialog"] h3:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] [role="dialog"] label,
+html[data-easy-reading="true"] [data-easy-reading-text="true"] {
+  line-height: var(--easy-reading-line-height);
+  letter-spacing: var(--easy-reading-letter-spacing);
+  word-spacing: var(--easy-reading-word-spacing);
+}
+
+/* Escalado más amplio de texto para lectura cómoda sin tocar el HUD del tablero ni el dado */
+html[data-easy-reading="true"] main p:not([data-game-board="true"] *):not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] main li:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main dd:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main blockquote:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main label:not([data-game-board="true"] *),
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] p:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] [role="dialog"] p:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] [role="dialog"] label,
+html[data-easy-reading="true"] [data-easy-reading-text="true"] {
+  font-size: clamp(1.125rem, 1.08rem + 0.35vw, 1.3125rem);
+}
+
+html[data-easy-reading="true"] main h2:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main h3:not([data-game-board="true"] *),
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] h2:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] h3:not([data-keep-compact="true"] *),
+html[data-easy-reading="true"] [role="dialog"] h3:not([data-keep-compact="true"] *) {
+  font-size: clamp(1.25rem, 1.18rem + 0.45vw, 1.625rem);
+  line-height: 1.5;
+}
+
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] button:not([data-keep-compact="true"]),
+html[data-easy-reading="true"] main a:not([data-game-board="true"] *):not([data-keep-compact="true"]),
+html[data-easy-reading="true"] main button:not([data-game-board="true"] *):not([data-keep-compact="true"]) {
+  font-size: clamp(1.03rem, 1rem + 0.2vw, 1.1875rem);
+}
+
+html[data-easy-reading="true"] main article p:not([data-game-board="true"] *),
+html[data-easy-reading="true"] main section > p:not([data-game-board="true"] *) {
+  max-width: var(--easy-reading-max-measure);
+}
+
+/* Refuerzo de contraste para textos secundarios en modo oscuro y dentro de modales de reto */
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/45:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/50:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/55:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/60:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/65:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/70:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] .text-white\/65,
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] .text-white\/70 {
+  color: rgba(248, 250, 252, 0.94);
+}
+
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-slate-300:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-slate-400:not([data-game-board="true"] aside *),
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] .text-slate-200\/90,
+html[data-easy-reading="true"] [data-game-board="true"] [role="dialog"] .text-emerald-200\/80 {
+  color: #f1f5f9;
+}
+
+/* Refuerzo de contraste para textos secundarios en modo claro (fuera del tablero) */
+html[data-easy-reading="true"][data-theme="light"] .text-white\/45:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="light"] .text-white\/50:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="light"] .text-white\/55:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="light"] .text-white\/60:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="light"] .text-white\/65:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="light"] .text-white\/70:not([data-game-board="true"] *) {
+  color: #0f172a;
+}
+
+/* Anillos de foco más visibles para navegación por teclado */
+html[data-easy-reading="true"] :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* Reducción de animaciones decorativas distractivas manteniendo transiciones funcionales */
+html[data-easy-reading="true"] .tornasol-glint,
+html[data-easy-reading="true"] .scroll-progress-bar,
+html[data-easy-reading="true"] .liquid-glass-btn::after,
+html[data-easy-reading="true"] .liquid-glass-interactive::after,
+html[data-easy-reading="true"] button.liquid-glass-pill::after,
+html[data-easy-reading="true"] a.liquid-glass-pill::after {
+  animation: none !important;
+  opacity: 0.15;
+}
+
+/* Escalado controlado en el Selector Orbital de Misiones para evitar desbordes de tarjetas */
+html[data-easy-reading="true"] [data-orbital-selector="true"] h3 {
+  font-size: 1.0625rem !important;
+  line-height: 1.35 !important;
+}
+
+html[data-easy-reading="true"] [data-orbital-selector="true"] p {
+  font-size: 0.875rem !important;
+  line-height: 1.45 !important;
+}
+
+html[data-easy-reading="true"] [data-orbital-selector="true"] button {
+  font-size: 0.75rem !important;
+}
+
+html[data-easy-reading="true"] .animate-pulse,
+html[data-easy-reading="true"] .animate-bounce {
+  animation: none !important;
+}
+
+/* ============================================================================
    MODO DISEÑO DE AHORRO (html[data-design-mode="eco"])
    Mantiene fondo y colores originales eliminando blurs pesados, SVG refraction,
    brillos complejos y blending costoso para PCs de bajos recursos sin lag.
@@ -1197,51 +1326,4 @@ html[data-design-mode="eco"] [data-game-board="true"] svg [filter] {
 html[data-design-mode="eco"] [data-game-board="true"] svg animate,
 html[data-design-mode="eco"] [data-game-board="true"] svg animateTransform {
   animation-play-state: paused;
-}
-
-/* ============================================================================
-   MODO LECTURA FÁCIL (html[data-easy-reading="true"])
-   Mayor legibilidad tipográfica, interlineado espaciado y alto contraste.
-   ============================================================================ */
-
-html[data-easy-reading="true"] {
-  font-size: 105%;
-}
-
-@media (min-width: 640px) {
-  html[data-easy-reading="true"] {
-    font-size: 107.5%;
-  }
-}
-
-html[data-easy-reading="true"] body p,
-html[data-easy-reading="true"] body li,
-html[data-easy-reading="true"] body label,
-html[data-easy-reading="true"] body input,
-html[data-easy-reading="true"] body textarea {
-  line-height: 1.72;
-  letter-spacing: 0.014em;
-}
-
-html[data-easy-reading="true"] [data-game-board="true"] {
-  font-size: 15px;
-}
-
-html[data-easy-reading="true"][data-theme="dark"] .liquid-glass:not([data-game-board="true"] *),
-html[data-easy-reading="true"][data-theme="dark"] .liquid-glass-panel:not([data-game-board="true"] *),
-html[data-easy-reading="true"][data-theme="dark"] [data-liquid-glass="true"]:not([data-game-board="true"] *) {
-  background-color: rgba(6, 11, 24, 0.88) !important;
-}
-
-html[data-easy-reading="true"][data-theme="light"] .liquid-glass:not([data-game-board="true"] *),
-html[data-easy-reading="true"][data-theme="light"] .liquid-glass-panel:not([data-game-board="true"] *),
-html[data-easy-reading="true"][data-theme="light"] [data-liquid-glass="true"]:not([data-game-board="true"] *) {
-  background-color: rgba(255, 255, 255, 0.94) !important;
-}
-
-html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/60:not([data-game-board="true"] *),
-html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/55:not([data-game-board="true"] *),
-html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/50:not([data-game-board="true"] *),
-html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/45:not([data-game-board="true"] *) {
-  color: rgba(241, 245, 249, 0.88) !important;
 }
