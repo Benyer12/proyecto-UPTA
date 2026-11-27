@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useThemeStore } from '../../lib/theme-store';
+import { useSettingsStore } from '../../lib/settings-store';
 
 interface Particle {
   x: number;
@@ -50,6 +51,7 @@ const ALLOWED_ROUTES = [
   '/',
   '/about',
   '/how-to-play',
+  '/configuracion',
   '/dashboard',
   '/maestro',
   '/docente',
@@ -76,8 +78,17 @@ function isRouteAllowed(pathname: string | null): boolean {
 export default function AntigravityParticles() {
   const pathname = usePathname();
   const theme = useThemeStore((s) => s.theme);
+  const designMode = useSettingsStore((s) => s.designMode);
+  const initSettings = useSettingsStore((s) => s.initSettings);
+  const initializedSettings = useSettingsStore((s) => s.initialized);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const allowed = isRouteAllowed(pathname);
+  const allowed = isRouteAllowed(pathname) && designMode !== 'eco';
+
+  useEffect(() => {
+    if (!initializedSettings) {
+      initSettings();
+    }
+  }, [initializedSettings, initSettings]);
 
   useEffect(() => {
     if (!allowed) return;
@@ -93,8 +104,6 @@ export default function AntigravityParticles() {
     let animationId: number;
     let particles: Particle[] = [];
     let isVisible = true;
-    let lastFrame = 0;
-    let lastMoveAt = 0;
 
     const mouse = {
       x: -9999,
@@ -159,7 +168,6 @@ export default function AntigravityParticles() {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      lastMoveAt = performance.now();
       mouse.targetX = e.clientX;
       mouse.targetY = e.clientY;
       if (!mouse.active) {
@@ -171,7 +179,6 @@ export default function AntigravityParticles() {
 
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length > 0) {
-        lastMoveAt = performance.now();
         const t = e.touches[0];
         mouse.targetX = t.clientX;
         mouse.targetY = t.clientY;
@@ -207,15 +214,7 @@ export default function AntigravityParticles() {
         return;
       }
 
-      // 60 fps fluidos al interactuar con el cursor, 28 fps en reposo para cero lag
-      const interacting = mouse.active && timestamp - lastMoveAt < 1800;
-      const minInterval = interacting ? 16 : 36;
-      if (timestamp - lastFrame < minInterval) {
-        animationId = requestAnimationFrame(animate);
-        return;
-      }
-      lastFrame = timestamp;
-
+      // Render continuo a 60 FPS nativos del navegador (sin frenarse tras reposo ni al sacar el mouse)
       const time = timestamp / 1000;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.lineCap = 'round';

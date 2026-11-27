@@ -1077,3 +1077,171 @@ li {
   height: 100%;
   background: linear-gradient(180deg, transparent 0%, var(--glint-color, rgba(255, 255, 255, 0.9)) 50%, transparent 100%);
 }
+
+/* ============================================================================
+   MODO DISEÑO DE AHORRO (html[data-design-mode="eco"])
+   Mantiene fondo y colores originales eliminando blurs pesados, SVG refraction,
+   brillos complejos y blending costoso para PCs de bajos recursos sin lag.
+   ============================================================================ */
+
+html[data-design-mode="eco"] [data-liquid-glass="true"]:not([data-game-board="true"] *),
+html[data-design-mode="eco"] .liquid-glass:not([data-game-board="true"] *),
+html[data-design-mode="eco"] .liquid-glass-panel:not([data-game-board="true"] *),
+html[data-design-mode="eco"] .liquid-glass-pill:not([data-game-board="true"] *),
+html[data-design-mode="eco"] .liquid-glass-btn:not([data-game-board="true"] *),
+html[data-design-mode="eco"] .liquid-glass-inset:not([data-game-board="true"] *),
+html[data-design-mode="eco"] .liquid-glass-header:not([data-game-board="true"] *),
+html[data-design-mode="eco"] .liquid-glass-dropdown:not([data-game-board="true"] *),
+html[data-design-mode="eco"] .liquid-glass-modal:not([data-game-board="true"] *),
+html[data-design-mode="eco"] .liquid-glass-input:not([data-game-board="true"] *),
+html[data-design-mode="eco"] [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-design-mode="eco"] [data-liquid-glass="true"]:not([data-game-board="true"] *):not([data-reading-priority="true"]),
+html[data-design-mode="eco"] .liquid-glass:not([data-game-board="true"] *):not([data-reading-priority="true"]) {
+  background-color: rgba(8, 14, 30, 0.86) !important;
+  background-image: none !important;
+  border-color: rgba(148, 163, 184, 0.24) !important;
+  box-shadow: 0 8px 20px -12px rgba(0, 0, 0, 0.68) !important;
+}
+
+html[data-design-mode="eco"] .liquid-glass-panel:not([data-game-board="true"] *):not([data-reading-priority="true"]),
+html[data-design-mode="eco"] .liquid-glass-header:not([data-game-board="true"] *) {
+  background-color: rgba(10, 17, 36, 0.92) !important;
+  background-image: none !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  box-shadow: 0 8px 20px -14px rgba(0, 0, 0, 0.65) !important;
+}
+
+html[data-design-mode="eco"] .liquid-glass-pill:not([data-game-board="true"] *),
+html[data-design-mode="eco"] .liquid-glass-btn:not([data-game-board="true"] *),
+html[data-design-mode="eco"] .liquid-glass-inset:not([data-game-board="true"] *) {
+  background-color: rgba(15, 23, 46, 0.82) !important;
+  border-color: rgba(148, 163, 184, 0.24) !important;
+  box-shadow: 0 4px 12px -8px rgba(0, 0, 0, 0.55) !important;
+}
+
+html[data-design-mode="eco"] .liquid-glass-dropdown:not([data-game-board="true"] *),
+html[data-design-mode="eco"] .liquid-glass-modal:not([data-game-board="true"] *),
+html[data-design-mode="eco"] [data-liquid-glass="true"][data-reading-priority="true"]:not([data-game-board="true"] *) {
+  background-color: rgba(7, 11, 24, 0.96) !important;
+  background-image: none !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+  box-shadow: 0 14px 30px -16px rgba(0, 0, 0, 0.78) !important;
+}
+
+html[data-theme="light"][data-design-mode="eco"] [data-liquid-glass="true"]:not([data-game-board="true"] *):not([data-reading-priority="true"]),
+html[data-theme="light"][data-design-mode="eco"] .liquid-glass:not([data-game-board="true"] *):not([data-reading-priority="true"]),
+html[data-theme="light"][data-design-mode="eco"] .liquid-glass-panel:not([data-game-board="true"] *):not([data-reading-priority="true"]) {
+  background-color: rgba(246, 249, 255, 0.9) !important;
+  background-image: none !important;
+  border-color: rgba(15, 23, 42, 0.14) !important;
+  box-shadow: 0 8px 20px -12px rgba(15, 23, 42, 0.14) !important;
+}
+
+html[data-theme="light"][data-design-mode="eco"] .liquid-glass-pill:not([data-game-board="true"] *),
+html[data-theme="light"][data-design-mode="eco"] .liquid-glass-btn:not([data-game-board="true"] *),
+html[data-theme="light"][data-design-mode="eco"] .liquid-glass-inset:not([data-game-board="true"] *),
+html[data-theme="light"][data-design-mode="eco"] .liquid-glass-header:not([data-game-board="true"] *) {
+  background-color: rgba(241, 246, 255, 0.92) !important;
+  border-color: rgba(15, 23, 42, 0.15) !important;
+  box-shadow: 0 4px 12px -8px rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-theme="light"][data-design-mode="eco"] .liquid-glass-dropdown:not([data-game-board="true"] *),
+html[data-theme="light"][data-design-mode="eco"] .liquid-glass-modal:not([data-game-board="true"] *),
+html[data-theme="light"][data-design-mode="eco"] [data-liquid-glass="true"][data-reading-priority="true"]:not([data-game-board="true"] *) {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  background-image: none !important;
+  border-color: rgba(15, 23, 42, 0.18) !important;
+  box-shadow: 0 12px 26px -14px rgba(15, 23, 42, 0.16) !important;
+}
+
+html[data-design-mode="eco"] .tornasol-glint,
+html[data-design-mode="eco"] .scroll-progress-bar,
+html[data-design-mode="eco"] .glance::after,
+html[data-design-mode="eco"] .liquid-glass-btn::after,
+html[data-design-mode="eco"] .liquid-glass-interactive::after,
+html[data-design-mode="eco"] button.liquid-glass-pill::after,
+html[data-design-mode="eco"] a.liquid-glass-pill::after {
+  display: none !important;
+}
+
+html[data-design-mode="eco"] .hero-neon-accent {
+  filter: none !important;
+}
+
+html[data-design-mode="eco"] .hero-neon-title,
+html[data-design-mode="eco"] .glow-text-cyan,
+html[data-design-mode="eco"] .glow-text-magenta {
+  text-shadow: none !important;
+}
+
+html[data-design-mode="eco"] .glow-box-cyan,
+html[data-design-mode="eco"] .glow-box-magenta {
+  box-shadow: none !important;
+}
+
+/* Optimización de tableros en Modo Ahorro manteniendo colores lindos y legibilidad */
+html[data-design-mode="eco"] [data-game-board="true"] .mix-blend-screen {
+  mix-blend-mode: normal !important;
+  opacity: 0.84 !important;
+}
+
+html[data-design-mode="eco"] [data-game-board="true"] svg [filter] {
+  filter: none !important;
+}
+
+html[data-design-mode="eco"] [data-game-board="true"] svg animate,
+html[data-design-mode="eco"] [data-game-board="true"] svg animateTransform {
+  animation-play-state: paused;
+}
+
+/* ============================================================================
+   MODO LECTURA FÁCIL (html[data-easy-reading="true"])
+   Mayor legibilidad tipográfica, interlineado espaciado y alto contraste.
+   ============================================================================ */
+
+html[data-easy-reading="true"] {
+  font-size: 105%;
+}
+
+@media (min-width: 640px) {
+  html[data-easy-reading="true"] {
+    font-size: 107.5%;
+  }
+}
+
+html[data-easy-reading="true"] body p,
+html[data-easy-reading="true"] body li,
+html[data-easy-reading="true"] body label,
+html[data-easy-reading="true"] body input,
+html[data-easy-reading="true"] body textarea {
+  line-height: 1.72;
+  letter-spacing: 0.014em;
+}
+
+html[data-easy-reading="true"] [data-game-board="true"] {
+  font-size: 15px;
+}
+
+html[data-easy-reading="true"][data-theme="dark"] .liquid-glass:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="dark"] .liquid-glass-panel:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="dark"] [data-liquid-glass="true"]:not([data-game-board="true"] *) {
+  background-color: rgba(6, 11, 24, 0.88) !important;
+}
+
+html[data-easy-reading="true"][data-theme="light"] .liquid-glass:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="light"] .liquid-glass-panel:not([data-game-board="true"] *),
+html[data-easy-reading="true"][data-theme="light"] [data-liquid-glass="true"]:not([data-game-board="true"] *) {
+  background-color: rgba(255, 255, 255, 0.94) !important;
+}
+
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/60:not([data-game-board="true"] *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/55:not([data-game-board="true"] *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/50:not([data-game-board="true"] *),
+html[data-easy-reading="true"]:not([data-theme="light"]) .text-white\/45:not([data-game-board="true"] *) {
+  color: rgba(241, 245, 249, 0.88) !important;
+}

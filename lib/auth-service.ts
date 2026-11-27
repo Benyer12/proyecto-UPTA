@@ -5,6 +5,7 @@ import {
   sincronizarAlIniciarSesion,
   verificarCredencialesLocalOffline,
 } from './offline-sync';
+import { isLocalDbEnabled } from './settings-store';
 
 export type LoginResult =
   | { success: true; usuario: any; offlineMode?: boolean }
@@ -117,8 +118,16 @@ export const verificarCredenciales = async (
 ): Promise<LoginResult> => {
   const cleanUser = usuario.trim();
 
-  // Si no hay internet, autenticamos contra PowerSync SQLite local (IndexedDB)
+  // Si no hay internet, autenticamos contra PowerSync SQLite local solo si el Modo PLUS (BD local) está activo
   if (!hayConexionInternet()) {
+    if (!isLocalDbEnabled()) {
+      return {
+        success: false,
+        code: 'ERROR',
+        message:
+          'Modo Solo en la Nube activo (BD local desactivada por administración). Conéctate a internet para iniciar sesión en Supabase.',
+      };
+    }
     const localRes = await verificarCredencialesLocalOffline(cleanUser, contrasena);
     if (localRes.success) {
       return { success: true, usuario: localRes.usuario, offlineMode: true };
@@ -135,6 +144,14 @@ export const verificarCredenciales = async (
       .single();
 
     if (errorBusqueda && esErrorDeRed(errorBusqueda)) {
+      if (!isLocalDbEnabled()) {
+        return {
+          success: false,
+          code: 'ERROR',
+          message:
+            'No hay conexión con Supabase y el modo Solo en la Nube tiene desactivada la base de datos local.',
+        };
+      }
       const localRes = await verificarCredencialesLocalOffline(cleanUser, contrasena);
       if (localRes.success) {
         return { success: true, usuario: localRes.usuario, offlineMode: true };
@@ -172,6 +189,14 @@ export const verificarCredenciales = async (
 
     if (authError) {
       if (esErrorDeRed(authError)) {
+        if (!isLocalDbEnabled()) {
+          return {
+            success: false,
+            code: 'ERROR',
+            message:
+              'Error de red con Supabase. La base de datos local está desactivada (Modo Solo en la Nube).',
+          };
+        }
         const localRes = await verificarCredencialesLocalOffline(cleanUser, contrasena);
         if (localRes.success) {
           return { success: true, usuario: localRes.usuario, offlineMode: true };
@@ -191,12 +216,22 @@ export const verificarCredenciales = async (
       contrasena: usuarioNube.contrasena || contrasena,
     };
 
-    // Deposita inmediatamente tablas de Supabase en la BD secundaria local (PowerSync SQLite)
-    void sincronizarAlIniciarSesion(usuarioParaCache);
+    // Deposita inmediatamente tablas de Supabase en la BD secundaria local solo si Modo PLUS está activo
+    if (isLocalDbEnabled()) {
+      void sincronizarAlIniciarSesion(usuarioParaCache);
+    }
 
     return { success: true, usuario: usuarioParaCache, offlineMode: false };
   } catch (error: any) {
     if (esErrorDeRed(error)) {
+      if (!isLocalDbEnabled()) {
+        return {
+          success: false,
+          code: 'ERROR',
+          message:
+            'No hay conexión con Supabase y la base de datos local está desactivada (Modo Solo en la Nube).',
+        };
+      }
       const localRes = await verificarCredencialesLocalOffline(cleanUser, contrasena);
       if (localRes.success) {
         return { success: true, usuario: localRes.usuario, offlineMode: true };

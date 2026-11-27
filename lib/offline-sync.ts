@@ -3,11 +3,13 @@
 import {
   asegurarPowerSyncListo,
   conectarPowerSyncBridge,
+  desconectarPowerSync,
 } from './powersync';
 import { supabase, supabaseKey, supabaseUrl } from './powersync-connector';
 import { MOCK_PLANETS, MOCK_PROGRESS } from './mock-data';
 import type { Planet, StudentProgress } from '../shared/types';
 import { actualizarProgresoUsuario } from '../app/actions/progress';
+import { isLocalDbEnabled } from './settings-store';
 
 export interface SyncStatusState {
   online: boolean;
@@ -190,6 +192,7 @@ async function enqueueOutbox(
   rowId: string,
   payload: Record<string, any>,
 ) {
+  if (!isLocalDbEnabled()) return;
   const db = await asegurarPowerSyncListo();
   if (!db) return;
 
@@ -233,6 +236,7 @@ export async function sincronizarPendientesASupabase(): Promise<{
   syncedCount: number;
   remainingCount: number;
 }> {
+  if (!isLocalDbEnabled()) return { syncedCount: 0, remainingCount: 0 };
   if (syncMutex) return syncMutex;
 
   syncMutex = (async () => {
@@ -402,6 +406,7 @@ async function seedPlanetasYNivelesLocalesSiVacio(
   supabasePlanetas?: any[] | null,
   supabaseNiveles?: any[] | null,
 ) {
+  if (!isLocalDbEnabled()) return;
   const db = await asegurarPowerSyncListo();
   if (!db) return;
 
@@ -594,6 +599,7 @@ export async function depositarSupabaseEnLocal(options?: {
   usuarioId?: string;
   force?: boolean;
 }) {
+  if (!isLocalDbEnabled()) return;
   await seedPlanetasYNivelesLocalesSiVacio();
 
   if (!hayConexionInternet()) {
@@ -678,6 +684,7 @@ export async function depositarSupabaseEnLocal(options?: {
 }
 
 export async function sincronizarAlIniciarSesion(usuarioNube: Record<string, any>) {
+  if (!isLocalDbEnabled()) return;
   const db = await asegurarPowerSyncListo();
   if (db && usuarioNube?.id) {
     try {
@@ -844,7 +851,41 @@ export async function obtenerProgresoEstudianteHibrido(userId: string): Promise<
   offlineMode: boolean;
   errorMessage: string | null;
 }> {
-  await seedPlanetasYNivelesLocalesSiVacio();
+  const localEnabled = isLocalDbEnabled();
+  if (localEnabled) {
+    await seedPlanetasYNivelesLocalesSiVacio();
+  }
+
+  if (!localEnabled) {
+    try {
+      const { data, error } = await supabase
+        .from('progreso_usuario')
+        .select('id, usuario_id, nivel_id, completado, estrellas, ultima_sesion')
+        .eq('usuario_id', userId);
+
+      if (!error && data) {
+        marcarConexionReal(true);
+        const { progressMap, totalStars } = buildProgressMap(data);
+        return {
+          progressMap,
+          totalStars,
+          offlineMode: false,
+          errorMessage: null,
+        };
+      }
+      if (error) esErrorDeRed(error);
+    } catch (err) {
+      esErrorDeRed(err);
+    }
+    const { progressMap, totalStars } = buildProgressMap([]);
+    return {
+      progressMap,
+      totalStars,
+      offlineMode: !hayConexionInternet(),
+      errorMessage:
+        'Modo Solo en la Nube activo: se requiere conexión a internet para consultar tu progreso en Supabase.',
+    };
+  }
 
   if (hayConexionInternet()) {
     try {
@@ -913,7 +954,8 @@ export async function guardarProgresoHibrido(
   estrellas: number,
 ): Promise<{ ok: boolean; syncedToCloud: boolean }> {
   const ahora = new Date().toISOString();
-  const db = await asegurarPowerSyncListo();
+  const localEnabled = isLocalDbEnabled();
+  const db = localEnabled ? await asegurarPowerSyncListo() : null;
 
   let estrellasGuardadas = estrellas;
 
@@ -947,7 +989,7 @@ export async function guardarProgresoHibrido(
     }
   }
 
-  if (hayConexionInternet()) {
+  if (!localEnabled || hayConexionInternet()) {
     try {
       const { data: existente, error: errSelect } = await supabase
         .from('progreso_usuario')
@@ -993,16 +1035,26 @@ export async function guardarProgresoHibrido(
         if (errIns) throw errIns;
       }
 
+      marcarConexionReal(true);
+
       try {
         await actualizarProgresoUsuario(userId, nivelId, completado, estrellasFinales);
       } catch {}
 
       return { ok: true, syncedToCloud: true };
     } catch (err) {
+      if (!localEnabled) {
+        esErrorDeRed(err);
+        return { ok: false, syncedToCloud: false };
+      }
       if (!esErrorDeRed(err)) {
         console.warn('Guardado remoto falló, encolando en local_outbox:', err);
       }
     }
+  }
+
+  if (!localEnabled) {
+    return { ok: false, syncedToCloud: false };
   }
 
   await enqueueOutbox('progreso_usuario', 'UPSERT', `${userId}:${nivelId}`, {
@@ -1035,6 +1087,36 @@ export async function obtenerUsuariosHibrido(filtro?: {
       if (filtro?.soloInactivos && u.status !== false) return false;
       return true;
     });
+
+  const localEnabled = isLocalDbEnabled();
+
+  if (!localEnabled) {
+    try {
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('id, nombre, usuario, correo, contrasena, role, status')
+        .neq('role', 'admin')
+        .order('nombre', { ascending: true });
+
+      if (!error && data) {
+        marcarConexionReal(true);
+        const normalizados: LocalUsuarioRow[] = data.map((u: any) => ({
+          id: String(u.id),
+          nombre: String(u.nombre || ''),
+          usuario: String(u.usuario || ''),
+          correo: String(u.correo || ''),
+          contrasena: String(u.contrasena || ''),
+          role: String(u.role || 'student'),
+          status: u.status === false ? false : true,
+        }));
+        return { usuarios: applyFilter(normalizados), offlineMode: false };
+      }
+      if (error) esErrorDeRed(error);
+    } catch (err) {
+      esErrorDeRed(err);
+    }
+    return { usuarios: [], offlineMode: !hayConexionInternet() };
+  }
 
   if (hayConexionInternet()) {
     try {
@@ -1105,7 +1187,8 @@ export async function actualizarUsuarioHibrido(
     status: boolean;
   }>,
 ): Promise<{ ok: boolean; syncedToCloud: boolean; errorMessage?: string }> {
-  const db = await asegurarPowerSyncListo();
+  const localEnabled = isLocalDbEnabled();
+  const db = localEnabled ? await asegurarPowerSyncListo() : null;
   if (db) {
     const sets: string[] = [];
     const params: any[] = [];
@@ -1142,20 +1225,29 @@ export async function actualizarUsuarioHibrido(
     }
   }
 
-  if (hayConexionInternet()) {
+  if (!localEnabled || hayConexionInternet()) {
     try {
       const { error } = await supabase
         .from('usuarios')
         .update(patch)
         .eq('id', userId);
       if (error) {
-        if (!esErrorDeRed(error)) {
+        if (!localEnabled || !esErrorDeRed(error)) {
           return { ok: false, syncedToCloud: false, errorMessage: error.message };
         }
         throw error;
       }
+      marcarConexionReal(true);
       return { ok: true, syncedToCloud: true };
     } catch (err) {
+      if (!localEnabled) {
+        esErrorDeRed(err);
+        return {
+          ok: false,
+          syncedToCloud: false,
+          errorMessage: 'Modo Solo en la Nube activo: se requiere internet para actualizar usuarios en Supabase.',
+        };
+      }
       if (!esErrorDeRed(err)) {
         return {
           ok: false,
@@ -1166,6 +1258,14 @@ export async function actualizarUsuarioHibrido(
     }
   }
 
+  if (!localEnabled) {
+    return {
+      ok: false,
+      syncedToCloud: false,
+      errorMessage: 'Modo Solo en la Nube activo: se requiere internet.',
+    };
+  }
+
   await enqueueOutbox('usuarios', 'PATCH', userId, patch as Record<string, any>);
   return { ok: true, syncedToCloud: false };
 }
@@ -1173,25 +1273,44 @@ export async function actualizarUsuarioHibrido(
 export async function eliminarUsuarioHibrido(
   userId: string,
 ): Promise<{ ok: boolean; syncedToCloud: boolean; errorMessage?: string }> {
-  const db = await asegurarPowerSyncListo();
+  const localEnabled = isLocalDbEnabled();
+  const db = localEnabled ? await asegurarPowerSyncListo() : null;
   if (db) {
     await db.execute('DELETE FROM local_usuarios WHERE id = ?', [userId]);
   }
 
-  if (hayConexionInternet()) {
+  if (!localEnabled || hayConexionInternet()) {
     try {
       const { error } = await supabase
         .from('usuarios')
         .delete()
         .eq('id', userId);
       if (error) {
-        if (!esErrorDeRed(error)) {
+        if (!localEnabled || !esErrorDeRed(error)) {
           return { ok: false, syncedToCloud: false, errorMessage: error.message };
         }
         throw error;
       }
+      marcarConexionReal(true);
       return { ok: true, syncedToCloud: true };
-    } catch {}
+    } catch (err) {
+      if (!localEnabled) {
+        esErrorDeRed(err);
+        return {
+          ok: false,
+          syncedToCloud: false,
+          errorMessage: 'Modo Solo en la Nube activo: se requiere internet para eliminar usuarios en Supabase.',
+        };
+      }
+    }
+  }
+
+  if (!localEnabled) {
+    return {
+      ok: false,
+      syncedToCloud: false,
+      errorMessage: 'Modo Solo en la Nube activo: se requiere internet.',
+    };
   }
 
   await enqueueOutbox('usuarios', 'DELETE', userId, { id: userId });
@@ -1203,6 +1322,46 @@ export async function obtenerAsignacionesHibrido(): Promise<{
   relaciones: LocalRelacionTutorRow[];
   offlineMode: boolean;
 }> {
+  const localEnabled = isLocalDbEnabled();
+
+  if (!localEnabled) {
+    try {
+      const [resU, resR] = await Promise.all([
+        supabase
+          .from('usuarios')
+          .select('id, nombre, usuario, correo, contrasena, role, status')
+          .neq('role', 'admin')
+          .order('nombre', { ascending: true }),
+        supabase
+          .from('tutor_estudiantes')
+          .select('id, tutor_id, estudiante_id, fecha_asignacion'),
+      ]);
+
+      if (!resU.error && !resR.error && resU.data && resR.data) {
+        marcarConexionReal(true);
+        const users: LocalUsuarioRow[] = resU.data.map((u: any) => ({
+          id: String(u.id),
+          nombre: String(u.nombre || ''),
+          usuario: String(u.usuario || ''),
+          correo: String(u.correo || ''),
+          contrasena: String(u.contrasena || ''),
+          role: String(u.role || 'student'),
+          status: u.status === false ? false : true,
+        }));
+        const rels: LocalRelacionTutorRow[] = resR.data.map((r: any) => ({
+          id: r.id,
+          tutor_id: String(r.tutor_id),
+          estudiante_id: String(r.estudiante_id),
+          fecha_asignacion: r.fecha_asignacion || null,
+        }));
+        return { usuarios: users, relaciones: rels, offlineMode: false };
+      }
+    } catch (err) {
+      esErrorDeRed(err);
+    }
+    return { usuarios: [], relaciones: [], offlineMode: !hayConexionInternet() };
+  }
+
   if (hayConexionInternet()) {
     try {
       await sincronizarPendientesASupabase();
@@ -1270,7 +1429,8 @@ export async function guardarAsignacionHibrido(
   accion: 'ASSIGN' | 'UNASSIGN',
 ): Promise<{ ok: boolean; syncedToCloud: boolean; nuevaRelacion?: LocalRelacionTutorRow }> {
   const fecha = new Date().toISOString();
-  const db = await asegurarPowerSyncListo();
+  const localEnabled = isLocalDbEnabled();
+  const db = localEnabled ? await asegurarPowerSyncListo() : null;
   const localId = makeUuid();
 
   if (db) {
@@ -1288,7 +1448,7 @@ export async function guardarAsignacionHibrido(
     });
   }
 
-  if (hayConexionInternet()) {
+  if (!localEnabled || hayConexionInternet()) {
     try {
       if (accion === 'UNASSIGN') {
         const { error } = await supabase
@@ -1297,6 +1457,7 @@ export async function guardarAsignacionHibrido(
           .eq('estudiante_id', estudianteId)
           .eq('tutor_id', tutorId);
         if (error) throw error;
+        marcarConexionReal(true);
         return { ok: true, syncedToCloud: true };
       } else {
         await supabase
@@ -1311,6 +1472,7 @@ export async function guardarAsignacionHibrido(
           .single();
 
         if (error) throw error;
+        marcarConexionReal(true);
         return {
           ok: true,
           syncedToCloud: true,
@@ -1318,10 +1480,18 @@ export async function guardarAsignacionHibrido(
         };
       }
     } catch (err) {
+      if (!localEnabled) {
+        esErrorDeRed(err);
+        return { ok: false, syncedToCloud: false };
+      }
       if (!esErrorDeRed(err)) {
         return { ok: false, syncedToCloud: false };
       }
     }
+  }
+
+  if (!localEnabled) {
+    return { ok: false, syncedToCloud: false };
   }
 
   await enqueueOutbox('tutor_estudiantes', accion, estudianteId, {
@@ -1346,9 +1516,13 @@ export async function obtenerDatosMaestroHibrido(tutorId: string): Promise<{
   progreso: LocalProgresoRow[];
   offlineMode: boolean;
 }> {
-  if (hayConexionInternet()) {
+  const localEnabled = isLocalDbEnabled();
+
+  if (!localEnabled || hayConexionInternet()) {
     try {
-      await sincronizarPendientesASupabase();
+      if (localEnabled) {
+        await sincronizarPendientesASupabase();
+      }
       const { data: asignaciones, error: errAsig } = await supabase
         .from('tutor_estudiantes')
         .select('id, tutor_id, estudiante_id, fecha_asignacion')
@@ -1362,6 +1536,7 @@ export async function obtenerDatosMaestroHibrido(tutorId: string): Promise<{
         .select('*', { count: 'exact', head: true });
 
       if (idsAsignados.length === 0) {
+        marcarConexionReal(true);
         return {
           totalNiveles: conteoNiveles && conteoNiveles > 0 ? conteoNiveles : 12,
           estudiantes: [],
@@ -1386,8 +1561,12 @@ export async function obtenerDatosMaestroHibrido(tutorId: string): Promise<{
       if (resU.error) throw resU.error;
       if (resP.error) throw resP.error;
 
-      // Depositar también todas las tablas en background para modo offline completo
-      void depositarSupabaseEnLocal({ force: true });
+      marcarConexionReal(true);
+
+      // Depositar también todas las tablas en background solo si Modo PLUS está activo
+      if (localEnabled) {
+        void depositarSupabaseEnLocal({ force: true });
+      }
 
       return {
         totalNiveles: conteoNiveles && conteoNiveles > 0 ? conteoNiveles : 12,
@@ -1396,6 +1575,15 @@ export async function obtenerDatosMaestroHibrido(tutorId: string): Promise<{
         offlineMode: false,
       };
     } catch (err) {
+      if (!localEnabled) {
+        esErrorDeRed(err);
+        return {
+          totalNiveles: 12,
+          estudiantes: [],
+          progreso: [],
+          offlineMode: true,
+        };
+      }
       if (!esErrorDeRed(err)) {
         console.warn('Error cargando datos del tutor en Supabase:', err);
       }
@@ -1471,6 +1659,7 @@ export async function guardarPreguntaEnCacheLocal(
   nivelDificultad: number,
   payload: unknown,
 ) {
+  if (!isLocalDbEnabled()) return;
   const db = await asegurarPowerSyncListo();
   if (!db) return;
   try {
@@ -1492,6 +1681,7 @@ export async function leerPreguntasDeCacheLocal<T = any>(
   planeta: 'Numérix' | 'Letralia' | 'Naturae',
   tipo: 'regular' | 'boss' | 'intruso' | 'puente' | 'tormenta',
 ): Promise<T[]> {
+  if (!isLocalDbEnabled()) return [];
   const db = await asegurarPowerSyncListo();
   if (!db) return [];
   try {
@@ -1511,4 +1701,153 @@ export async function leerPreguntasDeCacheLocal<T = any>(
   } catch {
     return [];
   }
+}
+
+/* ════════════════════════ CONTROL ADMIN: MODO NUBE vs MODO PLUS ════════════════════════ */
+
+export async function desactivarRecursosLocalesModoNube(): Promise<void> {
+  await desconectarPowerSync();
+
+  if (typeof window !== 'undefined') {
+    if ('serviceWorker' in navigator) {
+      try {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.allSettled(regs.map((r) => r.unregister()));
+      } catch {}
+    }
+
+    if ('caches' in window) {
+      try {
+        const keys = await window.caches.keys();
+        await Promise.allSettled(
+          keys
+            .filter((k) => k.startsWith('universo-offline'))
+            .map((k) => window.caches.delete(k)),
+        );
+      } catch {}
+    }
+  }
+
+  notifySyncListeners({
+    syncing: false,
+    pendingCount: 0,
+    lastMessage: 'Modo Solo en la Nube activo (BD local desactivada).',
+  });
+}
+
+export async function descargarTodoModoPlus(
+  onProgress?: (step: string, percent: number) => void,
+): Promise<{
+  ok: boolean;
+  rutasCacheadas: number;
+  fecha: string;
+  error?: string;
+}> {
+  const fecha = new Date().toISOString();
+
+  if (typeof window === 'undefined') {
+    return { ok: false, rutasCacheadas: 0, fecha, error: 'Solo disponible en navegador.' };
+  }
+
+  if (!isLocalDbEnabled()) {
+    return {
+      ok: false,
+      rutasCacheadas: 0,
+      fecha,
+      error: 'Activa primero el Modo PLUS antes de descargar los recursos y la BD local.',
+    };
+  }
+
+  onProgress?.('Verificando conexión con Supabase y servidor...', 10);
+  const onlineReal = await comprobarConexionReal();
+  if (!onlineReal) {
+    return {
+      ok: false,
+      rutasCacheadas: 0,
+      fecha,
+      error: 'No se detectó conexión a internet para descargar la página y la BD de Supabase.',
+    };
+  }
+
+  let rutasCacheadas = 0;
+
+  if ('serviceWorker' in navigator) {
+    onProgress?.('Activando motor sin conexión (Service Worker)...', 25);
+    try {
+      await navigator.serviceWorker.register('/sw.js');
+    } catch {}
+  }
+
+  if ('caches' in window) {
+    onProgress?.('Descargando páginas, imágenes y scripts en el navegador...', 45);
+    try {
+      const cache = await window.caches.open('universo-offline-v3');
+      const staticUrls = new Set<string>([
+        '/',
+        '/about',
+        '/how-to-play',
+        '/minijuegos',
+        '/configuracion',
+        '/dashboard',
+        '/planeta/1',
+        '/planeta/2',
+        '/planeta/3',
+        '/juego/1/1',
+        '/juego/2/7',
+        '/juego/3/10',
+        '/maestro',
+        '/maestro/ia',
+        '/admin',
+        '/admin/pendientes',
+        '/admin/usuarios',
+        '/asignaciones',
+        '/manifest.webmanifest',
+        '/api/minijuegos',
+        '/api/system-config',
+        '/images/liquid-prism-bg.jpg',
+        '/images/liquid-prism-light-bg.jpg',
+        '/images/numerix-board-bg.jpg',
+        '/images/letralia-board-bg.jpg',
+        '/images/naturae-board-bg.jpg',
+      ]);
+
+      document.querySelectorAll('script[src]').forEach((el) => {
+        const src = el.getAttribute('src');
+        if (src && src.startsWith('/')) staticUrls.add(src);
+      });
+      document.querySelectorAll('link[rel="stylesheet"][href]').forEach((el) => {
+        const href = el.getAttribute('href');
+        if (href && href.startsWith('/')) staticUrls.add(href);
+      });
+
+      const list = Array.from(staticUrls);
+      const batchSize = 6;
+      for (let i = 0; i < list.length; i += batchSize) {
+        const batch = list.slice(i, i + batchSize);
+        await Promise.allSettled(
+          batch.map(async (url) => {
+            const res = await fetch(url, { cache: 'reload' });
+            if (res.ok) {
+              await cache.put(url, res);
+              rutasCacheadas += 1;
+            }
+          }),
+        );
+        const pct = Math.min(78, 45 + Math.round(((i + batch.length) / list.length) * 33));
+        onProgress?.(`Guardando recursos locales (${rutasCacheadas} archivos)...`, pct);
+      }
+    } catch {}
+  }
+
+  onProgress?.('Respaldando base de datos Supabase en PowerSync SQLite local...', 85);
+  await asegurarPowerSyncListo();
+  await depositarSupabaseEnLocal({ force: true });
+
+  try {
+    window.localStorage.setItem('universo-plus-last-download', fecha);
+    window.localStorage.setItem('universo-plus-cached-count', String(rutasCacheadas));
+  } catch {}
+
+  onProgress?.('Modo PLUS descargado y listo para funcionar sin conexión.', 100);
+  return { ok: true, rutasCacheadas, fecha };
 }

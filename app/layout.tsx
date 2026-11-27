@@ -15,9 +15,10 @@ export const metadata: Metadata = {
   title: 'Universo del Conocimiento',
   description:
     'Plataforma educativa gamificada para niños de 10 a 12 años. Explora planetas, aprende matemáticas, lengua y ciencias.',
+  manifest: '/manifest.webmanifest',
 };
 
-const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('universo-theme');var v=(t==='light'||t==='dark')?t:'dark';var r=document.documentElement;r.dataset.theme=v;r.classList.remove('light','dark');r.classList.add(v);var m=document.querySelector('meta[name="color-scheme"]');if(m){m.content=v;}}catch(e){}})();`;
+const THEME_INIT_SCRIPT = `(function(){try{var r=document.documentElement;var t=localStorage.getItem('universo-theme');var v=(t==='light'||t==='dark')?t:'dark';r.dataset.theme=v;r.classList.remove('light','dark');r.classList.add(v);var m=document.querySelector('meta[name="color-scheme"]');if(m){m.content=v;}var dm=localStorage.getItem('universo-design-mode');r.dataset.designMode=(dm==='eco'||dm==='original')?dm:'original';var er=localStorage.getItem('universo-easy-reading');r.dataset.easyReading=(er==='true')?'true':'false';}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

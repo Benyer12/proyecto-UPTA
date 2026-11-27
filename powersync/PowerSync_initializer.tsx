@@ -8,20 +8,39 @@ import {
 import {
   comprobarConexionReal,
   depositarSupabaseEnLocal,
+  desactivarRecursosLocalesModoNube,
   obtenerEstadoSyncActual,
   sincronizarPendientesASupabase,
   type SyncStatusState,
 } from '../lib/offline-sync';
 import { useAuthStore } from '../lib/auth-store';
+import { useSettingsStore } from '../lib/settings-store';
 
 export default function PowerSyncInitializer() {
   const user = useAuthStore((s) => s.user);
+  const localDbEnabled = useSettingsStore((s) => s.localDbEnabled);
+  const initSettings = useSettingsStore((s) => s.initSettings);
+  const initialized = useSettingsStore((s) => s.initialized);
+
   const [syncState, setSyncState] = useState<SyncStatusState>(() =>
     obtenerEstadoSyncActual(),
   );
   const [recentNotice, setRecentNotice] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!initialized) {
+      initSettings();
+    }
+  }, [initialized, initSettings]);
+
+  useEffect(() => {
+    if (!initialized) return;
+
+    if (!localDbEnabled) {
+      void desactivarRecursosLocalesModoNube();
+      return;
+    }
+
     let cancelled = false;
     let noticeTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -71,11 +90,9 @@ export default function PowerSyncInitializer() {
     };
 
     const handleOffline = () => {
-      // Verifica con ping real a Supabase antes de marcar offline (evita falsos positivos en Windows/VPN)
       void comprobarConexionReal();
     };
 
-    // Reintenta comprobar conexión periódicamente solo si estaba sin internet o con pendientes
     const interval = setInterval(() => {
       const est = obtenerEstadoSyncActual();
       if (!est.online || est.pendingCount > 0) {
@@ -95,7 +112,9 @@ export default function PowerSyncInitializer() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [user?.id, user?.role]);
+  }, [user?.id, user?.role, localDbEnabled, initialized]);
+
+  if (!localDbEnabled) return null;
 
   const showPill =
     !syncState.online ||
@@ -111,7 +130,7 @@ export default function PowerSyncInitializer() {
       aria-live="polite"
       className="fixed bottom-4 left-4 z-[90] pointer-events-none select-none"
     >
-      <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#050a18]/85 backdrop-blur-md px-3.5 py-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.45)]">
+      <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#050a18]/85 px-3.5 py-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.45)]">
         <span
           className={`w-2 h-2 rounded-full shrink-0 ${
             !syncState.online
@@ -125,7 +144,7 @@ export default function PowerSyncInitializer() {
           {!syncState.online
             ? syncState.pendingCount > 0
               ? `Sin internet · ${syncState.pendingCount} ${syncState.pendingCount === 1 ? 'cambio guardado en BD local' : 'cambios guardados en BD local'}`
-              : 'Sin internet · Modo local PowerSync activo'
+              : 'Sin internet · Modo PLUS local activo'
             : syncState.syncing
               ? `Sincronizando ${syncState.pendingCount} cambios con Supabase...`
               : syncState.pendingCount > 0

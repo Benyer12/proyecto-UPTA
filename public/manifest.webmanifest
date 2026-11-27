@@ -1,0 +1,24 @@
+{
+  "name": "Universo del Conocimiento",
+  "short_name": "Universo",
+  "description": "Plataforma educativa gamificada para niños de 10 a 12 años con modo offline e híbrido.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030014",
+  "theme_color": "#060914",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/globe.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/liquid-prism-bg.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}

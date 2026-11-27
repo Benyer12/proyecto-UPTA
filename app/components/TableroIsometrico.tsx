@@ -4,6 +4,7 @@ import { type CSSProperties, useState, useCallback, useRef, useEffect, useMemo }
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../lib/auth-store';
+import { useSettingsStore } from '../../lib/settings-store';
 import {
   guardarProgresoHibrido,
   hayConexionInternet,
@@ -137,16 +138,25 @@ function CapsulaNucleo({
   color: string;
   glow: string;
 }) {
+  const isEco = useSettingsStore((s) => s.designMode === 'eco');
   return (
     <motion.div
-      animate={activo ? { scale: [1, 1.05, 1] } : undefined}
+      animate={activo && !isEco ? { scale: [1, 1.05, 1] } : undefined}
       className="relative h-[76px] rounded-2xl p-1.5 flex flex-col items-center justify-between transition-all liquid-glass-pill"
       style={{
-        background: activo
-          ? `linear-gradient(165deg, ${color}24 0%, rgba(16, 24, 52, 0.78) 100%)`
-          : 'linear-gradient(165deg, rgba(255,255,255,0.04) 0%, rgba(7, 11, 24, 0.72) 100%)',
+        background: isEco
+          ? activo
+            ? 'rgba(12, 34, 68, 0.92)'
+            : 'rgba(7, 14, 32, 0.88)'
+          : activo
+            ? `linear-gradient(165deg, ${color}24 0%, rgba(16, 24, 52, 0.78) 100%)`
+            : 'linear-gradient(165deg, rgba(255,255,255,0.04) 0%, rgba(7, 11, 24, 0.72) 100%)',
         borderColor: activo ? `${color}75` : 'rgba(147, 197, 253, 0.14)',
-        boxShadow: activo ? `0 0 18px ${glow}` : 'inset 0 2px 6px rgba(0,0,0,0.45)',
+        boxShadow: isEco
+          ? 'none'
+          : activo
+            ? `0 0 18px ${glow}`
+            : 'inset 0 2px 6px rgba(0,0,0,0.45)',
       }}
     >
       <div
@@ -160,12 +170,16 @@ function CapsulaNucleo({
       <div
         className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-lg transition-all"
         style={{
-          background: activo
-            ? `radial-gradient(circle, ${color}28 0%, rgba(12, 18, 40, 0.85) 100%)`
-            : 'rgba(10, 15, 32, 0.65)',
+          background: isEco
+            ? activo
+              ? 'rgba(14, 38, 72, 0.95)'
+              : 'rgba(10, 15, 32, 0.85)'
+            : activo
+              ? `radial-gradient(circle, ${color}28 0%, rgba(12, 18, 40, 0.85) 100%)`
+              : 'rgba(10, 15, 32, 0.65)',
           border: activo ? `1.5px solid ${color}88` : '1px solid rgba(148, 163, 184, 0.16)',
           color: activo ? color : '#64748B',
-          textShadow: activo ? `0 0 10px ${color}` : 'none',
+          textShadow: activo && !isEco ? `0 0 10px ${color}` : 'none',
         }}
       >
         {activo ? operador : '?'}
@@ -772,6 +786,8 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
   }, [guardarProgresoEnSupabase, aciertos, totalPreguntas, router]);
 
   /* ── Reiniciar partida ── */
+  const isEco = useSettingsStore((s) => s.designMode === 'eco');
+
   const handleRestart = useCallback(() => {
     setPos(0);
     setAciertos(0);
@@ -790,10 +806,12 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
 
   return (
     <div
+      data-game-board="true"
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
-        background:
-          'radial-gradient(ellipse at 42% 48%, #041944 0%, #010D24 56%, #000612 100%)',
+        background: isEco
+          ? '#020B1F'
+          : 'radial-gradient(ellipse at 42% 48%, #041944 0%, #010D24 56%, #000612 100%)',
       }}
     >
       {/* Fondo de curvas 3D tornasol azul eléctrico de Numérix debajo del mapa */}
@@ -803,11 +821,13 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         aria-hidden="true"
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-95 mix-blend-screen"
+        className={`pointer-events-none absolute inset-0 h-full w-full object-cover object-center ${
+          isEco ? 'opacity-80' : 'opacity-95 mix-blend-screen'
+        }`}
       />
 
-      {/* Destellos estelares finos en el cosmos profundo */}
-      {[
+      {/* Destellos estelares finos en el cosmos profundo (omitidos en Modo Ahorro) */}
+      {!isEco && [
         { x: '8%', y: '18%', size: 6, color: 'rgba(103, 232, 249, 0.9)', dur: '5.8s', delay: '-1.1s' },
         { x: '42%', y: '8%', size: 6, color: 'rgba(255, 255, 255, 0.9)', dur: '6.6s', delay: '-3.4s' },
         { x: '70%', y: '14%', size: 6, color: 'rgba(147, 197, 253, 0.9)', dur: '6.2s', delay: '-2.0s' },
@@ -849,13 +869,15 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         {/* ── Arriba al Centro: Píldora Cristal Líquido "⚡ SALTO CUÁNTICO ✦" ── */}
         <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center pointer-events-none">
           <div
-            className="liquid-glass-pill px-6 sm:px-8 py-2 rounded-full flex items-center gap-3 backdrop-blur-md"
+            className={`liquid-glass-pill px-6 sm:px-8 py-2 rounded-full flex items-center gap-3 ${isEco ? '' : 'backdrop-blur-md'}`}
             style={{
-              background:
-                'linear-gradient(135deg, rgba(4, 18, 52, 0.55) 0%, rgba(6, 44, 108, 0.42) 50%, rgba(2, 14, 42, 0.62) 100%)',
+              background: isEco
+                ? 'rgba(5, 22, 58, 0.92)'
+                : 'linear-gradient(135deg, rgba(4, 18, 52, 0.55) 0%, rgba(6, 44, 108, 0.42) 50%, rgba(2, 14, 42, 0.62) 100%)',
               borderColor: 'rgba(186, 230, 253, 0.48)',
-              boxShadow:
-                '0 12px 32px -12px rgba(0, 0, 0, 0.72), inset 0 0 16px rgba(103, 232, 249, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.2)',
+              boxShadow: isEco
+                ? '0 6px 16px rgba(0, 0, 0, 0.45)'
+                : '0 12px 32px -12px rgba(0, 0, 0, 0.72), inset 0 0 16px rgba(103, 232, 249, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.2)',
             }}
           >
             <span className="text-xs text-[#FDE047]">✦</span>
@@ -863,7 +885,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
               className="text-xs sm:text-sm font-black tracking-[0.22em] text-white uppercase"
               style={{
                 fontFamily: "'Orbitron', sans-serif",
-                textShadow: '0 0 14px rgba(0, 245, 255, 0.9)',
+                textShadow: isEco ? 'none' : '0 0 14px rgba(0, 245, 255, 0.9)',
               }}
             >
               SALTO CUÁNTICO
@@ -886,11 +908,15 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         {/* ── Abajo al Centro: Píldora Flotante de Instrucciones en Liquid Glass ── */}
         <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 max-w-[92%] sm:max-w-lg pointer-events-none">
           <div
-            className="px-6 py-2.5 rounded-full liquid-glass-pill backdrop-blur-md flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#E0F2FE] text-center"
+            className={`px-6 py-2.5 rounded-full liquid-glass-pill flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#E0F2FE] text-center ${isEco ? '' : 'backdrop-blur-md'}`}
             style={{
-              background: 'linear-gradient(135deg, rgba(3, 14, 38, 0.62) 0%, rgba(4, 24, 62, 0.52) 100%)',
+              background: isEco
+                ? 'rgba(4, 18, 48, 0.94)'
+                : 'linear-gradient(135deg, rgba(3, 14, 38, 0.62) 0%, rgba(4, 24, 62, 0.52) 100%)',
               borderColor: 'rgba(186, 230, 253, 0.36)',
-              boxShadow: '0 14px 34px -14px rgba(0, 0, 0, 0.78), inset 0 0 14px rgba(103, 232, 249, 0.1)',
+              boxShadow: isEco
+                ? '0 6px 16px rgba(0, 0, 0, 0.45)'
+                : '0 14px 34px -14px rgba(0, 0, 0, 0.78), inset 0 0 14px rgba(103, 232, 249, 0.1)',
             }}
           >
             <span className="text-[#00F5FF]">✦</span>
@@ -902,13 +928,15 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
       {/* ════════════════════ HUD LATERAL DERECHO EN LIQUID GLASS OBSIDIANA 3D ════════════════════ */}
       <aside className="relative z-30 w-full lg:w-[335px] xl:w-[355px] lg:h-full p-2.5 sm:p-3.5 flex flex-col justify-center shrink-0">
         <div
-          className="relative w-full h-full max-h-[820px] rounded-3xl liquid-glass liquid-glass-panel p-4 sm:p-5 flex flex-col justify-between overflow-x-clip overflow-y-auto backdrop-blur-lg"
+          className={`relative w-full h-full max-h-[820px] rounded-3xl liquid-glass liquid-glass-panel p-4 sm:p-5 flex flex-col justify-between overflow-x-clip overflow-y-auto ${isEco ? '' : 'backdrop-blur-lg'}`}
           style={{
-            background:
-              'linear-gradient(165deg, rgba(4, 18, 52, 0.62) 0%, rgba(2, 12, 36, 0.72) 55%, rgba(1, 7, 22, 0.82) 100%)',
+            background: isEco
+              ? 'rgba(5, 16, 44, 0.94)'
+              : 'linear-gradient(165deg, rgba(4, 18, 52, 0.62) 0%, rgba(2, 12, 36, 0.72) 55%, rgba(1, 7, 22, 0.82) 100%)',
             borderColor: 'rgba(186, 230, 253, 0.38)',
-            boxShadow:
-              '0 24px 70px -24px rgba(0, 0, 0, 0.85), inset 0 0 24px rgba(103, 232, 249, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.22)',
+            boxShadow: isEco
+              ? '0 10px 24px rgba(0, 0, 0, 0.55)'
+              : '0 24px 70px -24px rgba(0, 0, 0, 0.85), inset 0 0 24px rgba(103, 232, 249, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.22)',
           }}
         >
           {/* ── 1. CABECERA: NUMÉRIX — TABLERO CUÁNTICO ── */}

@@ -64,13 +64,14 @@ export default function RunnerArcadeGame({
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    if (canvas.width !== W * dpr) {
-      canvas.width = W * dpr;
-      canvas.height = H * dpr;
+    const isEcoMode = document.documentElement.dataset.designMode === 'eco';
+    const dpr = isEcoMode ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
+    if (canvas.width !== Math.round(W * dpr)) {
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
@@ -216,7 +217,7 @@ export default function RunnerArcadeGame({
         }
       }
 
-      if (tick % 8 === 0) {
+      if (tick % 12 === 0) {
         scoreRef.current += 1;
         setScore(scoreRef.current);
         if (scoreRef.current > bestRef.current) {

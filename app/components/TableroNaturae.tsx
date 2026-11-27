@@ -4,6 +4,7 @@ import { type CSSProperties, memo, useCallback, useEffect, useMemo, useRef, useS
 import { useParams, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from '../../lib/auth-store';
+import { useSettingsStore } from '../../lib/settings-store';
 import {
   guardarProgresoHibrido,
   hayConexionInternet,
@@ -658,11 +659,16 @@ export default function TableroNaturae({
     }, 950);
   }, [preguntaActiva, opcionElegida, estadoPregunta, totalPreguntas, aciertos, esJefeFinal, guardarProgreso, rachaIA, user?.name, nivelIA]);
 
+  const isEco = useSettingsStore((s) => s.designMode === 'eco');
+
   return (
     <div
+      data-game-board="true"
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
-        background: 'radial-gradient(ellipse at 42% 46%, #032E24 0%, #011410 58%, #000707 100%)',
+        background: isEco
+          ? '#01120E'
+          : 'radial-gradient(ellipse at 42% 46%, #032E24 0%, #011410 58%, #000707 100%)',
       }}
     >
       {/* Fondo de curvas 3D tornasol esmeralda de Naturae debajo del mapa */}
@@ -672,11 +678,13 @@ export default function TableroNaturae({
         aria-hidden="true"
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-95 mix-blend-screen"
+        className={`pointer-events-none absolute inset-0 h-full w-full object-cover object-center ${
+          isEco ? 'opacity-80' : 'opacity-95 mix-blend-screen'
+        }`}
       />
 
-      {/* Destellos esmeralda sutiles en el espacio profundo */}
-      {[
+      {/* Destellos esmeralda sutiles en el espacio profundo (omitidos en Modo Ahorro) */}
+      {!isEco && [
         { x: '8%', y: '18%', size: 6, color: 'rgba(110, 231, 183, 0.9)', dur: '5.8s', delay: '-1.0s' },
         { x: '70%', y: '14%', size: 6, color: 'rgba(253, 224, 171, 0.9)', dur: '6.6s', delay: '-2.9s' },
         { x: '10%', y: '80%', size: 6, color: 'rgba(45, 212, 191, 0.9)', dur: '6.1s', delay: '-3.8s' },
@@ -716,11 +724,15 @@ export default function TableroNaturae({
 
         <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center pointer-events-none">
           <div
-            className="liquid-glass-pill px-6 sm:px-8 py-2 rounded-full flex items-center gap-3 backdrop-blur-md"
+            className={`liquid-glass-pill px-6 sm:px-8 py-2 rounded-full flex items-center gap-3 ${isEco ? '' : 'backdrop-blur-md'}`}
             style={{
-              background: 'linear-gradient(135deg, rgba(2, 44, 34, 0.58) 0%, rgba(6, 78, 59, 0.45) 100%)',
+              background: isEco
+                ? 'rgba(3, 38, 29, 0.92)'
+                : 'linear-gradient(135deg, rgba(2, 44, 34, 0.58) 0%, rgba(6, 78, 59, 0.45) 100%)',
               borderColor: 'rgba(110, 231, 183, 0.48)',
-              boxShadow: '0 12px 32px -12px rgba(0, 0, 0, 0.72), inset 0 0 16px rgba(0, 255, 136, 0.14)',
+              boxShadow: isEco
+                ? '0 6px 16px rgba(0, 0, 0, 0.45)'
+                : '0 12px 32px -12px rgba(0, 0, 0, 0.72), inset 0 0 16px rgba(0, 255, 136, 0.14)',
             }}
           >
             <span className="text-xs text-[#FDE047]">✦</span>
@@ -746,9 +758,11 @@ export default function TableroNaturae({
 
         <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 max-w-[92%] sm:max-w-lg pointer-events-none">
           <div
-            className="px-6 py-2.5 rounded-full liquid-glass-pill backdrop-blur-md flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-emerald-50 text-center"
+            className={`px-6 py-2.5 rounded-full liquid-glass-pill flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-emerald-50 text-center ${isEco ? '' : 'backdrop-blur-md'}`}
             style={{
-              background: 'linear-gradient(135deg, rgba(2, 34, 26, 0.68) 0%, rgba(4, 48, 36, 0.58) 100%)',
+              background: isEco
+                ? 'rgba(3, 32, 24, 0.94)'
+                : 'linear-gradient(135deg, rgba(2, 34, 26, 0.68) 0%, rgba(4, 48, 36, 0.58) 100%)',
               borderColor: 'rgba(110, 231, 183, 0.36)',
             }}
           >
@@ -761,13 +775,15 @@ export default function TableroNaturae({
       {/* ── HUD LATERAL DERECHO EN LIQUID GLASS ESMERALDA ── */}
       <aside className="relative z-30 w-full lg:w-[335px] xl:w-[355px] lg:h-full p-2.5 sm:p-3.5 flex flex-col justify-center shrink-0">
         <div
-          className="relative w-full h-full max-h-[820px] rounded-3xl liquid-glass liquid-glass-panel p-4 sm:p-5 flex flex-col justify-between overflow-x-clip overflow-y-auto backdrop-blur-lg"
+          className={`relative w-full h-full max-h-[820px] rounded-3xl liquid-glass liquid-glass-panel p-4 sm:p-5 flex flex-col justify-between overflow-x-clip overflow-y-auto ${isEco ? '' : 'backdrop-blur-lg'}`}
           style={{
-            background:
-              'linear-gradient(165deg, rgba(2, 36, 28, 0.66) 0%, rgba(1, 22, 18, 0.78) 55%, rgba(1, 12, 10, 0.86) 100%)',
+            background: isEco
+              ? 'rgba(2, 28, 22, 0.95)'
+              : 'linear-gradient(165deg, rgba(2, 36, 28, 0.66) 0%, rgba(1, 22, 18, 0.78) 55%, rgba(1, 12, 10, 0.86) 100%)',
             borderColor: 'rgba(110, 231, 183, 0.38)',
-            boxShadow:
-              '0 24px 70px -24px rgba(0, 0, 0, 0.85), inset 0 0 24px rgba(0, 255, 136, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.2)',
+            boxShadow: isEco
+              ? '0 10px 24px rgba(0, 0, 0, 0.55)'
+              : '0 24px 70px -24px rgba(0, 0, 0, 0.85), inset 0 0 24px rgba(0, 255, 136, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.2)',
           }}
         >
           <div className="relative text-center pt-0.5 pb-3 border-b border-emerald-300/15">

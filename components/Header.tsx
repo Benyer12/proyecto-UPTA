@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from '../lib/auth-store';
 import { useThemeStore } from '../lib/theme-store';
+import { useSettingsStore } from '../lib/settings-store';
 import { supabase } from '../lib/supabase';
 import {
   hayConexionInternet,
@@ -17,6 +18,7 @@ import LiquidGlassToast, {
 import { LiquidGlass } from './ui/glasscn/liquid-glass';
 import ThemeTogglePill from './ThemeTogglePill';
 import SoundTogglePill from './SoundTogglePill';
+import DesignModeTogglePill from './DesignModeTogglePill';
 import type { LoginData, RegisterData } from '../shared/types';
 
 interface DropdownParticle {
@@ -62,6 +64,7 @@ const DROPDOWN_LIGHT_PALETTE = [
 function DropdownAntigravityCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const theme = useThemeStore((s) => s.theme);
+  const isEco = useSettingsStore((s) => s.designMode === 'eco');
   const themeRef = useRef(theme);
 
   useEffect(() => {
@@ -69,6 +72,7 @@ function DropdownAntigravityCanvas() {
   }, [theme]);
 
   useEffect(() => {
+    if (isEco) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -268,7 +272,9 @@ function DropdownAntigravityCanvas() {
       ro.disconnect();
       window.removeEventListener('pointermove', handlePointerMove);
     };
-  }, [theme]);
+  }, [theme, isEco]);
+
+  if (isEco) return null;
 
   return (
     <canvas
@@ -332,6 +338,20 @@ function PlanetChipGlyph({ id, color }: { id: 'numerix' | 'letralia' | 'naturae'
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="mx-auto mb-1.5">
       <path d="M18.5 5.5C12.5 5.5 7.5 9 6.5 16.5C14 15.5 18.5 11.5 18.5 5.5Z" stroke={color} strokeWidth="1.6" strokeLinejoin="round" />
       <path d="M6.5 16.5C8.5 13.5 11.5 11 15 9" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function GearIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className={className} aria-hidden="true">
+      <circle cx="10" cy="10" r="2.7" stroke="currentColor" strokeWidth="1.65" />
+      <path
+        d="M10 2.3V4.1M10 15.9V17.7M3.4 6.2L4.95 7.1M15.05 12.9L16.6 13.8M3.4 13.8L4.95 12.9M15.05 7.1L16.6 6.2M6.2 3.4L7.1 4.95M12.9 15.05L13.8 16.6M13.8 3.4L12.9 4.95M7.1 15.05L6.2 16.6"
+        stroke="currentColor"
+        strokeWidth="1.55"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -779,9 +799,22 @@ export default function Header() {
                 </button>
               )}
 
-              {/* Botones compactos de sonido y tema en la barra superior */}
+              {/* Botones compactos de diseño (Original/Ahorro), sonido, tema y configuración */}
+              <DesignModeTogglePill className="hidden sm:inline-flex" />
               <SoundTogglePill className="hidden sm:inline-flex" />
               <ThemeTogglePill className="hidden sm:inline-flex" />
+              <Link
+                href="/configuracion"
+                aria-label="Abrir configuración de la plataforma"
+                title="Configuración"
+                className={`hidden sm:inline-flex items-center justify-center w-[38px] h-[38px] rounded-full border transition-colors shrink-0 ${
+                  pathname === '/configuracion'
+                    ? 'bg-white text-black border-white'
+                    : 'bg-[#060a18]/[0.45] border-white/[0.16] text-white/80 hover:text-white hover:bg-white/[0.12]'
+                }`}
+              >
+                <GearIcon className="w-4 h-4" />
+              </Link>
 
               {/* Botón menú móvil / tablet con etiqueta visible */}
               <button
@@ -880,11 +913,24 @@ export default function Header() {
                   )}
                 </>
               )}
+              <Link
+                href="/configuracion"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`min-h-[44px] flex items-center gap-2 text-sm font-semibold px-3.5 py-2 rounded-xl transition-all ${
+                  pathname === '/configuracion'
+                    ? 'bg-white text-black'
+                    : 'text-white/85 hover:text-white hover:bg-white/[0.07]'
+                }`}
+              >
+                <GearIcon className="w-4 h-4 shrink-0" />
+                <span>Configuración</span>
+              </Link>
               <div className="pt-2 mt-1 border-t border-white/10 flex flex-wrap items-center justify-between gap-2.5 px-2">
                 <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/55">
                   Preferencias
                 </span>
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <DesignModeTogglePill showLabels />
                   <SoundTogglePill showLabels />
                   <ThemeTogglePill showLabels />
                 </div>

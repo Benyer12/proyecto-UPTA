@@ -310,6 +310,8 @@ export default function PacmanArcadeGame({
   const startBestRef = useRef(initialBestScore);
   const matchStartRef = useRef(Date.now());
   const reportedRef = useRef(false);
+  const lastFrightUiRef = useRef(0);
+  const mazeCacheRef = useRef<{ level: number; dpr: number; canvas: HTMLCanvasElement } | null>(null);
   const onFinishRef = useRef(onGameFinished);
   onFinishRef.current = onGameFinished;
 
@@ -325,79 +327,99 @@ export default function PacmanArcadeGame({
   const draw = useCallback((nowMs: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    if (canvas.width !== W * dpr) {
-      canvas.width = W * dpr;
-      canvas.height = H * dpr;
+    const isEcoMode = document.documentElement.dataset.designMode === 'eco';
+    const dpr = isEcoMode ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
+    if (canvas.width !== Math.round(W * dpr)) {
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
     }
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    // Classic arcade pure black space
-    ctx.fillStyle = '#02040D';
-    ctx.fillRect(0, 0, W, H);
 
     const grid = gridRef.current;
-    const mazeTheme = getMazeConfig(levelRef.current);
+    const curLevel = levelRef.current;
+    const mazeTheme = getMazeConfig(curLevel);
 
-    // 1. Classic continuous neon maze walls (color changes per level!)
-    ctx.strokeStyle = mazeTheme.wallStroke;
-    ctx.lineWidth = 2.6;
-    ctx.lineCap = 'round';
-    ctx.shadowColor = mazeTheme.wallGlow;
-    ctx.shadowBlur = 4;
+    // 1. Pre-renderizado estático del laberinto (muros neón + puerta rosa) en caché offscreen
+    let cached = mazeCacheRef.current;
+    if (!cached || cached.level !== curLevel || cached.dpr !== dpr) {
+      const off = document.createElement('canvas');
+      off.width = Math.round(W * dpr);
+      off.height = Math.round(H * dpr);
+      const octx = off.getContext('2d', { alpha: false });
+      if (octx) {
+        octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        octx.fillStyle = '#02040D';
+        octx.fillRect(0, 0, W, H);
 
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        const ch = grid[r][c];
-        const px = c * CELL;
-        const py = r * CELL;
+        octx.strokeStyle = mazeTheme.wallStroke;
+        octx.lineWidth = 2.6;
+        octx.lineCap = 'round';
+        octx.shadowColor = mazeTheme.wallGlow;
+        octx.shadowBlur = isEcoMode ? 0 : 4;
 
-        if (ch === '#') {
-          const topOpen = !isWallTile(grid, c, r - 1);
-          const bottomOpen = !isWallTile(grid, c, r + 1);
-          const leftOpen = !isWallTile(grid, c - 1, r);
-          const rightOpen = !isWallTile(grid, c + 1, r);
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const ch = grid[r][c];
+            const px = c * CELL;
+            const py = r * CELL;
 
-          ctx.fillStyle = mazeTheme.wallFill;
-          ctx.fillRect(px + 2, py + 2, CELL - 4, CELL - 4);
+            if (ch === '#') {
+              const topOpen = !isWallTile(grid, c, r - 1);
+              const bottomOpen = !isWallTile(grid, c, r + 1);
+              const leftOpen = !isWallTile(grid, c - 1, r);
+              const rightOpen = !isWallTile(grid, c + 1, r);
 
-          const inset = 3;
-          ctx.beginPath();
-          if (topOpen) {
-            ctx.moveTo(px + (leftOpen ? inset : 0), py + inset);
-            ctx.lineTo(px + CELL - (rightOpen ? inset : 0), py + inset);
+              octx.fillStyle = mazeTheme.wallFill;
+              octx.fillRect(px + 2, py + 2, CELL - 4, CELL - 4);
+
+              const inset = 3;
+              octx.beginPath();
+              if (topOpen) {
+                octx.moveTo(px + (leftOpen ? inset : 0), py + inset);
+                octx.lineTo(px + CELL - (rightOpen ? inset : 0), py + inset);
+              }
+              if (bottomOpen) {
+                octx.moveTo(px + (leftOpen ? inset : 0), py + CELL - inset);
+                octx.lineTo(px + CELL - (rightOpen ? inset : 0), py + CELL - inset);
+              }
+              if (leftOpen) {
+                octx.moveTo(px + inset, py + (topOpen ? inset : 0));
+                octx.lineTo(px + inset, py + CELL - (bottomOpen ? inset : 0));
+              }
+              if (rightOpen) {
+                octx.moveTo(px + CELL - inset, py + (topOpen ? inset : 0));
+                octx.lineTo(px + CELL - inset, py + CELL - (bottomOpen ? inset : 0));
+              }
+              octx.stroke();
+            } else if (ch === '-') {
+              octx.save();
+              octx.strokeStyle = '#F472B6';
+              octx.lineWidth = 3.5;
+              octx.shadowColor = '#F472B6';
+              octx.beginPath();
+              octx.moveTo(px, py + CELL / 2);
+              octx.lineTo(px + CELL, py + CELL / 2);
+              octx.stroke();
+              octx.restore();
+            }
           }
-          if (bottomOpen) {
-            ctx.moveTo(px + (leftOpen ? inset : 0), py + CELL - inset);
-            ctx.lineTo(px + CELL - (rightOpen ? inset : 0), py + CELL - inset);
-          }
-          if (leftOpen) {
-            ctx.moveTo(px + inset, py + (topOpen ? inset : 0));
-            ctx.lineTo(px + inset, py + CELL - (bottomOpen ? inset : 0));
-          }
-          if (rightOpen) {
-            ctx.moveTo(px + CELL - inset, py + (topOpen ? inset : 0));
-            ctx.lineTo(px + CELL - inset, py + CELL - (bottomOpen ? inset : 0));
-          }
-          ctx.stroke();
-        } else if (ch === '-') {
-          // Pink Ghost House Door
-          ctx.save();
-          ctx.strokeStyle = '#F472B6';
-          ctx.lineWidth = 3.5;
-          ctx.shadowColor = '#F472B6';
-          ctx.beginPath();
-          ctx.moveTo(px, py + CELL / 2);
-          ctx.lineTo(px + CELL, py + CELL / 2);
-          ctx.stroke();
-          ctx.restore();
         }
+        octx.shadowBlur = 0;
+        cached = { level: curLevel, dpr, canvas: off };
+        mazeCacheRef.current = cached;
       }
     }
-    ctx.shadowBlur = 0;
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (cached) {
+      ctx.drawImage(cached.canvas, 0, 0);
+    } else {
+      ctx.fillStyle = '#02040D';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     // 2. Pellets & pulsing Power Pellets
     const pulse = 0.78 + 0.22 * Math.sin(nowMs / 140);
@@ -531,6 +553,7 @@ export default function PacmanArcadeGame({
     fruitPosRef.current = s.fruit;
     frightUntilRef.current = 0;
     eatComboRef.current = 0;
+    lastFrightUiRef.current = 0;
     setFrightTimerUI(0);
   }, []);
 
@@ -723,9 +746,13 @@ export default function PacmanArcadeGame({
         }
       }
 
-      // Fright timer expiration
+      // Fright timer expiration (solo actualiza UI React cuando cambia el segundo entero)
       const isFrightActive = now < frightUntilRef.current;
-      setFrightTimerUI(isFrightActive ? Math.ceil((frightUntilRef.current - now) / 1000) : 0);
+      const nextFrightSec = isFrightActive ? Math.ceil((frightUntilRef.current - now) / 1000) : 0;
+      if (nextFrightSec !== lastFrightUiRef.current) {
+        lastFrightUiRef.current = nextFrightSec;
+        setFrightTimerUI(nextFrightSec);
+      }
 
       // Scatter vs Chase alternating timer (7s scatter, 18s chase)
       const cycleSec = ((now - matchStartRef.current) / 1000) % 25;

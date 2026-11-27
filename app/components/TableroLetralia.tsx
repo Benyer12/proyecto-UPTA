@@ -4,6 +4,7 @@ import { type CSSProperties, useState, useCallback, useRef, useEffect, useMemo }
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../lib/auth-store';
+import { useSettingsStore } from '../../lib/settings-store';
 import { getPlanetById } from '../../lib/mock-data';
 import {
   guardarProgresoHibrido,
@@ -786,12 +787,16 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
     [victoriaFinal, estrellasTotalesFinal, totalPreguntas, aciertosTotales],
   );
 
+  const isEco = useSettingsStore((s) => s.designMode === 'eco');
+
   return (
     <div
+      data-game-board="true"
       className="relative w-full h-full flex flex-col lg:flex-row overflow-hidden select-none"
       style={{
-        background:
-          'radial-gradient(ellipse at 42% 44%, #1A204E 0%, #0D1134 58%, #070922 100%)',
+        background: isEco
+          ? '#0A0E2A'
+          : 'radial-gradient(ellipse at 42% 44%, #1A204E 0%, #0D1134 58%, #070922 100%)',
       }}
     >
       {/* Fondo de curvas 3D tornasol amatista/oro de Letralia debajo del mapa */}
@@ -801,11 +806,13 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         aria-hidden="true"
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-95 mix-blend-screen"
+        className={`pointer-events-none absolute inset-0 h-full w-full object-cover object-center ${
+          isEco ? 'opacity-80' : 'opacity-95 mix-blend-screen'
+        }`}
       />
 
-      {/* Destellos estelares finos en el cielo crepuscular */}
-      {[
+      {/* Destellos estelares finos en el cielo crepuscular (omitidos en Modo Ahorro) */}
+      {!isEco && [
         { x: '8%', y: '14%', size: 6, color: 'rgba(192, 132, 252, 0.9)', dur: '6.0s', delay: '-1.0s' },
         { x: '70%', y: '14%', size: 6, color: 'rgba(253, 224, 171, 0.9)', dur: '6.8s', delay: '-2.9s' },
         { x: '12%', y: '82%', size: 6, color: 'rgba(167, 139, 250, 0.9)', dur: '5.7s', delay: '-4.1s' },
@@ -940,13 +947,15 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="px-5 py-2 rounded-full backdrop-blur-md flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#FDF6E3] text-center"
+                className={`px-5 py-2 rounded-full flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#FDF6E3] text-center ${isEco ? '' : 'backdrop-blur-md'}`}
                 style={{
-                  background:
-                    'linear-gradient(135deg, rgba(35, 47, 82, 0.92) 0%, rgba(49, 46, 129, 0.88) 100%)',
+                  background: isEco
+                    ? 'rgba(35, 47, 82, 0.96)'
+                    : 'linear-gradient(135deg, rgba(35, 47, 82, 0.92) 0%, rgba(49, 46, 129, 0.88) 100%)',
                   border: '2px solid rgba(196, 181, 253, 0.8)',
-                  boxShadow:
-                    '0 10px 28px rgba(15, 23, 42, 0.55), 0 0 18px rgba(167, 139, 250, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.35)',
+                  boxShadow: isEco
+                    ? '0 6px 16px rgba(15, 23, 42, 0.45)'
+                    : '0 10px 28px rgba(15, 23, 42, 0.55), 0 0 18px rgba(167, 139, 250, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.35)',
                 }}
               >
                 <span className="text-[#7DD3FC]">✦</span>
@@ -960,13 +969,15 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
       {/* ════════════════════ HUD ESPACIAL LATERAL DERECHO EN CRISTAL ASTRAL ════════════════════ */}
       <aside className="relative z-30 w-full lg:w-[334px] xl:w-[354px] lg:h-full p-2 sm:p-3 flex flex-col justify-center shrink-0">
         <div
-          className="relative w-full h-full max-h-[830px] rounded-[30px] p-3.5 sm:p-4 flex flex-col justify-between overflow-y-auto backdrop-blur-lg"
+          className={`relative w-full h-full max-h-[830px] rounded-[30px] p-3.5 sm:p-4 flex flex-col justify-between overflow-y-auto ${isEco ? '' : 'backdrop-blur-lg'}`}
           style={{
-            background:
-              'linear-gradient(180deg, rgba(246, 242, 255, 0.84) 0%, rgba(232, 224, 252, 0.78) 52%, rgba(216, 204, 248, 0.82) 100%)',
+            background: isEco
+              ? 'rgba(238, 233, 253, 0.95)'
+              : 'linear-gradient(180deg, rgba(246, 242, 255, 0.84) 0%, rgba(232, 224, 252, 0.78) 52%, rgba(216, 204, 248, 0.82) 100%)',
             border: '2px solid rgba(221, 214, 254, 0.85)',
-            boxShadow:
-              'inset 0 0 24px rgba(255, 255, 255, 0.75), inset 0 0 0 1px rgba(253, 230, 138, 0.35), 0 24px 64px -18px rgba(8, 11, 32, 0.75)',
+            boxShadow: isEco
+              ? '0 12px 24px -10px rgba(8, 11, 32, 0.55)'
+              : 'inset 0 0 24px rgba(255, 255, 255, 0.75), inset 0 0 0 1px rgba(253, 230, 138, 0.35), 0 24px 64px -18px rgba(8, 11, 32, 0.75)',
           }}
         >
           <div className="hidden lg:flex absolute left-1.5 top-1/2 -translate-y-1/2 text-[#7C6BC9] text-xs font-black select-none">

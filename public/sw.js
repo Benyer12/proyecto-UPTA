@@ -1,7 +1,11 @@
-const CACHE_NAME = 'universo-offline-v1';
+const CACHE_NAME = 'universo-offline-v3';
 
 const APP_SHELL_URLS = [
   '/',
+  '/about',
+  '/how-to-play',
+  '/minijuegos',
+  '/configuracion',
   '/dashboard',
   '/planeta/1',
   '/planeta/2',
@@ -10,10 +14,12 @@ const APP_SHELL_URLS = [
   '/juego/2/7',
   '/juego/3/10',
   '/maestro',
+  '/maestro/ia',
   '/admin',
+  '/admin/pendientes',
+  '/admin/usuarios',
   '/asignaciones',
-  '/how-to-play',
-  '/about',
+  '/manifest.webmanifest',
   '/images/liquid-prism-bg.jpg',
   '/images/liquid-prism-light-bg.jpg',
   '/images/numerix-board-bg.jpg',

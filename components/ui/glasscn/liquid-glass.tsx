@@ -13,6 +13,7 @@ import {
 } from 'react';
 import { cn } from '../../../app/utils/cn';
 import { useThemeStore } from '../../../lib/theme-store';
+import { useSettingsStore } from '../../../lib/settings-store';
 
 type MapGeometry = {
   width: number;
@@ -150,6 +151,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
   const filterId = useMemo(() => `liquid-glass-${rawId.replace(/:/g, '')}`, [rawId]);
   const theme = useThemeStore((s) => s.theme);
   const isLight = theme === 'light';
+  const isEco = useSettingsStore((s) => s.designMode === 'eco');
 
   const localRef = useRef<HTMLDivElement | null>(null);
   const setRefs = useCallback(
@@ -164,6 +166,10 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
   const [geometry, setGeometry] = useState<MapGeometry | null>(null);
 
   useEffect(() => {
+    if (isEco) {
+      setGeometry(null);
+      return;
+    }
     const el = localRef.current;
     if (!el) return;
     const measure = () => {
@@ -199,9 +205,9 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [bezel]);
+  }, [bezel, isEco]);
 
-  const mapUrl = useMemo(() => (geometry ? createDisplacementMap(geometry) : ''), [geometry]);
+  const mapUrl = useMemo(() => (isEco || !geometry ? '' : createDisplacementMap(geometry)), [geometry, isEco]);
 
   const [supported, setSupported] = useState(false);
 
@@ -209,7 +215,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
     setSupported(supportsSvgBackdropFilter());
   }, []);
 
-  const refractionActive = supported && !readingPriority && mapUrl !== '';
+  const refractionActive = !isEco && supported && !readingPriority && mapUrl !== '';
   const effectiveBlur = isLight
     ? readingPriority
       ? Math.max(blur, 14)
@@ -218,51 +224,68 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
   const effectiveRefraction = isLight ? Math.min(refraction, 8) : refraction;
   const effectiveSaturation = isLight ? 1.04 : saturation;
 
-  const backdropFilter = refractionActive
-    ? `url(#${filterId}) blur(${effectiveBlur}px) saturate(${effectiveSaturation})`
-    : `blur(${isLight && !readingPriority ? 1.5 : effectiveBlur + 2}px) saturate(${effectiveSaturation})`;
+  const backdropFilter = isEco
+    ? undefined
+    : refractionActive
+      ? `url(#${filterId}) blur(${effectiveBlur}px) saturate(${effectiveSaturation})`
+      : `blur(${isLight && !readingPriority ? 1.5 : effectiveBlur + 2}px) saturate(${effectiveSaturation})`;
 
   return (
     <>
       <div
         ref={setRefs}
         data-liquid-glass="true"
+        data-eco-glass={isEco ? 'true' : undefined}
         data-reading-priority={readingPriority ? 'true' : undefined}
         className={cn(
           'relative overflow-hidden rounded-full',
-          isLight
-            ? readingPriority
-              ? 'bg-white/[0.90] border border-slate-900/[0.12] shadow-[0_24px_64px_-22px_rgba(15,23,42,0.22),inset_0_0_20px_rgba(255,255,255,0.85)]'
-              : 'bg-white/[0.14] border border-white/[0.72] shadow-[0_14px_38px_-22px_rgba(30,64,175,0.16),inset_0_0_20px_rgba(255,255,255,0.34),inset_0_0_0_1px_rgba(255,255,255,0.42)]'
-            : 'bg-white/[0.045] border border-white/[0.16] shadow-[0_24px_80px_-42px_rgba(0,0,0,0.72),inset_0_0_22px_rgba(255,255,255,0.09),inset_0_0_0_1px_rgba(255,255,255,0.16)]',
+          isEco
+            ? isLight
+              ? readingPriority
+                ? 'bg-white/[0.96] border border-slate-900/[0.15] shadow-md'
+                : 'bg-slate-50/[0.88] border border-slate-900/[0.14] shadow-sm'
+              : readingPriority
+                ? 'bg-[#080F22]/[0.95] border border-white/[0.18] shadow-md'
+                : 'bg-[#081024]/[0.86] border border-white/[0.16] shadow-sm'
+            : isLight
+              ? readingPriority
+                ? 'bg-white/[0.90] border border-slate-900/[0.12] shadow-[0_24px_64px_-22px_rgba(15,23,42,0.22),inset_0_0_20px_rgba(255,255,255,0.85)]'
+                : 'bg-white/[0.14] border border-white/[0.72] shadow-[0_14px_38px_-22px_rgba(30,64,175,0.16),inset_0_0_20px_rgba(255,255,255,0.34),inset_0_0_0_1px_rgba(255,255,255,0.42)]'
+              : 'bg-white/[0.045] border border-white/[0.16] shadow-[0_24px_80px_-42px_rgba(0,0,0,0.72),inset_0_0_22px_rgba(255,255,255,0.09),inset_0_0_0_1px_rgba(255,255,255,0.16)]',
           className,
         )}
         style={
           {
             contain: 'layout style',
             ...style,
-            backdropFilter,
-            WebkitBackdropFilter: backdropFilter,
+            ...(backdropFilter
+              ? {
+                  backdropFilter,
+                  WebkitBackdropFilter: backdropFilter,
+                }
+              : {}),
           } as CSSProperties
         }
         {...props}
       >
         {children}
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 rounded-[inherit]"
-          style={{
-            padding: 'var(--liquid-glass-rim-width, 1px)',
-            background: isLight
-              ? readingPriority
-                ? 'rgba(15, 23, 42, 0.14)'
-                : 'rgba(255, 255, 255, 0.86)'
-              : 'var(--liquid-glass-rim-uniform, rgba(255, 255, 255, 0.34))',
-            WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
-            WebkitMaskComposite: 'xor',
-            mask: 'linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0)',
-          }}
-        />
+        {!isEco && (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 rounded-[inherit]"
+            style={{
+              padding: 'var(--liquid-glass-rim-width, 1px)',
+              background: isLight
+                ? readingPriority
+                  ? 'rgba(15, 23, 42, 0.14)'
+                  : 'rgba(255, 255, 255, 0.86)'
+                : 'var(--liquid-glass-rim-uniform, rgba(255, 255, 255, 0.34))',
+              WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
+              WebkitMaskComposite: 'xor',
+              mask: 'linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0)',
+            }}
+          />
+        )}
       </div>
 
       {refractionActive && (

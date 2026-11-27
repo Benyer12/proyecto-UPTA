@@ -1,5 +1,6 @@
 import { PowerSyncDatabase, Schema, Table, column } from '@powersync/web';
 import { AppSyncConnector, supabase } from './powersync-connector';
+import { isLocalDbEnabled } from './settings-store';
 
 // Tablas principales sincronizadas en PowerSync (espejo directo de Supabase)
 const usuarios = new Table({
@@ -176,7 +177,7 @@ let connectorInstance: AppSyncConnector | null = null;
 let isConnectedToPowerSync = false;
 
 export async function asegurarPowerSyncListo(): Promise<PowerSyncDatabase | null> {
-  if (!db || typeof window === 'undefined') return null;
+  if (!db || typeof window === 'undefined' || !isLocalDbEnabled()) return null;
 
   if (!initPromise) {
     initPromise = (async () => {
@@ -197,7 +198,19 @@ export async function asegurarPowerSyncListo(): Promise<PowerSyncDatabase | null
   return readyDb;
 }
 
+export async function desconectarPowerSync() {
+  isConnectedToPowerSync = false;
+  if (!db || typeof window === 'undefined') return;
+  try {
+    await db.disconnect();
+  } catch {}
+}
+
 export async function conectarPowerSyncBridge() {
+  if (!isLocalDbEnabled()) {
+    await desconectarPowerSync();
+    return;
+  }
   const readyDb = await asegurarPowerSyncListo();
   if (!readyDb || isConnectedToPowerSync) return;
 
@@ -220,6 +233,10 @@ export async function conectarPowerSyncBridge() {
 }
 
 export const inicializarBaseDatos = async () => {
+  if (!isLocalDbEnabled()) {
+    await desconectarPowerSync();
+    return;
+  }
   await asegurarPowerSyncListo();
   await conectarPowerSyncBridge();
 };

@@ -102,15 +102,16 @@ export default function TetrisArcadeGame({
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
     const w = COLS * CELL;
     const h = ROWS * CELL;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    if (canvas.width !== w * dpr) {
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
+    const isEcoMode = document.documentElement.dataset.designMode === 'eco';
+    const dpr = isEcoMode ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
+    if (canvas.width !== Math.round(w * dpr)) {
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 

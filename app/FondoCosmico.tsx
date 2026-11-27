@@ -3,6 +3,7 @@
 import type { CSSProperties } from 'react';
 import { usePathname } from 'next/navigation';
 import { useThemeStore } from '../lib/theme-store';
+import { useSettingsStore } from '../lib/settings-store';
 
 interface TornasolGlint {
   x: string;
@@ -63,6 +64,7 @@ const LIGHT_GLINTS: TornasolGlint[] = [
 export default function FondoCosmico() {
   const pathname = usePathname();
   const theme = useThemeStore((s) => s.theme);
+  const isEco = useSettingsStore((s) => s.designMode === 'eco');
 
   // En los tableros de juego (pantalla completa) no dibujamos fondo debajo
   if (pathname?.startsWith('/juego/')) return null;
@@ -89,7 +91,11 @@ export default function FondoCosmico() {
         decoding="async"
         fetchPriority="high"
         className={`absolute inset-0 h-full w-full object-cover object-center ${
-          isLight ? 'opacity-[0.68]' : 'mix-blend-screen opacity-[0.52]'
+          isLight
+            ? 'opacity-[0.68]'
+            : isEco
+              ? 'opacity-[0.44]'
+              : 'mix-blend-screen opacity-[0.52]'
         }`}
       />
 
@@ -103,8 +109,8 @@ export default function FondoCosmico() {
         }}
       />
 
-      {/* Destellos minuciosos, sutiles y elegantes del tornasol (solo opacity/transform en GPU) */}
-      {glints.map((g, idx) => (
+      {/* Destellos minuciosos, sutiles y elegantes del tornasol (omitidos en Modo Ahorro) */}
+      {!isEco && glints.map((g, idx) => (
         <span
           key={`${isLight ? 'l' : 'd'}-${idx}`}
           className={`tornasol-glint ${g.star ? 'tornasol-glint-star' : ''}`}

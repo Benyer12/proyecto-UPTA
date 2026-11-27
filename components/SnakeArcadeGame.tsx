@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { LiquidGlass } from './ui/glasscn/liquid-glass';
 import { useThemeStore } from '../lib/theme-store';
+import { useSoundStore } from '../lib/sound-store';
 import ArcadeScreenFrame from './minijuegos/ArcadeScreenFrame';
 
 type Point = { x: number; y: number };
@@ -87,6 +88,7 @@ export default function SnakeArcadeGame({
   const startBestRef = useRef(initialBestScore);
   const matchStartRef = useRef<number>(Date.now());
   const reportedMatchRef = useRef(false);
+  const audioCtxRef = useRef<AudioContext | null>(null);
   const onGameFinishedRef = useRef(onGameFinished);
   onGameFinishedRef.current = onGameFinished;
 
@@ -109,10 +111,17 @@ export default function SnakeArcadeGame({
   }, [initialAttempts]);
 
   const playEatTone = useCallback(() => {
+    if (useSoundStore.getState().muted) return;
     try {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!AudioCtx) return;
-      const ctx = new AudioCtx();
+      if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+        audioCtxRef.current = new AudioCtx();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === 'suspended') {
+        void ctx.resume();
+      }
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'triangle';
@@ -124,7 +133,6 @@ export default function SnakeArcadeGame({
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.12);
-      setTimeout(() => void ctx.close(), 180);
     } catch {
       // Audio optional
     }
@@ -133,14 +141,15 @@ export default function SnakeArcadeGame({
   const drawBoard = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
     const size = 440;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    if (canvas.width !== size * dpr) {
-      canvas.width = size * dpr;
-      canvas.height = size * dpr;
+    const isEcoMode = document.documentElement.dataset.designMode === 'eco';
+    const dpr = isEcoMode ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
+    if (canvas.width !== Math.round(size * dpr)) {
+      canvas.width = Math.round(size * dpr);
+      canvas.height = Math.round(size * dpr);
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 

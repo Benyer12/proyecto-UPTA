@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo, useState, useCallback } from 'react';
 import { getPlanetById } from '../../../../lib/mock-data';
 import { useAuthStore } from '../../../../lib/auth-store';
+import { useSettingsStore } from '../../../../lib/settings-store';
 import { guardarProgresoHibrido } from '../../../../lib/offline-sync';
 import Dado3D from '../../../components/Dado3D';
 import TableroIsometrico from '../../../components/TableroIsometrico';
@@ -65,6 +66,7 @@ function GenericBoard({
   onRoll: () => void;
   onRollComplete: () => void;
 }) {
+  const isEco = useSettingsStore((s) => s.designMode === 'eco');
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -73,11 +75,15 @@ function GenericBoard({
       className="relative w-full max-w-sm aspect-square"
     >
       <div
-        className="absolute inset-0 rounded-[32px] overflow-hidden liquid-glass backdrop-blur-lg"
+        className={`absolute inset-0 rounded-[32px] overflow-hidden liquid-glass ${isEco ? '' : 'backdrop-blur-lg'}`}
         style={{
           border: `1.5px solid rgba(167, 243, 208, 0.36)`,
-          background: `radial-gradient(ellipse at 50% 40%, ${planetColor}1E, rgba(2, 20, 16, 0.56) 72%)`,
-          boxShadow: `inset 0 0 24px rgba(110, 231, 183, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.22), 0 24px 68px rgba(0, 0, 0, 0.72), 0 0 44px ${planetColor}1A`,
+          background: isEco
+            ? 'rgba(4, 24, 20, 0.92)'
+            : `radial-gradient(ellipse at 50% 40%, ${planetColor}1E, rgba(2, 20, 16, 0.56) 72%)`,
+          boxShadow: isEco
+            ? '0 10px 26px rgba(0, 0, 0, 0.55)'
+            : `inset 0 0 24px rgba(110, 231, 183, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.22), 0 24px 68px rgba(0, 0, 0, 0.72), 0 0 44px ${planetColor}1A`,
         }}
       >
         <div className="absolute inset-4 rounded-2xl border border-white/[0.03]" />
@@ -118,9 +124,13 @@ function GenericBoard({
               }}
             />
 
-            <OrbitingDot radius={85} size={4} color={planetColor} delay={0} />
-            <OrbitingDot radius={100} size={3} color={planetColor} delay={0.8} />
-            <OrbitingDot radius={75} size={3.5} color={planetColor} delay={1.6} />
+            {!isEco && (
+              <>
+                <OrbitingDot radius={85} size={4} color={planetColor} delay={0} />
+                <OrbitingDot radius={100} size={3} color={planetColor} delay={0.8} />
+                <OrbitingDot radius={75} size={3.5} color={planetColor} delay={1.6} />
+              </>
+            )}
 
             <div className="relative flex items-center justify-center" style={{ width: 200, height: 200 }}>
               <Dado3D
@@ -237,6 +247,7 @@ export default function JuegoPage() {
   const params = useParams<{ planetId: string; levelId: string }>();
   const router = useRouter();
   const { user } = useAuthStore();
+  const isEco = useSettingsStore((s) => s.designMode === 'eco');
   const planetId = parseInt(params.planetId, 10);
   const levelId = parseInt(params.levelId, 10);
 
@@ -426,7 +437,9 @@ export default function JuegoPage() {
         aria-hidden="true"
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-95 mix-blend-screen"
+        className={`pointer-events-none absolute inset-0 h-full w-full object-cover object-center ${
+          isEco ? 'opacity-80' : 'opacity-95 mix-blend-screen'
+        }`}
       />
       <div
         aria-hidden="true"
