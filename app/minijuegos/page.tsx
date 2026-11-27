@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import { OrbitalSpinner } from '../../components/ui/PanelSkeletons';
 import LottieAnimation from '../../components/ui/LottieAnimation';
+import rollingCubesData from '../../lib/lottie/rolling-cubes.json';
 import { runViewTransition } from '../../lib/view-transitions';
 import SnakeArcadeGame from '../../components/SnakeArcadeGame';
 import BreakoutArcadeGame from '../../components/minijuegos/BreakoutArcadeGame';
@@ -451,9 +452,18 @@ export default function MinijuegosPage() {
               <LottieAnimation preset="gamepad" size={22} />
               <span>Sala Arcade · 8 Juegos Activos</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Minijuegos Espaciales
-            </h1>
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                Minijuegos Espaciales
+              </h1>
+              <div className="shrink-0 -my-2 flex items-center justify-center rounded-2xl border border-[#67E8F9]/20 bg-white/[0.03] px-1.5 py-0.5 backdrop-blur-md shadow-[0_0_24px_-10px_rgba(103,232,249,0.45)]">
+                <LottieAnimation
+                  animationData={rollingCubesData as Record<string, unknown>}
+                  size={68}
+                  speed={1.15}
+                />
+              </div>
+            </div>
             <p className="text-sm text-white/70 max-w-2xl leading-relaxed">
               Elige cualquiera de los 8 arcades clásicos para divertirte entre misiones. Tus intentos y
               récords personales se guardan automáticamente en la base local de minijuegos.
