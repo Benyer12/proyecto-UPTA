@@ -16,10 +16,6 @@ import LiquidGlassToast, {
   type LiquidGlassToastData,
 } from '../app/components/LiquidGlassToast';
 import { LiquidGlass } from './ui/glasscn/liquid-glass';
-import ThemeTogglePill from './ThemeTogglePill';
-import SoundTogglePill from './SoundTogglePill';
-import DesignModeTogglePill from './DesignModeTogglePill';
-import EasyReadingTogglePill from './EasyReadingTogglePill';
 import type { LoginData, RegisterData } from '../shared/types';
 
 interface DropdownParticle {
@@ -343,16 +339,17 @@ function PlanetChipGlyph({ id, color }: { id: 'numerix' | 'letralia' | 'naturae'
   );
 }
 
-function GearIcon({ className = 'w-4 h-4' }: { className?: string }) {
+function GearIcon({ className = 'w-[18px] h-[18px]' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 20 20" fill="none" className={className} aria-hidden="true">
-      <circle cx="10" cy="10" r="2.7" stroke="currentColor" strokeWidth="1.65" />
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
       <path
-        d="M10 2.3V4.1M10 15.9V17.7M3.4 6.2L4.95 7.1M15.05 12.9L16.6 13.8M3.4 13.8L4.95 12.9M15.05 7.1L16.6 6.2M6.2 3.4L7.1 4.95M12.9 15.05L13.8 16.6M13.8 3.4L12.9 4.95M7.1 15.05L6.2 16.6"
+        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"
         stroke="currentColor"
-        strokeWidth="1.55"
+        strokeWidth="1.8"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
+      <circle cx="12" cy="12" r="3.1" stroke="currentColor" strokeWidth="1.8" />
     </svg>
   );
 }
@@ -404,6 +401,14 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { user, token, login, register, logout, getRedirect } = useAuthStore();
+  const initSettings = useSettingsStore((s) => s.initSettings);
+  const settingsInitialized = useSettingsStore((s) => s.initialized);
+
+  useEffect(() => {
+    if (!settingsInitialized) {
+      initSettings();
+    }
+  }, [settingsInitialized, initSettings]);
 
   const [isOpen, setIsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -800,22 +805,19 @@ export default function Header() {
                 </button>
               )}
 
-              {/* Botones compactos de diseño (Original/Ahorro), lectura fácil, sonido, tema y configuración */}
-              <EasyReadingTogglePill compact className="hidden xl:inline-flex" />
-              <DesignModeTogglePill className="hidden sm:inline-flex" />
-              <SoundTogglePill className="hidden sm:inline-flex" />
-              <ThemeTogglePill className="hidden sm:inline-flex" />
+              {/* Único botón de Configuración (engranaje mecánico) en el panel superior */}
               <Link
                 href="/configuracion"
                 aria-label="Abrir configuración de la plataforma"
                 title="Configuración"
+                data-active-pill={pathname === '/configuracion' ? 'true' : undefined}
                 className={`hidden sm:inline-flex items-center justify-center w-[38px] h-[38px] rounded-full border transition-colors shrink-0 ${
                   pathname === '/configuracion'
                     ? 'bg-white text-black border-white'
                     : 'bg-[#060a18]/[0.45] border-white/[0.16] text-white/80 hover:text-white hover:bg-white/[0.12]'
                 }`}
               >
-                <GearIcon className="w-4 h-4" />
+                <GearIcon />
               </Link>
 
               {/* Botón menú móvil / tablet con etiqueta visible */}
@@ -927,17 +929,6 @@ export default function Header() {
                 <GearIcon className="w-4 h-4 shrink-0" />
                 <span>Configuración</span>
               </Link>
-              <div className="pt-2 mt-1 border-t border-white/10 flex flex-wrap items-center justify-between gap-2.5 px-2">
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/55">
-                  Preferencias
-                </span>
-                <div className="flex flex-wrap items-center gap-2">
-                  <DesignModeTogglePill showLabels />
-                  <EasyReadingTogglePill showLabels />
-                  <SoundTogglePill showLabels />
-                  <ThemeTogglePill showLabels />
-                </div>
-              </div>
             </div>
           </motion.div>
         )}

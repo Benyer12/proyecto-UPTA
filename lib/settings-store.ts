@@ -7,7 +7,7 @@ export type StorageArchMode = 'plus' | 'cloud';
 
 const DESIGN_MODE_KEY = 'universo-design-mode';
 const LOCAL_DB_ENABLED_KEY = 'universo-local-db-enabled';
-const LOCAL_DB_UPDATED_AT_KEY = 'universo-local-db-updated-at';
+const CONFIG_UPDATED_AT_KEY = 'universo-local-db-updated-at';
 
 interface SettingsState {
   designMode: DesignMode;
@@ -15,7 +15,10 @@ interface SettingsState {
   localDbUpdatedAt: string | null;
   initialized: boolean;
   setDesignMode: (mode: DesignMode) => void;
-  toggleDesignMode: () => void;
+  setDesignModeAdmin: (
+    mode: DesignMode,
+    actor?: { role?: string; name?: string },
+  ) => Promise<{ ok: boolean; syncedServer?: boolean; error?: string }>;
   setLocalDbEnabledAdmin: (
     enabled: boolean,
     actor?: { role?: string; name?: string },
@@ -31,11 +34,6 @@ export function applyDesignModeToDOM(mode: DesignMode) {
   document.documentElement.dataset.designMode = mode;
 }
 
-/**
- * Lectura síncrona usada por la capa de datos híbrida (PowerSync / Supabase)
- * para saber si el Administrador habilitó la BD local (true = Modo PLUS) o si
- * está en modo estricto Solo en la Nube (false = solo Supabase).
- */
 export function isLocalDbEnabled(): boolean {
   if (typeof window === 'undefined') return true;
   try {
@@ -65,9 +63,48 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ designMode: mode, initialized: true });
   },
 
-  toggleDesignMode: () => {
-    const next: DesignMode = get().designMode === 'original' ? 'eco' : 'original';
-    get().setDesignMode(next);
+  setDesignModeAdmin: async (mode, actor) => {
+    const role = String(actor?.role || '').trim().toLowerCase();
+    if (role !== 'admin') {
+      return {
+        ok: false,
+        error: 'Solo el Administrador puede cambiar el Modo Style o Modo Ahorro general.',
+      };
+    }
+
+    const nowIso = new Date().toISOString();
+    applyDesignModeToDOM(mode);
+    try {
+      window.localStorage.setItem(DESIGN_MODE_KEY, mode);
+      window.localStorage.setItem(CONFIG_UPDATED_AT_KEY, nowIso);
+    } catch {}
+
+    set({
+      designMode: mode,
+      localDbUpdatedAt: nowIso,
+      initialized: true,
+    });
+
+    let syncedServer = false;
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      try {
+        const res = await fetch('/api/system-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            designMode: mode,
+            localDbEnabled: get().localDbEnabled,
+            role,
+            updatedBy: actor?.name || 'Administrador',
+          }),
+        });
+        if (res.ok) syncedServer = true;
+      } catch {
+        syncedServer = false;
+      }
+    }
+
+    return { ok: true, syncedServer };
   },
 
   setLocalDbEnabledAdmin: async (enabled, actor) => {
@@ -82,7 +119,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const nowIso = new Date().toISOString();
     try {
       window.localStorage.setItem(LOCAL_DB_ENABLED_KEY, enabled ? 'true' : 'false');
-      window.localStorage.setItem(LOCAL_DB_UPDATED_AT_KEY, nowIso);
+      window.localStorage.setItem(CONFIG_UPDATED_AT_KEY, nowIso);
     } catch {}
 
     set({
@@ -107,6 +144,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             localDbEnabled: enabled,
+            designMode: get().designMode,
             role,
             updatedBy: actor?.name || 'Administrador',
           }),
@@ -128,7 +166,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     let resolvedDesign: DesignMode = 'original';
     let resolvedLocalDb = true;
     let resolvedUpdatedAt: string | null = null;
-    let hasLocalDbPref = false;
+    let hasLocalPref = false;
 
     try {
       const savedDesign = window.localStorage.getItem(DESIGN_MODE_KEY);
@@ -139,9 +177,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       const savedDb = window.localStorage.getItem(LOCAL_DB_ENABLED_KEY);
       if (savedDb === 'true' || savedDb === 'false') {
         resolvedLocalDb = savedDb === 'true';
-        hasLocalDbPref = true;
+        hasLocalPref = true;
       }
-      resolvedUpdatedAt = window.localStorage.getItem(LOCAL_DB_UPDATED_AT_KEY);
+      resolvedUpdatedAt = window.localStorage.getItem(CONFIG_UPDATED_AT_KEY);
     } catch {}
 
     applyDesignModeToDOM(resolvedDesign);
@@ -178,23 +216,28 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
           const cfg = data?.config;
-          if (!cfg || typeof cfg.localDbEnabled !== 'boolean') return;
+          if (!cfg) return;
 
           const remoteTs = cfg.updatedAt ? Date.parse(cfg.updatedAt) : 0;
           const localTs = resolvedUpdatedAt ? Date.parse(resolvedUpdatedAt) : 0;
 
-          if (!hasLocalDbPref || (remoteTs > 0 && remoteTs > localTs)) {
-            const nextDb = Boolean(cfg.localDbEnabled);
+          if (!hasLocalPref || (remoteTs > 0 && remoteTs > localTs)) {
+            const nextDb = typeof cfg.localDbEnabled === 'boolean' ? cfg.localDbEnabled : true;
+            const nextDesign: DesignMode = cfg.designMode === 'eco' ? 'eco' : 'original';
+
+            applyDesignModeToDOM(nextDesign);
             try {
               window.localStorage.setItem(LOCAL_DB_ENABLED_KEY, nextDb ? 'true' : 'false');
+              window.localStorage.setItem(DESIGN_MODE_KEY, nextDesign);
               if (cfg.updatedAt) {
-                window.localStorage.setItem(LOCAL_DB_UPDATED_AT_KEY, String(cfg.updatedAt));
+                window.localStorage.setItem(CONFIG_UPDATED_AT_KEY, String(cfg.updatedAt));
               }
             } catch {}
 
             const prevDb = get().localDbEnabled;
             set({
               localDbEnabled: nextDb,
+              designMode: nextDesign,
               localDbUpdatedAt: cfg.updatedAt || resolvedUpdatedAt,
             });
             if (prevDb !== nextDb) {
