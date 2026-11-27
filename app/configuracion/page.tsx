@@ -446,7 +446,6 @@ export default function ConfiguracionPage() {
               bezel={0.42}
               saturation={1.6}
               className="rounded-3xl p-5 sm:p-7 flex-1 flex flex-col justify-between gap-5"
-              style={{ viewTransitionName: 'config-panel' }}
             >
               {activeSection === 'apariencia' && (
                 <div className="space-y-5">

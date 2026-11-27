@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { MotionConfig } from 'framer-motion';
 import { useAccessibilityStore } from '../../lib/accessibility-store';
+import { useSettingsStore } from '../../lib/settings-store';
 import { useSpatialArrowNavigation } from '../../lib/hooks/useSpatialArrowNavigation';
 import { canUseViewTransitions } from '../../lib/view-transitions';
 import LottieAnimation from '../../components/ui/LottieAnimation';
@@ -14,6 +15,7 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     useAccessibilityStore.getState().initAccessibility();
+    useSettingsStore.getState().initSettings();
   }, []);
 
   // Dispara animación Lottie en cada cambio de ruta
@@ -83,7 +85,6 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
         <div
           key={transitionPulseKey}
           className="fixed bottom-5 right-5 z-[160] pointer-events-none flex items-center gap-2 rounded-full border border-[#67E8F9]/35 bg-[#041724]/85 backdrop-blur-md px-3 py-1.5 shadow-[0_10px_30px_-8px_rgba(103,232,249,0.45)]"
-          style={{ viewTransitionName: 'lottie-transition-badge' }}
           aria-hidden="true"
         >
           <LottieAnimation preset="orbit" size={24} speed={1.6} />
@@ -92,9 +93,7 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
           </span>
         </div>
       )}
-      <div key={pathname} className="vt-route-stage">
-        {children}
-      </div>
+      {children}
     </MotionConfig>
   );
 }

@@ -784,7 +784,6 @@ export default function AdminUsuariosPage() {
               exit={prefersReducedMotion ? undefined : { scale: 0.96, y: 10, opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
-              style={{ viewTransitionName: 'admin-user-editor' }}
               className="w-full max-w-xl rounded-3xl liquid-glass-modal p-6 sm:p-7 my-auto"
             >
               <form onSubmit={handleGuardarEdicion} className="space-y-5">

@@ -320,7 +320,6 @@ export default function AsignacionesPage() {
             <section
               aria-labelledby="students-for-tutor-heading"
               className="lg:col-span-8"
-              style={{ viewTransitionName: 'tutor-students-panel' }}
             >
               <LiquidGlass
                 blur={5}

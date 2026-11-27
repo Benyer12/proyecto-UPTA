@@ -5,7 +5,8 @@ import { create } from 'zustand';
 export type DesignMode = 'original' | 'eco';
 export type StorageArchMode = 'plus' | 'cloud';
 
-const DESIGN_MODE_KEY = 'universo-design-mode';
+const DESIGN_MODE_KEY = 'universo-style-mode-v2';
+const LEGACY_DESIGN_MODE_KEY = 'universo-design-mode';
 const LOCAL_DB_ENABLED_KEY = 'universo-local-db-enabled';
 const CONFIG_UPDATED_AT_KEY = 'universo-local-db-updated-at';
 
@@ -65,16 +66,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   setDesignModeAdmin: async (mode, actor) => {
     const role = String(actor?.role || '').trim().toLowerCase();
-    if (role !== 'admin') {
-      return {
-        ok: false,
-        error: 'Solo el Administrador puede cambiar el Modo Style o Modo Ahorro general.',
-      };
-    }
-
     const nowIso = new Date().toISOString();
     applyDesignModeToDOM(mode);
     try {
+      window.localStorage.removeItem(LEGACY_DESIGN_MODE_KEY);
       window.localStorage.setItem(DESIGN_MODE_KEY, mode);
       window.localStorage.setItem(CONFIG_UPDATED_AT_KEY, nowIso);
     } catch {}
@@ -84,6 +79,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       localDbUpdatedAt: nowIso,
       initialized: true,
     });
+
+    if (role !== 'admin') {
+      return { ok: true, syncedServer: false };
+    }
 
     let syncedServer = false;
     if (typeof navigator !== 'undefined' && navigator.onLine) {
@@ -169,6 +168,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     let hasLocalPref = false;
 
     try {
+      window.localStorage.removeItem(LEGACY_DESIGN_MODE_KEY);
       const savedDesign = window.localStorage.getItem(DESIGN_MODE_KEY);
       if (savedDesign === 'eco' || savedDesign === 'original') {
         resolvedDesign = savedDesign;

@@ -88,7 +88,6 @@ export default function PdfSlickReportModal({
           ? 'relative flex flex-col w-full max-w-6xl h-[90vh] rounded-3xl border border-white/20 bg-[#07111e]/95 shadow-[0_28px_90px_-15px_rgba(0,0,0,0.85)] overflow-hidden'
           : 'relative flex flex-col w-full h-[640px] rounded-2xl border border-[#67E8F9]/25 bg-[#07111e]/95 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.75)] overflow-hidden'
       }
-      style={mode === 'modal' ? { viewTransitionName: 'pdfslick-report-modal' } : undefined}
     >
       {/* Barra superior de vista previa PDFSlick */}
       <header className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-white/12 bg-white/[0.04] shrink-0">

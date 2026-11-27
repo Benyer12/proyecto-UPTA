@@ -520,7 +520,7 @@ export default function MinijuegosPage() {
           </div>
         )}
 
-        <div style={{ viewTransitionName: 'minijuego-stage' }}>
+        <div>
         {selectedGameId ? (
           renderSelectedGame()
         ) : (

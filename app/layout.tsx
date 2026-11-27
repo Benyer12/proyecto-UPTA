@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
 };
 
-const THEME_INIT_SCRIPT = `(function(){try{var r=document.documentElement;var t=localStorage.getItem('universo-theme');var v=(t==='light'||t==='dark')?t:'dark';r.dataset.theme=v;r.classList.remove('light','dark');r.classList.add(v);var m=document.querySelector('meta[name="color-scheme"]');if(m){m.content=v;}var dm=localStorage.getItem('universo-design-mode');r.dataset.designMode=(dm==='eco'||dm==='original')?dm:'original';var er=localStorage.getItem('universo-easy-reading');r.dataset.easyReading=(er==='true')?'true':'false';}catch(e){}})();`;
+const THEME_INIT_SCRIPT = `(function(){try{var r=document.documentElement;var t=localStorage.getItem('universo-theme');var v=(t==='light'||t==='dark')?t:'dark';r.dataset.theme=v;r.classList.remove('light','dark');r.classList.add(v);var m=document.querySelector('meta[name="color-scheme"]');if(m){m.content=v;}localStorage.removeItem('universo-design-mode');var dm=localStorage.getItem('universo-style-mode-v2');r.dataset.designMode=(dm==='eco'||dm==='original')?dm:'original';var er=localStorage.getItem('universo-easy-reading');r.dataset.easyReading=(er==='true')?'true':'false';}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <FondoWrapper />
           <PowerSyncInitializer />
           <Header />
-          <main className="pt-20 universo-main-stage">{children}</main>
+          <main className="pt-20">{children}</main>
         </MotionProvider>
       </body>
     </html>

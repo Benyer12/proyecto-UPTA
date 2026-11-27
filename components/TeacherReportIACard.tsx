@@ -249,61 +249,115 @@ export default function TeacherReportIACard({
         )}
 
         {resumenPDF && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {filtroEstudiante === 'all' && (
-              <div className="rounded-2xl border border-white/12 bg-white/[0.04] p-4 sm:p-5 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-[#6EE7B7]">
-                    Diagnóstico Grupal · {resumenPDF.totalPreguntasGeneradasIA} retos adaptativos en tableros
-                  </span>
-                  <span className="font-mono text-[10px] text-white/50">
-                    Promedio: {resumenPDF.promedioEstrellas} estrellas/estudiante
-                  </span>
-                </div>
-                <p className="text-xs sm:text-sm text-white/85 leading-relaxed">
-                  {resumenPDF.diagnosticoIA}
-                </p>
-                {resumenPDF.recomendacionesClave?.length > 0 && (
-                  <div className="pt-2 border-t border-white/10 space-y-1.5">
-                    <div className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[#FDE68A]">
-                      Métodos recomendados para el grupo
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                {/* Columna Izquierda: Diagnóstico Grupal con ancho de lectura cómodo y alto contraste */}
+                <div className="lg:col-span-7 rounded-2xl border border-white/15 bg-[#060E20]/82 p-5 sm:p-6 flex flex-col justify-between gap-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-white/10">
+                      <span className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[#6EE7B7]">
+                        <span className="h-2 w-2 rounded-full bg-[#6EE7B7]" aria-hidden="true" />
+                        Diagnóstico Grupal del Aula
+                      </span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="rounded-full border border-[#67E8F9]/30 bg-[#67E8F9]/10 px-3 py-1 font-mono text-[11px] font-semibold text-[#67E8F9]">
+                          {resumenPDF.totalPreguntasGeneradasIA} retos IA
+                        </span>
+                        <span className="rounded-full border border-amber-300/30 bg-amber-400/10 px-3 py-1 font-mono text-[11px] font-semibold text-amber-200">
+                          Promedio: {resumenPDF.promedioEstrellas} ★
+                        </span>
+                      </div>
                     </div>
-                    <ul className="space-y-1 text-xs text-white/75 list-disc pl-4">
+
+                    <p className="text-sm sm:text-[15.5px] text-white/95 leading-[1.8] max-w-[64ch]">
+                      {resumenPDF.diagnosticoIA}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2.5 pt-3 border-t border-white/10">
+                    <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5">
+                      <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">
+                        Estudiantes
+                      </div>
+                      <div className="text-base sm:text-lg font-extrabold text-white mt-0.5">
+                        {resumenPDF.totalEstudiantes}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5">
+                      <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">
+                        Niveles Comp.
+                      </div>
+                      <div className="text-base sm:text-lg font-extrabold text-[#67E8F9] mt-0.5">
+                        {resumenPDF.totalNivelesCompletados}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5">
+                      <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">
+                        Estrellas Tot.
+                      </div>
+                      <div className="text-base sm:text-lg font-extrabold text-amber-300 mt-0.5">
+                        {resumenPDF.totalEstrellas} ★
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Columna Derecha: Métodos recomendados en tarjetas numeradas fáciles de escanear */}
+                {resumenPDF.recomendacionesClave?.length > 0 && (
+                  <div className="lg:col-span-5 rounded-2xl border border-[#FDE68A]/25 bg-[#060E20]/82 p-5 sm:p-6 flex flex-col justify-between gap-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                    <div className="flex items-center justify-between gap-2 pb-3 border-b border-white/10">
+                      <span className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[#FDE68A]">
+                        <span className="h-2 w-2 rounded-full bg-[#FDE68A]" aria-hidden="true" />
+                        Métodos Recomendados para el Grupo
+                      </span>
+                    </div>
+                    <div className="space-y-2.5 flex-1 flex flex-col justify-center">
                       {resumenPDF.recomendacionesClave.map((rec, i) => (
-                        <li key={i}>{rec}</li>
+                        <div
+                          key={i}
+                          className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3.5"
+                        >
+                          <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[#FDE68A]/40 bg-[#FDE68A]/15 font-mono text-xs font-extrabold text-[#FDE68A] mt-0.5">
+                            {i + 1}
+                          </span>
+                          <p className="text-[13px] sm:text-[13.5px] text-white/90 leading-[1.65]">
+                            {rec}
+                          </p>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   </div>
                 )}
               </div>
             )}
 
             {resumenesFiltrados.length > 0 && (
-              <div className="space-y-2.5">
-                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-[#67E8F9] px-1">
+              <div className="space-y-3">
+                <div className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-[#67E8F9] px-1">
                   {filtroEstudiante === 'all'
                     ? `Resumen IA de cada estudiante (${resumenesFiltrados.length})`
                     : 'Resumen IA del estudiante seleccionado'}
                 </div>
                 <div
                   className={`grid grid-cols-1 ${
-                    resumenesFiltrados.length > 1 ? 'md:grid-cols-2' : ''
-                  } gap-4`}
+                    resumenesFiltrados.length > 1 ? 'lg:grid-cols-2' : ''
+                  } gap-5`}
                 >
                   {resumenesFiltrados.map((est) => (
                     <div
                       key={est.estudianteId}
-                      className="rounded-2xl border border-white/12 bg-white/[0.03] p-5 flex flex-col justify-between gap-3.5"
+                      className="rounded-2xl border border-white/15 bg-[#060E20]/82 p-5 sm:p-6 flex flex-col justify-between gap-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                     >
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <RoleAvatar role="student" name={est.nombre} size={38} />
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/10">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <RoleAvatar role="student" name={est.nombre} size={42} />
                             <div className="min-w-0">
-                              <div className="text-sm font-bold text-white truncate">
+                              <div className="text-base font-bold text-white truncate">
                                 {est.nombre}
                               </div>
-                              <div className="font-mono text-[10px] text-[#67E8F9]">
+                              <div className="font-mono text-[11px] text-[#67E8F9] mt-0.5">
                                 {est.etiquetaNivel} · {est.porcentajeAvance}% ({est.estrellasTotales} ★)
                               </div>
                             </div>
@@ -311,29 +365,31 @@ export default function TeacherReportIACard({
                           <button
                             type="button"
                             onClick={() => descargarReportePDFIndividual(est)}
-                            className="min-h-[32px] px-3 py-1 rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black text-[11px] font-semibold text-white transition-colors cursor-pointer shrink-0"
+                            className="min-h-[34px] px-3.5 py-1.5 rounded-full border border-white/20 bg-white/[0.08] hover:bg-white hover:text-black text-xs font-semibold text-white transition-colors cursor-pointer shrink-0"
                           >
                             Vista Previa PDF
                           </button>
                         </div>
 
-                        <p className="text-xs sm:text-[13px] text-white/85 leading-relaxed">
+                        <p className="text-sm sm:text-[14.5px] text-white/92 leading-[1.75]">
                           {est.resumenIA}
                         </p>
 
-                        <div className="rounded-xl border border-[#FDE68A]/25 bg-[#FDE68A]/[0.06] p-3 space-y-1">
-                          <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#FDE68A]">
+                        <div className="rounded-xl border border-[#FDE68A]/30 bg-[#FDE68A]/[0.07] p-3.5 space-y-1.5">
+                          <div className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#FDE68A]">
                             ¿Cómo puede mejorar?
                           </div>
-                          <p className="text-xs text-white/80 leading-relaxed">{est.comoMejorar}</p>
+                          <p className="text-[13px] sm:text-[13.5px] text-white/90 leading-[1.65]">
+                            {est.comoMejorar}
+                          </p>
                         </div>
 
                         {est.metodosEmplear?.length > 0 && (
-                          <div className="rounded-xl border border-[#D8B4FE]/25 bg-[#D8B4FE]/[0.06] p-3 space-y-1.5">
-                            <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#E9D5FF]">
+                          <div className="rounded-xl border border-[#D8B4FE]/30 bg-[#D8B4FE]/[0.07] p-3.5 space-y-2">
+                            <div className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#E9D5FF]">
                               Métodos para emplear con el niño
                             </div>
-                            <ul className="space-y-1 text-xs text-white/80 list-disc pl-4">
+                            <ul className="space-y-1.5 text-[13px] sm:text-[13.5px] text-white/90 leading-[1.6] list-disc pl-4">
                               {est.metodosEmplear.map((metodo, idx) => (
                                 <li key={idx}>{metodo}</li>
                               ))}
@@ -342,14 +398,18 @@ export default function TeacherReportIACard({
                         )}
                       </div>
 
-                      <div className="pt-2.5 border-t border-white/10 text-[11px] text-white/65 space-y-1">
-                        <div>
-                          <strong className="text-[#6EE7B7]">Fortaleza:</strong>{' '}
-                          {est.fortalezaPrincipal}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-3 border-t border-white/10 text-xs">
+                        <div className="rounded-xl border border-[#6EE7B7]/25 bg-[#6EE7B7]/[0.07] px-3.5 py-2.5">
+                          <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-[#6EE7B7] mb-0.5">
+                            Fortaleza Principal
+                          </span>
+                          <span className="text-white/90 leading-snug">{est.fortalezaPrincipal}</span>
                         </div>
-                        <div>
-                          <strong className="text-[#67E8F9]">Meta:</strong>{' '}
-                          {est.metaRecomendada}
+                        <div className="rounded-xl border border-[#67E8F9]/25 bg-[#67E8F9]/[0.07] px-3.5 py-2.5">
+                          <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-[#67E8F9] mb-0.5">
+                            Meta Recomendada
+                          </span>
+                          <span className="text-white/90 leading-snug">{est.metaRecomendada}</span>
                         </div>
                       </div>
                     </div>
