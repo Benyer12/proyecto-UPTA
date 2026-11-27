@@ -10,7 +10,7 @@ import {
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import RoleAvatar from '../../components/RoleAvatar';
 import GlassTooltip from '../../components/ui/GlassTooltip';
-import { AssignmentsSkeleton, OrbitalSpinner, SkeletonBar } from '../../components/ui/PanelSkeletons';
+import { AdminPanelSkeleton, AssignmentsSkeleton, OrbitalSpinner, SkeletonBar } from '../../components/ui/PanelSkeletons';
 import { runViewTransition } from '../../lib/view-transitions';
 
 interface Usuario {
@@ -141,7 +141,8 @@ export default function AsignacionesPage() {
     }
   };
 
-  if (!mounted || !user || user.role !== 'admin') return null;
+  if (!mounted) return <AdminPanelSkeleton label="Cargando asignaciones..." />;
+  if (!user || user.role !== 'admin') return null;
 
   const tutorIds = new Set(tutores.map((t) => t.id));
   const estudianteIds = new Set(estudiantes.map((e) => e.id));

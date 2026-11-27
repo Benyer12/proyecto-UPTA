@@ -13,7 +13,7 @@ import TeacherReportIACard, {
   type EstudianteParaReporte,
 } from '../../../components/TeacherReportIACard';
 import GlassTooltip from '../../../components/ui/GlassTooltip';
-import { TutorIASkeleton } from '../../../components/ui/PanelSkeletons';
+import { AdminPanelSkeleton, TutorIASkeleton } from '../../../components/ui/PanelSkeletons';
 import LottieAnimation from '../../../components/ui/LottieAnimation';
 
 const TOTAL_NIVELES_DEFAULT = 12;
@@ -93,7 +93,8 @@ export default function MaestroIAPage() {
     }
   };
 
-  if (!mounted || !user || (user.role !== 'tutor' && user.role !== 'docente')) return null;
+  if (!mounted) return <AdminPanelSkeleton label="Cargando Copiloto IA..." />;
+  if (!user || (user.role !== 'tutor' && user.role !== 'docente')) return null;
 
   return (
     <div className="relative min-h-screen px-5 sm:px-8 lg:px-12 py-8 sm:py-12">

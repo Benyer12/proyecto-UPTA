@@ -14,7 +14,7 @@ import LiquidGlassToast, {
 import { LiquidGlass } from '../../../components/ui/glasscn/liquid-glass';
 import RoleAvatar from '../../../components/RoleAvatar';
 import GlassTooltip from '../../../components/ui/GlassTooltip';
-import { OrbitalSpinner, UserListSkeleton } from '../../../components/ui/PanelSkeletons';
+import { AdminPanelSkeleton, OrbitalSpinner, UserListSkeleton } from '../../../components/ui/PanelSkeletons';
 
 type ApprovalRole = 'student' | 'tutor';
 
@@ -154,7 +154,8 @@ export default function AdminPendientesPage() {
     setApprovingId(null);
   };
 
-  if (!mounted || !user || user.role !== 'admin') return null;
+  if (!mounted) return <AdminPanelSkeleton label="Cargando solicitudes pendientes..." />;
+  if (!user || user.role !== 'admin') return null;
 
   return (
     <div className="relative min-h-screen px-5 sm:px-8 lg:px-12 py-8 sm:py-12">

@@ -14,7 +14,7 @@ import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
 import RoleAvatar from '../../components/RoleAvatar';
 import GlassTooltip from '../../components/ui/GlassTooltip';
-import { OrbitalSpinner, SkeletonBar, UserListSkeleton } from '../../components/ui/PanelSkeletons';
+import { AdminPanelSkeleton, OrbitalSpinner, SkeletonBar, UserListSkeleton } from '../../components/ui/PanelSkeletons';
 
 interface UsuarioDB {
   id: string;
@@ -123,7 +123,8 @@ export default function AdminPage() {
     setUpdatingId(null);
   };
 
-  if (!mounted || !user || user.role !== 'admin') return null;
+  if (!mounted) return <AdminPanelSkeleton label="Cargando Panel de Administración..." />;
+  if (!user || user.role !== 'admin') return null;
 
   const totalTutores = usuarios.filter(
     (u) => u.role === 'tutor' || u.role === 'docente',

@@ -188,3 +188,34 @@ export function DashboardSkeleton() {
     </div>
   );
 }
+
+export function AdminPanelSkeleton({ label = 'Cargando panel...' }: { label?: string }) {
+  return (
+    <div
+      className="relative min-h-screen px-5 sm:px-8 lg:px-12 py-8 sm:py-12"
+      role="status"
+      aria-label={label}
+    >
+      <div className="relative z-10 max-w-6xl mx-auto space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-7 border-b border-white/10">
+          <div className="space-y-3">
+            <SkeletonBar className="h-7 w-48 rounded-full" />
+            <SkeletonBar className="h-9 w-64 rounded-xl" />
+            <SkeletonBar className="h-4 w-80 max-w-full rounded-lg" />
+          </div>
+          <SkeletonBar className="h-14 w-64 rounded-2xl" />
+        </div>
+
+        <LiquidGlass
+          blur={5}
+          refraction={8}
+          bezel={0.2}
+          saturation={1.12}
+          className="rounded-2xl bg-white/[0.03] border-white/[0.10]"
+        >
+          <UserListSkeleton rows={5} actionButtons={1} />
+        </LiquidGlass>
+      </div>
+    </div>
+  );
+}

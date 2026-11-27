@@ -11,7 +11,7 @@ import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
 import RoleAvatar from '../../components/RoleAvatar';
 import GlassTooltip from '../../components/ui/GlassTooltip';
-import { SkeletonBar, UserListSkeleton } from '../../components/ui/PanelSkeletons';
+import { AdminPanelSkeleton, SkeletonBar, UserListSkeleton } from '../../components/ui/PanelSkeletons';
 
 const PLANET_DATA = [
   {
@@ -161,7 +161,8 @@ export default function MaestroPage() {
     }
   };
 
-  if (!mounted || !user || (user.role !== 'tutor' && user.role !== 'docente')) return null;
+  if (!mounted) return <AdminPanelSkeleton label="Cargando panel docente..." />;
+  if (!user || (user.role !== 'tutor' && user.role !== 'docente')) return null;
 
   return (
     <div className="relative min-h-screen px-5 sm:px-8 lg:px-12 py-8 sm:py-12">
