@@ -10,6 +10,8 @@ import {
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
 import RoleAvatar from '../../components/RoleAvatar';
+import GlassTooltip from '../../components/ui/GlassTooltip';
+import { SkeletonBar, UserListSkeleton } from '../../components/ui/PanelSkeletons';
 
 const PLANET_DATA = [
   {
@@ -205,26 +207,32 @@ export default function MaestroPage() {
                   <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
                     Estudiantes
                   </div>
-                  <div className="text-lg font-bold text-white tabular-nums">{students.length}</div>
+                  <div className="text-lg font-bold text-white tabular-nums flex justify-center mt-0.5">
+                    {loading ? <SkeletonBar className="h-5 w-8 rounded-md" /> : students.length}
+                  </div>
                 </div>
                 <div className="px-4 py-3 text-center">
                   <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
                     Niveles
                   </div>
-                  <div className="text-lg font-bold text-white tabular-nums">{totalNiveles}</div>
+                  <div className="text-lg font-bold text-white tabular-nums flex justify-center mt-0.5">
+                    {loading ? <SkeletonBar className="h-5 w-8 rounded-md" /> : totalNiveles}
+                  </div>
                 </div>
                 <div className="px-4 py-3 text-center">
                   <div className="font-mono text-[10px] uppercase tracking-wider text-[#67E8F9]">
                     Completados
                   </div>
-                  <div className="text-lg font-bold text-white tabular-nums">{totalCompletados}</div>
+                  <div className="text-lg font-bold text-white tabular-nums flex justify-center mt-0.5">
+                    {loading ? <SkeletonBar className="h-5 w-8 rounded-md" /> : totalCompletados}
+                  </div>
                 </div>
                 <div className="px-4 py-3 text-center">
                   <div className="font-mono text-[10px] uppercase tracking-wider text-[#FDE68A]">
                     Estrellas
                   </div>
-                  <div className="text-lg font-bold text-[#FDE68A] tabular-nums">
-                    {totalEstrellas}
+                  <div className="text-lg font-bold text-[#FDE68A] tabular-nums flex justify-center mt-0.5">
+                    {loading ? <SkeletonBar className="h-5 w-10 rounded-md" /> : totalEstrellas}
                   </div>
                 </div>
               </div>
@@ -259,9 +267,7 @@ export default function MaestroPage() {
             </div>
 
             {loading ? (
-              <div className="p-12 text-center" role="status">
-                <p className="text-sm text-white/55">Cargando datos de los estudiantes...</p>
-              </div>
+              <UserListSkeleton rows={4} showProgress actionButtons={1} />
             ) : students.length === 0 ? (
               <div className="p-12 text-center space-y-1.5">
                 <p className="text-sm font-semibold text-white">No tienes estudiantes asignados.</p>
@@ -319,14 +325,18 @@ export default function MaestroPage() {
                           </span>
                         )}
 
-                        <span className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1 text-xs text-white/80 tabular-nums">
-                          {s.nivelesCompletados}/{totalNiveles} niveles
-                        </span>
+                        <GlassTooltip label={`${s.nivelesCompletados} de ${totalNiveles} niveles completados`} placement="top">
+                          <span className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1 text-xs text-white/80 tabular-nums">
+                            {s.nivelesCompletados}/{totalNiveles} niveles
+                          </span>
+                        </GlassTooltip>
 
-                        <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/25 bg-amber-400/[0.08] px-3 py-1 text-xs font-semibold text-[#FDE68A] tabular-nums">
-                          <IconStar className="w-3.5 h-3.5" />
-                          <span>{s.estrellasTotales}</span>
-                        </span>
+                        <GlassTooltip label={`Estrellas acumuladas por ${s.nombre}`} placement="top">
+                          <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/25 bg-amber-400/[0.08] px-3 py-1 text-xs font-semibold text-[#FDE68A] tabular-nums">
+                            <IconStar className="w-3.5 h-3.5" />
+                            <span>{s.estrellasTotales}</span>
+                          </span>
+                        </GlassTooltip>
                       </div>
                     </div>
                   );

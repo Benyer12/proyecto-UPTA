@@ -16,6 +16,8 @@ import LiquidGlassToast, {
 } from '../../components/LiquidGlassToast';
 import { LiquidGlass } from '../../../components/ui/glasscn/liquid-glass';
 import RoleAvatar from '../../../components/RoleAvatar';
+import GlassTooltip from '../../../components/ui/GlassTooltip';
+import { OrbitalSpinner, UserListSkeleton } from '../../../components/ui/PanelSkeletons';
 
 type EditableRole = 'student' | 'tutor';
 
@@ -531,14 +533,17 @@ export default function AdminUsuariosPage() {
               </div>
             </LiquidGlass>
 
-            <button
-              type="button"
-              onClick={cargarUsuarios}
-              disabled={loading}
-              className="min-h-[42px] rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black text-white text-xs font-semibold px-4 transition-colors disabled:opacity-50 cursor-pointer"
-            >
-              {loading ? 'Sincronizando...' : 'Actualizar'}
-            </button>
+            <GlassTooltip label="Sincronizar lista de usuarios desde la nube y BD local" placement="bottom">
+              <button
+                type="button"
+                onClick={cargarUsuarios}
+                disabled={loading}
+                className="min-h-[42px] inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black text-white text-xs font-semibold px-4 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                {loading && <OrbitalSpinner size="xs" />}
+                <span>{loading ? 'Sincronizando...' : 'Actualizar'}</span>
+              </button>
+            </GlassTooltip>
           </div>
         </section>
 
@@ -629,9 +634,7 @@ export default function AdminUsuariosPage() {
           </div>
 
           {loading ? (
-            <div className="p-12 text-center" role="status">
-              <p className="text-sm text-white/55">Cargando estudiantes y tutores...</p>
-            </div>
+            <UserListSkeleton rows={6} actionButtons={2} />
           ) : loadError ? (
             <div role="alert" className="p-10 text-center space-y-4">
               <p className="text-sm text-rose-200 font-medium">{loadError}</p>
@@ -717,26 +720,37 @@ export default function AdminUsuariosPage() {
                     </div>
 
                     <div className="flex items-center gap-2 self-end md:self-center shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleEstadoRapido(u)}
-                        disabled={isToggling}
-                        className={`min-h-[38px] text-xs font-medium px-3.5 py-1.5 rounded-full border transition-colors cursor-pointer disabled:opacity-50 ${
-                          isActivo
-                            ? 'border-white/12 bg-white/[0.04] text-white/75 hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-rose-200'
-                            : 'border-[#6EE7B7]/35 bg-emerald-500/12 text-[#A7F3D0] hover:bg-emerald-500/25'
-                        }`}
+                      <GlassTooltip
+                        label={isActivo ? 'Desactivar acceso temporalmente' : 'Reactivar acceso del usuario'}
+                        placement="top"
                       >
-                        {isToggling ? '...' : isActivo ? 'Desactivar' : 'Activar'}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleEstadoRapido(u)}
+                          disabled={isToggling}
+                          className={`min-h-[38px] inline-flex items-center justify-center gap-1.5 text-xs font-medium px-3.5 py-1.5 rounded-full border transition-colors cursor-pointer disabled:opacity-50 ${
+                            isActivo
+                              ? 'border-white/12 bg-white/[0.04] text-white/75 hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-rose-200'
+                              : 'border-[#6EE7B7]/35 bg-emerald-500/12 text-[#A7F3D0] hover:bg-emerald-500/25'
+                          }`}
+                        >
+                          {isToggling ? (
+                            <OrbitalSpinner size="xs" />
+                          ) : (
+                            <span>{isActivo ? 'Desactivar' : 'Activar'}</span>
+                          )}
+                        </button>
+                      </GlassTooltip>
 
-                      <button
-                        type="button"
-                        onClick={() => abrirEditor(u)}
-                        className="min-h-[38px] text-xs font-semibold bg-white hover:bg-white/90 text-black px-4 py-1.5 rounded-full cursor-pointer transition-colors"
-                      >
-                        Editar
-                      </button>
+                      <GlassTooltip label="Editar nombre, usuario, correo o contraseña" placement="top">
+                        <button
+                          type="button"
+                          onClick={() => abrirEditor(u)}
+                          className="min-h-[38px] text-xs font-semibold bg-white hover:bg-white/90 text-black px-4 py-1.5 rounded-full cursor-pointer transition-colors"
+                        >
+                          Editar
+                        </button>
+                      </GlassTooltip>
                     </div>
                   </div>
                 );

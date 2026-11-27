@@ -16,6 +16,8 @@ import LiquidGlassToast, {
   type LiquidGlassToastData,
 } from '../app/components/LiquidGlassToast';
 import { LiquidGlass } from './ui/glasscn/liquid-glass';
+import GlassTooltip from './ui/GlassTooltip';
+import { OrbitalSpinner } from './ui/PanelSkeletons';
 import type { LoginData, RegisterData } from '../shared/types';
 
 interface DropdownParticle {
@@ -806,19 +808,20 @@ export default function Header() {
               )}
 
               {/* Único botón de Configuración (engranaje mecánico) en el panel superior */}
-              <Link
-                href="/configuracion"
-                aria-label="Abrir configuración de la plataforma"
-                title="Configuración"
-                data-active-pill={pathname === '/configuracion' ? 'true' : undefined}
-                className={`hidden sm:inline-flex items-center justify-center w-[38px] h-[38px] rounded-full border transition-colors shrink-0 ${
-                  pathname === '/configuracion'
-                    ? 'bg-white text-black border-white'
-                    : 'bg-[#060a18]/[0.45] border-white/[0.16] text-white/80 hover:text-white hover:bg-white/[0.12]'
-                }`}
-              >
-                <GearIcon />
-              </Link>
+              <GlassTooltip label="Configuración" placement="bottom">
+                <Link
+                  href="/configuracion"
+                  aria-label="Abrir configuración de la plataforma"
+                  data-active-pill={pathname === '/configuracion' ? 'true' : undefined}
+                  className={`hidden sm:inline-flex items-center justify-center w-[38px] h-[38px] rounded-full border transition-colors shrink-0 ${
+                    pathname === '/configuracion'
+                      ? 'bg-white text-black border-white'
+                      : 'bg-[#060a18]/[0.45] border-white/[0.16] text-white/80 hover:text-white hover:bg-white/[0.12]'
+                  }`}
+                >
+                  <GearIcon />
+                </Link>
+              </GlassTooltip>
 
               {/* Botón menú móvil / tablet con etiqueta visible */}
               <button
@@ -1136,9 +1139,10 @@ export default function Header() {
                         <button
                           type="submit"
                           disabled={loading}
-                          className="w-full min-h-[46px] bg-white hover:bg-white/90 text-black font-semibold py-3 rounded-full text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-2"
+                          className="w-full min-h-[46px] inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-semibold py-3 rounded-full text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-2"
                         >
-                          {loading ? 'Conectando...' : 'Entrar a mi cuenta'}
+                          {loading && <OrbitalSpinner size="xs" />}
+                          <span>{loading ? 'Conectando...' : 'Entrar a mi cuenta'}</span>
                         </button>
                       </form>
                     )}
@@ -1270,9 +1274,10 @@ export default function Header() {
                             <button
                               type="submit"
                               disabled={loading}
-                              className="w-full min-h-[46px] bg-white hover:bg-white/90 text-black font-semibold py-3 rounded-full text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                              className="w-full min-h-[46px] inline-flex items-center justify-center gap-2 bg-white hover:bg-white/90 text-black font-semibold py-3 rounded-full text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
-                              {loading ? 'Creando cuenta...' : 'Registrar cuenta'}
+                              {loading && <OrbitalSpinner size="xs" />}
+                              <span>{loading ? 'Creando cuenta...' : 'Registrar cuenta'}</span>
                             </button>
 
                             <p className="text-[11px] text-white/50 text-center">

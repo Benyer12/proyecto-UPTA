@@ -13,6 +13,8 @@ import LiquidGlassToast, {
 } from '../../components/LiquidGlassToast';
 import { LiquidGlass } from '../../../components/ui/glasscn/liquid-glass';
 import RoleAvatar from '../../../components/RoleAvatar';
+import GlassTooltip from '../../../components/ui/GlassTooltip';
+import { OrbitalSpinner, UserListSkeleton } from '../../../components/ui/PanelSkeletons';
 
 type ApprovalRole = 'student' | 'tutor';
 
@@ -184,14 +186,17 @@ export default function AdminPendientesPage() {
             <div className="min-h-[42px] inline-flex items-center rounded-full border border-amber-300/30 bg-amber-400/[0.08] px-4 text-xs font-semibold text-[#FDE68A] tabular-nums">
               {pendientes.length} {pendientes.length === 1 ? 'solicitud' : 'solicitudes'}
             </div>
-            <button
-              type="button"
-              onClick={cargarPendientes}
-              disabled={loading}
-              className="min-h-[42px] inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black text-white text-xs font-semibold px-5 transition-colors disabled:opacity-50 cursor-pointer"
-            >
-              {loading ? 'Actualizando...' : 'Actualizar'}
-            </button>
+            <GlassTooltip label="Sincronizar solicitudes pendientes desde Supabase / BD local" placement="bottom">
+              <button
+                type="button"
+                onClick={cargarPendientes}
+                disabled={loading}
+                className="min-h-[42px] inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black text-white text-xs font-semibold px-5 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                {loading && <OrbitalSpinner size="xs" />}
+                <span>{loading ? 'Actualizando...' : 'Actualizar'}</span>
+              </button>
+            </GlassTooltip>
           </div>
         </section>
 
@@ -233,9 +238,7 @@ export default function AdminPendientesPage() {
           )}
 
           {loading ? (
-            <div className="p-12 text-center" role="status">
-              <p className="text-sm text-white/55">Consultando usuarios pendientes por aprobar...</p>
-            </div>
+            <UserListSkeleton rows={4} actionButtons={2} />
           ) : loadError ? (
             <div role="alert" className="p-10 text-center space-y-4">
               <p className="text-sm text-rose-200 font-medium">{loadError}</p>
@@ -345,14 +348,17 @@ export default function AdminPendientesPage() {
                           </button>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => handleAprobar(u)}
-                          disabled={isApproving}
-                          className="min-h-[40px] inline-flex items-center justify-center rounded-full bg-[#6EE7B7] hover:bg-[#A7F3D0] text-black text-xs font-semibold px-5 transition-colors cursor-pointer disabled:opacity-50"
-                        >
-                          {isApproving ? 'Aprobando...' : 'Aprobar acceso'}
-                        </button>
+                        <GlassTooltip label={`Habilitar cuenta como ${rolElegido === 'tutor' ? 'Tutor' : 'Estudiante'}`} placement="top">
+                          <button
+                            type="button"
+                            onClick={() => handleAprobar(u)}
+                            disabled={isApproving}
+                            className="min-h-[40px] inline-flex items-center justify-center gap-2 rounded-full bg-[#6EE7B7] hover:bg-[#A7F3D0] text-black text-xs font-semibold px-5 transition-colors cursor-pointer disabled:opacity-50"
+                          >
+                            {isApproving && <OrbitalSpinner size="xs" />}
+                            <span>{isApproving ? 'Aprobando...' : 'Aprobar acceso'}</span>
+                          </button>
+                        </GlassTooltip>
                       </div>
                     </motion.div>
                   );

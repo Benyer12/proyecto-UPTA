@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import Link from 'next/link';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
+import { OrbitalSpinner } from '../../components/ui/PanelSkeletons';
 import SnakeArcadeGame from '../../components/SnakeArcadeGame';
 import BreakoutArcadeGame from '../../components/minijuegos/BreakoutArcadeGame';
 import InvadersArcadeGame from '../../components/minijuegos/InvadersArcadeGame';
@@ -434,6 +435,11 @@ export default function MinijuegosPage() {
   return (
     <div className="relative min-h-screen px-5 sm:px-8 lg:px-12 py-8 sm:py-12">
       <div className="relative z-10 max-w-6xl mx-auto space-y-8">
+        {loadingStars && (
+          <div className="flex justify-end">
+            <OrbitalSpinner size="xs" label="Sincronizando estrellas..." />
+          </div>
+        )}
         {/* Cabecera Arcade Liquid Glass */}
         <section className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-7 border-b border-white/10">
           <div className="space-y-2.5">

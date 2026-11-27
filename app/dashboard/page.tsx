@@ -10,6 +10,7 @@ import ThemeTogglePill from '../../components/ThemeTogglePill';
 import SoundTogglePill from '../../components/SoundTogglePill';
 import EasyReadingTogglePill from '../../components/EasyReadingTogglePill';
 import RoleAvatar from '../../components/RoleAvatar';
+import { DashboardSkeleton, OrbitalSpinner } from '../../components/ui/PanelSkeletons';
 import { useAuthStore } from '../../lib/auth-store';
 import { useThemeStore } from '../../lib/theme-store';
 import { MOCK_PLANETS, MOCK_PROGRESS } from '../../lib/mock-data';
@@ -307,7 +308,7 @@ function StudentDashboardView({
                   Estrellas
                 </div>
                 <div className="text-lg sm:text-xl font-black text-white tabular-nums">
-                  {loadingProgress ? '...' : totalStars}
+                  {loadingProgress ? <OrbitalSpinner size="xs" /> : totalStars}
                 </div>
               </div>
             </LiquidGlass>
@@ -556,13 +557,7 @@ export default function Dashboard() {
   }, [mounted, user, router]);
 
   if (!mounted) {
-    return (
-      <div className="relative min-h-[60vh] flex items-center justify-center px-6">
-        <p className="text-sm font-medium text-white/65" role="status">
-          Cargando tus mapas estelares...
-        </p>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (!user) {

@@ -3,6 +3,8 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
+import GlassTooltip from '../../components/ui/GlassTooltip';
+import { OrbitalSpinner } from '../../components/ui/PanelSkeletons';
 import { StyleCurveIcon, LeafIcon } from '../../components/DesignModeTogglePill';
 import { useAuthStore } from '../../lib/auth-store';
 import { useThemeStore } from '../../lib/theme-store';
@@ -763,23 +765,30 @@ export default function ConfiguracionPage() {
                       )}
 
                       <div className="flex flex-wrap items-center gap-2.5">
-                        <button
-                          type="button"
-                          disabled={downloadingPlus}
-                          onClick={() => void handleDescargarModoPlus()}
-                          className="rounded-2xl bg-white text-slate-950 hover:bg-white/90 disabled:opacity-50 font-bold text-xs px-4 py-2.5 transition-colors cursor-pointer"
-                        >
-                          {downloadingPlus
-                            ? `Descargando... ${downloadProgress}%`
-                            : 'Descargar recursos y BD local'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void handleInstalarAppEnPC()}
-                          className="liquid-glass-btn rounded-2xl px-4 py-2.5 text-xs font-bold text-white cursor-pointer"
-                        >
-                          Instalar página en PC
-                        </button>
+                        <GlassTooltip label="Descarga todas las páginas, assets y tablas de Supabase a tu PC" placement="top">
+                          <button
+                            type="button"
+                            disabled={downloadingPlus}
+                            onClick={() => void handleDescargarModoPlus()}
+                            className="inline-flex items-center gap-2 rounded-2xl bg-white text-slate-950 hover:bg-white/90 disabled:opacity-50 font-bold text-xs px-4 py-2.5 transition-colors cursor-pointer"
+                          >
+                            {downloadingPlus && <OrbitalSpinner size="xs" />}
+                            <span>
+                              {downloadingPlus
+                                ? `Descargando... ${downloadProgress}%`
+                                : 'Descargar recursos y BD local'}
+                            </span>
+                          </button>
+                        </GlassTooltip>
+                        <GlassTooltip label="Instalar Universo del Conocimiento como aplicación de escritorio" placement="top">
+                          <button
+                            type="button"
+                            onClick={() => void handleInstalarAppEnPC()}
+                            className="liquid-glass-btn rounded-2xl px-4 py-2.5 text-xs font-bold text-white cursor-pointer"
+                          >
+                            Instalar página en PC
+                          </button>
+                        </GlassTooltip>
                       </div>
 
                       {installNotice && (

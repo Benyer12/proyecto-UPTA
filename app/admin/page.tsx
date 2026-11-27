@@ -13,6 +13,8 @@ import LiquidGlassToast, {
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
 import RoleAvatar from '../../components/RoleAvatar';
+import GlassTooltip from '../../components/ui/GlassTooltip';
+import { OrbitalSpinner, SkeletonBar, UserListSkeleton } from '../../components/ui/PanelSkeletons';
 
 interface UsuarioDB {
   id: string;
@@ -174,19 +176,25 @@ export default function AdminPage() {
                   <div className="font-mono text-[10px] uppercase tracking-wider text-white/45">
                     Activos
                   </div>
-                  <div className="text-lg font-bold text-white tabular-nums">{usuarios.length}</div>
+                  <div className="text-lg font-bold text-white tabular-nums flex justify-center mt-0.5">
+                    {loading ? <SkeletonBar className="h-5 w-8 rounded-md" /> : usuarios.length}
+                  </div>
                 </div>
                 <div className="px-4 py-3 text-center">
                   <div className="font-mono text-[10px] uppercase tracking-wider text-[#67E8F9]">
                     Tutores
                   </div>
-                  <div className="text-lg font-bold text-white tabular-nums">{totalTutores}</div>
+                  <div className="text-lg font-bold text-white tabular-nums flex justify-center mt-0.5">
+                    {loading ? <SkeletonBar className="h-5 w-8 rounded-md" /> : totalTutores}
+                  </div>
                 </div>
                 <div className="px-4 py-3 text-center">
                   <div className="font-mono text-[10px] uppercase tracking-wider text-[#6EE7B7]">
                     Estudiantes
                   </div>
-                  <div className="text-lg font-bold text-white tabular-nums">{totalEstudiantes}</div>
+                  <div className="text-lg font-bold text-white tabular-nums flex justify-center mt-0.5">
+                    {loading ? <SkeletonBar className="h-5 w-8 rounded-md" /> : totalEstudiantes}
+                  </div>
                 </div>
               </div>
             </LiquidGlass>
@@ -220,9 +228,7 @@ export default function AdminPage() {
             </div>
 
             {loading ? (
-              <div className="p-12 text-center" role="status">
-                <p className="text-sm text-white/55">Cargando usuarios...</p>
-              </div>
+              <UserListSkeleton rows={5} actionButtons={1} />
             ) : usuarios.length === 0 ? (
               <div className="p-12 text-center space-y-1.5">
                 <p className="text-sm font-semibold text-white">No hay usuarios activos registrados.</p>
@@ -266,16 +272,26 @@ export default function AdminPage() {
                       </div>
 
                       <div className="flex gap-2 self-end sm:self-center shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => cambiarRol(u)}
-                          disabled={isUpdating}
-                          className="glance min-h-[40px] inline-flex items-center justify-center text-xs font-medium border border-white/15 bg-white/[0.05] hover:bg-white hover:text-black disabled:opacity-50 text-white px-4 py-2 rounded-full transition-colors cursor-pointer"
+                        <GlassTooltip
+                          label={`Reasignar cuenta a ${u.role === 'student' ? 'Tutor' : 'Estudiante'}`}
+                          placement="left"
                         >
-                          {isUpdating
-                            ? 'Guardando...'
-                            : `Cambiar a ${u.role === 'student' ? 'Tutor' : 'Estudiante'}`}
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => cambiarRol(u)}
+                            disabled={isUpdating}
+                            className="glance min-h-[40px] inline-flex items-center justify-center gap-2 text-xs font-medium border border-white/15 bg-white/[0.05] hover:bg-white hover:text-black disabled:opacity-50 text-white px-4 py-2 rounded-full transition-colors cursor-pointer"
+                          >
+                            {isUpdating ? (
+                              <>
+                                <OrbitalSpinner size="xs" />
+                                <span>Guardando...</span>
+                              </>
+                            ) : (
+                              <span>{`Cambiar a ${u.role === 'student' ? 'Tutor' : 'Estudiante'}`}</span>
+                            )}
+                          </button>
+                        </GlassTooltip>
                       </div>
                     </div>
                   );

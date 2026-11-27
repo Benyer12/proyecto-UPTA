@@ -9,6 +9,8 @@ import {
 } from '../../lib/offline-sync';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import RoleAvatar from '../../components/RoleAvatar';
+import GlassTooltip from '../../components/ui/GlassTooltip';
+import { AssignmentsSkeleton, OrbitalSpinner, SkeletonBar } from '../../components/ui/PanelSkeletons';
 
 interface Usuario {
   id: string;
@@ -205,30 +207,32 @@ export default function AsignacionesPage() {
                 <div className="font-mono text-[10px] uppercase tracking-wider text-[#67E8F9]">
                   Tutores
                 </div>
-                <div className="text-lg font-bold text-white tabular-nums">{tutores.length}</div>
+                <div className="text-lg font-bold text-white tabular-nums flex justify-center mt-0.5">
+                  {loading ? <SkeletonBar className="h-5 w-8 rounded-md" /> : tutores.length}
+                </div>
               </div>
               <div className="px-4 py-3 text-center">
                 <div className="font-mono text-[10px] uppercase tracking-wider text-white/50">
                   Estudiantes
                 </div>
-                <div className="text-lg font-bold text-white tabular-nums">{estudiantes.length}</div>
+                <div className="text-lg font-bold text-white tabular-nums flex justify-center mt-0.5">
+                  {loading ? <SkeletonBar className="h-5 w-8 rounded-md" /> : estudiantes.length}
+                </div>
               </div>
               <div className="px-4 py-3 text-center">
                 <div className="font-mono text-[10px] uppercase tracking-wider text-[#6EE7B7]">
                   Vínculos
                 </div>
-                <div className="text-lg font-bold text-white tabular-nums">{relacionesValidas.length}</div>
+                <div className="text-lg font-bold text-white tabular-nums flex justify-center mt-0.5">
+                  {loading ? <SkeletonBar className="h-5 w-8 rounded-md" /> : relacionesValidas.length}
+                </div>
               </div>
             </div>
           </LiquidGlass>
         </section>
 
         {loading ? (
-          <LiquidGlass blur={3} refraction={10} className="rounded-3xl bg-white/[0.03] p-12 text-center">
-            <p className="text-sm text-white/55" role="status">
-              Cargando tutores y estudiantes...
-            </p>
-          </LiquidGlass>
+          <AssignmentsSkeleton />
         ) : tutores.length === 0 ? (
           <LiquidGlass blur={3} refraction={10} className="rounded-3xl bg-white/[0.03] p-12 text-center space-y-2">
             <p className="text-sm font-semibold text-[#FDE68A]">
@@ -409,24 +413,40 @@ export default function AsignacionesPage() {
                           </div>
 
                           <div className="flex gap-2 self-end sm:self-center shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => toggleAsignacion(est.id)}
-                              disabled={isUpdating}
-                              className={`min-h-[38px] text-xs px-4 py-1.5 rounded-full font-medium transition-colors disabled:opacity-50 cursor-pointer ${
+                            <GlassTooltip
+                              label={
                                 esDeEsteTutor
-                                  ? 'border border-rose-400/35 bg-rose-500/12 hover:bg-rose-500/25 text-rose-200'
-                                  : 'bg-white hover:bg-white/90 text-black font-semibold'
-                              }`}
-                            >
-                              {isUpdating
-                                ? 'Guardando...'
-                                : esDeEsteTutor
-                                  ? 'Quitar'
+                                  ? `Desvincular de ${tutorActivo?.nombre}`
                                   : otroTutor
-                                    ? 'Transferir aquí'
-                                    : 'Asignar'}
-                            </button>
+                                    ? `Transferir estudiante a ${tutorActivo?.nombre}`
+                                    : `Asignar estudiante a ${tutorActivo?.nombre}`
+                              }
+                              placement="left"
+                            >
+                              <button
+                                type="button"
+                                onClick={() => toggleAsignacion(est.id)}
+                                disabled={isUpdating}
+                                className={`min-h-[38px] inline-flex items-center justify-center gap-2 text-xs px-4 py-1.5 rounded-full font-medium transition-colors disabled:opacity-50 cursor-pointer ${
+                                  esDeEsteTutor
+                                    ? 'border border-rose-400/35 bg-rose-500/12 hover:bg-rose-500/25 text-rose-200'
+                                    : 'bg-white hover:bg-white/90 text-black font-semibold'
+                                }`}
+                              >
+                                {isUpdating ? (
+                                  <>
+                                    <OrbitalSpinner size="xs" />
+                                    <span>Guardando...</span>
+                                  </>
+                                ) : esDeEsteTutor ? (
+                                  'Quitar'
+                                ) : otroTutor ? (
+                                  'Transferir aquí'
+                                ) : (
+                                  'Asignar'
+                                )}
+                              </button>
+                            </GlassTooltip>
                           </div>
                         </div>
                       );

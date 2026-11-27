@@ -1327,3 +1327,79 @@ html[data-design-mode="eco"] [data-game-board="true"] svg animate,
 html[data-design-mode="eco"] [data-game-board="true"] svg animateTransform {
   animation-play-state: paused;
 }
+
+/* ============================================================================
+   SKELETON LOADERS & LOADING ANIMATIONS (GLASSCN COSMIC SHIMMER)
+   ============================================================================ */
+
+@keyframes skeleton-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes orbit-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.skeleton-box {
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.skeleton-box::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.14) 50%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+html[data-theme="light"] .skeleton-box {
+  background-color: rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="light"] .skeleton-box::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.65) 50%,
+    transparent 100%
+  );
+}
+
+html[data-design-mode="eco"] .skeleton-box::after {
+  display: none;
+}
+
+.orbital-spinner-ring {
+  animation: orbit-spin 0.9s linear infinite;
+}
+
+.orbital-spinner-ring-reverse {
+  animation: orbit-spin 1.4s linear infinite reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-box::after {
+    animation: none;
+    display: none;
+  }
+}

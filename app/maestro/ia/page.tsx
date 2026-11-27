@@ -12,6 +12,8 @@ import RoleAvatar from '../../../components/RoleAvatar';
 import TeacherReportIACard, {
   type EstudianteParaReporte,
 } from '../../../components/TeacherReportIACard';
+import GlassTooltip from '../../../components/ui/GlassTooltip';
+import { TutorIASkeleton } from '../../../components/ui/PanelSkeletons';
 
 const TOTAL_NIVELES_DEFAULT = 12;
 
@@ -119,18 +121,18 @@ export default function MaestroIAPage() {
             </div>
           </div>
 
-          <Link
-            href="/maestro"
-            className="min-h-[42px] inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black text-white text-xs font-semibold px-5 transition-colors self-start lg:self-auto shrink-0"
-          >
-            ← Volver a Mis Estudiantes
-          </Link>
+          <GlassTooltip label="Regresar al resumen de estudiantes" placement="left">
+            <Link
+              href="/maestro"
+              className="min-h-[42px] inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black text-white text-xs font-semibold px-5 transition-colors self-start lg:self-auto shrink-0"
+            >
+              ← Volver a Mis Estudiantes
+            </Link>
+          </GlassTooltip>
         </section>
 
         {loading ? (
-          <div className="py-16 text-center text-sm text-white/60">
-            Cargando progreso de estudiantes para el análisis IA...
-          </div>
+          <TutorIASkeleton />
         ) : (
           <TeacherReportIACard
             tutorName={user.name || 'Tutor'}
