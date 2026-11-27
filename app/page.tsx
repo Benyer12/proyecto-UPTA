@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import PlanetVisual from './components/PlanetVisual';
 import { LiquidGlass } from '../components/ui/glasscn/liquid-glass';
+import LottieAnimation from '../components/ui/LottieAnimation';
 import { useThemeStore } from '../lib/theme-store';
 import { playStep } from '../lib/sound-engine';
 
@@ -223,12 +224,7 @@ export default function Home() {
           >
             <div className="relative z-10 space-y-5">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#67E8F9]/35 bg-[#070b18]/65 backdrop-blur-md px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-[#67E8F9]">
-                <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5 shrink-0" aria-hidden="true">
-                  <path
-                    d="M8 1.8L9.6 5.8L13.8 7.5L9.6 9.2L8 13.2L6.4 9.2L2.2 7.5L6.4 5.8L8 1.8Z"
-                    fill="currentColor"
-                  />
-                </svg>
+                <LottieAnimation preset="sparkle" size={18} />
                 <span>Primaria · 10 a 12 años</span>
               </div>
 

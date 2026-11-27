@@ -18,6 +18,7 @@ import LiquidGlassToast, {
 import { LiquidGlass } from './ui/glasscn/liquid-glass';
 import GlassTooltip from './ui/GlassTooltip';
 import { OrbitalSpinner } from './ui/PanelSkeletons';
+import LottieAnimation from './ui/LottieAnimation';
 import type { LoginData, RegisterData } from '../shared/types';
 
 interface DropdownParticle {
@@ -823,7 +824,7 @@ export default function Header() {
                       : 'bg-[#060a18]/[0.45] border-white/[0.16] text-white/80 hover:text-white hover:bg-white/[0.12]'
                   }`}
                 >
-                  <GearIcon />
+                  <LottieAnimation preset="gear" size={20} speed={0.75} />
                 </Link>
               </GlassTooltip>
 
@@ -966,8 +967,8 @@ export default function Header() {
             initial={{ opacity: 0, y: -10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.98 }}
-            transition={{ duration: 0.24, ease: 'easeOut' }}
-            className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden rounded-3xl liquid-glass-dropdown"
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden rounded-3xl liquid-glass-dropdown will-change-transform"
           >
             {/* Lienzo de partículas Antigravity dentro del panel desplegable */}
             <DropdownAntigravityCanvas />

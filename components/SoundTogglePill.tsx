@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useSoundStore } from '../lib/sound-store';
 import { playSoundEnabledChime } from '../lib/sound-engine';
 import { LiquidGlass } from './ui/glasscn/liquid-glass';
+import LottieAnimation from './ui/LottieAnimation';
 
 function VolumeOnIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
@@ -100,7 +101,7 @@ export default function SoundTogglePill({
         {muted ? (
           <VolumeMutedIcon className="w-4 h-4 shrink-0" />
         ) : (
-          <VolumeOnIcon className="w-4 h-4 shrink-0" />
+          <LottieAnimation preset="sound" size={18} />
         )}
         {showLabels && <span>{muted ? 'Silencio' : 'Sonido'}</span>}
       </button>

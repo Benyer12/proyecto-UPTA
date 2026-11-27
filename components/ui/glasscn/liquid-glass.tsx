@@ -202,9 +202,16 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(function
       );
     };
     measure();
-    const observer = new ResizeObserver(measure);
+    let rafId = 0;
+    const observer = new ResizeObserver(() => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(measure);
+    });
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      observer.disconnect();
+    };
   }, [bezel, isEco]);
 
   const mapUrl = useMemo(() => (isEco || !geometry ? '' : createDisplacementMap(geometry)), [geometry, isEco]);

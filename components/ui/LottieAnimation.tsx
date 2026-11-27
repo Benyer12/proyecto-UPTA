@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import lottie, { type AnimationItem } from 'lottie-web';
 import { getLottiePresetData, type LottiePresetName } from '../../lib/lottie-presets';
+import { useSettingsStore } from '../../lib/settings-store';
 
 interface LottieAnimationProps {
   preset?: LottiePresetName;
@@ -26,6 +27,7 @@ export default function LottieAnimation({
   onComplete,
 }: LottieAnimationProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const isEco = useSettingsStore((s) => s.designMode === 'eco');
 
   useEffect(() => {
     const container = containerRef.current;
@@ -34,34 +36,62 @@ export default function LottieAnimation({
     const rawData = animationData ?? getLottiePresetData(preset);
     const clonedData = JSON.parse(JSON.stringify(rawData));
 
-    const isEco =
-      typeof document !== 'undefined' &&
-      document.documentElement.getAttribute('data-design-mode') === 'eco';
+    const reducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const staticOnly = isEco || reducedMotion;
 
     let anim: AnimationItem | null = null;
+    let observer: IntersectionObserver | null = null;
+
     try {
       anim = lottie.loadAnimation({
         container,
         renderer: 'svg',
-        loop: isEco ? false : loop,
-        autoplay: isEco ? false : autoplay,
+        loop: staticOnly ? false : loop,
+        autoplay: staticOnly ? false : autoplay,
         animationData: clonedData,
+        rendererSettings: {
+          progressiveLoad: true,
+        },
       });
 
       if (speed !== 1) {
         anim.setSpeed(speed);
       }
 
-      if (isEco) {
+      if (staticOnly) {
         anim.goToAndStop(25, true);
-      } else if (onComplete) {
-        anim.addEventListener('complete', onComplete);
+      } else {
+        if (onComplete) {
+          anim.addEventListener('complete', onComplete);
+        }
+
+        // Pausa automática cuando sale del viewport para mantener 60fps sin lagueo
+        if (typeof IntersectionObserver !== 'undefined' && autoplay) {
+          observer = new IntersectionObserver(
+            (entries) => {
+              const entry = entries[0];
+              if (!anim || !entry) return;
+              if (entry.isIntersecting) {
+                anim.play();
+              } else {
+                anim.pause();
+              }
+            },
+            { threshold: 0.05 },
+          );
+          observer.observe(container);
+        }
       }
     } catch {
       // Fallback silencioso si el contenedor se desmonta durante la carga
     }
 
     return () => {
+      if (observer) {
+        observer.disconnect();
+      }
       if (anim) {
         if (onComplete) {
           try {
@@ -73,7 +103,7 @@ export default function LottieAnimation({
         anim.destroy();
       }
     };
-  }, [preset, animationData, loop, autoplay, speed, onComplete]);
+  }, [preset, animationData, loop, autoplay, speed, onComplete, isEco]);
 
   return (
     <div

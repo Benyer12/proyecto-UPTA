@@ -11,6 +11,7 @@ import SoundTogglePill from '../../components/SoundTogglePill';
 import EasyReadingTogglePill from '../../components/EasyReadingTogglePill';
 import RoleAvatar from '../../components/RoleAvatar';
 import { DashboardSkeleton, OrbitalSpinner } from '../../components/ui/PanelSkeletons';
+import LottieAnimation from '../../components/ui/LottieAnimation';
 import { useAuthStore } from '../../lib/auth-store';
 import { useThemeStore } from '../../lib/theme-store';
 import { MOCK_PLANETS, MOCK_PROGRESS } from '../../lib/mock-data';
@@ -318,9 +319,12 @@ function StudentDashboardView({
 
       {/* 2. ENCABEZADO CENTRAL LIMPIO */}
       <div className="text-center space-y-2 pt-1">
-        <h2 className="text-3xl sm:text-5xl font-black tracking-wide uppercase bg-gradient-to-b from-white via-[#BAE6FD] to-[#7DD3FC] bg-clip-text text-transparent">
-          MAPAS ESTELARES
-        </h2>
+        <div className="inline-flex items-center justify-center gap-2.5">
+          <LottieAnimation preset="planet" size={38} />
+          <h2 className="text-3xl sm:text-5xl font-black tracking-wide uppercase bg-gradient-to-b from-white via-[#BAE6FD] to-[#7DD3FC] bg-clip-text text-transparent">
+            MAPAS ESTELARES
+          </h2>
+        </div>
         <p className="text-sm sm:text-base text-white/75 font-medium">
           Selecciona un planeta para comenzar tu misión
         </p>

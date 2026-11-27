@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } 
 import Link from 'next/link';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import { OrbitalSpinner } from '../../components/ui/PanelSkeletons';
+import LottieAnimation from '../../components/ui/LottieAnimation';
 import { runViewTransition } from '../../lib/view-transitions';
 import SnakeArcadeGame from '../../components/SnakeArcadeGame';
 import BreakoutArcadeGame from '../../components/minijuegos/BreakoutArcadeGame';
@@ -447,8 +448,8 @@ export default function MinijuegosPage() {
         <section className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-7 border-b border-white/10">
           <div className="space-y-2.5">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#67E8F9]/35 bg-[#67E8F9]/10 px-3.5 py-1.5 text-xs sm:text-sm font-bold uppercase tracking-[0.16em] text-[#67E8F9] shadow-[0_0_20px_-6px_rgba(103,232,249,0.4)]">
-              <span className="h-2 w-2 rounded-full bg-[#67E8F9]" aria-hidden="true" />
-              Sala Arcade · 8 Juegos Activos
+              <LottieAnimation preset="gamepad" size={22} />
+              <span>Sala Arcade · 8 Juegos Activos</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               Minijuegos Espaciales

@@ -156,23 +156,23 @@ export default function LiquidGlassSelect({
                 initial={
                   prefersReducedMotion
                     ? { opacity: 1 }
-                    : { opacity: 0, height: 0, y: -6, scaleY: 0.94 }
+                    : { opacity: 0, y: -6, scale: 0.97 }
                 }
                 animate={
                   prefersReducedMotion
                     ? { opacity: 1 }
-                    : { opacity: 1, height: 'auto', y: 0, scaleY: 1 }
+                    : { opacity: 1, y: 0, scale: 1 }
                 }
                 exit={
                   prefersReducedMotion
                     ? { opacity: 0 }
-                    : { opacity: 0, height: 0, y: -6, scaleY: 0.94 }
+                    : { opacity: 0, y: -6, scale: 0.97 }
                 }
                 transition={{
-                  duration: 0.26,
+                  duration: 0.17,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="z-[95] overflow-hidden rounded-2xl"
+                className="z-[95] rounded-2xl will-change-transform"
               >
                 <LiquidGlass
                   blur={14}
