@@ -36,6 +36,14 @@ export function runViewTransition(
   root.dataset.vtType = type;
 
   try {
+    window.dispatchEvent(
+      new CustomEvent('universo:view-transition', { detail: { type } }),
+    );
+  } catch {
+    // ignorar en entornos sin CustomEvent
+  }
+
+  try {
     const transition = document.startViewTransition(() => {
       try {
         flushSync(update);

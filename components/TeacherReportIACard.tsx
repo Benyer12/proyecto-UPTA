@@ -1,10 +1,11 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { LiquidGlass } from './ui/glasscn/liquid-glass';
 import LiquidGlassSelect, { type LiquidGlassSelectOption } from './LiquidGlassSelect';
 import RoleAvatar from './RoleAvatar';
+import { OrbitalSpinner } from './ui/PanelSkeletons';
 import {
   buildGroupReportPdf,
   buildIndividualReportPdf,
@@ -42,25 +43,35 @@ export default function TeacherReportIACard({
   const [errorIA, setErrorIA] = useState<string | null>(null);
   const [filtroEstudiante, setFiltroEstudiante] = useState<string>('all');
   const [resumenPDF, setResumenPDF] = useState<ResumenPDFData | null>(null);
-  const [activePdfDoc, setActivePdfDoc] = useState<GeneratedPdfDocument | null>(null);
+  const [inlinePdfDoc, setInlinePdfDoc] = useState<GeneratedPdfDocument | null>(null);
+  const [modalPdfDoc, setModalPdfDoc] = useState<GeneratedPdfDocument | null>(null);
+  const autoLoadedRef = useRef(false);
 
+  // Actualiza automáticamente la vista previa PDFSlick cuando hay datos listos o cambia el filtro
   useEffect(() => {
-    return () => {
-      if (activePdfDoc?.blobUrl) {
-        URL.revokeObjectURL(activePdfDoc.blobUrl);
+    if (!resumenPDF) return;
+    if (filtroEstudiante !== 'all') {
+      const individual = resumenPDF.resumenesPorEstudiante.find(
+        (e) => e.estudianteId === filtroEstudiante,
+      );
+      if (individual) {
+        setInlinePdfDoc(buildIndividualReportPdf(individual, tutorName));
+        return;
       }
-    };
-  }, [activePdfDoc]);
+    }
+    setInlinePdfDoc(buildGroupReportPdf(resumenPDF));
+  }, [resumenPDF, filtroEstudiante, tutorName]);
 
   const abrirEnPdfSlick = (doc: GeneratedPdfDocument) => {
     runViewTransition(() => {
-      setActivePdfDoc(doc);
+      setInlinePdfDoc(doc);
+      setModalPdfDoc(doc);
     }, 'edit');
   };
 
   const cerrarPdfSlick = () => {
     runViewTransition(() => {
-      setActivePdfDoc(null);
+      setModalPdfDoc(null);
     }, 'edit');
   };
 
@@ -121,6 +132,13 @@ export default function TeacherReportIACard({
     }
     return null;
   };
+
+  useEffect(() => {
+    if (autoLoadedRef.current) return;
+    autoLoadedRef.current = true;
+    void generarDiagnosticoConIA();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const descargarReportePDFIndividual = async (
     est: ResumenIndividualEstudianteIA,
@@ -209,10 +227,20 @@ export default function TeacherReportIACard({
               disabled={loadingIA}
               className="min-h-[40px] px-5 py-2 rounded-full bg-white text-black hover:bg-white/90 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
             >
-              {filtroEstudiante === 'all' ? 'Ver / Descargar PDF' : 'Ver PDF Individual'}
+              {filtroEstudiante === 'all' ? 'Vista Previa PDF Grupal' : 'Vista Previa PDF Individual'}
             </button>
           </div>
         </div>
+
+        {loadingIA && (
+          <div className="rounded-2xl border border-[#67E8F9]/25 bg-[#041724]/60 px-5 py-4 flex items-center justify-center">
+            <OrbitalSpinner
+              size="md"
+              preset="pdf"
+              label="Generando diagnóstico IA y preparando vista previa PDFSlick..."
+            />
+          </div>
+        )}
 
         {errorIA && (
           <div className="rounded-xl border border-rose-400/35 bg-rose-500/10 px-4 py-2.5 text-xs text-rose-200">
@@ -285,7 +313,7 @@ export default function TeacherReportIACard({
                             onClick={() => descargarReportePDFIndividual(est)}
                             className="min-h-[32px] px-3 py-1 rounded-full border border-white/15 bg-white/[0.06] hover:bg-white hover:text-black text-[11px] font-semibold text-white transition-colors cursor-pointer shrink-0"
                           >
-                            PDF Individual
+                            Vista Previa PDF
                           </button>
                         </div>
 
@@ -329,15 +357,41 @@ export default function TeacherReportIACard({
                 </div>
               </div>
             )}
+
+            {inlinePdfDoc && !modalPdfDoc && (
+              <div className="pt-2 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-[#67E8F9]">
+                    Vista Previa en Vivo (PDFSlick) · Descarga disponible desde la barra superior
+                  </span>
+                </div>
+                <PdfSlickReportModal
+                  key={inlinePdfDoc.filename}
+                  mode="inline"
+                  pdfBuffer={inlinePdfDoc.pdfBuffer}
+                  blobUrl={inlinePdfDoc.blobUrl}
+                  filename={inlinePdfDoc.filename}
+                  title={inlinePdfDoc.title}
+                  onExpand={() =>
+                    runViewTransition(() => {
+                      setModalPdfDoc(inlinePdfDoc);
+                    }, 'edit')
+                  }
+                />
+              </div>
+            )}
           </div>
         )}
       </LiquidGlass>
 
-      {activePdfDoc && (
+      {modalPdfDoc && (
         <PdfSlickReportModal
-          blobUrl={activePdfDoc.blobUrl}
-          filename={activePdfDoc.filename}
-          title={activePdfDoc.title}
+          key={`modal-${modalPdfDoc.filename}`}
+          mode="modal"
+          pdfBuffer={modalPdfDoc.pdfBuffer}
+          blobUrl={modalPdfDoc.blobUrl}
+          filename={modalPdfDoc.filename}
+          title={modalPdfDoc.title}
           onClose={cerrarPdfSlick}
         />
       )}

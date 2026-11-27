@@ -1,4 +1,4 @@
-const CACHE_NAME = 'universo-offline-v3';
+const CACHE_NAME = 'universo-offline-v4';
 
 const APP_SHELL_URLS = [
   '/',
@@ -20,6 +20,7 @@ const APP_SHELL_URLS = [
   '/admin/usuarios',
   '/asignaciones',
   '/manifest.webmanifest',
+  '/pdf.worker.min.mjs',
   '/images/liquid-prism-bg.jpg',
   '/images/liquid-prism-light-bg.jpg',
   '/images/numerix-board-bg.jpg',
@@ -58,8 +59,10 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
+  if (!req.url.startsWith('http://') && !req.url.startsWith('https://')) return;
 
   const url = new URL(req.url);
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
   if (url.origin !== self.location.origin) return;
   if (
     url.pathname.startsWith('/api/') ||

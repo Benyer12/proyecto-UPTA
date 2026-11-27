@@ -1555,13 +1555,20 @@ html[data-design-mode="eco"] .skeleton-box::after {
   animation: 250ms cubic-bezier(0.22, 1, 0.36, 1) both vt-fade-in;
 }
 
-/* Modales de edición */
-::view-transition-old(admin-user-editor) {
+/* Modales de edición y visor PDFSlick */
+::view-transition-old(admin-user-editor),
+::view-transition-old(pdfslick-report-modal) {
   animation: 160ms ease-in both vt-fade-out;
 }
 
-::view-transition-new(admin-user-editor) {
+::view-transition-new(admin-user-editor),
+::view-transition-new(pdfslick-report-modal) {
   animation: 230ms cubic-bezier(0.22, 1, 0.36, 1) both vt-edit-pop-in;
+}
+
+::view-transition-group(lottie-transition-badge) {
+  z-index: 160;
+  animation: none;
 }
 
 /* Direccional: forward (entrar a módulo/juego) y back (regresar) */

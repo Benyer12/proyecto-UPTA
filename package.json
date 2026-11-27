@@ -21,6 +21,7 @@
     "crypto-js": "^4.2.0",
     "framer-motion": "^12.40.0",
     "jspdf": "^4.2.1",
+    "lottie-web": "^5.13.0",
     "next": "^16.2.9",
     "openai": "^7.62.0",
     "react": "^19.2.7",

@@ -2,34 +2,33 @@
 
 import type { CSSProperties } from 'react';
 import { LiquidGlass } from './glasscn/liquid-glass';
+import LottieAnimation from './LottieAnimation';
+import type { LottiePresetName } from '../../lib/lottie-presets';
 
 export function OrbitalSpinner({
   size = 'md',
   label,
+  preset = 'orbit',
   className = '',
 }: {
   size?: 'xs' | 'sm' | 'md' | 'lg';
   label?: string;
+  preset?: LottiePresetName;
   className?: string;
 }) {
-  const dims =
+  const pxSize =
     size === 'xs'
-      ? 'w-3.5 h-3.5'
+      ? 18
       : size === 'sm'
-        ? 'w-4 h-4'
+        ? 22
         : size === 'lg'
-          ? 'w-10 h-10'
-          : 'w-6 h-6';
+          ? 56
+          : 34;
 
   return (
-    <span className={`inline-flex items-center gap-2 ${className}`} role="status" aria-live="polite">
-      <span className={`relative inline-block shrink-0 ${dims}`} aria-hidden="true">
-        <span className="orbital-spinner-ring absolute inset-0 rounded-full border-2 border-white/20 border-t-white" />
-        {(size === 'md' || size === 'lg') && (
-          <span className="orbital-spinner-ring-reverse absolute inset-[22%] rounded-full border-2 border-white/10 border-b-[#67E8F9]" />
-        )}
-      </span>
-      {label && <span className="text-xs sm:text-sm font-medium text-white/75">{label}</span>}
+    <span className={`inline-flex items-center gap-2.5 ${className}`} role="status" aria-live="polite">
+      <LottieAnimation preset={preset} size={pxSize} />
+      {label && <span className="text-xs sm:text-sm font-medium text-white/80">{label}</span>}
     </span>
   );
 }
@@ -55,6 +54,9 @@ export function UserListSkeleton({
 }) {
   return (
     <div className="divide-y divide-white/[0.07]" role="status" aria-label="Cargando registros">
+      <div className="flex items-center gap-2.5 px-5 sm:px-6 py-3 bg-white/[0.02]">
+        <OrbitalSpinner size="sm" label="Sincronizando datos..." />
+      </div>
       {Array.from({ length: rows }).map((_, idx) => (
         <div
           key={idx}

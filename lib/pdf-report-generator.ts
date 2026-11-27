@@ -22,6 +22,7 @@ export interface ResumenPDFData {
 }
 
 export interface GeneratedPdfDocument {
+  pdfBuffer: ArrayBuffer;
   blobUrl: string;
   filename: string;
   title: string;
@@ -305,9 +306,11 @@ export function buildIndividualReportPdf(
 
   addFooters(doc);
 
-  const blob = doc.output('blob');
+  const pdfBuffer = doc.output('arraybuffer');
+  const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
   const blobUrl = URL.createObjectURL(blob);
   return {
+    pdfBuffer,
     blobUrl,
     filename: `reporte_individual_${slugifyFilename(est.nombre || est.usuario)}.pdf`,
     title: `Reporte Individual · ${est.nombre}`,
@@ -394,9 +397,11 @@ export function buildGroupReportPdf(datos: ResumenPDFData): GeneratedPdfDocument
 
   addFooters(doc);
 
-  const blob = doc.output('blob');
+  const pdfBuffer = doc.output('arraybuffer');
+  const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
   const blobUrl = URL.createObjectURL(blob);
   return {
+    pdfBuffer,
     blobUrl,
     filename: `reporte_grupal_${slugifyFilename(datos.tutorNombre || 'tutor')}.pdf`,
     title: datos.tituloReporte || 'Reporte Grupal · Universo del Conocimiento',
