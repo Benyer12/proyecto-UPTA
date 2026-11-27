@@ -18,6 +18,7 @@ import { LiquidGlass } from '../../../components/ui/glasscn/liquid-glass';
 import RoleAvatar from '../../../components/RoleAvatar';
 import GlassTooltip from '../../../components/ui/GlassTooltip';
 import { OrbitalSpinner, UserListSkeleton } from '../../../components/ui/PanelSkeletons';
+import { runViewTransition } from '../../../lib/view-transitions';
 
 type EditableRole = 'student' | 'tutor';
 
@@ -150,24 +151,28 @@ export default function AdminUsuariosPage() {
   );
 
   const abrirEditor = useCallback((u: UsuarioEditableDB) => {
-    setEditingUser(u);
-    setForm({
-      nombre: u.nombre ?? '',
-      usuario: u.usuario ?? '',
-      correo: u.correo ?? '',
-      contrasena: u.contrasena ?? '',
-      role: u.role === 'tutor' ? 'tutor' : 'student',
-      status: u.status !== false,
-    });
-    setShowPassword(false);
-    setFormError(null);
+    runViewTransition(() => {
+      setEditingUser(u);
+      setForm({
+        nombre: u.nombre ?? '',
+        usuario: u.usuario ?? '',
+        correo: u.correo ?? '',
+        contrasena: u.contrasena ?? '',
+        role: u.role === 'tutor' ? 'tutor' : 'student',
+        status: u.status !== false,
+      });
+      setShowPassword(false);
+      setFormError(null);
+    }, 'edit');
   }, []);
 
   const cerrarEditor = useCallback(() => {
     if (saving) return;
-    setEditingUser(null);
-    setFormError(null);
-    setShowPassword(false);
+    runViewTransition(() => {
+      setEditingUser(null);
+      setFormError(null);
+      setShowPassword(false);
+    }, 'edit');
   }, [saving]);
 
   const cargarUsuarios = useCallback(async () => {
@@ -591,7 +596,7 @@ export default function AdminUsuariosPage() {
                     key={opt.id}
                     type="button"
                     aria-pressed={filtroRol === opt.id}
-                    onClick={() => setFiltroRol(opt.id)}
+                    onClick={() => runViewTransition(() => setFiltroRol(opt.id), 'choice')}
                     className={`min-h-[34px] px-3 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                       filtroRol === opt.id
                         ? 'bg-white text-black font-semibold'
@@ -619,7 +624,7 @@ export default function AdminUsuariosPage() {
                     key={opt.id}
                     type="button"
                     aria-pressed={filtroEstado === opt.id}
-                    onClick={() => setFiltroEstado(opt.id)}
+                    onClick={() => runViewTransition(() => setFiltroEstado(opt.id), 'choice')}
                     className={`min-h-[34px] px-3 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                       filtroEstado === opt.id
                         ? 'bg-white text-black font-semibold'
@@ -779,6 +784,7 @@ export default function AdminUsuariosPage() {
               exit={prefersReducedMotion ? undefined : { scale: 0.96, y: 10, opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
+              style={{ viewTransitionName: 'admin-user-editor' }}
               className="w-full max-w-xl rounded-3xl liquid-glass-modal p-6 sm:p-7 my-auto"
             >
               <form onSubmit={handleGuardarEdicion} className="space-y-5">

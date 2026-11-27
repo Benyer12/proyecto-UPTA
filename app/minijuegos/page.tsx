@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } 
 import Link from 'next/link';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import { OrbitalSpinner } from '../../components/ui/PanelSkeletons';
+import { runViewTransition } from '../../lib/view-transitions';
 import SnakeArcadeGame from '../../components/SnakeArcadeGame';
 import BreakoutArcadeGame from '../../components/minijuegos/BreakoutArcadeGame';
 import InvadersArcadeGame from '../../components/minijuegos/InvadersArcadeGame';
@@ -336,19 +337,21 @@ export default function MinijuegosPage() {
       return;
     }
 
-    setSelectedGameId(game.id);
+    runViewTransition(() => setSelectedGameId(game.id), 'forward');
   };
 
   const handleBackToCatalog = useCallback(() => {
-    setSelectedGameId(null);
-    setNotice(null);
+    runViewTransition(() => {
+      setSelectedGameId(null);
+      setNotice(null);
+    }, 'back');
     void cargarBaseMinijuegos();
   }, [cargarBaseMinijuegos]);
 
   if (!mounted) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-6">
-        <p className="text-sm text-white/60">Cargando sala arcade...</p>
+        <OrbitalSpinner size="md" label="Cargando sala arcade..." />
       </div>
     );
   }
@@ -517,6 +520,7 @@ export default function MinijuegosPage() {
           </div>
         )}
 
+        <div style={{ viewTransitionName: 'minijuego-stage' }}>
         {selectedGameId ? (
           renderSelectedGame()
         ) : (
@@ -655,6 +659,7 @@ export default function MinijuegosPage() {
             </div>
           </section>
         )}
+        </div>
       </div>
     </div>
   );

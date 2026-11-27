@@ -11,6 +11,7 @@ import { useThemeStore } from '../../lib/theme-store';
 import { useSoundStore } from '../../lib/sound-store';
 import { useSettingsStore, type DesignMode } from '../../lib/settings-store';
 import { useAccessibilityStore } from '../../lib/accessibility-store';
+import { runViewTransition } from '../../lib/view-transitions';
 import { playSoundEnabledChime } from '../../lib/sound-engine';
 import {
   comprobarConexionReal,
@@ -176,16 +177,18 @@ export default function ConfiguracionPage() {
     setSavingGlobal(true);
     setGlobalFeedback(null);
     const res = await setDesignModeAdmin(mode, { role: user?.role, name: user?.name });
-    if (res.ok) {
-      setGlobalFeedback(
-        mode === 'eco'
-          ? 'Modo Ahorro activado de forma general para todos los usuarios.'
-          : 'Modo Style activado de forma general para todos los usuarios.',
-      );
-    } else {
-      setGlobalFeedback(res.error || 'No se pudo actualizar el modo visual.');
-    }
-    setSavingGlobal(false);
+    runViewTransition(() => {
+      if (res.ok) {
+        setGlobalFeedback(
+          mode === 'eco'
+            ? 'Modo Ahorro activado de forma general para todos los usuarios.'
+            : 'Modo Style activado de forma general para todos los usuarios.',
+        );
+      } else {
+        setGlobalFeedback(res.error || 'No se pudo actualizar el modo visual.');
+      }
+      setSavingGlobal(false);
+    }, 'choice');
   };
 
   const handleSelectStorageModeAdmin = async (enableLocalDb: boolean) => {
@@ -348,7 +351,7 @@ export default function ConfiguracionPage() {
                       <button
                         key={item.id}
                         type="button"
-                        onClick={() => setActiveSection(item.id)}
+                        onClick={() => runViewTransition(() => setActiveSection(item.id), 'section')}
                         className={`w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                           selected
                             ? 'bg-white text-slate-950 shadow-sm'
@@ -443,6 +446,7 @@ export default function ConfiguracionPage() {
               bezel={0.42}
               saturation={1.6}
               className="rounded-3xl p-5 sm:p-7 flex-1 flex flex-col justify-between gap-5"
+              style={{ viewTransitionName: 'config-panel' }}
             >
               {activeSection === 'apariencia' && (
                 <div className="space-y-5">
@@ -458,7 +462,7 @@ export default function ConfiguracionPage() {
                   <div className="grid sm:grid-cols-2 gap-3 max-w-lg">
                     <button
                       type="button"
-                      onClick={() => setTheme('dark')}
+                      onClick={() => runViewTransition(() => setTheme('dark'), 'choice')}
                       className={`rounded-2xl px-4 py-3 text-sm font-bold border transition-all cursor-pointer ${
                         theme === 'dark'
                           ? 'bg-white text-slate-950 border-white'
@@ -469,7 +473,7 @@ export default function ConfiguracionPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setTheme('light')}
+                      onClick={() => runViewTransition(() => setTheme('light'), 'choice')}
                       data-keep-light-text={theme === 'light' ? 'true' : undefined}
                       className={`rounded-2xl px-4 py-3 text-sm font-bold border transition-all cursor-pointer ${
                         theme === 'light'
@@ -497,7 +501,7 @@ export default function ConfiguracionPage() {
                   <div className="flex flex-wrap items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => setEasyReading(true)}
+                      onClick={() => runViewTransition(() => setEasyReading(true), 'choice')}
                       data-keep-light-text={easyReading ? 'true' : undefined}
                       className={`rounded-2xl px-5 py-2.5 text-sm font-bold border transition-all cursor-pointer ${
                         easyReading
@@ -509,7 +513,7 @@ export default function ConfiguracionPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setEasyReading(false)}
+                      onClick={() => runViewTransition(() => setEasyReading(false), 'choice')}
                       className={`rounded-2xl px-5 py-2.5 text-sm font-bold border transition-all cursor-pointer ${
                         !easyReading
                           ? 'bg-white text-slate-950 border-white'

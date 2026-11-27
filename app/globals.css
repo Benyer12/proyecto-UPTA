@@ -1403,3 +1403,225 @@ html[data-design-mode="eco"] .skeleton-box::after {
     display: none;
   }
 }
+
+/* ============================================================================
+   DESIGNING VIEW TRANSITIONS (Next.js App Router + Native View Transitions API)
+   Transiciones fluidas entre páginas, módulos, secciones, elecciones y editores.
+   ============================================================================ */
+
+@view-transition {
+  navigation: auto;
+}
+
+.universo-site-header {
+  view-transition-name: site-header;
+}
+
+.universo-cosmic-backdrop {
+  view-transition-name: cosmic-backdrop;
+}
+
+.universo-main-stage {
+  view-transition-name: main-stage;
+}
+
+/* Aislamiento de elementos fijos para evitar parpadeo durante transiciones (Next.js guide) */
+::view-transition-group(site-header),
+::view-transition-group(cosmic-backdrop) {
+  animation: none;
+}
+
+::view-transition-group(site-header) {
+  z-index: 100;
+}
+
+::view-transition-group(cosmic-backdrop) {
+  z-index: -1;
+}
+
+@keyframes vt-fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.992);
+  }
+}
+
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.994);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes vt-slide-forward-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+}
+
+@keyframes vt-slide-forward-in {
+  from {
+    opacity: 0;
+    transform: translateX(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes vt-slide-back-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+}
+
+@keyframes vt-slide-back-in {
+  from {
+    opacity: 0;
+    transform: translateX(-22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes vt-edit-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes vt-route-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vt-route-stage {
+  animation: vt-route-enter 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Transición por defecto de página / módulo */
+::view-transition-old(main-stage),
+::view-transition-old(root) {
+  animation: 210ms cubic-bezier(0.4, 0, 1, 1) both vt-fade-out;
+}
+
+::view-transition-new(main-stage),
+::view-transition-new(root) {
+  animation: 270ms cubic-bezier(0.22, 1, 0.36, 1) both vt-fade-in;
+}
+
+/* Transiciones de paneles internos (sección -> sección, tutor -> estudiantes, minijuegos) */
+::view-transition-old(config-panel),
+::view-transition-old(tutor-students-panel),
+::view-transition-old(minijuego-stage) {
+  animation: 180ms cubic-bezier(0.4, 0, 1, 1) both vt-fade-out;
+}
+
+::view-transition-new(config-panel),
+::view-transition-new(tutor-students-panel),
+::view-transition-new(minijuego-stage) {
+  animation: 250ms cubic-bezier(0.22, 1, 0.36, 1) both vt-fade-in;
+}
+
+/* Modales de edición */
+::view-transition-old(admin-user-editor) {
+  animation: 160ms ease-in both vt-fade-out;
+}
+
+::view-transition-new(admin-user-editor) {
+  animation: 230ms cubic-bezier(0.22, 1, 0.36, 1) both vt-edit-pop-in;
+}
+
+/* Direccional: forward (entrar a módulo/juego) y back (regresar) */
+html[data-vt-type="forward"]::view-transition-old(main-stage),
+html[data-vt-type="forward"]::view-transition-old(minijuego-stage) {
+  animation: 210ms cubic-bezier(0.4, 0, 1, 1) both vt-slide-forward-out;
+}
+
+html[data-vt-type="forward"]::view-transition-new(main-stage),
+html[data-vt-type="forward"]::view-transition-new(minijuego-stage) {
+  animation: 260ms cubic-bezier(0.22, 1, 0.36, 1) both vt-slide-forward-in;
+}
+
+html[data-vt-type="back"]::view-transition-old(main-stage),
+html[data-vt-type="back"]::view-transition-old(minijuego-stage) {
+  animation: 210ms cubic-bezier(0.4, 0, 1, 1) both vt-slide-back-out;
+}
+
+html[data-vt-type="back"]::view-transition-new(main-stage),
+html[data-vt-type="back"]::view-transition-new(minijuego-stage) {
+  animation: 260ms cubic-bezier(0.22, 1, 0.36, 1) both vt-slide-back-in;
+}
+
+/* Cambios de elección (filtros, toggles, roles) con crossfade rápido */
+html[data-vt-type="choice"]::view-transition-old(main-stage) {
+  animation: 140ms ease-out both vt-fade-out;
+}
+
+html[data-vt-type="choice"]::view-transition-new(main-stage) {
+  animation: 190ms cubic-bezier(0.22, 1, 0.36, 1) both vt-fade-in;
+}
+
+/* Micro-transiciones CSS suaves en controles interactivos */
+a,
+button,
+input,
+select,
+textarea {
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Respeto estricto de prefers-reduced-motion y Modo Ahorro */
+@media (prefers-reduced-motion: reduce) {
+  .vt-route-stage {
+    animation: none !important;
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0.01ms !important;
+  }
+}
+
+html[data-design-mode="eco"] .vt-route-stage {
+  animation: none !important;
+}
+
+html[data-design-mode="eco"]::view-transition-old(*),
+html[data-design-mode="eco"]::view-transition-new(*),
+html[data-design-mode="eco"]::view-transition-group(*) {
+  animation-duration: 0.01ms !important;
+}

@@ -75,7 +75,7 @@ export default function FondoCosmico() {
   return (
     <div
       aria-hidden="true"
-      className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none"
+      className="universo-cosmic-backdrop fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none"
       style={{
         contain: 'strict',
         transform: 'translateZ(0)',

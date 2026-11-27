@@ -11,6 +11,7 @@ import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import RoleAvatar from '../../components/RoleAvatar';
 import GlassTooltip from '../../components/ui/GlassTooltip';
 import { AssignmentsSkeleton, OrbitalSpinner, SkeletonBar } from '../../components/ui/PanelSkeletons';
+import { runViewTransition } from '../../lib/view-transitions';
 
 interface Usuario {
   id: string;
@@ -280,7 +281,7 @@ export default function AsignacionesPage() {
                         type="button"
                         key={t.id}
                         aria-pressed={activo}
-                        onClick={() => setTutorSeleccionadoId(t.id)}
+                        onClick={() => runViewTransition(() => setTutorSeleccionadoId(t.id), 'section')}
                         className={`w-full text-left px-5 py-4 flex items-center justify-between gap-3 transition-colors cursor-pointer ${
                           activo ? 'bg-white/[0.09]' : 'hover:bg-white/[0.04]'
                         }`}
@@ -316,7 +317,11 @@ export default function AsignacionesPage() {
             </section>
 
             {/* Panel Derecho: Estudiantes para el tutor seleccionado */}
-            <section aria-labelledby="students-for-tutor-heading" className="lg:col-span-8">
+            <section
+              aria-labelledby="students-for-tutor-heading"
+              className="lg:col-span-8"
+              style={{ viewTransitionName: 'tutor-students-panel' }}
+            >
               <LiquidGlass
                 blur={5}
                 refraction={8}

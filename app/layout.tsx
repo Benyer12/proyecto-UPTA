@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <FondoWrapper />
           <PowerSyncInitializer />
           <Header />
-          <main className="pt-20">{children}</main>
+          <main className="pt-20 universo-main-stage">{children}</main>
         </MotionProvider>
       </body>
     </html>

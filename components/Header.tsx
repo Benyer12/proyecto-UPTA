@@ -639,7 +639,7 @@ export default function Header() {
 
   return (
     <>
-    <header className="fixed top-3 left-0 w-full z-40 px-3 sm:px-6 pointer-events-none">
+    <header className="universo-site-header fixed top-3 left-0 w-full z-40 px-3 sm:px-6 pointer-events-none">
       {/* Barra flotante Liquid Glass estilo glasscn (píldora suspendida con refracción SVG) */}
       <div className="mx-auto max-w-5xl pointer-events-auto">
         <LiquidGlass
