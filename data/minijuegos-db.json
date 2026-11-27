@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "ultimaActualizacion": "2026-11-24T00:00:00.000Z",
+  "ultimaActualizacion": "2026-11-25T17:57:21.730Z",
   "minijuegos": [
     {
       "id": "snake",
@@ -17,9 +17,9 @@
       "glow": "rgba(103, 232, 249, 0.36)",
       "bgTint": "rgba(103, 232, 249, 0.10)",
       "estadisticasGlobales": {
-        "totalIntentos": 0,
-        "recordGlobal": 0,
-        "poseedorRecord": null
+        "totalIntentos": 4,
+        "recordGlobal": 130,
+        "poseedorRecord": "Miguel Mejias"
       }
     },
     {
@@ -57,9 +57,9 @@
       "glow": "rgba(110, 231, 183, 0.32)",
       "bgTint": "rgba(110, 231, 183, 0.10)",
       "estadisticasGlobales": {
-        "totalIntentos": 0,
-        "recordGlobal": 0,
-        "poseedorRecord": null
+        "totalIntentos": 1,
+        "recordGlobal": 20825,
+        "poseedorRecord": "Miguel Mejias"
       }
     },
     {
@@ -97,9 +97,9 @@
       "glow": "rgba(253, 164, 175, 0.32)",
       "bgTint": "rgba(253, 164, 175, 0.10)",
       "estadisticasGlobales": {
-        "totalIntentos": 0,
-        "recordGlobal": 0,
-        "poseedorRecord": null
+        "totalIntentos": 2,
+        "recordGlobal": 493,
+        "poseedorRecord": "Miguel Mejias"
       }
     },
     {
@@ -117,9 +117,9 @@
       "glow": "rgba(147, 197, 253, 0.32)",
       "bgTint": "rgba(147, 197, 253, 0.10)",
       "estadisticasGlobales": {
-        "totalIntentos": 0,
-        "recordGlobal": 0,
-        "poseedorRecord": null
+        "totalIntentos": 1,
+        "recordGlobal": 680,
+        "poseedorRecord": "Miguel Mejias"
       }
     },
     {
@@ -157,11 +157,103 @@
       "glow": "rgba(250, 204, 21, 0.36)",
       "bgTint": "rgba(250, 204, 21, 0.10)",
       "estadisticasGlobales": {
-        "totalIntentos": 0,
-        "recordGlobal": 0,
-        "poseedorRecord": null
+        "totalIntentos": 3,
+        "recordGlobal": 4950,
+        "poseedorRecord": "Miguel Mejias"
       }
     }
   ],
-  "progresoUsuarios": {}
+  "progresoUsuarios": {
+    "b0dab874-3ca3-425e-a38b-5e8e93a2ba5c": {
+      "usuarioId": "b0dab874-3ca3-425e-a38b-5e8e93a2ba5c",
+      "usuarioNombre": "Miguel Mejias",
+      "rol": "admin",
+      "juegos": {
+        "pacman": {
+          "intentos": 3,
+          "recordPersonal": 4950,
+          "ultimoPuntaje": 3840,
+          "mejorDetalle": 6,
+          "ultimaModo": "nivel-2",
+          "tiempoTotalSegundos": 169,
+          "primeraPartida": "2026-11-25T04:12:59.940Z",
+          "ultimaPartida": "2026-11-25T16:22:07.478Z"
+        },
+        "runner": {
+          "intentos": 2,
+          "recordPersonal": 493,
+          "ultimoPuntaje": 15,
+          "mejorDetalle": 20,
+          "ultimaModo": "doble-salto",
+          "tiempoTotalSegundos": 28,
+          "primeraPartida": "2026-11-25T15:06:12.472Z",
+          "ultimaPartida": "2026-11-25T15:06:14.506Z"
+        },
+        "snake": {
+          "intentos": 2,
+          "recordPersonal": 130,
+          "ultimoPuntaje": 10,
+          "mejorDetalle": 13,
+          "ultimaModo": "arcade",
+          "tiempoTotalSegundos": 39,
+          "primeraPartida": "2026-11-25T16:23:19.857Z",
+          "ultimaPartida": "2026-11-25T17:57:21.730Z"
+        },
+        "pong": {
+          "intentos": 1,
+          "recordPersonal": 680,
+          "ultimoPuntaje": 680,
+          "mejorDetalle": 3,
+          "ultimaModo": "3-7",
+          "tiempoTotalSegundos": 136,
+          "primeraPartida": "2026-11-25T16:28:36.702Z",
+          "ultimaPartida": "2026-11-25T16:28:36.702Z"
+        },
+        "invaders": {
+          "intentos": 1,
+          "recordPersonal": 20825,
+          "ultimoPuntaje": 20825,
+          "mejorDetalle": 308,
+          "ultimaModo": "nivel-9",
+          "tiempoTotalSegundos": 122,
+          "primeraPartida": "2026-11-25T16:48:17.690Z",
+          "ultimaPartida": "2026-11-25T16:48:17.690Z"
+        }
+      }
+    },
+    "a58c9517-6bee-47be-8a79-6d1d192a845b": {
+      "usuarioId": "a58c9517-6bee-47be-8a79-6d1d192a845b",
+      "usuarioNombre": "Francisco",
+      "rol": "tutor",
+      "juegos": {
+        "snake": {
+          "intentos": 1,
+          "recordPersonal": 20,
+          "ultimoPuntaje": 20,
+          "mejorDetalle": 2,
+          "ultimaModo": "arcade",
+          "tiempoTotalSegundos": 8,
+          "primeraPartida": "2026-11-25T14:55:57.062Z",
+          "ultimaPartida": "2026-11-25T14:55:57.062Z"
+        }
+      }
+    },
+    "c391b5dc-b64d-495a-848c-4f0569781013": {
+      "usuarioId": "c391b5dc-b64d-495a-848c-4f0569781013",
+      "usuarioNombre": "Rosaura",
+      "rol": "student",
+      "juegos": {
+        "snake": {
+          "intentos": 1,
+          "recordPersonal": 110,
+          "ultimoPuntaje": 110,
+          "mejorDetalle": 11,
+          "ultimaModo": "arcade",
+          "tiempoTotalSegundos": 21,
+          "primeraPartida": "2026-11-25T16:44:33.477Z",
+          "ultimaPartida": "2026-11-25T16:44:33.477Z"
+        }
+      }
+    }
+  }
 }

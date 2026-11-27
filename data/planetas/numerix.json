@@ -1,6 +1,6 @@
 {
   "planeta": "Numérix",
-  "actualizadoEn": "2026-11-23T04:15:31.156Z",
+  "actualizadoEn": "2026-11-25T15:16:29.052Z",
   "preguntas": [
     {
       "id": 1795407267370,
@@ -445,6 +445,78 @@
   ],
   "retosBossNumerix": [
     {
+      "id": "ia-arm-1795619769130-23",
+      "enunciado": "Un sello armilar necesita 63 pulsos y ya acumuló 47. ¿Cuántos pulsos le faltan?",
+      "opciones": [
+        "16",
+        "18",
+        "13"
+      ],
+      "indiceCorrecto": 0,
+      "pista": "Resta 63 − 47.",
+      "explicacion": "63 − 47 = 16 pulsos faltantes."
+    },
+    {
+      "id": "ia-arm-1795619756555-77",
+      "enunciado": "El Núcleo Armilar enciende 4 anillos y cada uno lleva 4 gemas de luz. ¿Cuántas gemas brillan en total?",
+      "opciones": [
+        "19",
+        "16",
+        "14"
+      ],
+      "indiceCorrecto": 1,
+      "pista": "Multiplica 4 × 4.",
+      "explicacion": "4 × 4 = 16 gemas de luz."
+    },
+    {
+      "id": "ia-arm-1795619756985-91",
+      "enunciado": "El Guardián reparte 30 rayos de energía en partes iguales entre 5 anillos. ¿Cuántos rayos recibe cada anillo?",
+      "opciones": [
+        "6",
+        "12",
+        "3"
+      ],
+      "indiceCorrecto": 0,
+      "pista": "Divide 30 ÷ 5.",
+      "explicacion": "Como 5 × 6 = 30, cada anillo recibe 6 rayos."
+    },
+    {
+      "id": "ia-arm-1795619750131-66",
+      "enunciado": "Un sello armilar necesita 64 pulsos y ya acumuló 24. ¿Cuántos pulsos le faltan?",
+      "opciones": [
+        "45",
+        "40",
+        "38"
+      ],
+      "indiceCorrecto": 1,
+      "pista": "Resta 64 − 24.",
+      "explicacion": "64 − 24 = 40 pulsos faltantes."
+    },
+    {
+      "id": "ia-arm-1795619749004-45",
+      "enunciado": "El Guardián reparte 18 rayos de energía en partes iguales entre 3 anillos. ¿Cuántos rayos recibe cada anillo?",
+      "opciones": [
+        "2",
+        "9",
+        "6"
+      ],
+      "indiceCorrecto": 2,
+      "pista": "Divide 18 ÷ 3.",
+      "explicacion": "Como 3 × 6 = 18, cada anillo recibe 6 rayos."
+    },
+    {
+      "id": "ia-arm-1795619739157-24",
+      "enunciado": "El Núcleo Armilar enciende 5 anillos y cada uno lleva 4 gemas de luz. ¿Cuántas gemas brillan en total?",
+      "opciones": [
+        "20",
+        "24",
+        "18"
+      ],
+      "indiceCorrecto": 0,
+      "pista": "Multiplica 5 × 4.",
+      "explicacion": "5 × 4 = 20 gemas de luz."
+    },
+    {
       "id": "ia-arm-1795407330196-43",
       "enunciado": "El Núcleo Armilar emite 4 haces de luz al día. ¿Cuántos haces emitirá exactamente en una semana (7 días)?",
       "opciones": [
@@ -551,78 +623,6 @@
       "indiceCorrecto": 1,
       "pista": "Divide 32 ÷ 4.",
       "explicacion": "Como 4 × 8 = 32, cada anillo recibe 8 rayos."
-    },
-    {
-      "id": "ia-arm-1795407221739-19",
-      "enunciado": "Un sello armilar necesita 62 pulsos y ya acumuló 42. ¿Cuántos pulsos le faltan?",
-      "opciones": [
-        "20",
-        "26",
-        "15"
-      ],
-      "indiceCorrecto": 0,
-      "pista": "Resta 62 − 42.",
-      "explicacion": "62 − 42 = 20 pulsos faltantes."
-    },
-    {
-      "id": "ia-arm-1795407204676-60",
-      "enunciado": "El Núcleo Armilar gira sobre su eje 4 veces por hora. ¿Cuántas vueltas completa en 6 horas?",
-      "opciones": [
-        "20",
-        "24",
-        "28"
-      ],
-      "indiceCorrecto": 1,
-      "pista": "Multiplica el número de vueltas por hora por la cantidad total de horas.",
-      "explicacion": "Para saber el total de vueltas, multiplicamos 4 vueltas por 6 horas, lo que nos da 4 × 6 = 24 vueltas."
-    },
-    {
-      "id": "ia-arm-1795407204658-93",
-      "enunciado": "El Núcleo Armilar gira 4 veces por minuto. ¿Cuántas vueltas dará exactamente en 15 minutos?",
-      "opciones": [
-        "45",
-        "60",
-        "50"
-      ],
-      "indiceCorrecto": 1,
-      "pista": "Multiplica la cantidad de vueltas por minuto por el total de minutos.",
-      "explicacion": "Para saber el total de vueltas, multiplicamos 4 vueltas por 15 minutos, lo que nos da 60 vueltas en total."
-    },
-    {
-      "id": "ia-arm-1795407004639-99",
-      "enunciado": "El Núcleo Armilar gira a razón de 15 grados por minuto. ¿Cuántos grados habrá girado exactamente después de 4 minutos?",
-      "opciones": [
-        "45",
-        "60",
-        "75"
-      ],
-      "indiceCorrecto": 1,
-      "pista": "Multiplica los grados que gira en un minuto por la cantidad total de minutos.",
-      "explicacion": "Para saber el total de grados, multiplicamos 15 por 4. 15 x 4 = 60 grados."
-    },
-    {
-      "id": "ia-arm-1795406996477-20",
-      "enunciado": "El Núcleo Armilar gira sobre su eje completando 12 vueltas cada hora. ¿Cuántas vueltas completará en 4 horas?",
-      "opciones": [
-        "42",
-        "48",
-        "56"
-      ],
-      "indiceCorrecto": 1,
-      "pista": "Multiplica el número de vueltas por hora por la cantidad total de horas.",
-      "explicacion": "Para saber el total de vueltas, multiplicamos 12 vueltas por las 4 horas, lo que nos da 12 x 4 = 48 vueltas."
-    },
-    {
-      "id": "ia-arm-1795406995988-82",
-      "enunciado": "El Núcleo Armilar gira 4 veces por hora y cada giro consume 15 unidades de poder estelar. ¿Cuántas unidades de poder consume en total durante 3 horas?",
-      "opciones": [
-        "120",
-        "180",
-        "60"
-      ],
-      "indiceCorrecto": 1,
-      "pista": "Calcula primero cuánto consume en una sola hora y luego multiplica ese resultado por el total de horas.",
-      "explicacion": "Primero calculamos el consumo en una hora: 4 giros por 15 unidades = 60 unidades. Luego multiplicamos por las 3 horas: 60 x 3 = 180 unidades en total."
     }
   ]
 }
