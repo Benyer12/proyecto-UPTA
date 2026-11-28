@@ -6,8 +6,6 @@ import { MotionConfig } from 'framer-motion';
 import { useAccessibilityStore } from '../../lib/accessibility-store';
 import { useSettingsStore } from '../../lib/settings-store';
 import { useSpatialArrowNavigation } from '../../lib/hooks/useSpatialArrowNavigation';
-import { canUseViewTransitions } from '../../lib/view-transitions';
-import LottieAnimation from '../../components/ui/LottieAnimation';
 
 type RouteLoadingStage = 'idle' | 'loading' | 'finishing';
 
@@ -16,9 +14,7 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
   const isEco = useSettingsStore((s) => s.designMode === 'eco');
 
   const [routeStage, setRouteStage] = useState<RouteLoadingStage>('idle');
-  const [showLottiePill, setShowLottiePill] = useState(false);
 
-  const slowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const finishTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const safetyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevPathRef = useRef(pathname);
@@ -29,7 +25,6 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const clearRouteTimers = () => {
-    if (slowTimerRef.current) clearTimeout(slowTimerRef.current);
     if (finishTimerRef.current) clearTimeout(finishTimerRef.current);
     if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
   };
@@ -43,11 +38,10 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
     setRouteStage('finishing');
     finishTimerRef.current = setTimeout(() => {
       setRouteStage('idle');
-      setShowLottiePill(false);
     }, 240);
   }, [pathname]);
 
-  // Captura clics en enlaces internos para activar barra de carga y Lottie suave sin congelar la vista
+  // Captura clics en enlaces internos para activar barra de carga superior sin congelar la vista
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
@@ -74,15 +68,9 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
       clearRouteTimers();
       setRouteStage('loading');
 
-      // Si la ruta tarda > 70ms en montar, muestra la píldora Lottie elegante
-      slowTimerRef.current = setTimeout(() => {
-        setShowLottiePill(true);
-      }, 70);
-
       // Respaldo de seguridad si la navegación se cancela
       safetyTimerRef.current = setTimeout(() => {
         setRouteStage('idle');
-        setShowLottiePill(false);
       }, 4500);
     };
 
@@ -92,20 +80,6 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
       clearRouteTimers();
     };
   }, [isEco]);
-
-  // Respeta también pulsos en cambios internos de secciones/módulos cuando tardan o transicionan
-  useEffect(() => {
-    const handleSectionTransition = () => {
-      if (!canUseViewTransitions()) return;
-      setShowLottiePill(true);
-      if (finishTimerRef.current) clearTimeout(finishTimerRef.current);
-      finishTimerRef.current = setTimeout(() => {
-        setShowLottiePill(false);
-      }, 360);
-    };
-    window.addEventListener('universo:view-transition', handleSectionTransition);
-    return () => window.removeEventListener('universo:view-transition', handleSectionTransition);
-  }, []);
 
   useSpatialArrowNavigation();
 
@@ -124,19 +98,6 @@ export default function MotionProvider({ children }: { children: ReactNode }) {
                 : 'w-full opacity-0'
             }`}
           />
-        </div>
-      )}
-
-      {/* Indicador Lottie sutil en transiciones de ruta o módulo */}
-      {showLottiePill && !isEco && (
-        <div
-          aria-hidden="true"
-          className="fixed bottom-5 right-5 z-[180] pointer-events-none flex items-center gap-2 rounded-full border border-[#67E8F9]/35 bg-[#041724]/88 backdrop-blur-md px-3.5 py-1.5 shadow-[0_12px_32px_-8px_rgba(103,232,249,0.45)] route-smooth-enter"
-        >
-          <LottieAnimation preset="orbit" size={22} speed={1.5} />
-          <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#67E8F9]">
-            Cargando
-          </span>
         </div>
       )}
 
