@@ -448,12 +448,13 @@ export default function MinijuegosPage() {
         {/* Cabecera Arcade Liquid Glass */}
         <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-7 border-b border-white/10">
           <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-            <div className="shrink-0 self-start sm:self-center flex items-center justify-center rounded-3xl border border-[#67E8F9]/25 bg-white/[0.04] p-2 backdrop-blur-md shadow-[0_0_36px_-10px_rgba(103,232,249,0.5)]">
+            <div className="shrink-0 self-start sm:self-center flex items-center justify-center rounded-3xl border border-[#67E8F9]/25 bg-[#040916]/60 p-2 shadow-[0_0_36px_-10px_rgba(103,232,249,0.5)]">
               <LottieAnimation
                 animationData={rollingCubesData as Record<string, unknown>}
                 size={132}
-                speed={1.25}
+                speed={1.15}
                 forcePlay
+                renderer="canvas"
               />
             </div>
 

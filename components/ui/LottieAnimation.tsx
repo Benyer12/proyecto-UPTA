@@ -13,6 +13,7 @@ interface LottieAnimationProps {
   autoplay?: boolean;
   speed?: number;
   forcePlay?: boolean;
+  renderer?: 'svg' | 'canvas';
   className?: string;
   onComplete?: () => void;
 }
@@ -25,6 +26,7 @@ export default function LottieAnimation({
   autoplay = true,
   speed = 1,
   forcePlay = false,
+  renderer = 'svg',
   className = '',
   onComplete,
 }: LottieAnimationProps) {
@@ -50,13 +52,19 @@ export default function LottieAnimation({
     try {
       anim = lottie.loadAnimation({
         container,
-        renderer: 'svg',
+        renderer,
         loop: staticOnly ? false : loop,
         autoplay: staticOnly ? false : autoplay,
         animationData: clonedData,
-        rendererSettings: {
-          progressiveLoad: !forcePlay,
-        },
+        rendererSettings:
+          renderer === 'canvas'
+            ? {
+                clearCanvas: true,
+                preserveAspectRatio: 'xMidYMid slice',
+              }
+            : {
+                progressiveLoad: !forcePlay,
+              },
       });
 
       if (speed !== 1) {
@@ -109,13 +117,13 @@ export default function LottieAnimation({
         anim.destroy();
       }
     };
-  }, [preset, animationData, loop, autoplay, speed, forcePlay, onComplete, isEco]);
+  }, [preset, animationData, loop, autoplay, speed, forcePlay, renderer, onComplete, isEco]);
 
   return (
     <div
       ref={containerRef}
-      style={{ width: size, height: size }}
-      className={`inline-flex items-center justify-center shrink-0 select-none pointer-events-none ${className}`}
+      style={{ width: size, height: size, transform: 'translateZ(0)' }}
+      className={`inline-flex items-center justify-center shrink-0 select-none pointer-events-none will-change-transform ${className}`}
       aria-hidden="true"
     />
   );
