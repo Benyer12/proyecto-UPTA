@@ -6,6 +6,8 @@ import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import GlassTooltip from '../../components/ui/GlassTooltip';
 import { OrbitalSpinner } from '../../components/ui/PanelSkeletons';
 import LottieAnimation from '../../components/ui/LottieAnimation';
+import googleCloudAnimationData from '../../lib/lottie/google-cloud.json';
+import cloudLoadingAnimationData from '../../lib/lottie/cloud-loading.json';
 import { StyleCurveIcon, LeafIcon } from '../../components/DesignModeTogglePill';
 import { useAuthStore } from '../../lib/auth-store';
 import { useThemeStore } from '../../lib/theme-store';
@@ -702,50 +704,95 @@ export default function ConfiguracionPage() {
                       type="button"
                       disabled={savingGlobal}
                       onClick={() => void handleSelectStorageModeAdmin(false)}
-                      className={`text-left rounded-2xl p-4 border transition-all cursor-pointer ${
+                      className={`text-left rounded-2xl p-4 border transition-all cursor-pointer flex flex-col justify-between ${
                         !localDbEnabled
                           ? 'bg-white text-slate-950 border-white'
                           : 'bg-white/[0.04] text-white border-white/15 hover:bg-white/[0.09]'
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className="text-sm font-extrabold">Modo CLOUD (Solo Nube)</span>
-                        <span className="font-mono text-[10px] uppercase">
-                          {!localDbEnabled ? 'Activo' : 'Elegir'}
-                        </span>
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="text-sm font-extrabold">Modo CLOUD (Solo Nube)</span>
+                          <span className="font-mono text-[10px] uppercase">
+                            {!localDbEnabled ? 'Activo' : 'Elegir'}
+                          </span>
+                        </div>
+                        <p className={`text-xs leading-relaxed ${!localDbEnabled ? 'text-slate-700' : 'text-white/70'}`}>
+                          BD local desactivada (False). Todo va directo a Supabase con internet.
+                        </p>
                       </div>
-                      <p className={`text-xs leading-relaxed ${!localDbEnabled ? 'text-slate-700' : 'text-white/70'}`}>
-                        BD local desactivada (False). Todo va directo a Supabase con internet.
-                      </p>
+                      <div className="mt-3 pt-2 flex items-center justify-center">
+                        <div
+                          className={`rounded-xl px-3 py-1.5 flex items-center justify-center ${
+                            !localDbEnabled ? 'bg-slate-950/[0.06]' : 'bg-black/25'
+                          }`}
+                        >
+                          <LottieAnimation
+                            animationData={cloudLoadingAnimationData}
+                            size={64}
+                            forcePlay
+                            renderer="canvas"
+                          />
+                        </div>
+                      </div>
                     </button>
 
                     <button
                       type="button"
                       disabled={savingGlobal}
                       onClick={() => void handleSelectStorageModeAdmin(true)}
-                      className={`text-left rounded-2xl p-4 border transition-all cursor-pointer ${
+                      className={`text-left rounded-2xl p-4 border transition-all cursor-pointer flex flex-col justify-between ${
                         localDbEnabled
                           ? 'bg-white text-slate-950 border-white'
                           : 'bg-white/[0.04] text-white border-white/15 hover:bg-white/[0.09]'
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className="text-sm font-extrabold">Modo PLUS (Nube + Offline)</span>
-                        <span className="font-mono text-[10px] uppercase">
-                          {localDbEnabled ? 'Activo' : 'Elegir'}
-                        </span>
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="text-sm font-extrabold">Modo PLUS (Nube + Offline)</span>
+                          <span className="font-mono text-[10px] uppercase">
+                            {localDbEnabled ? 'Activo' : 'Elegir'}
+                          </span>
+                        </div>
+                        <p className={`text-xs leading-relaxed ${localDbEnabled ? 'text-slate-700' : 'text-white/70'}`}>
+                          BD local activa (True). Funciona sin conexión y sincroniza con Supabase.
+                        </p>
                       </div>
-                      <p className={`text-xs leading-relaxed ${localDbEnabled ? 'text-slate-700' : 'text-white/70'}`}>
-                        BD local activa (True). Funciona sin conexión y sincroniza con Supabase.
-                      </p>
+                      <div className="mt-3 pt-2 flex items-center justify-center">
+                        <div
+                          className={`rounded-xl px-3 py-1.5 flex items-center justify-center ${
+                            localDbEnabled ? 'bg-slate-950/[0.06]' : 'bg-black/25'
+                          }`}
+                        >
+                          <LottieAnimation
+                            animationData={googleCloudAnimationData}
+                            size={64}
+                            forcePlay
+                            renderer="canvas"
+                          />
+                        </div>
+                      </div>
                     </button>
                   </div>
 
                   {localDbEnabled && (
                     <div className="rounded-2xl border border-white/15 bg-white/[0.05] p-4 space-y-3">
                       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-white/80">
-                        <span>
-                          Red: <strong>{syncState.online ? 'En línea' : 'Offline'}</strong> · Pendientes: <strong>{syncState.pendingCount}</strong>
+                        <span className="inline-flex items-center gap-2">
+                          <span>
+                            Red: <strong>{syncState.online ? 'En línea' : 'Offline'}</strong> · Pendientes: <strong>{syncState.pendingCount}</strong>
+                          </span>
+                          {syncState.syncing && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-2.5 py-0.5 text-[11px] font-semibold text-white">
+                              <LottieAnimation
+                                animationData={googleCloudAnimationData}
+                                size={22}
+                                forcePlay
+                                renderer="canvas"
+                              />
+                              <span>Guardando en la nube...</span>
+                            </span>
+                          )}
                         </span>
                         {lastDownloadInfo && (
                           <span className="text-white/60">
