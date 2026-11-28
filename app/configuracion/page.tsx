@@ -6,6 +6,7 @@ import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import GlassTooltip from '../../components/ui/GlassTooltip';
 import { OrbitalSpinner } from '../../components/ui/PanelSkeletons';
 import LottieAnimation from '../../components/ui/LottieAnimation';
+import ThemeToggleLottie from '../../components/ui/ThemeToggleLottie';
 import googleCloudAnimationData from '../../lib/lottie/google-cloud.json';
 import cloudLoadingAnimationData from '../../lib/lottie/cloud-loading.json';
 import configGearsAnimationData from '../../lib/lottie/config-gears.json';
@@ -458,40 +459,54 @@ export default function ConfiguracionPage() {
               className="rounded-3xl p-5 sm:p-7 flex-1 flex flex-col justify-between gap-5"
             >
               {activeSection === 'apariencia' && (
-                <div className="space-y-5">
-                  <div className="space-y-1.5">
-                    <h2 className="text-xl sm:text-2xl font-extrabold text-white">
-                      Modo Oscuro o Claro
-                    </h2>
-                    <p className="text-sm text-white/75 leading-relaxed max-w-xl">
-                      El Modo Oscuro descansa la vista en lugares con poca luz; el Modo Claro da mayor luminosidad para aulas bien iluminadas.
-                    </p>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                  <div className="space-y-5 flex-1 min-w-0">
+                    <div className="space-y-1.5">
+                      <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+                        Modo Oscuro o Claro
+                      </h2>
+                      <p className="text-sm text-white/75 leading-relaxed max-w-xl">
+                        El Modo Oscuro descansa la vista en lugares con poca luz; el Modo Claro da mayor luminosidad para aulas bien iluminadas.
+                      </p>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-3 max-w-lg">
+                      <button
+                        type="button"
+                        onClick={() => runViewTransition(() => setTheme('dark'), 'choice')}
+                        className={`rounded-2xl px-4 py-3 text-sm font-bold border transition-all cursor-pointer ${
+                          theme === 'dark'
+                            ? 'bg-white text-slate-950 border-white'
+                            : 'bg-white/[0.05] text-white/80 border-white/15 hover:bg-white/[0.1]'
+                        }`}
+                      >
+                        Modo Oscuro
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => runViewTransition(() => setTheme('light'), 'choice')}
+                        data-keep-light-text={theme === 'light' ? 'true' : undefined}
+                        className={`rounded-2xl px-4 py-3 text-sm font-bold border transition-all cursor-pointer ${
+                          theme === 'light'
+                            ? 'bg-slate-900 text-white border-slate-900'
+                            : 'bg-white/[0.05] text-white/80 border-white/15 hover:bg-white/[0.1]'
+                        }`}
+                      >
+                        Modo Claro
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-3 max-w-lg">
-                    <button
-                      type="button"
-                      onClick={() => runViewTransition(() => setTheme('dark'), 'choice')}
-                      className={`rounded-2xl px-4 py-3 text-sm font-bold border transition-all cursor-pointer ${
-                        theme === 'dark'
-                          ? 'bg-white text-slate-950 border-white'
-                          : 'bg-white/[0.05] text-white/80 border-white/15 hover:bg-white/[0.1]'
-                      }`}
-                    >
-                      Modo Oscuro
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => runViewTransition(() => setTheme('light'), 'choice')}
-                      data-keep-light-text={theme === 'light' ? 'true' : undefined}
-                      className={`rounded-2xl px-4 py-3 text-sm font-bold border transition-all cursor-pointer ${
-                        theme === 'light'
-                          ? 'bg-slate-900 text-white border-slate-900'
-                          : 'bg-white/[0.05] text-white/80 border-white/15 hover:bg-white/[0.1]'
-                      }`}
-                    >
-                      Modo Claro
-                    </button>
+                  <div className="flex items-center justify-center md:justify-end shrink-0 md:pr-2">
+                    <ThemeToggleLottie
+                      theme={theme}
+                      onToggle={() =>
+                        runViewTransition(
+                          () => setTheme(theme === 'dark' ? 'light' : 'dark'),
+                          'choice',
+                        )
+                      }
+                    />
                   </div>
                 </div>
               )}
