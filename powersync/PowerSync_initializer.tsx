@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   inicializarBaseDatos,
   conectarPowerSyncBridge,
@@ -15,6 +15,13 @@ import {
 } from '../lib/offline-sync';
 import { useAuthStore } from '../lib/auth-store';
 import { useSettingsStore } from '../lib/settings-store';
+import LottieAnimation from '../components/ui/LottieAnimation';
+import googleCloudAnimationData from '../lib/lottie/google-cloud.json';
+
+interface CloudBannerState {
+  title: string;
+  subtitle: string;
+}
 
 export default function PowerSyncInitializer() {
   const user = useAuthStore((s) => s.user);
@@ -25,13 +32,55 @@ export default function PowerSyncInitializer() {
   const [syncState, setSyncState] = useState<SyncStatusState>(() =>
     obtenerEstadoSyncActual(),
   );
-  const [recentNotice, setRecentNotice] = useState<string | null>(null);
+  const [cloudBanner, setCloudBanner] = useState<CloudBannerState | null>(null);
+  const bannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wasOfflineRef = useRef<boolean>(
+    typeof navigator !== 'undefined' ? !navigator.onLine : false,
+  );
+
+  const showCloudBanner = (title: string, subtitle: string, durationMs = 5500) => {
+    setCloudBanner({ title, subtitle });
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    bannerTimerRef.current = setTimeout(() => {
+      setCloudBanner(null);
+      bannerTimerRef.current = null;
+    }, durationMs);
+  };
 
   useEffect(() => {
     if (!initialized) {
       initSettings();
     }
   }, [initialized, initSettings]);
+
+  // Listener global de reconexión a internet (funciona tanto en Modo PLUS como en Modo CLOUD)
+  useEffect(() => {
+    const onGlobalOffline = () => {
+      wasOfflineRef.current = true;
+    };
+
+    const onGlobalOnline = () => {
+      wasOfflineRef.current = false;
+      showCloudBanner(
+        'Conectado a internet',
+        localDbEnabled
+          ? 'Sincronizando cambios locales con la nube...'
+          : 'Conexión con Supabase en la nube restaurada',
+        5500,
+      );
+    };
+
+    window.addEventListener('offline', onGlobalOffline);
+    window.addEventListener('online', onGlobalOnline);
+    return () => {
+      window.removeEventListener('offline', onGlobalOffline);
+      window.removeEventListener('online', onGlobalOnline);
+      if (bannerTimerRef.current) {
+        clearTimeout(bannerTimerRef.current);
+        bannerTimerRef.current = null;
+      }
+    };
+  }, [localDbEnabled]);
 
   useEffect(() => {
     if (!initialized) return;
@@ -42,27 +91,37 @@ export default function PowerSyncInitializer() {
     }
 
     let cancelled = false;
-    let noticeTimer: ReturnType<typeof setTimeout> | null = null;
 
     const ejecutarCicloOnline = async (forceDeposit = false) => {
       const onlineReal = await comprobarConexionReal();
       if (cancelled) return;
 
       if (onlineReal) {
+        const recoveredFromOffline = wasOfflineRef.current;
+        wasOfflineRef.current = false;
+
         await conectarPowerSyncBridge();
         const res = await sincronizarPendientesASupabase();
         if (!cancelled && res.syncedCount > 0) {
-          setRecentNotice(
+          showCloudBanner(
+            'Guardado en la nube',
             `${res.syncedCount} ${res.syncedCount === 1 ? 'cambio local subido' : 'cambios locales subidos'} a Supabase`,
+            5500,
           );
-          if (noticeTimer) clearTimeout(noticeTimer);
-          noticeTimer = setTimeout(() => setRecentNotice(null), 4000);
+        } else if (!cancelled && (recoveredFromOffline || forceDeposit)) {
+          showCloudBanner(
+            'Conectado a internet',
+            'Base de datos local sincronizada con Supabase',
+            5000,
+          );
         }
         await depositarSupabaseEnLocal({
           usuarioId:
             user && user.role === 'student' ? String(user.id) : undefined,
           force: forceDeposit,
         });
+      } else {
+        wasOfflineRef.current = true;
       }
     };
 
@@ -81,6 +140,9 @@ export default function PowerSyncInitializer() {
     const handleSyncEvent = (e: Event) => {
       const detail = (e as CustomEvent<SyncStatusState>).detail;
       if (detail && !cancelled) {
+        if (!detail.online) {
+          wasOfflineRef.current = true;
+        }
         setSyncState(detail);
       }
     };
@@ -90,6 +152,7 @@ export default function PowerSyncInitializer() {
     };
 
     const handleOffline = () => {
+      wasOfflineRef.current = true;
       void comprobarConexionReal();
     };
 
@@ -107,22 +170,57 @@ export default function PowerSyncInitializer() {
     return () => {
       cancelled = true;
       clearInterval(interval);
-      if (noticeTimer) clearTimeout(noticeTimer);
       window.removeEventListener('universo-sync-status', handleSyncEvent);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
   }, [user?.id, user?.role, localDbEnabled, initialized]);
 
-  if (!localDbEnabled) return null;
+  const showCloudAnimationCard = Boolean(cloudBanner) || (localDbEnabled && syncState.online && syncState.syncing);
+  const showOfflinePill =
+    localDbEnabled &&
+    !showCloudAnimationCard &&
+    (!syncState.online || syncState.pendingCount > 0);
 
-  const showPill =
-    !syncState.online ||
-    syncState.syncing ||
-    syncState.pendingCount > 0 ||
-    Boolean(recentNotice);
+  if (!showCloudAnimationCard && !showOfflinePill) return null;
 
-  if (!showPill) return null;
+  if (showCloudAnimationCard) {
+    const title = syncState.syncing
+      ? 'Sincronizando con la nube...'
+      : cloudBanner?.title || 'Conectado a internet';
+    const subtitle = syncState.syncing
+      ? syncState.pendingCount > 0
+        ? `Subiendo ${syncState.pendingCount} ${syncState.pendingCount === 1 ? 'cambio local' : 'cambios locales'} a Supabase`
+        : 'Guardando cambios locales en Supabase...'
+      : cloudBanner?.subtitle || 'Sincronizado con la base de datos en la nube';
+
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        className="fixed bottom-5 left-5 z-[95] pointer-events-none select-none"
+      >
+        <div className="flex items-center gap-3.5 rounded-2xl border border-white/20 bg-[#070d1f]/95 px-4 py-3 shadow-[0_18px_48px_rgba(0,0,0,0.6)]">
+          <div className="rounded-xl bg-white/[0.08] p-1 flex items-center justify-center shrink-0">
+            <LottieAnimation
+              animationData={googleCloudAnimationData}
+              size={54}
+              forcePlay
+              renderer="canvas"
+            />
+          </div>
+          <div className="min-w-0 pr-1">
+            <p className="text-sm font-extrabold text-white leading-tight">
+              {title}
+            </p>
+            <p className="text-xs text-white/75 leading-snug mt-0.5">
+              {subtitle}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -130,14 +228,10 @@ export default function PowerSyncInitializer() {
       aria-live="polite"
       className="fixed bottom-4 left-4 z-[90] pointer-events-none select-none"
     >
-      <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#050a18]/85 px-3.5 py-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.45)]">
+      <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#050a18]/90 px-3.5 py-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.45)]">
         <span
           className={`w-2 h-2 rounded-full shrink-0 ${
-            !syncState.online
-              ? 'bg-amber-400'
-              : syncState.syncing
-                ? 'bg-[#67E8F9] animate-pulse'
-                : 'bg-[#6EE7B7]'
+            !syncState.online ? 'bg-amber-400' : 'bg-[#6EE7B7]'
           }`}
         />
         <span className="font-mono text-[11px] font-semibold tracking-wide text-white/90">
@@ -145,11 +239,7 @@ export default function PowerSyncInitializer() {
             ? syncState.pendingCount > 0
               ? `Sin internet · ${syncState.pendingCount} ${syncState.pendingCount === 1 ? 'cambio guardado en BD local' : 'cambios guardados en BD local'}`
               : 'Sin internet · Modo PLUS local activo'
-            : syncState.syncing
-              ? `Sincronizando ${syncState.pendingCount} cambios con Supabase...`
-              : syncState.pendingCount > 0
-                ? `${syncState.pendingCount} cambios locales por subir`
-                : recentNotice}
+            : `${syncState.pendingCount} cambios locales por subir`}
         </span>
       </div>
     </div>
