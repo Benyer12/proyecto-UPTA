@@ -237,7 +237,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
         if (b?.enunciado) colaBossIARef.current.push(barajarRetoBoss(b));
       });
       setMensajeTutorIA(
-        'Modo sin internet activo: usando preguntas guardadas en JSON y en tu BD local.',
+        'Modo sin internet activo: usando preguntas guardadas en este equipo.',
       );
     };
 
@@ -427,7 +427,7 @@ export default function TableroIsometrico({ onPositionChange }: Props) {
       if (!hayConexionInternet()) {
         setMensajeTutorIA(
           esCorrecta
-            ? '¡Excelente! Respuesta registrada en BD local (preguntas desde JSON).'
+            ? '¡Excelente! Respuesta guardada en este equipo.'
             : 'Buen intento. Seguimos practicando en modo sin conexión.',
         );
         return;

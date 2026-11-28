@@ -297,14 +297,14 @@ export default function AdminUsuariosPage() {
       if (nuevoStatus) {
         mostrarToast({
           variant: 'activated',
-          eyebrow: res.syncedToCloud ? 'ESTADO ACTUALIZADO · ACTIVO' : 'GUARDADO EN BD LOCAL · ACTIVO',
+          eyebrow: res.syncedToCloud ? 'ESTADO ACTUALIZADO · ACTIVO' : 'GUARDADO EN ESTE EQUIPO · ACTIVO',
           title: 'Cuenta habilitada',
           message: `${u.nombre} ahora se encuentra activo${res.syncedToCloud ? '' : ' (pendiente por subir)'}.`,
         });
       } else {
         mostrarToast({
           variant: 'deactivated',
-          eyebrow: res.syncedToCloud ? 'ESTADO ACTUALIZADO · INACTIVO' : 'GUARDADO EN BD LOCAL · INACTIVO',
+          eyebrow: res.syncedToCloud ? 'ESTADO ACTUALIZADO · INACTIVO' : 'GUARDADO EN ESTE EQUIPO · INACTIVO',
           title: 'Cuenta suspendida',
           message: `${u.nombre} ahora está inactivo${res.syncedToCloud ? '' : ' (pendiente por subir)'}.`,
         });
@@ -456,7 +456,7 @@ export default function AdminUsuariosPage() {
         } else {
           mostrarToast({
             variant: 'saved',
-            eyebrow: res.syncedToCloud ? 'REGISTRO SINCRONIZADO' : 'GUARDADO EN BD LOCAL · SIN CONEXIÓN',
+            eyebrow: res.syncedToCloud ? 'REGISTRO SINCRONIZADO' : 'GUARDADO EN ESTE EQUIPO · SIN INTERNET',
             title: 'Perfil actualizado',
             message: res.syncedToCloud
               ? `La información de ${cleanNombre} se actualizó correctamente en la base de datos.`
@@ -539,7 +539,7 @@ export default function AdminUsuariosPage() {
               </div>
             </LiquidGlass>
 
-            <GlassTooltip label="Sincronizar lista de usuarios desde la nube y BD local" placement="bottom">
+            <GlassTooltip label="Actualizar lista de usuarios" placement="bottom">
               <button
                 type="button"
                 onClick={cargarUsuarios}

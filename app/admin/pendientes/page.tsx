@@ -143,7 +143,7 @@ export default function AdminPendientesPage() {
       setToast({
         id: Date.now(),
         variant: 'activated',
-        eyebrow: res.syncedToCloud ? 'ACCESO APROBADO · ACTIVO' : 'APROBADO EN BD LOCAL · SIN CONEXIÓN',
+        eyebrow: res.syncedToCloud ? 'ACCESO APROBADO · ACTIVO' : 'APROBADO EN ESTE EQUIPO · SIN INTERNET',
         title: 'Usuario aprobado correctamente',
         message: res.syncedToCloud
           ? `${u.nombre} ahora está activo como ${rolLegible} y ya puede iniciar sesión en la plataforma.`
@@ -187,7 +187,7 @@ export default function AdminPendientesPage() {
             <div className="min-h-[42px] inline-flex items-center rounded-full border border-amber-300/30 bg-amber-400/[0.08] px-4 text-xs font-semibold text-[#FDE68A] tabular-nums">
               {pendientes.length} {pendientes.length === 1 ? 'solicitud' : 'solicitudes'}
             </div>
-            <GlassTooltip label="Sincronizar solicitudes pendientes desde Supabase / BD local" placement="bottom">
+            <GlassTooltip label="Actualizar lista de solicitudes pendientes" placement="bottom">
               <button
                 type="button"
                 onClick={cargarPendientes}

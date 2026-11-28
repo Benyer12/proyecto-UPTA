@@ -64,8 +64,8 @@ export default function PowerSyncInitializer() {
       showCloudBanner(
         'Conectado a internet',
         localDbEnabled
-          ? 'Sincronizando cambios locales con la nube...'
-          : 'Conexión con Supabase en la nube restaurada',
+          ? 'Guardando tus cambios en la nube...'
+          : 'Conexión con la nube restaurada',
         5500,
       );
     };
@@ -105,13 +105,13 @@ export default function PowerSyncInitializer() {
         if (!cancelled && res.syncedCount > 0) {
           showCloudBanner(
             'Guardado en la nube',
-            `${res.syncedCount} ${res.syncedCount === 1 ? 'cambio local subido' : 'cambios locales subidos'} a Supabase`,
+            `${res.syncedCount} ${res.syncedCount === 1 ? 'cambio guardado' : 'cambios guardados'} en la nube`,
             5500,
           );
         } else if (!cancelled && (recoveredFromOffline || forceDeposit)) {
           showCloudBanner(
             'Conectado a internet',
-            'Base de datos local sincronizada con Supabase',
+            'Tus datos están al día con la nube',
             5000,
           );
         }
@@ -186,13 +186,13 @@ export default function PowerSyncInitializer() {
 
   if (showCloudAnimationCard) {
     const title = syncState.syncing
-      ? 'Sincronizando con la nube...'
+      ? 'Guardando en la nube...'
       : cloudBanner?.title || 'Conectado a internet';
     const subtitle = syncState.syncing
       ? syncState.pendingCount > 0
-        ? `Subiendo ${syncState.pendingCount} ${syncState.pendingCount === 1 ? 'cambio local' : 'cambios locales'} a Supabase`
-        : 'Guardando cambios locales en Supabase...'
-      : cloudBanner?.subtitle || 'Sincronizado con la base de datos en la nube';
+        ? `Guardando ${syncState.pendingCount} ${syncState.pendingCount === 1 ? 'cambio pendiente' : 'cambios pendientes'} en la nube`
+        : 'Guardando tus cambios en la nube...'
+      : cloudBanner?.subtitle || 'Tus datos están al día con la nube';
 
     return (
       <div
@@ -237,9 +237,9 @@ export default function PowerSyncInitializer() {
         <span className="font-mono text-[11px] font-semibold tracking-wide text-white/90">
           {!syncState.online
             ? syncState.pendingCount > 0
-              ? `Sin internet · ${syncState.pendingCount} ${syncState.pendingCount === 1 ? 'cambio guardado en BD local' : 'cambios guardados en BD local'}`
-              : 'Sin internet · Modo PLUS local activo'
-            : `${syncState.pendingCount} cambios locales por subir`}
+              ? `Sin internet · ${syncState.pendingCount} ${syncState.pendingCount === 1 ? 'cambio guardado en este equipo' : 'cambios guardados en este equipo'}`
+              : 'Sin internet · Modo PLUS activo en este equipo'
+            : `${syncState.pendingCount} cambios pendientes por guardar en la nube`}
         </span>
       </div>
     </div>

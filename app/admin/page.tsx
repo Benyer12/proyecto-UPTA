@@ -112,7 +112,7 @@ export default function AdminPage() {
       setToast({
         id: Date.now(),
         variant: 'saved',
-        eyebrow: res.syncedToCloud ? 'ROL ACTUALIZADO' : 'GUARDADO EN BD LOCAL · SIN CONEXIÓN',
+        eyebrow: res.syncedToCloud ? 'ROL ACTUALIZADO' : 'GUARDADO EN ESTE EQUIPO · SIN INTERNET',
         title: `Rol asignado: ${rolLegible}`,
         message: res.syncedToCloud
           ? `${u.nombre} ahora cuenta con permisos de ${rolLegible} en la plataforma.`

@@ -213,9 +213,9 @@ export default function ConfiguracionPage() {
 
     if (!enableLocalDb) {
       await desactivarRecursosLocalesModoNube();
-      setGlobalFeedback('Modo CLOUD activo para todos (BD Local: FALSE, solo Supabase).');
+      setGlobalFeedback('Modo CLOUD activo para todos: la información se guarda directamente en la nube.');
     } else {
-      setGlobalFeedback('Modo PLUS activo para todos (BD Local: TRUE, Nube + Offline).');
+      setGlobalFeedback('Modo PLUS activo para todos: funciona con y sin internet y guarda copias en este equipo.');
     }
     setSavingGlobal(false);
   };
@@ -224,7 +224,7 @@ export default function ConfiguracionPage() {
     if (!isAdmin || downloadingPlus || !localDbEnabled) return;
     setDownloadingPlus(true);
     setDownloadProgress(5);
-    setDownloadStep('Preparando descarga sin conexión...');
+    setDownloadStep('Preparando descarga para uso sin internet...');
 
     const res = await descargarTodoModoPlus((step, percent) => {
       setDownloadStep(step);
@@ -234,10 +234,10 @@ export default function ConfiguracionPage() {
     if (res.ok) {
       setLastDownloadInfo({ fecha: res.fecha, count: res.rutasCacheadas });
       setDownloadStep(
-        `Listo: ${res.rutasCacheadas} archivos cacheados y respaldo de Supabase en BD local.`,
+        `Listo: ${res.rutasCacheadas} archivos guardados y copia de seguridad lista en este equipo.`,
       );
     } else {
-      setDownloadStep(res.error || 'No se pudo completar la descarga offline.');
+      setDownloadStep(res.error || 'No se pudo completar la descarga para uso sin internet.');
     }
     setDownloadingPlus(false);
   };
@@ -702,7 +702,7 @@ export default function ConfiguracionPage() {
                       </span>
                     </div>
                     <p className="text-sm text-white/75 leading-relaxed max-w-2xl">
-                      <strong>CLOUD</strong> desactiva la BD local (<code>FALSE</code>) y usa solo Supabase en línea. <strong>PLUS</strong> activa el uso offline + online (<code>TRUE</code>) para toda la plataforma.
+                      <strong>Modo CLOUD</strong> guarda toda la información únicamente en la nube con internet. <strong>Modo PLUS</strong> permite usar la plataforma sin internet y sincronizar tus cambios automáticamente al reconectarte.
                     </p>
                   </div>
 
@@ -725,7 +725,7 @@ export default function ConfiguracionPage() {
                           </span>
                         </div>
                         <p className={`text-xs leading-relaxed ${!localDbEnabled ? 'text-slate-700' : 'text-white/70'}`}>
-                          BD local desactivada (False). Todo va directo a Supabase con internet.
+                          Solo en la nube. Toda la información se guarda directamente por internet.
                         </p>
                       </div>
                       <div className="mt-3 pt-2 flex items-center justify-center">
@@ -756,13 +756,13 @@ export default function ConfiguracionPage() {
                     >
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className="text-sm font-extrabold">Modo PLUS (Nube + Offline)</span>
+                          <span className="text-sm font-extrabold">Modo PLUS (Con y sin internet)</span>
                           <span className="font-mono text-[10px] uppercase">
                             {localDbEnabled ? 'Activo' : 'Elegir'}
                           </span>
                         </div>
                         <p className={`text-xs leading-relaxed ${localDbEnabled ? 'text-slate-700' : 'text-white/70'}`}>
-                          BD local activa (True). Funciona sin conexión y sincroniza con Supabase.
+                          Funciona incluso sin internet y guarda tus avances en la nube al reconectarte.
                         </p>
                       </div>
                       <div className="mt-3 pt-2 flex items-center justify-center">
@@ -787,7 +787,7 @@ export default function ConfiguracionPage() {
                       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-white/80">
                         <span className="inline-flex items-center gap-2">
                           <span>
-                            Red: <strong>{syncState.online ? 'En línea' : 'Offline'}</strong> · Pendientes: <strong>{syncState.pendingCount}</strong>
+                            Conexión: <strong>{syncState.online ? 'Conectado' : 'Sin internet'}</strong> · Pendientes por subir: <strong>{syncState.pendingCount}</strong>
                           </span>
                           {syncState.syncing && (
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-2.5 py-0.5 text-[11px] font-semibold text-white">
@@ -823,7 +823,7 @@ export default function ConfiguracionPage() {
                       )}
 
                       <div className="flex flex-wrap items-center gap-2.5">
-                        <GlassTooltip label="Descarga todas las páginas, assets y tablas de Supabase a tu PC" placement="top">
+                        <GlassTooltip label="Descarga todo el contenido y tus datos para usar la plataforma sin internet en este equipo" placement="top">
                           <button
                             type="button"
                             disabled={downloadingPlus}
@@ -834,7 +834,7 @@ export default function ConfiguracionPage() {
                             <span>
                               {downloadingPlus
                                 ? `Descargando... ${downloadProgress}%`
-                                : 'Descargar recursos y BD local'}
+                                : 'Descargar para usar sin internet'}
                             </span>
                           </button>
                         </GlassTooltip>

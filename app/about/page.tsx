@@ -56,7 +56,7 @@ const DETALLES_PROYECTO = [
     texto: 'Equivocarse entrega pistas y nuevas oportunidades sin borrar el progreso.',
   },
   {
-    titulo: 'Sincronización Online y Offline',
+    titulo: 'Funciona con y sin internet',
     texto: 'Guarda estrellas en el dispositivo y sincroniza el avance en la nube.',
   },
 ];

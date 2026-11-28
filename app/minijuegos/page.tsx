@@ -468,7 +468,7 @@ export default function MinijuegosPage() {
               </h1>
               <p className="text-sm text-white/70 max-w-2xl leading-relaxed">
                 Elige cualquiera de los 8 arcades clásicos para divertirte entre misiones. Tus intentos y
-                récords personales se guardan automáticamente en la base local de minijuegos.
+                récords personales se guardan automáticamente en tu progreso.
               </p>
             </div>
           </div>

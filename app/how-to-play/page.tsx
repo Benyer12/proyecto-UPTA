@@ -230,7 +230,7 @@ const RULES = [
   },
   {
     title: 'Guardado Automático',
-    badge: 'Online y Offline',
+    badge: 'Con y sin internet',
     color: '#67E8F9',
     desc: 'Tu avance se guarda en tu dispositivo y se sincroniza en la nube cuando vuelves a conectarte.',
   },

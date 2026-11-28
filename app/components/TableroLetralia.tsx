@@ -232,7 +232,7 @@ export default function TableroLetralia({ onPositionChange }: TableroLetraliaPro
         encolarSinDuplicado(colaBossLetraliaIARef.current, r, (x) => x.titulo),
       );
       setMensajeTutorIA(
-        'Modo sin internet activo: usando retos de lectura guardados en JSON y tu BD local.',
+        'Modo sin internet activo: usando retos de lectura guardados en este equipo.',
       );
     };
 

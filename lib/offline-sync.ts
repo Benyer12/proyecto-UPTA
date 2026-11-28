@@ -1754,32 +1754,32 @@ export async function descargarTodoModoPlus(
       ok: false,
       rutasCacheadas: 0,
       fecha,
-      error: 'Activa primero el Modo PLUS antes de descargar los recursos y la BD local.',
+      error: 'Activa primero el Modo PLUS antes de descargar el contenido para usar sin internet.',
     };
   }
 
-  onProgress?.('Verificando conexión con Supabase y servidor...', 10);
+  onProgress?.('Verificando tu conexión a internet...', 10);
   const onlineReal = await comprobarConexionReal();
   if (!onlineReal) {
     return {
       ok: false,
       rutasCacheadas: 0,
       fecha,
-      error: 'No se detectó conexión a internet para descargar la página y la BD de Supabase.',
+      error: 'No se detectó conexión a internet para descargar el contenido.',
     };
   }
 
   let rutasCacheadas = 0;
 
   if ('serviceWorker' in navigator) {
-    onProgress?.('Activando motor sin conexión (Service Worker)...', 25);
+    onProgress?.('Preparando el modo sin internet...', 25);
     try {
       await navigator.serviceWorker.register('/sw.js');
     } catch {}
   }
 
   if ('caches' in window) {
-    onProgress?.('Descargando páginas, imágenes y scripts en el navegador...', 45);
+    onProgress?.('Descargando páginas e imágenes en este equipo...', 45);
     try {
       const cache = await window.caches.open('universo-offline-v3');
       const staticUrls = new Set<string>([
@@ -1834,12 +1834,12 @@ export async function descargarTodoModoPlus(
           }),
         );
         const pct = Math.min(78, 45 + Math.round(((i + batch.length) / list.length) * 33));
-        onProgress?.(`Guardando recursos locales (${rutasCacheadas} archivos)...`, pct);
+        onProgress?.(`Guardando contenido en este equipo (${rutasCacheadas} archivos)...`, pct);
       }
     } catch {}
   }
 
-  onProgress?.('Respaldando base de datos Supabase en PowerSync SQLite local...', 85);
+  onProgress?.('Guardando copia de seguridad de tus datos en este equipo...', 85);
   await asegurarPowerSyncListo();
   await depositarSupabaseEnLocal({ force: true });
 
@@ -1848,6 +1848,6 @@ export async function descargarTodoModoPlus(
     window.localStorage.setItem('universo-plus-cached-count', String(rutasCacheadas));
   } catch {}
 
-  onProgress?.('Modo PLUS descargado y listo para funcionar sin conexión.', 100);
+  onProgress?.('Modo PLUS listo para funcionar sin internet.', 100);
   return { ok: true, rutasCacheadas, fecha };
 }
