@@ -8,6 +8,7 @@ import { OrbitalSpinner } from '../../components/ui/PanelSkeletons';
 import LottieAnimation from '../../components/ui/LottieAnimation';
 import googleCloudAnimationData from '../../lib/lottie/google-cloud.json';
 import cloudLoadingAnimationData from '../../lib/lottie/cloud-loading.json';
+import configGearsAnimationData from '../../lib/lottie/config-gears.json';
 import { StyleCurveIcon, LeafIcon } from '../../components/DesignModeTogglePill';
 import { useAuthStore } from '../../lib/auth-store';
 import { useThemeStore } from '../../lib/theme-store';
@@ -332,8 +333,14 @@ export default function ConfiguracionPage() {
                 {/* Identificador con engranaje mecánico */}
                 <div className="flex items-center justify-between gap-2 pb-3 border-b border-white/12">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="inline-flex items-center justify-center w-9 h-9 rounded-2xl bg-white/12 border border-white/20 text-white shrink-0">
-                      <LottieAnimation preset="gear" size={24} speed={0.75} />
+                    <span className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-white/10 border border-white/20 text-white shrink-0">
+                      <LottieAnimation
+                        animationData={configGearsAnimationData}
+                        size={32}
+                        speed={0.85}
+                        forcePlay
+                        renderer="canvas"
+                      />
                     </span>
                     <div className="min-w-0">
                       <h1 className="text-sm sm:text-base font-extrabold text-white truncate">
