@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useThemeStore } from '../../lib/theme-store';
 
@@ -330,11 +330,34 @@ export default function LiquidGlassToast({
   const appTheme = useThemeStore((s) => s.theme);
   const isLight = appTheme === 'light';
   const durationMs = toast?.durationMs ?? (toast?.variant === 'blocked' ? 6800 : 4800);
+  const progressBarRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(onClose, durationMs);
-    return () => clearTimeout(timer);
+    let rafId = 0;
+    const startTime = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - startTime;
+      const remaining = Math.max(0, 1 - elapsed / durationMs);
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${remaining})`;
+      }
+      if (remaining > 0) {
+        rafId = requestAnimationFrame(tick);
+      }
+    };
+
+    if (progressBarRef.current) {
+      progressBarRef.current.style.transform = 'scaleX(1)';
+    }
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(rafId);
+    };
   }, [toast, durationMs, onClose]);
 
   const theme = toast
@@ -515,17 +538,18 @@ export default function LiquidGlassToast({
 
               {/* Barra de progreso de tiempo restante */}
               <div
-                className={`relative z-10 mt-3.5 h-[2.5px] w-full rounded-full overflow-hidden ${
-                  isLight ? 'bg-slate-900/10' : 'bg-white/10'
+                className={`relative z-10 mt-3.5 h-[3px] w-full rounded-full overflow-hidden ${
+                  isLight ? 'bg-slate-900/12' : 'bg-white/15'
                 }`}
               >
-                <motion.div
+                <div
                   key={`bar-${toast.id}`}
-                  className="h-full origin-left rounded-full"
-                  style={{ background: theme.barGradient }}
-                  initial={{ scaleX: 1 }}
-                  animate={{ scaleX: 0 }}
-                  transition={{ duration: durationMs / 1000, ease: 'linear' }}
+                  ref={progressBarRef}
+                  className="h-full w-full origin-left rounded-full will-change-transform"
+                  style={{
+                    background: theme.barGradient,
+                    transform: 'scaleX(1)',
+                  }}
                 />
               </div>
             </div>

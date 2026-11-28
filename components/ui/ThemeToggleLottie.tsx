@@ -100,8 +100,8 @@ export default function ThemeToggleLottie({
           ? 'Modo Oscuro activo · Clic para cambiar a Claro'
           : 'Modo Claro activo · Clic para cambiar a Oscuro'
       }
-      className={`group relative inline-flex items-center justify-center rounded-3xl ${
-        size === 'sm' ? 'p-0.5' : 'p-2'
+      className={`group relative inline-flex items-center justify-center rounded-full ${
+        size === 'sm' ? 'p-0' : 'p-1.5'
       } transition-transform duration-200 hover:scale-[1.04] active:scale-[0.97] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${className}`}
     >
       <div

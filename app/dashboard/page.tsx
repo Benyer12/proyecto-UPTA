@@ -7,7 +7,6 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import PlanetVisual from '../components/PlanetVisual';
 import { LiquidGlass } from '../../components/ui/glasscn/liquid-glass';
 import ThemeTogglePill from '../../components/ThemeTogglePill';
-import SoundTogglePill from '../../components/SoundTogglePill';
 import EasyReadingTogglePill from '../../components/EasyReadingTogglePill';
 import RoleAvatar from '../../components/RoleAvatar';
 import { DashboardSkeleton, OrbitalSpinner } from '../../components/ui/PanelSkeletons';
@@ -293,7 +292,6 @@ function StudentDashboardView({
 
           <div className="flex items-center gap-3 flex-wrap justify-end">
             <EasyReadingTogglePill showLabels />
-            <SoundTogglePill />
             <ThemeTogglePill showLabels />
 
             <LiquidGlass

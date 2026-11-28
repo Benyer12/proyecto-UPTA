@@ -25,7 +25,7 @@ export default function ThemeTogglePill({
   return (
     <div
       data-theme-toggle="true"
-      className={`inline-flex items-center justify-center shrink-0 ${className}`}
+      className={`inline-flex items-center justify-center rounded-full overflow-hidden px-1 py-0.5 shrink-0 ${className}`}
     >
       <ThemeToggleLottie
         theme={theme}

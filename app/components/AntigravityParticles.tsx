@@ -25,16 +25,15 @@ interface Particle {
   orbitOffset: number;
 }
 
-// Paleta plateado, púrpura y violeta para modo oscuro (strings precalculados sin asignaciones por frame)
+// Paleta exclusiva Dorado, Magenta y Fucsia para modo oscuro
 const DARK_PALETTE = [
-  'rgb(226, 232, 240)', // Plateado estelar (#E2E8F0)
-  'rgb(203, 213, 225)', // Plata suave (#CBD5E1)
-  'rgb(241, 245, 249)', // Blanco plateado (#F1F5F9)
-  'rgb(191, 64, 255)',  // Púrpura vibrante (#BF40FF)
-  'rgb(168, 85, 247)',  // Violeta luminoso (#A855F7)
-  'rgb(139, 92, 246)',  // Violeta profundo (#8B5CF6)
-  'rgb(192, 132, 252)', // Lavanda púrpura (#C084FC)
-  'rgb(216, 180, 254)', // Plata amatista (#D8B4FE)
+  'rgb(251, 191, 36)',  // Dorado brillante (#FBBF24)
+  'rgb(245, 158, 11)',  // Dorado cálido (#F59E0B)
+  'rgb(253, 224, 71)',  // Dorado luz (#FDE047)
+  'rgb(217, 70, 239)',  // Magenta luminoso (#D946EF)
+  'rgb(192, 38, 211)',  // Magenta intenso (#C026D3)
+  'rgb(236, 72, 153)',  // Fucsia vibrante (#EC4899)
+  'rgb(255, 46, 147)',  // Fucsia neón (#FF2E93)
 ];
 
 // Paleta de alto contraste para polvo de estrellas visible en modo claro
@@ -328,18 +327,35 @@ export default function AntigravityParticles() {
             ctx.stroke();
           }
         } else {
-          // Modo oscuro: partículas originales en plateado, púrpura y violeta
-          const currentLen = (p.length + Math.min(6, Math.sqrt(speedSq) * 1.45)) * stretch;
-          const halfLen = currentLen * 0.5;
-          const cos = Math.cos(p.angle);
-          const sin = Math.sin(p.angle);
+          // Modo oscuro: polvo cósmico luminoso (orbes suaves + destellos estelares en Dorado, Magenta y Fucsia)
+          const radius = p.size * (0.95 + (stretch - 1) * 0.35);
 
-          ctx.strokeStyle = p.strokeStyle;
-          ctx.lineWidth = p.size * 1.5;
+          // Halo suave alrededor del punto
+          ctx.globalAlpha = p.alpha * 0.24;
+          ctx.fillStyle = p.strokeStyle;
           ctx.beginPath();
-          ctx.moveTo(p.x - cos * halfLen, p.y - sin * halfLen);
-          ctx.lineTo(p.x + cos * halfLen, p.y + sin * halfLen);
-          ctx.stroke();
+          ctx.arc(p.x, p.y, radius * 2.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Núcleo circular nítido
+          ctx.globalAlpha = Math.min(0.95, p.alpha * 1.15);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Destello estelar delicado en 4 puntas para algunas partículas
+          if (i % 3 === 0 && p.alpha > 0.32) {
+            const glint = radius * 2.8;
+            ctx.globalAlpha = p.alpha * 0.65;
+            ctx.strokeStyle = p.strokeStyle;
+            ctx.lineWidth = 0.85;
+            ctx.beginPath();
+            ctx.moveTo(p.x - glint, p.y);
+            ctx.lineTo(p.x + glint, p.y);
+            ctx.moveTo(p.x, p.y - glint);
+            ctx.lineTo(p.x, p.y + glint);
+            ctx.stroke();
+          }
         }
       }
 
