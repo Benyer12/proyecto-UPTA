@@ -7,12 +7,20 @@ import themeToggleAnimationData from '../../lib/lottie/theme-toggle.json';
 interface ThemeToggleLottieProps {
   theme: 'dark' | 'light';
   onToggle?: () => void;
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
+
+const SIZE_CLASSES: Record<'sm' | 'md' | 'lg', string> = {
+  sm: 'w-[88px] h-[52px]',
+  md: 'w-[126px] h-[74px]',
+  lg: 'w-[164px] h-[96px] sm:w-[196px] sm:h-[115px]',
+};
 
 export default function ThemeToggleLottie({
   theme,
   onToggle,
+  size = 'lg',
   className = '',
 }: ThemeToggleLottieProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -92,11 +100,13 @@ export default function ThemeToggleLottie({
           ? 'Modo Oscuro activo · Clic para cambiar a Claro'
           : 'Modo Claro activo · Clic para cambiar a Oscuro'
       }
-      className={`group relative inline-flex items-center justify-center rounded-3xl p-2 transition-transform duration-200 hover:scale-[1.04] active:scale-[0.97] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${className}`}
+      className={`group relative inline-flex items-center justify-center rounded-3xl ${
+        size === 'sm' ? 'p-0.5' : 'p-2'
+      } transition-transform duration-200 hover:scale-[1.04] active:scale-[0.97] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${className}`}
     >
       <div
         ref={containerRef}
-        className="w-[164px] h-[96px] sm:w-[196px] sm:h-[115px] will-change-transform"
+        className={`${SIZE_CLASSES[size]} will-change-transform`}
         style={{ transform: 'translateZ(0)' }}
       />
     </button>
