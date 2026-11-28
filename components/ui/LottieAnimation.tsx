@@ -12,6 +12,7 @@ interface LottieAnimationProps {
   loop?: boolean;
   autoplay?: boolean;
   speed?: number;
+  forcePlay?: boolean;
   className?: string;
   onComplete?: () => void;
 }
@@ -23,6 +24,7 @@ export default function LottieAnimation({
   loop = true,
   autoplay = true,
   speed = 1,
+  forcePlay = false,
   className = '',
   onComplete,
 }: LottieAnimationProps) {
@@ -37,9 +39,10 @@ export default function LottieAnimation({
     const clonedData = JSON.parse(JSON.stringify(rawData));
 
     const reducedMotion =
+      !forcePlay &&
       typeof window !== 'undefined' &&
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const staticOnly = isEco || reducedMotion;
+    const staticOnly = (!forcePlay && isEco) || reducedMotion;
 
     let anim: AnimationItem | null = null;
     let observer: IntersectionObserver | null = null;
@@ -52,7 +55,7 @@ export default function LottieAnimation({
         autoplay: staticOnly ? false : autoplay,
         animationData: clonedData,
         rendererSettings: {
-          progressiveLoad: true,
+          progressiveLoad: !forcePlay,
         },
       });
 
@@ -63,12 +66,15 @@ export default function LottieAnimation({
       if (staticOnly) {
         anim.goToAndStop(25, true);
       } else {
+        if (autoplay) {
+          anim.play();
+        }
         if (onComplete) {
           anim.addEventListener('complete', onComplete);
         }
 
         // Pausa automática cuando sale del viewport para mantener 60fps sin lagueo
-        if (typeof IntersectionObserver !== 'undefined' && autoplay) {
+        if (!forcePlay && typeof IntersectionObserver !== 'undefined' && autoplay) {
           observer = new IntersectionObserver(
             (entries) => {
               const entry = entries[0];
@@ -103,7 +109,7 @@ export default function LottieAnimation({
         anim.destroy();
       }
     };
-  }, [preset, animationData, loop, autoplay, speed, onComplete, isEco]);
+  }, [preset, animationData, loop, autoplay, speed, forcePlay, onComplete, isEco]);
 
   return (
     <div

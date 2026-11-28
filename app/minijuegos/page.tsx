@@ -446,28 +446,30 @@ export default function MinijuegosPage() {
           </div>
         )}
         {/* Cabecera Arcade Liquid Glass */}
-        <section className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-7 border-b border-white/10">
-          <div className="space-y-2.5">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#67E8F9]/35 bg-[#67E8F9]/10 px-3.5 py-1.5 text-xs sm:text-sm font-bold uppercase tracking-[0.16em] text-[#67E8F9] shadow-[0_0_20px_-6px_rgba(103,232,249,0.4)]">
-              <LottieAnimation preset="gamepad" size={22} />
-              <span>Sala Arcade · 8 Juegos Activos</span>
+        <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-7 border-b border-white/10">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+            <div className="shrink-0 self-start sm:self-center flex items-center justify-center rounded-3xl border border-[#67E8F9]/25 bg-white/[0.04] p-2 backdrop-blur-md shadow-[0_0_36px_-10px_rgba(103,232,249,0.5)]">
+              <LottieAnimation
+                animationData={rollingCubesData as Record<string, unknown>}
+                size={132}
+                speed={1.25}
+                forcePlay
+              />
             </div>
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+
+            <div className="space-y-2.5">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#67E8F9]/35 bg-[#67E8F9]/10 px-3.5 py-1.5 text-xs sm:text-sm font-bold uppercase tracking-[0.16em] text-[#67E8F9] shadow-[0_0_20px_-6px_rgba(103,232,249,0.4)]">
+                <LottieAnimation preset="gamepad" size={22} />
+                <span>Sala Arcade · 8 Juegos Activos</span>
+              </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
                 Minijuegos Espaciales
               </h1>
-              <div className="shrink-0 -my-2 flex items-center justify-center rounded-2xl border border-[#67E8F9]/20 bg-white/[0.03] px-1.5 py-0.5 backdrop-blur-md shadow-[0_0_24px_-10px_rgba(103,232,249,0.45)]">
-                <LottieAnimation
-                  animationData={rollingCubesData as Record<string, unknown>}
-                  size={68}
-                  speed={1.15}
-                />
-              </div>
+              <p className="text-sm text-white/70 max-w-2xl leading-relaxed">
+                Elige cualquiera de los 8 arcades clásicos para divertirte entre misiones. Tus intentos y
+                récords personales se guardan automáticamente en la base local de minijuegos.
+              </p>
             </div>
-            <p className="text-sm text-white/70 max-w-2xl leading-relaxed">
-              Elige cualquiera de los 8 arcades clásicos para divertirte entre misiones. Tus intentos y
-              récords personales se guardan automáticamente en la base local de minijuegos.
-            </p>
           </div>
 
           <LiquidGlass
