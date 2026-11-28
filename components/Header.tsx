@@ -820,7 +820,7 @@ export default function Header() {
                   data-active-pill={pathname === '/configuracion' ? 'true' : undefined}
                   className={`hidden sm:inline-flex items-center justify-center w-[38px] h-[38px] rounded-full border transition-colors shrink-0 ${
                     pathname === '/configuracion'
-                      ? 'bg-white text-black border-white'
+                      ? 'bg-[#0F172A]/85 text-white border-[#67E8F9]/60 shadow-[0_0_16px_rgba(103,232,249,0.35)]'
                       : 'bg-[#060a18]/[0.45] border-white/[0.16] text-white/80 hover:text-white hover:bg-white/[0.12]'
                   }`}
                 >
